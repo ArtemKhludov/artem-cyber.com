@@ -1,0 +1,365 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { Button } from '@/components/ui/button'
+import { FileText, Filter, Eye, ShoppingCart, ChevronDown } from 'lucide-react'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import type { Document } from '@/types'
+import { PageLayout } from '@/components/layout/PageLayout'
+
+// Компонент карточки документа с анимацией
+function DocumentCard({ document, index }: { document: Document; index: number }) {
+  const [isVisible, setIsVisible] = useState(false)
+  const [imageError, setImageError] = useState(false)
+  const [pdfPreviewLoaded, setPdfPreviewLoaded] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Добавляем задержку для каскадной анимации
+          setTimeout(() => {
+            setIsVisible(true)
+          }, index * 100)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [index])
+
+  const handleImageError = () => {
+    setImageError(true)
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      className={`transform transition-all duration-700 ${
+        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+      }`}
+      style={{ transitionDelay: `${index * 50}ms` }}
+    >
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 group h-full">
+        
+        {/* PDF Preview Section */}
+        <div className="relative h-64 overflow-hidden">
+          {/* Обложка как фон */}
+          {!imageError && document.cover_url && (
+            <img
+              src={document.cover_url}
+              alt={document.title}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={handleImageError}
+            />
+          )}
+          
+          {/* Fallback градиент если нет обложки */}
+          {(imageError || !document.cover_url) && (
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <FileText className="w-16 h-16 text-white/80" />
+            </div>
+          )}
+
+          {/* PDF Preview Overlay */}
+          {document.file_url && (
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <iframe
+                src={`${document.file_url}#toolbar=0&navpanes=0&scrollbar=0&page=1&zoom=page-fit`}
+                className="w-full h-full pointer-events-none"
+                title={`Предпросмотр ${document.title}`}
+                onLoad={() => setPdfPreviewLoaded(true)}
+              />
+              
+              {/* Overlay для читаемости */}
+              <div className="absolute inset-0 bg-black/20"></div>
+              
+              {/* Индикатор предпросмотра */}
+              <div className="absolute top-4 left-4 bg-white/90 rounded-lg px-3 py-1 text-xs font-medium text-gray-700">
+                📄 Первая страница
+              </div>
+            </div>
+          )}
+
+          {/* Hover Action Overlay */}
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <div className="text-center text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+              <Eye className="w-12 h-12 mx-auto mb-2 animate-pulse" />
+              <p className="text-sm font-medium">Предпросмотр PDF</p>
+            </div>
+          </div>
+
+          {/* Price Tag */}
+          <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+            {document.price_rub.toLocaleString('ru-RU')} ₽
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="p-6">
+          <h3 className="font-bold text-lg text-gray-900 mb-3 line-clamp-2 leading-tight">
+            {document.title}
+          </h3>
+          
+          <p className="text-gray-600 text-sm line-clamp-3 mb-4 leading-relaxed">
+            {document.description}
+          </p>
+
+          {/* Action Buttons */}
+          <div className="space-y-2">
+            <Button 
+              asChild 
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2 rounded-xl transition-all duration-300 transform hover:scale-[1.02]"
+            >
+              <Link href={`/pdf/${document.id}`}>
+                <Eye className="mr-2 w-4 h-4" />
+                Посмотреть подробнее
+              </Link>
+            </Button>
+            
+            <Button 
+              asChild 
+              variant="outline" 
+              className="w-full border-2 border-blue-200 text-blue-600 hover:border-blue-500 hover:bg-blue-50 py-2 rounded-xl transition-all duration-300"
+            >
+              <Link href={`/checkout/${document.id}`}>
+                <ShoppingCart className="mr-2 w-4 h-4" />
+                Купить сейчас
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function CatalogPage() {
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<'date' | 'price' | 'title'>('date')
+  const [isHeaderVisible, setIsHeaderVisible] = useState(false)
+  const headerRef = useRef<HTMLDivElement>(null)
+
+  // Анимация заголовка
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsHeaderVisible(true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (headerRef.current) {
+      observer.observe(headerRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  // Загрузка документов
+  const loadDocuments = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const { data, error: fetchError } = await supabase
+        .from('documents')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (fetchError) {
+        throw fetchError
+      }
+
+      if (data && data.length > 0) {
+        setDocuments(data)
+        console.log(`✅ Загружено ${data.length} документов в каталог`)
+      } else {
+        console.log('⚠️ Документы не найдены')
+        setError('Документы не найдены')
+      }
+    } catch (err) {
+      console.error('❌ Error loading documents for catalog:', err)
+      setError('Ошибка загрузки документов')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadDocuments()
+  }, [])
+
+  // Сортировка документов
+  const sortedDocuments = [...documents].sort((a, b) => {
+    switch (sortBy) {
+      case 'price':
+        return a.price_rub - b.price_rub
+      case 'title':
+        return a.title.localeCompare(b.title, 'ru')
+      case 'date':
+      default:
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    }
+  })
+
+  const refresh = () => {
+    loadDocuments()
+  }
+
+  return (
+    <PageLayout>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+        
+        {/* Header */}
+        <div ref={headerRef} className="relative pt-12 pb-8">
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+          </div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className={`text-center transform transition-all duration-1000 ${
+              isHeaderVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+            }`}>
+              <span className="text-blue-600 font-semibold text-sm uppercase tracking-wide">Библиотека знаний</span>
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mt-2 mb-6 leading-tight">
+                Каталог 
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  {" "}PDF-материалов
+                </span>
+              </h1>
+              <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+                Полная коллекция наших методик и руководств для трансформации личности. 
+                Каждый материал содержит проверенные техники и практические упражнения.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 pb-12">
+          
+          {/* Controls */}
+          <div className={`flex flex-col sm:flex-row justify-between items-center mb-12 p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 transform transition-all duration-700 ${
+            isHeaderVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`} style={{transitionDelay: '300ms'}}>
+            
+            <div className="flex items-center gap-3 mb-4 sm:mb-0">
+              <Filter className="w-5 h-5 text-gray-500" />
+              <span className="text-gray-700 font-medium">Сортировка:</span>
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+              >
+                <option value="date">По дате добавления</option>
+                <option value="price">По цене</option>
+                <option value="title">По названию</option>
+              </select>
+            </div>
+
+            <div className="text-sm text-gray-600">
+              <span className="font-medium text-blue-600">{sortedDocuments.length}</span> материалов доступно
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mb-4"></div>
+              <span className="text-gray-600 text-lg">Загружаем каталог...</span>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-20">
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto">
+                <FileText className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                <p className="text-red-600 mb-6 text-lg">{error}</p>
+                <Button onClick={refresh} variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
+                  Попробовать снова
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && documents.length === 0 && (
+            <div className="text-center py-20">
+              <FileText className="w-20 h-20 text-gray-400 mx-auto mb-6" />
+              <h3 className="text-2xl font-semibold text-gray-600 mb-4">Каталог временно пуст</h3>
+              <p className="text-gray-500 text-lg">Материалы будут добавлены в ближайшее время</p>
+            </div>
+          )}
+
+          {/* Documents Grid - 3 колонки */}
+          {!loading && !error && sortedDocuments.length > 0 && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {sortedDocuments.map((document, index) => (
+                  <DocumentCard
+                    key={document.id}
+                    document={document}
+                    index={index}
+                  />
+                ))}
+              </div>
+
+              {/* Statistics */}
+              <div className="mt-16 text-center">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Статистика каталога</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600 mb-1">{sortedDocuments.length}</div>
+                      <div className="text-gray-600">Всего материалов</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-purple-600 mb-1">50K+</div>
+                      <div className="text-gray-600">Довольных клиентов</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600 mb-1">24/7</div>
+                      <div className="text-gray-600">Поддержка</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-6">
+                    Каталог автоматически обновляется при добавлении новых материалов
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
+    </PageLayout>
+  )
+}
