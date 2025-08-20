@@ -1,241 +1,143 @@
-# 🌟 EnergyLogic - Платформа энергетической диагностики
+# 🌟 EnergyLogic - Платформа продажи PDF-руководств
 
-Современная веб-платформа для проведения персональных энергетических диагностик с интеграцией видеосвязи, онлайн-платежей и автоматической генерацией отчетов.
+Современная веб-платформа для продажи цифровых PDF-руководств по личностному развитию с интеграцией онлайн-платежей, системой предпросмотра и красивыми каруселями.
 
 ## ✨ Основные возможности
 
-- 🏠 **Лендинговая страница** - современный дизайн с описанием услуг
-- 📅 **Система бронирования** - интеграция с Cal.com для записи на сессии  
-- 💳 **Онлайн-платежи** - безопасная оплата через Stripe
-- 🎥 **Видеосессии** - аудио/видео встречи через Daily.co
-- 📄 **PDF-отчеты** - автоматическая генерация персональных результатов
-- 👤 **Личный кабинет** - управление заказами и историей
-- 📊 **Аналитика** - отслеживание событий через PostHog
+- 🏠 **Лендинговая страница** - современный дизайн со звездным фоном
+- 🎠 **Бесконечные карусели** - плавная прокрутка PDF-файлов с стрелками управления
+- 📖 **Предпросмотр PDF** - просмотр первых страниц перед покупкой
+- 💳 **Двойные платежи** - Stripe для международных платежей, Cryptomus для криптовалют
+- 🌍 **Геолокация** - автоопределение страны для выбора платежной системы  
+- 📊 **Статистика покупок** - динамическое отображение популярности
+- 📱 **Адаптивный дизайн** - идеальная работа на всех устройствах
+- 🔗 **SEO-оптимизация** - правильная структура ссылок и метаданные
 
 ## 🛠 Технический стек
 
 ### Frontend
 - **Next.js 15** - React фреймворк с App Router
 - **TypeScript** - строгая типизация
-- **Tailwind CSS** - утилитарные стили
-- **Radix UI** - доступные компоненты
+- **Tailwind CSS v4** - утилитарные стили
+- **Lucide React** - иконки
+- **React Hooks** - управление состоянием
 
-### Backend & Services
+### Backend & Платежи
 - **Supabase** - база данных и аутентификация
-- **Stripe** - обработка платежей
-- **Daily.co** - видеоконференции
-- **Cal.com** - система бронирования
-- **PostHog** - аналитика и трекинг
+- **Stripe** - международные платежи
+- **Cryptomus** - криптовалютные платежи  
+- **IPinfo.io** - геолокация пользователей
+
+### Дизайн & UX
+- **Адаптивный дизайн** - мобайл-ферст подход
+- **Smooth анимации** - плавные переходы и эффекты
+- **Бесконечные карусели** - без проблем с зацикливанием
+- **Звездный фон** - динамические градиенты
+
+## 🔧 Конфигурация
+
+### Переменные окружения (.env.local)
+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL="https://mcexzjzowwanxawbiizd.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZXh6anpvd3dhbnhawbiizdIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNzg4MjQsImV4cCI6MjA3MDk1NDgyNH0.-sAXcSK2crzmBULuPxRSfI9fNde9aQZxNvag2qkmZUs"
+
+# Stripe (Тестовые ключи)
+STRIPE_PUBLISHABLE_KEY="pk_test_51RwzjrJKXslR96bIz6j7XQrpz92U8YatoN0uj2dmVP1AtN9nJE3CHeSxWrmWg9pGdsX5obDcdPqsco5ccLW18Eyv00sImNc5Ii"
+STRIPE_SECRET_KEY="sk_test_51RwzjrJKXslR96bIAUKh0Jzg18ZoJiqQ8KNJbqRHKah8k95Qz8hOOlethCrm6FDfb4NHZoWbKvVL1r9LE3Ep5OcG00xgfQVDX3"
+STRIPE_WEBHOOK_SECRET="whsec_..." # Настроить при деплое
+
+# Cryptomus
+CRYPTOMUS_MERCHANT_ID="c2b099b4e7ccf66c5f0c3ea1085143da48ddfb63"
+CRYPTOMUS_API_KEY="c2b099b4e7ccf66c5f0c3ea1085143da48ddfb63"
+
+# Геолокация
+IPINFO_API_KEY="YOUR_IPINFO_API_KEY" # Получить на ipinfo.io
+```
+
+### Схема базы данных Supabase
+
+```sql
+-- Таблица документов
+CREATE TABLE documents (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    price INTEGER NOT NULL, -- цена в рублях
+    price_rub INTEGER NOT NULL, -- дублирование для совместимости
+    file_url TEXT NOT NULL,
+    cover_url TEXT,
+    page_count INTEGER DEFAULT 20,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Таблица покупок
+CREATE TABLE purchases (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    document_id UUID REFERENCES documents(id),
+    email TEXT,
+    payment_method TEXT, -- 'stripe' или 'cryptomus'
+    payment_status TEXT DEFAULT 'pending',
+    amount INTEGER NOT NULL,
+    currency TEXT DEFAULT 'RUB',
+    stripe_session_id TEXT,
+    cryptomus_payment_id TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- RLS политики
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE purchases ENABLE ROW LEVEL SECURITY;
+
+-- Разрешить чтение документов всем
+CREATE POLICY "Documents are viewable by everyone" ON documents
+    FOR SELECT USING (true);
+
+-- Разрешить создание покупок всем
+CREATE POLICY "Anyone can create purchases" ON purchases
+    FOR INSERT WITH CHECK (true);
+```
 
 ## 🚀 Быстрый старт
 
-### 1. Клонирование и установка
-
+### Установка
 ```bash
-git clone <repository-url>
-cd energylogic-site
+git clone https://github.com/ArtemKhludov/EnergyLogic.git
+cd EnergyLogic
 npm install
 ```
 
-### 2. Настройка переменных окружения
+### Настройка
+1. Создайте .env.local с переменными выше
+2. Настройте Supabase проект и загрузите схему
+3. Настройте Stripe webhook endpoints
+4. Получите API ключ IPinfo.io
 
-Скопируйте `.env.example` в `.env.local` и заполните:
-
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# Stripe  
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
-
-# Daily.co
-NEXT_PUBLIC_DAILY_DOMAIN=your_daily_domain
-DAILY_API_KEY=your_daily_api_key
-
-# Cal.com
-NEXT_PUBLIC_CAL_COM_USERNAME=your_cal_username
-
-# PostHog
-NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
-NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-JWT_SECRET=your_jwt_secret
-```
-
-### 3. Настройка базы данных
-
-1. Создайте проект в [Supabase](https://supabase.com)
-2. Выполните SQL-схему из файла ``
-3. Настройте аутентификацию (Email/Password)
-
-### 4. Запуск разработки
-
+### Запуск
 ```bash
 npm run dev
 ```
 
-Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000)
+Сайт будет доступен на http://localhost:3000
 
-## 📁 Структура проекта
+## 🔗 Важные ссылки
 
-```
-energylogic-site/
-├── app/                          # Next.js App Router
-│   ├── (pages)/
-│   │   ├── page.tsx             # Главная страница
-│   │   ├── book/                # Бронирование
-│   │   ├── checkout/            # Оплата
-│   │   ├── session/[id]/        # Видеосессии
-│   │   └── download/[orderId]/  # Скачивание PDF
-│   ├── api/                     # API роуты
-│   │   ├── create-payment-intent/
-│   │   └── daily/
-│   ├── globals.css              # Глобальные стили
-│   └── layout.tsx               # Основной layout
-├── components/                   # React компоненты
-│   ├── layout/                  # Header, Footer
-│   ├── providers/               # Context провайдеры
-│   └── ui/                      # UI компоненты
-├── lib/                         # Утилиты и конфигурация
-│   ├── supabase.ts             # Supabase клиент
-│   ├── stripe.ts               # Stripe конфигурация
-│   ├── daily.ts                # Daily.co интеграция
-│   ├── posthog.ts              # PostHog настройки
-│   └── utils.ts                # Общие утилиты
-├── types/                       # TypeScript типы
-└── public/                      # Статические файлы
-```
+- **GitHub**: https://github.com/ArtemKhludov/EnergyLogic.git
+- **Supabase Dashboard**: https://supabase.com/dashboard/project/mcexzjzowwanxawbiizd
+- **Stripe Dashboard**: https://dashboard.stripe.com/
+- **Cryptomus Dashboard**: https://cryptomus.com/
+- **IPinfo.io**: https://ipinfo.io/
 
-## 🔧 Доступные команды
+## 📞 Контакты проекта
 
-```bash
-# Разработка
-npm run dev
-
-# Сборка для продакшена
-npm run build
-
-# Запуск продакшен сервера
-npm run start
-
-# Линтинг
-npm run lint
-```
-
-## 🎯 Основные страницы
-
-### Главная страница (`/`)
-- Hero секция с описанием услуг
-- Процесс диагностики (4 шага)
-- Преимущества и стоимость
-- CTA для записи
-
-### Бронирование (`/book`)
-- Интеграция с Cal.com календарем
-- Информация о сессии
-- Переход к оплате
-
-### Оплата (`/checkout`)
-- Форма оплаты через Stripe
-- Сводка заказа
-- Безопасная обработка платежей
-
-### Видеосессия (`/session/[id]`)
-- Интеграция с Daily.co
-- Аудио/видео связь
-- Управление участниками
-
-### Загрузка результатов (`/download/[orderId]`)
-- Скачивание PDF-отчетов
-- Просмотр статуса заказа
-- Информация о содержании
-
-## 🔑 Интеграции
-
-### Supabase
-- Аутентификация пользователей
-- База данных заказов и сессий
-- Row Level Security (RLS)
-- Триггеры и функции
-
-### Stripe
-- Обработка платежей
-- Webhook события
-- Возвраты и споры
-
-### Daily.co
-- Создание видеокомнат
-- Управление токенами
-- Запись сессий
-
-### Cal.com
-- Календарь бронирования
-- Iframe интеграция
-- Webhook уведомления
-
-### PostHog
-- Трекинг событий
-- Аналитика поведения
-- A/B тестирование
-
-## 🚀 Развертывание
-
-Подробные инструкции по развертыванию см. в файле [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-### Vercel (рекомендуется)
-
-```bash
-npm i -g vercel
-vercel login
-vercel --prod
-```
-
-### Другие платформы
-- Netlify
-- Railway  
-- AWS Amplify
-- DigitalOcean App Platform
-
-## 🔒 Безопасность
-
-- ✅ HTTPS обязателен
-- ✅ Environment variables для секретов
-- ✅ Row Level Security в Supabase
-- ✅ CORS настроен правильно
-- ✅ Rate limiting на API
-- ✅ Валидация данных
-
-## 📊 Мониторинг
-
-- **Sentry** - отслеживание ошибок
-- **PostHog** - аналитика пользователей
-- **Vercel Analytics** - производительность
-- **Uptime Robot** - мониторинг доступности
-
-## 🤝 Вклад в проект
-
-1. Fork репозитория
-2. Создайте feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit изменений (`git commit -m 'Add amazing feature'`)
-4. Push в branch (`git push origin feature/amazing-feature`)
-5. Откройте Pull Request
-
-## 📄 Лицензия
-
-Проект лицензирован под MIT License - см. файл [LICENSE](LICENSE) для деталей.
-
-## 📞 Поддержка
-
-- 📧 Email: support@energylogic.com
-- 💬 Telegram: @energylogic_support
-- 📱 Телефон: +7 (999) 123-45-67
+- **Email**: energylogic@project.ai
+- **Phone**: +7 (999) 123-45-67
+- **Поддержка**: Заказать звонок через сайт
 
 ---
 
-**EnergyLogic** - Откройте свой энергетический потенциал! ⚡
+**Версия**: 2.0.0  
+**Последнее обновление**: Январь 2025  
+**Статус**: ✅ Готов к продакшену
