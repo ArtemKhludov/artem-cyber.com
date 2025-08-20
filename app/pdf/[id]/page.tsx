@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { PDFPreview } from '@/components/pdf/PDFPreview'
 import { DocumentCard } from '@/components/common/DocumentCard'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { MockReviews } from '@/components/pdf/MockReviews'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, FileText } from 'lucide-react'
+import { ArrowLeft, FileText, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import type { Document } from '@/types'
@@ -21,9 +21,10 @@ export default function PDFPage({ params }: PDFPageProps) {
   const { id } = React.use(params)
   const [document, setDocument] = useState<Document | null>(null)
   const [otherDocuments, setOtherDocuments] = useState<Document[]>([])
-  const [loading, setLoading] = useState(true)
+  const [carouselIndex, setCarouselIndex] = useState(0)
+  const pdfCarouselRef = useRef<HTMLDivElement>(null)  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     const loadDocument = async () => {
       try {
@@ -53,7 +54,7 @@ export default function PDFPage({ params }: PDFPageProps) {
 
         if (!othersError && others) {
           setOtherDocuments(others)
-        }
+        setLoading(false)        }
 
       } catch (err) {
         console.error('Error loading document:', err)
@@ -146,16 +147,68 @@ export default function PDFPage({ params }: PDFPageProps) {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {otherDocuments.map((doc) => (
-                  <DocumentCard
-                    key={doc.id}
-                    document={doc}
-                    variant="carousel"
-                    showBuyButton={true}
-                    className="h-full"
-                  />
-                ))}
+              {/* БЕСКОНЕЧНАЯ КАРУСЕЛЬ СО СТРЕЛКАМИ */}
+              <div className="relative overflow-hidden group">
+                {/* Стрелки управления */}
+                <button
+                  onClick={() => {
+                    const carousel = pdfCarouselRef.current;
+                    if (!carousel) return;
+                    carousel.style.animation = "none";
+                    const currentTransform = getComputedStyle(carousel).transform;
+                    let currentX = 0;
+                    if (currentTransform !== "none") {
+                      const matrix = new DOMMatrix(currentTransform);
+                      currentX = matrix.m41;
+                    }
+                    const newX = currentX + 320; // Один слайд влево                    carousel.style.transform = `translateX(${newX}px)`;
+                    carousel.style.transition = "transform 0.5s ease";
+                    setTimeout(() => { // Возобновляем автопрокрутку
+                      carousel.style.transition = "";
+                      carousel.style.animation = "infiniteScroll 45s linear infinite";
+                    }, 600);
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronLeft className="w-6 h-6 text-gray-800" />
+                </button>
+                <button
+                  onClick={() => {
+                    const carousel = pdfCarouselRef.current;
+                    if (!carousel) return;
+                    carousel.style.animation = "none";
+                    const currentTransform = getComputedStyle(carousel).transform;
+                    let currentX = 0;
+                    if (currentTransform !== "none") {
+                      const matrix = new DOMMatrix(currentTransform);
+                      currentX = matrix.m41;
+                    }
+                    const newX = currentX - 320;
+                    carousel.style.transform = `translateX(${newX}px)`;
+                    carousel.style.transition = "transform 0.5s ease";
+                    setTimeout(() => { // Возобновляем автопрокрутку
+                      carousel.style.transition = "";
+                      carousel.style.animation = "infiniteScroll 45s linear infinite";
+                    }, 600);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronRight className="w-6 h-6 text-gray-800" />
+                </button>
+                <div className="carousel-container">
+                  <div ref={pdfCarouselRef} className="carousel-track flex gap-6" style={{ animation: "infiniteScroll 45s linear infinite", width: `${otherDocuments.length * 2 * 350}px` }}>
+                    {otherDocuments.map((doc, index) => (
+                      <div key={`${doc.id}-${index}`} className="flex-shrink-0 w-80">
+                        <DocumentCard document={doc} variant="carousel" showBuyButton={true} className="h-full" />
+                      </div>
+                    ))}
+                    {otherDocuments.map((doc, index) => (
+                      <div key={`${doc.id}-dup-${index}`} className="flex-shrink-0 w-80">
+                        <DocumentCard document={doc} variant="carousel" showBuyButton={true} className="h-full" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="text-center mt-8">

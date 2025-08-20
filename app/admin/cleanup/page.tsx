@@ -5,39 +5,39 @@ import { Button } from '@/components/ui/button'
 import { PageLayout } from '@/components/layout/PageLayout'
 
 export default function CleanupPage() {
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
-  const [status, setStatus] = useState<any>(null)
+  const [loading, setLoading] = useState(false
+  const [result, setResult] = useState<any>(null
+  const [status, setStatus] = useState<any>(null
 
   const checkStatus = async () => {
     try {
-      setLoading(true)
-      const response = await fetch('/api/cleanup-duplicates')
-      const data = await response.json()
-      setStatus(data)
+      setLoading(true
+      const response = await fetch('/api/cleanup-duplicates'
+      const data = await response.json(
+      setStatus(data
     } catch (error) {
-      console.error('Error checking status:', error)
+      console.error('Error checking status:', error
     } finally {
-      setLoading(false)
+      setLoading(false
     }
   }
 
   const runCleanup = async () => {
     try {
-      setLoading(true)
+      setLoading(true
       const response = await fetch('/api/cleanup-duplicates', {
         method: 'POST'
-      })
-      const data = await response.json()
-      setResult(data)
+      }
+      const data = await response.json(
+      setResult(data
       
       // Обновляем статус после очистки
-      await checkStatus()
+      await checkStatus(
     } catch (error) {
-      console.error('Error running cleanup:', error)
-      setResult({ error: 'Ошибка выполнения очистки' })
+      console.error('Error running cleanup:', error
+      setResult({ error: 'Ошибка выполнения очистки' }
     } finally {
-      setLoading(false)
+      setLoading(false
     }
   }
 
@@ -70,7 +70,7 @@ export default function CleanupPage() {
                   <ul className="list-disc list-inside mt-2">
                     {status.duplicates.map((dup: any, index: number) => (
                       <li key={index}>
-                        {dup.title} ({dup.count} копий)
+                        {dup.title} ({dup.count} копий
                       </li>
                     ))}
                   </ul>
@@ -142,6 +142,7 @@ export default function CleanupPage() {
         </div>
       </div>
     </div>
-  )
+  
     </PageLayout>
+}
 }
