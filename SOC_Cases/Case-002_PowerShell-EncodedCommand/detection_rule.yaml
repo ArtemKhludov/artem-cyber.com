@@ -1,0 +1,74 @@
+# SIEM detection: encoded PowerShell from Office parent
+# Rule ID: DR-002
+# Version: 1.3
+# Author: Artem Khludov
+# Date: 2025-08-20
+
+splunk:
+  name: "Suspicious encoded PowerShell from Office application"
+  severity: critical
+  mitre_attack:
+    - T1059.001
+    - T1027
+  search: |
+    index=windows sourcetype=WinEventLog:Security EventCode=4688
+    | where match(CommandLine, "(?i)powershell.*(-enc|-encodedcommand|-e\\s)")
+    | where match(ParentImage, "(?i)(WINWORD|EXCEL|POWERPNT|OUTLOOK)")
+    | eval CmdLen=len(CommandLine)
+    | where CmdLen > 100
+    | table _time, Computer, User, ParentImage, CommandLine
+    | eval Risk="CRITICAL"
+  trigger_conditions:
+    - Encoded PowerShell style flag present
+    - Parent is Office
+    - Command line length over threshold
+  false_positive_filter: |
+    | where NOT match(User, "(?i)(svcadmin)")
+    | where NOT match(CommandLine, "(?i)(microsoft\\.com|windows update)")
+  response_actions:
+    - alert_soc_immediate
+    - consider_host_isolation
+  schedule: continuous
+  throttle: 300s per host
+
+sigma:
+  title: "Suspicious encoded PowerShell execution from Office"
+  status: stable
+  description: >
+    Detects encoded PowerShell launched from Microsoft Office processes,
+    common in macro-driven malware delivery.
+  author: Artem Khludov
+  date: 2025-08-20
+  logsource:
+    category: process_creation
+    product: windows
+  detection:
+    selection_powershell:
+      Image|endswith: '\powershell.exe'
+      CommandLine|contains:
+        - '-enc'
+        - '-encodedcommand'
+        - '-e '
+        - '/enc'
+        - '/encodedcommand'
+    selection_office_parent:
+      ParentImage|endswith:
+        - '\WINWORD.EXE'
+        - '\EXCEL.EXE'
+        - '\POWERPNT.EXE'
+        - '\OUTLOOK.EXE'
+        - '\MSACCESS.EXE'
+    filter_legitimate:
+      CommandLine|contains:
+        - 'Microsoft.Office'
+        - 'Windows Update'
+    condition: selection_powershell and selection_office_parent and not filter_legitimate
+  falsepositives:
+    - Rare signed macros from IT
+    - Break-glass admin scripts under change record
+  level: critical
+  tags:
+    - attack.execution
+    - attack.t1059.001
+    - attack.defense_evasion
+    - attack.t1027
