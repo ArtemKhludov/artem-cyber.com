@@ -1,0 +1,241 @@
+# Cloudflare WAF Detection Rules - Case 002: Spam Form Submissions
+
+# Rule 1: Block Missing Headers (Primary Detection)
+rule_name: "Block Spam Forms - Missing Headers"
+description: "Blocks POST requests to form endpoints with missing Referer or Origin headers"
+expression: |
+  (http.request.method eq "POST" and http.request.uri.path contains "/calendly")
+  and (http.request.headers["referer"][0] eq "" or not http.request.headers["origin"][0] contains "example.com")
+action: block
+priority: 1
+enabled: true
+
+# Rule 2: Bot Score Filtering
+rule_name: "Block Low Bot Score Requests"
+description: "Challenges requests with low bot scores to form endpoints"
+expression: |
+  http.request.method eq "POST" and 
+  http.request.uri.path contains "/booking" and
+  cf.bot_management.score < 30
+action: managed_challenge
+priority: 2
+enabled: true
+
+# Rule 3: Rate Limiting
+rule_name: "Form Submission Rate Limit"
+description: "Rate limits form submissions to prevent spam"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/booking" or http.request.uri.path contains "/calendly")
+action: rate_limit
+rate_limit:
+  requests_per_period: 3
+  period_seconds: 10
+  action: challenge
+priority: 3
+enabled: true
+
+# Rule 4: VPS ASN Blocking
+rule_name: "Block VPS ASNs"
+description: "Blocks known VPS provider ASNs for form submissions"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking") and
+  ip.geoip.asnum in {14061, 9009, 208091}
+action: block
+priority: 4
+enabled: true
+
+# Rule 5: Session Validation
+rule_name: "Block Session Replay Attacks"
+description: "Challenges requests without proper session cookies"
+expression: |
+  http.request.method eq "POST" and 
+  http.request.uri.path contains "/booking" and
+  http.request.headers["cookie"][0] eq "" and
+  cf.bot_management.score < 30
+action: managed_challenge
+priority: 5
+enabled: true
+
+# Rule 6: TLS Fingerprint Analysis
+rule_name: "Block Identical TLS Fingerprints"
+description: "Blocks requests with known bot TLS fingerprints"
+expression: |
+  http.request.method eq "POST" and 
+  http.request.uri.path contains "/calendly" and
+  cf.bot_management.score < 30 and
+  http.tls.ja3_fingerprint in {"known_bot_fingerprint_1", "known_bot_fingerprint_2"}
+action: block
+priority: 6
+enabled: false  # Requires JA3 fingerprint database
+
+# Rule 7: User-Agent Filtering
+rule_name: "Block Known Bot User-Agents"
+description: "Blocks requests with known automated tool User-Agents"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking") and
+  http.request.headers["user-agent"][0] in {"python-requests/2.28.1", "curl/7.68.0", "Mozilla/5.0 (compatible; Bot/1.0)"}
+action: managed_challenge
+priority: 7
+enabled: true
+
+# Rule 8: Geographic Filtering (Optional)
+rule_name: "Block High-Risk Countries"
+description: "Blocks form submissions from high-risk countries"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking") and
+  ip.geoip.country in {"CN", "RU", "KP", "IR"} and
+  cf.bot_management.score < 50
+action: managed_challenge
+priority: 8
+enabled: false  # May block legitimate users
+
+# Rule 9: Turnstile Validation
+rule_name: "Require Turnstile Token"
+description: "Requires valid Turnstile token for form submissions"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking") and
+  not http.request.headers["cf-turnstile-response"][0] contains "valid_token"
+action: managed_challenge
+priority: 9
+enabled: true
+
+# Rule 10: Adaptive Bot Detection
+rule_name: "Adaptive Bot Detection"
+description: "Comprehensive bot detection with multiple indicators"
+expression: |
+  http.request.method eq "POST" and 
+  http.request.uri.path contains "/calendly" and
+  cf.bot_management.score < 25 and
+  (http.request.headers["referer"][0] eq "" or 
+   not http.request.headers["origin"][0] contains "example.com" or
+   http.request.headers["cookie"][0] eq "" or
+   http.request.headers["user-agent"][0] in {"python-requests/2.28.1", "curl/7.68.0"})
+action: managed_challenge
+priority: 10
+enabled: true
+
+# Rule 11: Whitelist for Legitimate Traffic
+rule_name: "Whitelist Legitimate Sources"
+description: "Allows legitimate traffic from known good sources"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking") and
+  (ip.geoip.asnum in {12345, 67890} or  # Known good ASNs
+   http.request.headers["cf-connecting-ip"][0] in {"192.168.1.0/24", "10.0.0.0/8"} or  # Internal IPs
+   http.request.headers["user-agent"][0] contains "Mozilla/5.0" and cf.bot_management.score > 80)
+action: allow
+priority: 0  # Highest priority
+enabled: true
+
+# Rule 12: Emergency Block
+rule_name: "Emergency Spam Block"
+description: "Emergency rule to block all form submissions during high-volume attacks"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking") and
+  cf.bot_management.score < 20
+action: block
+priority: 11
+enabled: false  # Enable only during emergency
+
+# Monitoring and Alerting Rules
+
+# Rule 13: High Volume Alert
+rule_name: "High Volume Form Submissions Alert"
+description: "Alerts on high volume of form submissions"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking")
+action: log
+priority: 12
+enabled: true
+
+# Rule 14: Bot Score Monitoring
+rule_name: "Low Bot Score Monitoring"
+description: "Logs requests with suspicious bot scores"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking") and
+  cf.bot_management.score < 40
+action: log
+priority: 13
+enabled: true
+
+# Rule 15: False Positive Monitoring
+rule_name: "False Positive Monitoring"
+description: "Monitors for potential false positives in blocking rules"
+expression: |
+  http.request.method eq "POST" and 
+  (http.request.uri.path contains "/calendly" or http.request.uri.path contains "/booking") and
+  cf.bot_management.score > 70 and
+  http.request.headers["referer"][0] contains "example.com"
+action: log
+priority: 14
+enabled: true
+
+# Configuration Notes
+configuration:
+  bot_management:
+    enabled: true
+    super_bot_fight_mode: true
+    challenge_passing_score: 30
+  
+  rate_limiting:
+    enabled: true
+    requests_per_period: 3
+    period_seconds: 10
+  
+  turnstile:
+    enabled: true
+    site_key: "YOUR_SITE_KEY"
+    secret_key: "YOUR_SECRET_KEY"
+  
+  monitoring:
+    log_level: "info"
+    alert_threshold: 50  # requests per minute
+    false_positive_threshold: 5  # false positives per hour
+
+# IOCs and Threat Intelligence
+threat_intelligence:
+  malicious_asns:
+    - 14061  # VPS provider
+    - 9009   # VPS provider
+    - 208091 # VPS provider
+  
+  malicious_user_agents:
+    - "python-requests/2.28.1"
+    - "curl/7.68.0"
+    - "Mozilla/5.0 (compatible; Bot/1.0)"
+    - "wget/1.20.3"
+  
+  malicious_tls_fingerprints:
+    - "known_bot_ja3_hash_1"
+    - "known_bot_ja3_hash_2"
+  
+  high_risk_countries:
+    - "CN"  # China
+    - "RU"  # Russia
+    - "KP"  # North Korea
+    - "IR"  # Iran
+
+# Response Actions
+response_actions:
+  immediate:
+    - "Block missing headers"
+    - "Rate limit form submissions"
+    - "Enable bot management"
+  
+  short_term:
+    - "Deploy Turnstile"
+    - "Fine-tune rules"
+    - "Monitor false positives"
+  
+  long_term:
+    - "Implement JA3 fingerprinting"
+    - "Deploy AI-based detection"
+    - "Regular rule updates"

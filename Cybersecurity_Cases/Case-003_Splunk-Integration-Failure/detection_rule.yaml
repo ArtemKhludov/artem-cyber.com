@@ -1,0 +1,82 @@
+title: Splunk Architecture Misconfiguration Detection
+id: splunk_architecture_failure_001
+version: 1.0
+status: experimental
+description: |
+  Detects when Splunk Enterprise is misconfigured as a forwarder instead of an indexer,
+  which can lead to reduced visibility and potential security gaps.
+
+author: Security Team
+date: 2025-08-20
+tags:
+  - splunk
+  - misconfiguration
+  - architecture
+  - siem
+
+references:
+  - https://docs.splunk.com/Documentation/Splunk/latest/Admin/Outputsconf
+  - https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf
+
+detection:
+  selection:
+    index: _internal
+    source: "*splunkd.log"
+    message:
+      - "*outputs.conf*"
+      - "*forwarder*"
+      - "*indexer*"
+      - "*tcpout*"
+      - "*defaultGroup*"
+
+  condition: selection
+
+falsepositives:
+  - Legitimate Splunk Enterprise installations with proper forwarder configurations
+  - Development or testing environments with intentional forwarder setups
+
+level: medium
+confidence: medium
+
+risk_score: 60
+
+mitre_attack:
+  - T1562.001  # Impair Defenses: Disable or Modify Tools
+
+tactics:
+  - Defense Evasion
+
+techniques:
+  - T1562.001
+
+fields_required:
+  - host
+  - source
+  - message
+  - _time
+
+notable:
+  title: "Splunk Architecture Misconfiguration Detected"
+  description: "Splunk Enterprise appears to be configured as a forwarder, which may indicate architectural misconfiguration or potential security tool impairment."
+  severity: medium
+  owner: "Security Team"
+  priority: medium
+
+response:
+  - "Investigate Splunk configuration files for unexpected outputs.conf"
+  - "Verify Splunk Enterprise role and data flow architecture"
+  - "Check for port conflicts between forwarder and indexer components"
+  - "Review recent Splunk configuration changes"
+
+workflow:
+  - "Check /Applications/Splunk/etc/system/local/outputs.conf"
+  - "Verify netstat output for port conflicts"
+  - "Review Splunk status and role assignments"
+  - "Validate data flow from Universal Forwarder to Enterprise"
+
+tags:
+  - splunk
+  - architecture
+  - misconfiguration
+  - siem
+  - visibility

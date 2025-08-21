@@ -1,0 +1,52 @@
+[
+  {
+    "timestamp": "2025-08-20T23:11:00Z",
+    "host": "mac.local",
+    "source": "/tmp/test_simple.log",
+    "sourcetype": "syslog",
+    "index": "main",
+    "event": "TEST: 2025-08-20 validation entry",
+    "severity": "info",
+    "category": "test"
+  },
+  {
+    "timestamp": "2025-08-20T23:11:02Z",
+    "host": "mac.local",
+    "source": "/Applications/SplunkForwarder/var/log/splunk/splunkd.log",
+    "sourcetype": "splunkd",
+    "index": "_internal",
+    "event": "ERROR: Cooked connection to ip=127.0.0.1:9997 timed out",
+    "severity": "error",
+    "category": "connection"
+  },
+  {
+    "timestamp": "2025-08-20T23:11:04Z",
+    "host": "mac.local",
+    "source": "/Applications/SplunkForwarder/var/log/splunk/splunkd.log",
+    "sourcetype": "splunkd",
+    "index": "_internal",
+    "event": "ERROR: TCP output processor has paused the data flow",
+    "severity": "error",
+    "category": "connection"
+  },
+  {
+    "timestamp": "2025-08-20T23:11:06Z",
+    "host": "mac.local",
+    "source": "/Applications/SplunkForwarder/var/log/splunk/splunkd.log",
+    "sourcetype": "splunkd",
+    "index": "_internal",
+    "event": "INFO: Successfully connected to indexer at 127.0.0.1:9998",
+    "severity": "info",
+    "category": "connection"
+  },
+  {
+    "timestamp": "2025-08-20T23:11:08Z",
+    "host": "mac.local",
+    "source": "/Applications/Splunk/var/log/splunk/splunkd.log",
+    "sourcetype": "splunkd",
+    "index": "_internal",
+    "event": "INFO: Successfully received data from forwarder at 127.0.0.1",
+    "severity": "info",
+    "category": "connection"
+  }
+]

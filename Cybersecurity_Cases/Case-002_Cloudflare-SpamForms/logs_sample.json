@@ -1,0 +1,47 @@
+[
+  {
+    "RayID": "7f8a9b2c3d4e5f6a",
+    "EdgeStartTimestamp": "2025-08-20T21:26:03Z",
+    "ClientIP": "185.220.101.45",
+    "ClientRequestURI": "/calendly/book-demo",
+    "ClientRequestMethod": "POST",
+    "ClientRequestUserAgent": "python-requests/2.28.1",
+    "ClientRequestReferer": "",
+    "ClientRequestOrigin": "",
+    "BotScore": 15,
+    "ASN": 14061,
+    "Country": "RU",
+    "Action": "blocked",
+    "RuleID": "block_spam_forms_missing_headers"
+  },
+  {
+    "RayID": "8f9a0b1c2d3e4f5a",
+    "EdgeStartTimestamp": "2025-08-20T21:26:05Z",
+    "ClientIP": "185.220.101.45",
+    "ClientRequestURI": "/calendly/book-demo",
+    "ClientRequestMethod": "POST",
+    "ClientRequestUserAgent": "python-requests/2.28.1",
+    "ClientRequestReferer": "",
+    "ClientRequestOrigin": "",
+    "BotScore": 15,
+    "ASN": 14061,
+    "Country": "RU",
+    "Action": "blocked",
+    "RuleID": "block_spam_forms_missing_headers"
+  },
+  {
+    "RayID": "af1b2c3d4e5f6a7b",
+    "EdgeStartTimestamp": "2025-08-20T21:27:15Z",
+    "ClientIP": "192.168.1.100",
+    "ClientRequestURI": "/booking/schedule-meeting",
+    "ClientRequestMethod": "POST",
+    "ClientRequestUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "ClientRequestReferer": "https://example.com/contact",
+    "ClientRequestOrigin": "https://example.com",
+    "BotScore": 85,
+    "ASN": 12345,
+    "Country": "US",
+    "Action": "allowed",
+    "RuleID": "whitelist_legitimate_sources"
+  }
+]
