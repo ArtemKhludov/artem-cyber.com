@@ -189,7 +189,7 @@ export function ProductCarousel() {
                       className={`w-full bg-gradient-to-r ${program.gradient} hover:opacity-90 text-white`}
                     >
                       <Link href={`/book?product=${program.id}`}>
-                        Подробнее
+                        Записаться
                         <ArrowRight className="ml-2 w-4 h-4" />
                       </Link>
                     </Button>

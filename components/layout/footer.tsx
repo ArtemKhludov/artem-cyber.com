@@ -5,14 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Phone, Mail, MapPin, Send } from 'lucide-react'
 
 export function Footer() {
-  const scrollToSection = (sectionId: string) => {
-    if (typeof window !== 'undefined') {
-      const element = document.querySelector(sectionId)
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-      }
-    }
-  }
 
   return (
     <footer className="bg-slate-900 text-white">
@@ -54,44 +46,44 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-6 text-white">Навигация</h3>
             <ul className="space-y-3">
               <li>
-                <button 
-                  onClick={() => scrollToSection('#about')}
+                <Link 
+                  href="/about"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
                   О проекте
-                </button>
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => scrollToSection('#programs')}
+                <Link 
+                  href="/book"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
                   Программы
-                </button>
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => scrollToSection('#pdf-files')}
+                <Link 
+                  href="/catalog"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
                   PDF-файлы
-                </button>
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => scrollToSection('#reviews')}
+                <Link 
+                  href="/reviews"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
                   Отзывы
-                </button>
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => scrollToSection('#contacts')}
+                <Link 
+                  href="/contacts"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
                   Контакты
-                </button>
+                </Link>
               </li>
             </ul>
           </div>

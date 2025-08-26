@@ -1,193 +1,282 @@
-import { Users, Target, Award, Shield, Brain, Zap, Heart, TrendingUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { PageLayout } from '@/components/layout/PageLayout'
+'use client'
 
-export const metadata = {
-  title: 'О проекте EnergyLogic - Революция в психоанализе',
-  description: 'Узнайте больше о EnergyLogic - революционной платформе для глубокого самопознания с использованием искусственного интеллекта',
-}
+import { useState, useEffect, useRef } from 'react'
+import { Button } from '@/components/ui/button'
+import { Phone, Calendar, Brain, Zap, Heart, Target, Users, Award, Shield } from 'lucide-react'
+import Link from 'next/link'
+import { Navbar } from '@/components/home/Navbar'
+import { Footer } from '@/components/layout/footer'
+import { CallRequestModal } from '@/components/modals/CallRequestModal'
 
 export default function AboutPage() {
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
+
+  const handleCallRequest = () => {
+    setIsCallModalOpen(true)
+  }
+
+  const handleCloseCallModal = () => {
+    setIsCallModalOpen(false)
+  }
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
   const features = [
     {
       icon: Brain,
-      title: 'ИИ-анализ',
-      description: 'Передовые алгоритмы машинного обучения для глубокого понимания личности'
+      title: '🧠 Психология',
+      description: 'Распознавание сценариев, страхов и автоматизмов'
     },
     {
       icon: Zap,
-      title: 'Быстрый результат',
-      description: 'Получите детальный анализ всего за 20 минут интерактивной сессии'
+      title: '🧬 Нейронаука',
+      description: 'Понимание гормонов и эмоций, управляющих реакциями'
     },
     {
       icon: Heart,
-      title: 'Безопасность',
-      description: 'Конфиденциальность и защита ваших данных на самом высоком уровне'
+      title: '🤖 ИИ-анализ',
+      description: 'Анализ слов, текстов и микро-движений лица'
     },
     {
-      icon: TrendingUp,
-      title: 'Трансформация',
-      description: 'Персональные программы развития для достижения ваших целей'
+      icon: Shield,
+      title: '🧭 Честность',
+      description: 'Беспрецедентная честность как основа изменений'
     }
   ]
 
-  const stats = [
-    { value: '10,000+', label: 'Проведено сессий' },
-    { value: '98%', label: 'Точность анализа' },
-    { value: '95%', label: 'Довольных клиентов' },
-    { value: '50+', label: 'Стран мира' }
+  const whatWeDo = [
+    'Выявить повторяющиеся сценарии (жертвенность, избегание, страх успеха, ложное «я» и т.д.)',
+    'Понять, где ты теряешь энергию и контроль',
+    'Принять ключевые решения — не из паники, а из ясности',
+    'Получить чёткий план, основанный на тебе, а не на чужой теории'
   ]
 
-  const team = [
-    {
-      name: 'Доктор Анна Петрова',
-      role: 'Ведущий психоаналитик',
-      description: 'Кандидат психологических наук, 15+ лет опыта в клинической психологии'
-    },
-    {
-      name: 'Михаил Козлов',
-      role: 'Технический директор',
-      description: 'PhD в области машинного обучения, экс-Google, создатель ИИ-алгоритмов'
-    },
-    {
-      name: 'Елена Волкова',
-      role: 'Методист-разработчик',
-      description: 'Магистр психологии, специалист по разработке психодиагностических методик'
-    }
+  const implementation = [
+    '📡 20-минутной голосовой AI-сессии с анализом и PDF-результатом',
+    '📅 21-дневного трека, где ИИ отслеживает твоё поведение и мышление, даёт отчёты и гипотезы',
+    '📽 медийных материалов (Reels, статьи, презентации), которые вскрывают массовые заблуждения и паттерны'
+  ]
+
+  const revolutionPoints = [
+    '🤖 ИИ не просто помогает, а диагностирует — в реальном времени, точно и глубже, чем человек',
+    '🧬 Мы объединяем эмоции, гормоны, мышление и паттерны в одну карту — фрактальную, живую, обновляемую',
+    '💥 Мы не работаем с симптомами — мы вскрываем корень проблемы и сразу даём путь изменения',
+    '🚫 Мы не зависим от мнения одного "эксперта", ИИ это как сотни докторов наук во всех сферах одновременно — у нас нет усталости, эго, предвзятости или «мягких ответов»'
+  ]
+
+  const forWhom = [
+    '🧱 Застрял — в решении, состоянии, жизни',
+    '🔁 Видит, что повторяет одни и те же ошибки, но не может вырваться',
+    '❌ Устал от чужих советов и «мотивации», которые не работают',
+    '🧩 Хочет понять себя глубже, чем позволяли любые книги или психотерапии',
+    '⚡️ Готов услышать правду — и сделать из неё действие'
   ]
 
   return (
-    <PageLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            О проекте <span className="text-blue-200">EnergyLogic</span>
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-            Мы создаем будущее психоанализа, объединяя человеческую мудрость с возможностями искусственного интеллекта
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-              <Link href="/book">Попробовать сейчас</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
-              <Link href="/contacts">Связаться с нами</Link>
-            </Button>
+    <div className="relative">
+      {/* Главное меню */}
+      <Navbar onCallRequest={handleCallRequest} />
+      
+      {/* Основной контент */}
+      <main ref={sectionRef}>
+        {/* Hero Section */}
+        <section className="pt-32 pb-20 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-4xl mx-auto">
+              <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+                О проекте <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">EnergyLogic</span>
+              </h1>
+              <p className="text-xl md:text-2xl mb-12 text-blue-100 leading-relaxed">
+                Мы — EnergyLogic.<br />
+                Это новая система самопонимания и внутренней настройки
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Mission Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Наша миссия
-              </h2>
-              <div className="space-y-6 text-lg text-gray-700">
-                <p>
-                  EnergyLogic был создан с простой, но амбициозной целью — сделать глубокий психоанализ 
-                  доступным каждому человеку на планете.
-                </p>
-                <p>
-                  Мы верим, что понимание себя — это основа счастливой и осмысленной жизни. 
-                  Однако традиционный психоанализ часто недоступен из-за высокой стоимости, 
-                  длительности процесса и нехватки квалифицированных специалистов.
-                </p>
-                <p>
-                  Наша революционная платформа использует передовые технологии ИИ для создания 
-                  персонализированного психологического портрета за считанные минуты, 
-                  предоставляя точность профессионального анализа в удобном формате.
+        {/* Основная информация */}
+        <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              {/* Введение */}
+              <div className="mb-16">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    Мы объединяем:
+                  </h2>
+                </div>
+                
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                  {features.map((feature, index) => (
+                    <div key={index} className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <feature.icon className="w-8 h-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                      <p className="text-gray-600 text-sm">{feature.description}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-center mb-12">
+                  <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+                    Мы показываем правду — о тебе, твоих паттернах, ошибках, ключевых точках выбора и ресурсах.
+                  </p>
+                </div>
+              </div>
+
+              {/* Что мы делаем */}
+              <div className="mb-16">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    🔍 Что мы делаем
+                  </h2>
+                  <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Мы создаём систему самодиагностики и перепрошивки сознания, которая позволяет:
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8 mb-12">
+                  {whatWeDo.map((item, index) => (
+                    <div key={index} className="flex items-start space-x-4 p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white font-bold text-sm">{index + 1}</span>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed">{item}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-xl">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                    Это реализовано в виде:
+                  </h3>
+                  <div className="space-y-4">
+                    {implementation.map((item, index) => (
+                      <div key={index} className="flex items-start space-x-4">
+                        <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                          <span className="text-white font-bold text-xs">•</span>
+                        </div>
+                        <p className="text-gray-700 leading-relaxed">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Почему это революция */}
+              <div className="mb-16">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    ⚡️ Почему это — революция
+                  </h2>
+                  <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Потому что впервые в истории:
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  {revolutionPoints.map((point, index) => (
+                    <div key={index} className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                      <p className="text-gray-700 leading-relaxed text-lg">{point}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-center mt-12 p-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white">
+                  <p className="text-xl font-semibold">
+                    Ни один человек, даже самый опытный, не может дать тебе такую глубину, скорость и структуру, как EnergyLogic.
+                  </p>
+                </div>
+              </div>
+
+              {/* Для кого это */}
+              <div className="mb-16">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    🧭 Для кого это
+                  </h2>
+                  <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Для тех, кто:
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {forWhom.map((item, index) => (
+                    <div key={index} className="flex items-start space-x-4 p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white font-bold text-sm">•</span>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Заключение */}
+              <div className="text-center p-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  EnergyLogic — это не про «улучшить».
+                </h2>
+                <p className="text-xl leading-relaxed max-w-3xl mx-auto">
+                  Это про вспомнить, кто ты есть — без шума, лжи и страха.<br />
+                  И начать жить из этой точки.
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">{stat.value}</div>
-                  <div className="text-gray-600">{stat.label}</div>
-                </div>
-              ))}
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Готовы начать свое путешествие к самопознанию?
+            </h2>
+            <p className="text-xl mb-8 max-w-2xl mx-auto">
+              Присоединяйтесь к тысячам людей, которые уже изменили свою жизнь с помощью EnergyLogic
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button onClick={handleCallRequest} size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+                <Phone className="mr-2 w-4 h-4" />
+                Заказать звонок
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                <Link href="/book">
+                  <Calendar className="mr-2 w-4 h-4" />
+                  Записаться на сессию
+                </Link>
+              </Button>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Почему выбирают EnergyLogic
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Наш подход объединяет лучшие практики психологии с инновационными технологиями
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <feature.icon className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Наша команда
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Эксперты в области психологии и технологий, объединенные общей целью
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {team.map((member, index) => (
-              <div key={index} className="text-center p-6 bg-white rounded-xl shadow-sm">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Users className="w-12 h-12 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-1">{member.name}</h3>
-                <p className="text-blue-600 font-medium mb-3">{member.role}</p>
-                <p className="text-gray-600 text-sm">{member.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Готовы начать свое путешествие к самопознанию?
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Присоединяйтесь к тысячам людей, которые уже изменили свою жизнь с помощью EnergyLogic
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-              <Link href="/catalog">Выбрать программу</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
-              <Link href="/book">Записаться на сессию</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-      </div>
-    </PageLayout>
+        </section>
+      </main>
+      
+      {/* Footer */}
+      <Footer />
+      
+      {/* Call request modal */}
+      <CallRequestModal 
+        isOpen={isCallModalOpen}
+        onClose={handleCloseCallModal}
+      />
+    </div>
   )
 }

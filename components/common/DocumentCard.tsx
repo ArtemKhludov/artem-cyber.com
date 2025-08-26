@@ -119,12 +119,7 @@ export function DocumentCard({
           </div>
         )}
         
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <div className="text-center text-white">
-            <Eye className="w-8 h-8 mx-auto mb-2" />
-            <p className="text-sm">Предпросмотр</p>
-          </div>
-        </div>
+
 
         <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-lg p-2">
           <FileText className="w-6 h-6 text-white" />

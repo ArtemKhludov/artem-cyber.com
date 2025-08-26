@@ -23,17 +23,21 @@ export function Navbar({ onCallRequest }: NavbarProps) {
   }, [])
 
   const navLinks = [
-    { href: '#about', label: 'О проекте' },
-    { href: '#programs', label: 'Программы' },
-    { href: '#pdf-files', label: 'PDF-файлы' },
-    { href: '#reviews', label: 'Отзывы' },
-    { href: '#contacts', label: 'Контакты' }
+    { href: '/about', label: 'О проекте', isExternal: true },
+    { href: '/book', label: 'Программы', isExternal: true },
+    { href: '/catalog', label: 'PDF-файлы', isExternal: true },
+    { href: '/reviews', label: 'Отзывы', isExternal: true },
+    { href: '/contacts', label: 'Контакты', isExternal: true }
   ]
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
+  const handleNavigation = (link: { href: string, isExternal: boolean }) => {
+    if (link.isExternal) {
+      window.location.href = link.href
+    } else {
+      const element = document.querySelector(link.href)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
     }
     setIsMobileMenuOpen(false)
   }
@@ -68,7 +72,7 @@ export function Navbar({ onCallRequest }: NavbarProps) {
             {navLinks.map((link) => (
               <button
                 key={link.href}
-                onClick={() => scrollToSection(link.href)}
+                onClick={() => handleNavigation(link)}
                 className={`text-sm font-medium transition-colors duration-300 hover:text-blue-500 ${
                   isScrolled ? 'text-gray-700' : 'text-white/90'
                 }`}
@@ -123,7 +127,7 @@ export function Navbar({ onCallRequest }: NavbarProps) {
               {navLinks.map((link) => (
                 <button
                   key={link.href}
-                  onClick={() => scrollToSection(link.href)}
+                  onClick={() => handleNavigation(link)}
                   className="block w-full text-left px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                 >
                   {link.label}
