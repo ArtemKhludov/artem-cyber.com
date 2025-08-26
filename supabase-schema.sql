@@ -256,6 +256,47 @@ CREATE TRIGGER set_purchases_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+-- Callback requests table for handling call-back requests
+CREATE TABLE public.callback_requests (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT,
+    preferred_time TEXT,
+    message TEXT,
+    source_page TEXT,
+    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'completed', 'cancelled')),
+    admin_notes TEXT,
+    contacted_at TIMESTAMP WITH TIME ZONE,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for callback_requests table
+CREATE INDEX callback_requests_status_idx ON public.callback_requests(status);
+CREATE INDEX callback_requests_created_at_idx ON public.callback_requests(created_at);
+CREATE INDEX callback_requests_phone_idx ON public.callback_requests(phone);
+
+-- Enable RLS for callback_requests
+ALTER TABLE public.callback_requests ENABLE ROW LEVEL SECURITY;
+
+-- Callback requests policies (public can insert, admins can view all)
+CREATE POLICY "Anyone can create callback requests" ON public.callback_requests
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Only authenticated users can view callback requests" ON public.callback_requests
+    FOR SELECT USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Only authenticated users can update callback requests" ON public.callback_requests
+    FOR UPDATE USING (auth.role() = 'authenticated');
+
+-- Add trigger for callback_requests table
+CREATE TRIGGER set_callback_requests_updated_at
+    BEFORE UPDATE ON public.callback_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 -- Insert some sample data (optional, for development)
 -- This should be removed in production
 /*
