@@ -23,7 +23,6 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showRedirect, setShowRedirect] = useState(false)
-  const [countdown, setCountdown] = useState(30)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,6 +54,11 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
         setShowRedirect(true)
       }, 2000)
       
+      // Переходим на главную через 5 секунд
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 5000)
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка')
     } finally {
@@ -80,8 +84,8 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300" onClick={resetAndClose}>
-      <div className="bg-gradient-to-br from-white via-gray-50 to-white rounded-2xl max-w-lg w-full mx-4 shadow-2xl transform transition-all animate-in zoom-in-95 duration-300 border border-gray-100 overflow-hidden max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+      <div className="bg-gradient-to-br from-white via-gray-50 to-white rounded-2xl max-w-lg w-full mx-4 shadow-2xl transform transition-all animate-in zoom-in-95 duration-300 border border-gray-100 overflow-hidden">
         
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 p-6 text-white relative overflow-hidden">
@@ -123,7 +127,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
         </div>
 
         {/* Content */}
-        <div className="p-6 flex-1 overflow-y-auto">
+        <div className="p-6">
           {isSubmitted ? (
             <div className="text-center py-8">
               {!showRedirect ? (
@@ -161,7 +165,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                   </div>
                   
                   <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                    Перенаправляем через {countdown} сек...
+                    Перенаправляем...
                   </h3>
                   
                   <p className="text-gray-600 mb-6">
