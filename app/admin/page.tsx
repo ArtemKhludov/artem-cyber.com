@@ -73,6 +73,31 @@ export default function AdminPage() {
   const [syncing, setSyncing] = useState(false)
   const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false)
 
+  // Фильтрация данных
+  const filteredRequests = requests.filter(request => {
+    const matchesSearch = searchTerm === '' || 
+      request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (request.email && request.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (request.phone && request.phone.includes(searchTerm))
+    
+    const matchesType = filter === 'all' || request.product_type === filter
+    const matchesStatus = statusFilter === 'all' || request.status === statusFilter
+    
+    return matchesSearch && matchesType && matchesStatus
+  })
+
+  const filteredPurchases = purchases.filter(purchase => {
+    const matchesSearch = searchTerm === '' || 
+      purchase.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (purchase.email && purchase.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (purchase.phone && purchase.phone.includes(searchTerm))
+    
+    const matchesType = filter === 'all' || purchase.product_type === filter
+    const matchesStatus = statusFilter === 'all' || purchase.status === statusFilter
+    
+    return matchesSearch && matchesType && matchesStatus
+  })
+
   useEffect(() => {
     if (activeTab === 'requests') {
       fetchRequests()
@@ -193,6 +218,25 @@ export default function AdminPage() {
     }
   }
 
+  const updatePurchaseStatus = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('purchase_requests')
+        .update({ status })
+        .eq('id', id)
+
+      if (error) throw error
+      
+      setPurchases(prev => 
+        prev.map(pur => 
+          pur.id === id ? { ...pur, status: status as any } : pur
+        )
+      )
+    } catch (error) {
+      console.error('Error updating purchase status:', error)
+    }
+  }
+
   const syncWithSheets = async () => {
     setSyncing(true)
     try {
@@ -214,6 +258,52 @@ export default function AdminPage() {
       alert('Ошибка синхронизации')
     } finally {
       setSyncing(false)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'new':
+      case 'pending':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+      case 'in_progress':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+      case 'completed':
+        return 'bg-green-500/20 text-green-300 border-green-500/30'
+      case 'cancelled':
+        return 'bg-red-500/20 text-red-300 border-red-500/30'
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+    }
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent':
+        return 'bg-red-500/20 text-red-300 border-red-500/30'
+      case 'high':
+        return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+      case 'medium':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+      case 'low':
+        return 'bg-green-500/20 text-green-300 border-green-500/30'
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+    }
+  }
+
+  const getSourceIcon = (source: string) => {
+    switch (source) {
+      case 'website':
+        return <Package className="w-3 h-3 text-blue-400" />
+      case 'phone':
+        return <Phone className="w-3 h-3 text-green-400" />
+      case 'chat':
+        return <MessageSquare className="w-3 h-3 text-purple-400" />
+      case 'manual':
+        return <User className="w-3 h-3 text-orange-400" />
+      default:
+        return <FileText className="w-3 h-3 text-gray-400" />
     }
   }
 
@@ -267,50 +357,9 @@ export default function AdminPage() {
     document.body.removeChild(link)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new': return 'bg-blue-100 text-blue-800'
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800'
-      case 'completed': return 'bg-green-100 text-green-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      case 'pending': return 'bg-orange-100 text-orange-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800'
-      case 'high': return 'bg-orange-100 text-orange-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'low': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
 
-  const getSourceIcon = (source: string) => {
-    switch (source) {
-      case 'website': return <Phone className="w-4 h-4" />
-      case 'phone': return <Phone className="w-4 h-4" />
-      case 'chat': return <MessageSquare className="w-4 h-4" />
-      case 'manual': return <User className="w-4 h-4" />
-      default: return <Mail className="w-4 h-4" />
-    }
-  }
 
-  const filteredRequests = requests.filter(req => 
-    req.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    req.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    req.phone?.includes(searchTerm) ||
-    req.product_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const filteredPurchases = purchases.filter(pur => 
-    pur.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pur.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pur.phone?.includes(searchTerm) ||
-    pur.product_name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
