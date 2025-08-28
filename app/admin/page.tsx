@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
 import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
+import EditableCell from '@/components/admin/EditableCell'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -72,6 +73,7 @@ export default function AdminPage() {
   const [showAddRequestModal, setShowAddRequestModal] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false)
+  const [documents, setDocuments] = useState<any[]>([])
 
   // Фильтрация данных
   const filteredRequests = requests.filter(request => {
@@ -99,6 +101,13 @@ export default function AdminPage() {
   })
 
   useEffect(() => {
+    // Загружаем данные при первой загрузке
+    fetchRequests()
+    fetchPurchases()
+    fetchDocuments()
+  }, [])
+
+  useEffect(() => {
     if (activeTab === 'requests') {
       fetchRequests()
     } else {
@@ -107,47 +116,25 @@ export default function AdminPage() {
   }, [activeTab, filter, statusFilter, dateFilter])
 
   const fetchRequests = async () => {
+    console.log('Fetching requests...')
     setLoading(true)
     try {
-      let query = supabase
-        .from('callback_requests')
-        .select('*')
-        .order('created_at', { ascending: false })
+      const response = await fetch('/api/admin/data?type=requests')
+      const result = await response.json()
+      
+      console.log('API response:', result)
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter)
+      if (result.success) {
+        const requestsWithType = result.data?.map((req: any) => ({
+          ...req,
+          type: 'callback'
+        })) || []
+
+        console.log('Setting requests:', requestsWithType)
+        setRequests(requestsWithType)
+      } else {
+        console.error('API error:', result.error)
       }
-
-      if (dateFilter !== 'all') {
-        const now = new Date()
-        let startDate = new Date()
-        
-        switch (dateFilter) {
-          case 'today':
-            startDate.setHours(0, 0, 0, 0)
-            break
-          case 'week':
-            startDate.setDate(now.getDate() - 7)
-            break
-          case 'month':
-            startDate.setMonth(now.getMonth() - 1)
-            break
-        }
-        
-        query = query.gte('created_at', startDate.toISOString())
-      }
-
-      const { data, error } = await query
-      console.log('Fetched requests:', data)
-
-      if (error) throw error
-
-      const requestsWithType = data?.map(req => ({
-        ...req,
-        type: 'callback'
-      })) || []
-
-      setRequests(requestsWithType)
     } catch (error) {
       console.error('Error fetching requests:', error)
     } finally {
@@ -156,42 +143,19 @@ export default function AdminPage() {
   }
 
   const fetchPurchases = async () => {
+    console.log('Fetching purchases...')
     setLoading(true)
     try {
-      let query = supabase
-        .from('purchase_requests')
-        .select('*')
-        .order('created_at', { ascending: false })
+      const response = await fetch('/api/admin/data?type=purchases')
+      const result = await response.json()
+      
+      console.log('API response purchases:', result)
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter)
+      if (result.success) {
+        setPurchases(result.data || [])
+      } else {
+        console.error('API error purchases:', result.error)
       }
-
-      if (dateFilter !== 'all') {
-        const now = new Date()
-        let startDate = new Date()
-        
-        switch (dateFilter) {
-          case 'today':
-            startDate.setHours(0, 0, 0, 0)
-            break
-          case 'week':
-            startDate.setDate(now.getDate() - 7)
-            break
-          case 'month':
-            startDate.setMonth(now.getMonth() - 1)
-            break
-        }
-        
-        query = query.gte('created_at', startDate.toISOString())
-      }
-
-      const { data, error } = await query
-      console.log('Fetched requests:', data)
-
-      if (error) throw error
-
-      setPurchases(data || [])
     } catch (error) {
       console.error('Error fetching purchases:', error)
     } finally {
@@ -199,20 +163,44 @@ export default function AdminPage() {
     }
   }
 
+  const fetchDocuments = async () => {
+    try {
+      const response = await fetch('/api/admin/data?type=documents')
+      const result = await response.json()
+      
+      if (result.success) {
+        setDocuments(result.data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching documents:', error)
+    }
+  }
+
   const updateRequestStatus = async (id: string, status: string) => {
     try {
-      const { error } = await supabase
-        .from('callback_requests')
-        .update({ status })
-        .eq('id', id)
+      const response = await fetch('/api/admin/update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          status,
+          type: 'request'
+        })
+      })
 
-      if (error) throw error
-      
-      setRequests(prev => 
-        prev.map(req => 
-          req.id === id ? { ...req, status: status as any } : req
+      const result = await response.json()
+
+      if (result.success) {
+        setRequests(prev => 
+          prev.map(req => 
+            req.id === id ? { ...req, status: status as any } : req
+          )
         )
-      )
+      } else {
+        console.error('Error updating status:', result.error)
+      }
     } catch (error) {
       console.error('Error updating status:', error)
     }
@@ -220,20 +208,70 @@ export default function AdminPage() {
 
   const updatePurchaseStatus = async (id: string, status: string) => {
     try {
-      const { error } = await supabase
-        .from('purchase_requests')
-        .update({ status })
-        .eq('id', id)
+      const response = await fetch('/api/admin/update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          status,
+          type: 'purchase'
+        })
+      })
 
-      if (error) throw error
-      
-      setPurchases(prev => 
-        prev.map(pur => 
-          pur.id === id ? { ...pur, status: status as any } : pur
+      const result = await response.json()
+
+      if (result.success) {
+        setPurchases(prev => 
+          prev.map(pur => 
+            pur.id === id ? { ...pur, status: status as any } : pur
+          )
         )
-      )
+      } else {
+        console.error('Error updating purchase status:', result.error)
+      }
     } catch (error) {
       console.error('Error updating purchase status:', error)
+    }
+  }
+
+  const updateField = async (id: string, field: string, value: any, type: 'request' | 'purchase') => {
+    try {
+      const response = await fetch('/api/admin/update-field', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          field,
+          value,
+          type
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        if (type === 'request') {
+          setRequests(prev => 
+            prev.map(req => 
+              req.id === id ? { ...req, [field]: value } : req
+            )
+          )
+        } else {
+          setPurchases(prev => 
+            prev.map(pur => 
+              pur.id === id ? { ...pur, [field]: value } : pur
+            )
+          )
+        }
+      } else {
+        console.error('Error updating field:', result.error)
+      }
+    } catch (error) {
+      console.error('Error updating field:', error)
     }
   }
 
@@ -378,6 +416,22 @@ export default function AdminPage() {
               >
                 <Download className="w-4 h-4 mr-2" />
                 Экспорт CSV
+              </Button>
+              <Button 
+                onClick={() => {
+                  console.log('Button clicked!')
+                  if (activeTab === 'requests') {
+                    console.log('Calling fetchRequests...')
+                    fetchRequests()
+                  } else {
+                    console.log('Calling fetchPurchases...')
+                    fetchPurchases()
+                  }
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white mr-2"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Обновить {activeTab === 'requests' ? 'заявки' : 'покупки'}
               </Button>
               <Button 
                 onClick={() => activeTab === 'requests' ? setShowAddRequestModal(true) : setShowAddPurchaseModal(true)}

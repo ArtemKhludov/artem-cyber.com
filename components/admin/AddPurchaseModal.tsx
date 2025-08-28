@@ -70,7 +70,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
       const { data, error } = await supabase
         .from('documents')
         .select('id, title, description')
-        .order('name')
+        .order('title')
 
       if (error) throw error
       setDocuments(data || [])
