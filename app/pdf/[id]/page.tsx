@@ -22,9 +22,9 @@ export default function PDFPage({ params }: PDFPageProps) {
   const [document, setDocument] = useState<Document | null>(null)
   const [otherDocuments, setOtherDocuments] = useState<Document[]>([])
   const [carouselIndex, setCarouselIndex] = useState(0)
-  const pdfCarouselRef = useRef<HTMLDivElement>(null)  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const pdfCarouselRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   useEffect(() => {
     const loadDocument = async () => {
       try {

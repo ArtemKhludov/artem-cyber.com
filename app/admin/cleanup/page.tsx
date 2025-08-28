@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { PageLayout } from '@/components/layout/PageLayout'
 
 export default function CleanupPage() {
-  const [loading, setLoading] = useState(false
-  const [result, setResult] = useState<any>(null
-  const [status, setStatus] = useState<any>(null
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<any>(null)
+  const [status, setStatus] = useState<any>(null)
 
   const checkStatus = async () => {
     try {

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
+import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -69,6 +70,8 @@ export default function AdminPage() {
   const [dateFilter, setDateFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddRequestModal, setShowAddRequestModal] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false)
 
   useEffect(() => {
     if (activeTab === 'requests') {
@@ -110,6 +113,7 @@ export default function AdminPage() {
       }
 
       const { data, error } = await query
+      console.log('Fetched requests:', data)
 
       if (error) throw error
 
@@ -158,6 +162,7 @@ export default function AdminPage() {
       }
 
       const { data, error } = await query
+      console.log('Fetched requests:', data)
 
       if (error) throw error
 
@@ -185,6 +190,30 @@ export default function AdminPage() {
       )
     } catch (error) {
       console.error('Error updating status:', error)
+    }
+  }
+
+  const syncWithSheets = async () => {
+    setSyncing(true)
+    try {
+      const response = await fetch('/api/sheets/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: 'all' })
+      })
+
+      if (response.ok) {
+        alert('Синхронизация с Google Sheets завершена успешно!')
+      } else {
+        alert('Ошибка синхронизации с Google Sheets')
+      }
+    } catch (error) {
+      console.error('Sync error:', error)
+      alert('Ошибка синхронизации')
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -302,7 +331,7 @@ export default function AdminPage() {
                 Экспорт CSV
               </Button>
               <Button 
-                onClick={() => setShowAddRequestModal(true)}
+                onClick={() => activeTab === 'requests' ? setShowAddRequestModal(true) : setShowAddPurchaseModal(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -359,6 +388,18 @@ export default function AdminPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+
+      <AddPurchaseModal
+        isOpen={showAddPurchaseModal}
+        onClose={() => setShowAddPurchaseModal(false)}
+        onSuccess={() => {
+          console.log('Purchase added, refreshing...')
+          setShowAddPurchaseModal(false)
+          if (activeTab === 'purchases') {
+            fetchPurchases()
+          }
+        }}
+      />
             </div>
 
             {/* Status Filter */}
@@ -667,9 +708,23 @@ export default function AdminPage() {
         isOpen={showAddRequestModal}
         onClose={() => setShowAddRequestModal(false)}
         onSuccess={() => {
+          console.log('Request added, refreshing...')
           setShowAddRequestModal(false)
           if (activeTab === 'requests') {
             fetchRequests()
+          }
+        }}
+      />
+
+      {/* Add Purchase Modal */}
+      <AddPurchaseModal
+        isOpen={showAddPurchaseModal}
+        onClose={() => setShowAddPurchaseModal(false)}
+        onSuccess={() => {
+          console.log('Purchase added, refreshing...')
+          setShowAddPurchaseModal(false)
+          if (activeTab === 'purchases') {
+            fetchPurchases()
           }
         }}
       />

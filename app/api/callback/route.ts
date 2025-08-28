@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { addToSheets } from '../sheets/sync/route'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -9,7 +10,7 @@ const supabase = createClient(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, phone, email, preferred_time, message, source_page } = body
+    const { name, phone, email, preferred_time, message, source_page, product_type, product_name, notes } = body
 
     // Валидация обязательных полей
     if (!name || !phone) {
@@ -49,7 +50,11 @@ export async function POST(request: NextRequest) {
           email: email?.trim() || null,
           preferred_time: preferred_time?.trim() || null,
           message: message?.trim() || null,
-          source_page: source_page || 'unknown'
+          source_page: source_page || 'unknown',
+          product_type: product_type || 'callback',
+          product_name: product_name || 'Заказ звонка',
+          notes: notes || null,
+          source: 'website'
         }
       ])
       .select()
@@ -63,73 +68,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Отправка уведомления в Telegram
-    await sendNotification(data)
+    // Синхронизация с Google Sheets
+    try {
+      await addToSheets('request', data)
+    } catch (sheetsError) {
+      console.error('Google Sheets sync error:', sheetsError)
+    }
 
-    return NextResponse.json(
-      { 
-        success: true, 
-        message: 'Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.',
-        id: data.id 
-      },
-      { status: 201 }
-    )
+    // Отправка уведомления в Telegram
+    try {
+      const telegramMessage = `🆕 Новая заявка из CRM-системы:
+👤 Имя: ${name}
+📧 Email: ${email || 'Не указан'}
+📞 Телефон: ${phone}
+📦 Тип: ${product_type || 'callback'}
+🛍️ Товар/Услуга: ${product_name || 'Заказ звонка'}
+�� Заметки: ${notes || 'Нет'}
+🌐 Источник: ${source_page || 'unknown'}`
+
+      const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: process.env.TELEGRAM_CHAT_ID,
+          text: telegramMessage,
+          parse_mode: 'HTML'
+        })
+      })
+
+      if (!response.ok) {
+        console.error('Telegram notification failed:', await response.text())
+      }
+    } catch (telegramError) {
+      console.error('Telegram error:', telegramError)
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Заявка успешно отправлена',
+      data: data
+    })
 
   } catch (error) {
-    console.error('API error:', error)
+    console.error('Server error:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
     )
   }
 }
-
-async function sendNotification(request: any) {
-  try {
-    // Отправка уведомления в Telegram
-    if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
-      await sendTelegramNotification(request)
-    }
-
-  } catch (error) {
-    console.error('Notification error:', error)
-    // Не прерываем основной поток, если уведомление не отправилось
-  }
-}
-
-async function sendTelegramNotification(request: any) {
-  const message = `
-🔔 Новая заявка на обратный звонок!
-
-👤 Имя: ${request.name}
-📞 Телефон: ${request.phone}
-${request.email ? `📧 Email: ${request.email}` : ''}
-${request.preferred_time ? `⏰ Удобное время: ${request.preferred_time}` : ''}
-${request.message ? `💬 Сообщение: ${request.message}` : ''}
-📄 Страница: ${request.source_page}
-🕐 Время заявки: ${new Date(request.created_at).toLocaleString('ru-RU')}
-
-ID: ${request.id}
-  `.trim()
-
-  const response = await fetch(
-    `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: process.env.TELEGRAM_CHAT_ID,
-        text: message,
-        parse_mode: 'HTML'
-      })
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error(`Telegram API error: ${response.status}`)
-  }
-}
-
-

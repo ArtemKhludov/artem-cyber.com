@@ -77,7 +77,6 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
   }
 
   const fetchPrograms = async () => {
-    // Заглушка для программ - в реальности нужно создать таблицу programs
     setPrograms([
       { id: 'deep-day', name: 'Глубокий день', description: 'Мини-сессия "Глубокий день"' },
       { id: '21-days', name: '21 день', description: 'Программа "21 день"' }
@@ -89,48 +88,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
     setLoading(true)
 
     try {
-      const { error } = await supabase
-        .from('callback_requests')
-        .insert([{
-          name: formData.name,
-          email: formData.email || null,
-          phone: formData.phone || null,
-          source: formData.source,
-          product_type: formData.product_type || null,
-          product_id: formData.product_id || null,
-          product_name: formData.product_name || null,
-          priority: formData.priority,
-          notes: formData.notes || null,
-          status: 'new',
-          created_at: new Date().toISOString()
-        }])
-
-      if (error) throw error
-
-      // Отправляем уведомление в Telegram
-      await sendTelegramNotification()
-
-      onSuccess()
-      handleClose()
-    } catch (error) {
-      console.error('Error adding request:', error)
-      alert('Ошибка при добавлении заявки')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const sendTelegramNotification = async () => {
-    try {
-      const message = `🆕 Новая заявка (ручной ввод):
-👤 Имя: ${formData.name}
-📧 Email: ${formData.email || 'Не указан'}
-📞 Телефон: ${formData.phone || 'Не указан'}
-📦 Товар: ${formData.product_name || 'Не указан'}
-🎯 Приоритет: ${formData.priority}
-📝 Заметки: ${formData.notes || 'Нет'}`
-
-      await fetch('/api/callback', {
+      const response = await fetch('/api/callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,13 +97,27 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
-          source: 'manual',
+          product_type: formData.product_type,
           product_name: formData.product_name,
-          notes: formData.notes
+          notes: formData.notes,
+          source_page: 'admin'
         })
       })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Ошибка при добавлении заявки')
+      }
+
+      const { data } = await response.json()
+
+      onSuccess()
+      handleClose()
     } catch (error) {
-      console.error('Error sending Telegram notification:', error)
+      console.error('Error adding request:', error)
+      alert('Ошибка при добавлении заявки')
+    } finally {
+      setLoading(false)
     }
   }
 
