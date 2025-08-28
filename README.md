@@ -2,11 +2,18 @@
 
 Public lab shell: cases, tooling notes, blunt docs. No fluff, no corporate buzzwords. If you're looking for "inspiring journeys," you're in the wrong repo.
 
-### [2025-08-23] Current State
+### [2025-08-27] Current State
 
-*   **Experience:** [Engineering & Security Operations](Docs/experience_summary.md) — focused on agentic AI, supply chain security, and infra hardening.
-*   **Education:** [B.S. in Applied Informatics](Docs/education.md) — foundations in systems architecture and network security.
-*   **Recognition:** [Certs & R&D Training](Docs/achievements.md) — MITRE MAD, Splunk ES, and specialized automation research.
+*   **Experience:** [Engineering & Security Operations](Docs/experience_summary.md) — focus on agentic AI and supply chain security.
+*   **Active Tooling:** [GHOST_ENGINE](Solution/GHOST_ENGINE/README.md) — internal automation for lead qualification and platform analysis.
+*   **Education:** [B.S. in Applied Informatics](Docs/education.md) — foundations in systems architecture.
+
+---
+
+### Internal Tools & Lab Projects
+Automating the boring stuff.
+
+*   **[GHOST_ENGINE](Solution/GHOST_ENGINE/README.md):** AI-driven browser automation for lead qualification. Features cascade scoring (L0-L2), LangGraph orchestration, and vision-based self-healing.
 
 ---
 
@@ -15,8 +22,8 @@ The stack that actually works.
 
 *   **[Automation Engine](Tools/automation.md):** LangGraph orchestration, Camoufox/Playwright stealth stack, and Python-driven security pipelines.
 *   **[Infrastructure & Cloud](Tools/infrastructure.md):** Cloudflare Zero Trust, OCI, and Identity-centric perimeters.
-*   **[DevSecOps & Runtime](Tools/security.md):** CI/CD gates, artifact hardening, and eBPF-based observability (Tetragon/Falco).
-*   **[Core Stack](Tools/core_stack.md):** Python, Bash, and the networking fundamentals everyone ignores.
+*   **[DevSecOps & Runtime](Tools/security.md):** CI/CD gates, artifact hardening, and eBPF-based observability.
+*   **[Core Stack](Tools/core_stack.md):** Python, Bash, and networking fundamentals.
 
 ---
 
@@ -24,7 +31,7 @@ The stack that actually works.
 Real-world triage and architecture notes.
 
 *   **[Cybersecurity Cases](Cybersecurity_Cases/README.md):** WebApp vulnerabilities, post-incident hardening, and stealth infrastructure.
-*   **[SOC Operations](SOC_Cases/README.md):** Threat detections, log triage basics, and analyst environment setups.
+*   **[SOC Operations](SOC_Cases/README.md):** Threat detections and log triage basics.
 
 ---
 
