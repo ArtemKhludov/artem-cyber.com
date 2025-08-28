@@ -513,7 +513,6 @@ export default function AdminPage() {
             >
               <option value="all">Все статусы</option>
               <option value="new">Новые</option>
-              <option value="in_progress">В работе</option>
               <option value="completed">Завершенные</option>
               <option value="cancelled">Отмененные</option>
               {activeTab === 'purchases' && (
@@ -744,7 +743,6 @@ export default function AdminPage() {
                             className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)} border-0 focus:ring-2 focus:ring-blue-500`}
                           >
                             <option value="new">Новый</option>
-                            <option value="in_progress">В работе</option>
                             <option value="completed">Завершен</option>
                             <option value="cancelled">Отменен</option>
                           </select>
