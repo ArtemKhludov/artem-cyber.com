@@ -2,10 +2,12 @@
 
 Public lab shell: cases, tooling notes, blunt docs. No fluff, no corporate buzzwords. If you're looking for "inspiring journeys," you're in the wrong repo.
 
-### [2025-08-27] Current State
+### [2025-08-29] Current State
 
 *   **Experience:** [Engineering & Security Operations](Docs/experience_summary.md) — focus on agentic AI and supply chain security.
-*   **Active Tooling:** [GHOST_ENGINE](Solution/GHOST_ENGINE/README.md) — internal automation for lead qualification and platform analysis.
+*   **Active Tooling:** 
+    *   [npm_check](Solution/npm_check/README.md) — Supply chain security automation & dependency triage.
+    *   [GHOST_ENGINE](Solution/GHOST_ENGINE/README.md) — Internal automation for lead qualification and platform analysis.
 *   **Education:** [B.S. in Applied Informatics](Docs/education.md) — foundations in systems architecture.
 
 ---
@@ -13,6 +15,7 @@ Public lab shell: cases, tooling notes, blunt docs. No fluff, no corporate buzzw
 ### Internal Tools & Lab Projects
 Automating the boring stuff.
 
+*   **[npm_check](Solution/npm_check/README.md):** Continuous dependency risk management. Implements OSV/GitHub enrichment, automated waiting periods, and LangGraph-based triage.
 *   **[GHOST_ENGINE](Solution/GHOST_ENGINE/README.md):** AI-driven browser automation for lead qualification. Features cascade scoring (L0-L2), LangGraph orchestration, and vision-based self-healing.
 
 ---
