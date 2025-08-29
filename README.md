@@ -1,42 +1,28 @@
 # artem-cyber.com
+Public lab shell: architectural milestones, security tooling, and blunt docs.
 
-Public lab shell: cases, tooling notes, blunt docs. No fluff, no corporate buzzwords. If you're looking for "inspiring journeys," you're in the wrong repo.
-
-### [2025-08-29] Current State
-
-*   **Experience:** [Engineering & Security Operations](Docs/experience_summary.md) — focus on agentic AI and supply chain security.
-*   **Active Tooling:** 
-    *   [npm_check](Solution/npm_check/README.md) — Supply chain security automation & dependency triage.
-    *   [GHOST_ENGINE](Solution/GHOST_ENGINE/README.md) — Internal automation for lead qualification and platform analysis.
-*   **Education:** [B.S. in Applied Informatics](Docs/education.md) — foundations in systems architecture.
+### [2025-08-29] Current State: Agentic Security
+Orchestrating LLMs for high-stakes automation and supply chain resilience.
 
 ---
 
-### Internal Tools & Lab Projects
-Automating the boring stuff.
-
-*   **[npm_check](Solution/npm_check/README.md):** Continuous dependency risk management. Implements OSV/GitHub enrichment, automated waiting periods, and LangGraph-based triage.
-*   **[GHOST_ENGINE](Solution/GHOST_ENGINE/README.md):** AI-driven browser automation for lead qualification. Features cascade scoring (L0-L2), LangGraph orchestration, and vision-based self-healing.
-
----
-
-### Tech Arsenal
-The stack that actually works.
-
-*   **[Automation Engine](Tools/automation.md):** LangGraph orchestration, Camoufox/Playwright stealth stack, and Python-driven security pipelines.
-*   **[Infrastructure & Cloud](Tools/infrastructure.md):** Cloudflare Zero Trust, OCI, and Identity-centric perimeters.
-*   **[DevSecOps & Runtime](Tools/security.md):** CI/CD gates, artifact hardening, and eBPF-based observability.
-*   **[Core Stack](Tools/core_stack.md):** Python, Bash, and networking fundamentals.
+### Architectural Milestones (Cases)
+*   **[2025-2026] [Agentic AI Security (GHOST_ENGINE)](Cases/2025_AgenticAI/README.md)**
+*   **[2024] [Zero Trust Architecture](Cases/2024_ZeroTrust/README.md)**
+*   **[2024] [Supply Chain Resilience](Cases/2024_SupplyChain/README.md)**
+*   **[2022] [Infrastructure Hardening](Cases/2022_Hardening/README.md)**
 
 ---
 
-### Active Cases
-Real-world triage and architecture notes.
-
-*   **[Cybersecurity Cases](Cybersecurity_Cases/README.md):** WebApp vulnerabilities, post-incident hardening, and stealth infrastructure.
-*   **[SOC Operations](SOC_Cases/README.md):** Threat detections and log triage basics.
+### Active Tooling
+*   **[npm_check](Solution/npm_check/README.md)**
+*   **[GHOST_ENGINE](Solution/GHOST_ENGINE/README.md)**
 
 ---
 
-### Philosophy
-Systems should be resilient, automated, and silent. If it requires manual babysitting, it's broken.
+### Navigation
+*   **Experience:** [Engineering & Security Operations](Docs/experience_summary.md)
+*   **Archive:** [Historical Notes (2022-2024)](Archive/)
+
+---
+"Systems should be resilient, automated, and silent."
