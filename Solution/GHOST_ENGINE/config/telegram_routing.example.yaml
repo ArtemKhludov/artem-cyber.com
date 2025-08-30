@@ -1,0 +1,63 @@
+# --- GHOST ENGINE v2.0 Telegram Forum Routing ---
+# Example configuration for "one forum, multiple topics" architecture.
+# Production file: config/telegram_routing.yaml (GIT IGNORED).
+
+# Documentation only: your actual Telegram Forum structure.
+telegram_groups:
+  - name: "GHOST Main"
+    chat_id: FILL_ME  # Replace with your real ID
+    topics:
+      - name: "General"
+        topic_id: FILL_ME
+      - name: "UpWork - Вакансии"
+        topic_id: FILL_ME
+      - name: "arc_dev - Вакансии"
+        topic_id: FILL_ME
+      - name: "gun_io - вакансии"
+        topic_id: FILL_ME
+      - name: "toptal - Вакансии"
+        topic_id: FILL_ME
+      - name: "contra - вакансии"
+        topic_id: FILL_ME
+      - name: "Active Chats (Negotiation)"
+        topic_id: FILL_ME  # Example for the 'chat_client' block below
+
+# 1. JOB CARDS (The "Scraping" flow)
+# Where job notifications go for each site.
+sites:
+  upwork:
+    chat_id: FILL_ME
+    topic_jobs: FILL_ME
+  arc_dev:
+    chat_id: FILL_ME
+    topic_jobs: FILL_ME
+  gun_io:
+    chat_id: FILL_ME
+    topic_jobs: FILL_ME
+  toptal:
+    chat_id: FILL_ME
+    topic_jobs: FILL_ME
+  contra:
+    chat_id: FILL_ME
+    topic_jobs: FILL_ME
+
+# 2. CLIENT CHATS (The "Negotiation" flow)
+# Where incoming client messages and chat mirroring go.
+# Use a separate topic to avoid drowning job cards.
+chat_client:
+  chat_id: FILL_ME
+  topics:
+    upwork: FILL_ME  # All Upwork chat messages go here
+    arc_dev: FILL_ME
+    gun_io: FILL_ME
+    toptal: FILL_ME
+    contra: FILL_ME
+
+# 3. OPERATIONS (Errors, Captchas, System)
+# Can be a separate group or another topic in GHOST Main.
+ops:
+  chat_id: FILL_ME
+  topics:
+    captcha: FILL_ME    # General or dedicated topic
+    errors: FILL_ME
+    system: FILL_ME

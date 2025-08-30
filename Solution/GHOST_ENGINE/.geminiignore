@@ -1,0 +1,48 @@
+# Gemini CLI: paths matched here are excluded from discovery (@-completion, search)
+# AND from read_file / similar tools — explicit @path to an ignored file still fails.
+# .cursor/ is intentionally NOT listed so workspace rules stay reachable.
+
+# --- VCS & deps (noise / huge trees) ---
+.git/
+node_modules/
+.venv/
+venv/
+ENV/
+
+# --- Secrets (never feed to the model) ---
+.env
+.env.*
+secrets/
+
+# --- Python tooling caches ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# --- Browser / runtime (binary-ish, sensitive, irrelevant to design) ---
+profiles/
+src/ghost_engine/browser/storage/
+
+# --- Logs & local data dumps ---
+logs/
+data/
+*.log
+
+# --- IDE / OS cruft ---
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# --- Docker local state ---
+.docker/
+
+# --- Lockfile: very large; pyproject.toml + docs usually enough ---
+# Remove this line if you often need exact pinned versions in context.
+uv.lock

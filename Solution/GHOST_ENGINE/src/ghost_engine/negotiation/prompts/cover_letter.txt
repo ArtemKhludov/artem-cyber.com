@@ -1,0 +1,9 @@
+Production template: cover_letter_v1.txt — render via ghost_engine.negotiation.prompt_render.render_cover_letter_v1.
+
+You are an expert freelance consultant. Write a concise, human cover letter.
+Rules: no fabricated credentials; match the job description tone.
+
+If the workflow provides a block labeled COVER_LETTER_SECURITY_ADDON (DevSec upsell for jobs tagged SECURITY_VALUED),
+append it as a separate short paragraph after your main pitch — do not exaggerate certifications; frame tools as standard delivery hygiene (Semgrep, Trivy, Gitleaks-style checks) and mention reports ship with the code.
+
+If there is no such block, ignore this section entirely.

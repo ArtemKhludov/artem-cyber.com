@@ -1,0 +1,85 @@
+site_id: upwork
+# Default landing (search / saved filters). Adapter uses feed_url when set; else falls back to url.
+url: https://www.upwork.com/nx/find-work/
+# Explicit find-work entry for feed-loop / dev_session --feed-loop (same as url is fine).
+feed_url: https://www.upwork.com/nx/find-work/
+# Optional: seconds for dom_first apply link search (else GHOST_APPLY_DOM_FIRST_TIMEOUT_MS, default 15s).
+# apply_dom_first_timeout_sec: 12
+# Proposal form URL; {job_id} is substituted after sanitization (alphanumeric, hyphen, underscore, dot, tilde).
+# Upwork serves both ``/ab/proposals/...`` and Nuxt ``/nx/proposals/job/.../apply/`` (see full trace navigations).
+apply_url_template: "https://www.upwork.com/ab/proposals/job/{job_id}/apply/"
+# If ``ab`` redirects or 404s in your locale, try: "https://www.upwork.com/nx/proposals/job/{job_id}/apply/"
+# Optional: CSS for job list shell after navigation (human_behavior.after_navigation_settle).
+# page_ready_selector: 'main'
+display_name: Upwork
+proxy_pool: default
+
+# Substring must match job-related GraphQL requests in DevTools (version path may change).
+graphql:
+  jobs_endpoint: https://www.upwork.com/api/graphql/v1
+
+# If nav click fails (A/B DOM), adapter falls back to direct goto (default: messages main).
+# Override only if Upwork moves inbox URL; must stay https://*.upwork.com/.../messages/...
+# messages_fallback_url: "https://www.upwork.com/messages/main"
+
+selectors:
+  # dev_session: if this CSS is visible after start_url, skip SSO/login clicks (empty on Upwork = use nav_messages_button).
+  logged_in_bootstrap: '[data-test="nav-main"], button[data-test="nav-user-menu"], .up-nav-container'
+  # SSO first in dev_session when this matches (before generic "Log in"). Empty = role+regex only.
+  # DevTools: pick stable selector for "Continue with Google" if Upwork A/B hides it from get_by_role.
+  continue_with_google_button: ""
+  # Heuristic: Upwork login links usually point at account-security login; verify in your Camoufox DevTools if count()==0.
+  login_button: 'a[href*="/ab/account-security/login"]'
+  login_username_input: 'input#login_username'
+  login_password_input: 'input#login_password'
+  login_continue_button: 'button#login_password_continue'
+  # Prefer href substring over class names; tune in DevTools if count()==0. Badge uses "{selector} span".
+  # If navigation times out, open DevTools and match a stable link to inbox (often /nx/messages/ or /ab/messages/).
+  nav_messages_button: 'nav a[href*="/messages/main"]'
+  # Load more on find-work feed; A/B may change — if count()==0, check DevTools for data-test on the button.
+  load_more_button: 'button[data-test="load-more-button"]'
+  # Optional: CSS template for dom_first apply; {job_id} and {job_id_core} (without leading ~).
+  # Example: 'a[data-test="job-tile-title"][href*="~{job_id_core}"]'
+  feed_job_deep_link: ""
+  # Optional: card root for future DOM scoring (feed loop); empty = infer links only via a[href*="/jobs/~"].
+  feed_job_card: ""
+  # Optional alternate Messages entry (same as nav_messages_button if unset); used by messages_nav fallback.
+  messages_nav: ""
+  message_input: "textarea#message-input"
+  # Cover letter on /ab/proposals/job/.../apply/ — tune in DevTools if Upwork changes DOM; empty falls back to main textarea.
+  proposal_cover_letter: ""
+  # Job detail: heart / save (tune via DevTools; A/B tests break stale selectors).
+  # Feed tile: prefer save_job_feed_tile_button for heart on find-work cards (scoped under article[data-item-key]).
+  save_job_feed_tile_button: 'button[data-test="save-job-button"]'
+  save_job_button: 'button[data-test="save-job-button"]'
+  unsave_job_button: ""
+  # Job detail → open proposal flow when not using direct apply URL.
+  apply_now_button: ""
+  # Orchestrator: open Find work menu (optional CSS if role-based click fails in your locale).
+  nav_find_work_open: ""
+  # Link to Saved jobs inside the Find work dropdown (optional; else role "Saved jobs").
+  nav_saved_jobs_link: ""
+  # Header logo / home control after a feed round (optional; else scroll-top + reload).
+  nav_upwork_home_click: ""
+  # Optional: direct open of Saved searches (fallback after 3 failed header attempts).
+  saved_jobs_url: "https://www.upwork.com/nx/search/jobs/saved/"
+  # Proposal form (apply page) — verify in DevTools before auto-submit.
+  proposal_bid_input: ""
+  proposal_duration_input: ""
+  proposal_duration_select: ""
+  proposal_fee_input: ""
+  proposal_submit_button: ""
+  # Extra selector for Cloudflare Turnstile click path (human-in-the-loop policy).
+  cloudflare_turnstile_click: ""
+  # After submit: logo/home → find-work feed (fix_1 narrative). Enable with GHOST_APPLY_RETURN_TO_FEED=1.
+  nav_home_or_feed_button: ""
+
+# Optional extra CSS for BaseSiteAdapter.check_for_captcha (merged with defaults in adapters/captcha_detect.py).
+# captcha_selectors: []
+
+chat_rules:
+  max_messages_per_hour: 20
+  escalate_on_keywords: []
+
+mouse_config:
+  entropy: "double"

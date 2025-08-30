@@ -1,0 +1,492 @@
+# GHOST ENGINE v2.0 — L0/L1 sieve (no LLM). Edit numbers only.
+
+# Ollama: UI-sensitive calls (L2, cover output judge) preempt background (budget_infer, job semantic safety).
+ollama_lanes:
+  enabled: true
+
+l0_filters:
+  # Global hard drop (all sites): crime, abuse, malware, scam, adult. Case-insensitive substring on title + description.
+  # Legacy key ``forbidden_phrases`` is still read by the engine if this list is missing.
+  global_forbidden_phrases:
+    - hack Instagram
+    - hack Facebook
+    - DDoS attack
+    - bypass 2FA
+    - crack account
+    - malware
+    - ransomware
+    - stolen credentials
+    - credential stuffing
+    - phishing
+    - scam
+    - adult content
+    - escort services
+    # Training / coaching roles (not building software for coaches — substring drop on title+body).
+    - coaching
+    - coach
+  # Upwork-only: off-platform pay / contacts (ban risk). Applied only when job_signal.source_site is in upwork_tos_site_ids.
+  # Legacy key ``platform_tos_phrases`` is still read if this list is missing.
+  upwork_tos_site_ids:
+    - upwork
+  upwork_tos_violation_phrases:
+    - payment outside upwork
+    - pay outside upwork
+    - outside of upwork
+    - pay via crypto
+    - pay in crypto
+    - cryptocurrency payment
+    - paypal friends and family
+    - venmo only
+    - wire transfer only no upwork
+    - contact me on whatsapp
+    - telegram @
+  # Contextual hard drops: SMM / creator noise vs technical YouTube work (parser, scraping).
+  # All ``when_all`` fragments must match; if ``when_any`` is non-empty, at least one must match;
+  # ``unless_any`` skips the veto (escape hatch for dev jobs).
+  contextual_vetoes:
+    - code: YOUTUBE_SMM_NOT_DEV
+      when_all:
+        - youtube
+      when_any:
+        - social media
+        - smm
+        - content creator
+        - video editor
+        - thumbnail
+        - influencer
+        - tiktok
+        - instagram reel
+      unless_any:
+        - parser
+        - scraping
+        - scraper
+        - playwright
+        - selenium
+        - web scrap
+        - data extraction
+        - api integration
+        - automation script
+        - automation
+        - n8n
+        - zapier
+        - make.com
+        - langchain
+        - fastapi
+        - ai agent
+        - llm
+        - transcript
+    # fix_1 §2.1: «точно нет» — роли SMM / community без технич. сигналов.
+    - code: SMM_ROLE_NOT_DEV
+      when_any:
+        - social media manager
+        - community manager for games
+        - instagram manager
+        - facebook ads manager
+      unless_any:
+        - api
+        - automation
+        - scraping
+        - python
+        - backend
+        - data pipeline
+        - integration
+        - bot development
+    # Cold calling / SDR — отсекаем «чистый» обзвон; оставляем AI/автоматизацию/квалификацию лидов.
+    - code: COLD_CALLING_PURE_SDR
+      when_any:
+        - cold caller
+        - cold calling
+        - appointment setter
+        - telemarketing
+        - phone sales
+      unless_any:
+        - artificial intelligence
+        - machine learning
+        - automation
+        - api
+        - crm integration
+        - lead qualification
+        - qualification
+        - chatbot
+        - llm
+        - ai agent
+        - dialer software
+        - predictive
+    # Видео/YouTube creator без технич. задач (парсер/transcript/API — см. unless).
+    - code: VIDEO_CREATOR_NOT_DEV
+      when_any:
+        - video creator
+        - youtube video editor
+        - video editor for youtube
+        - videographer
+        - youtube content creator
+      unless_any:
+        - parser
+        - scraping
+        - scraper
+        - api
+        - automation
+        - n8n
+        - zapier
+        - make.com
+        - langchain
+        - fastapi
+        - ai agent
+        - ffmpeg
+        - ffmpeg script
+        - transcript
+        - data pipeline
+        - python
+  blacklisted_countries:
+    - India
+    - Pakistan
+    - Bangladesh
+  min_client_rating: 4.5
+  require_payment_verified: true
+  # Hourly vs fixed L0 floors (GraphQL ``type`` HOURLY / FIXED → budget_type in job_signal).
+  min_budget_hourly: 20
+  min_budget_fixed: 150
+  # Fallback when budget_type is unknown (missing type + no hourly_range heuristic).
+  min_budget: 100
+  # High budget skips country blacklist (evaluate before blacklist in code).
+  override_blacklist_min_budget: 10000
+  # When true: same floor applies to GRI imputed B_raw (hourly×hours, avg paid×hours, spent×factor), not only budget_value.
+  override_blacklist_use_imputed_budget: true
+  # Low-baller: when platform exposes avg hourly paid to freelancers (>0), drop cheapskates.
+  min_avg_hourly_rate_paid: 15
+  # History, not promised budget: when total_spent is known, drop micro-spend clients (tourists).
+  min_client_total_spent: 500
+  # If payment verified and GRI-imputed project USD >= threshold, do not drop on low total_spent alone.
+  min_client_total_spent_exempt_if_payment_verified: true
+  min_client_total_spent_exempt_min_imputed_usd: 4000
+  # When true: drop if buyer.stats.totalCharges is missing, null, or <= 0 (Upwork has not returned proven spend).
+  # Cuts first-time / trial posters where API omits totalCharges; pair with min_client_total_spent for a floor.
+  require_proven_client_spend: false
+  # Max age in hours for a job to pass L0 (e.g. 72 = 3 days). Older jobs are dropped.
+  max_job_age_hours: 72
+  # When hire_rate is known (0–1, e.g. hired/applicants), drop browsers who rarely hire.
+  min_client_hire_rate: 0.25
+  # Review mining: when feedback_count >= 1, client_feedback_score is freelancers' view of client.
+  min_freelancer_client_rating: 4.0
+  # missing_budget when budget_value is null (no numeric budget): pass | drop | soft_hold (soft_hold still passes L0 but flags review).
+  missing_budget_policy: pass
+  # Drop listings already closed on platform (opening.status CLOSED).
+  drop_closed_openings: true
+
+# Post-GRI quality matrix (client / activity / description). When enabled, failing jobs
+# are dropped before notify; Telegram sortie shows matrix_drop|<reason> per hit (multiple reasons/job).
+job_quality_matrix:
+  enabled: true
+  site_ids:
+    - upwork
+  min_effective_total: 5
+  min_client_pts: 1
+  min_activity_pts: 0
+  min_description_pts: 1
+  max_penalty_points: 2
+  hard_block_untrusted_client: true
+  # Skip MATRIX_HARD_ZERO_TRUST when GRI-imputed / effective USD >= this (new client, strong post).
+  zero_trust_exempt_min_budget_usd: 1000
+  client:
+    spend_strong_usd: 1000
+    min_hires_for_spend_bonus: 1
+    hire_rate_good: 0.5
+    new_client_max_open_jobs: 3
+  activity:
+    proposals_good_max: 10
+    proposals_stall_min: 50
+    freshness_max_hours: 48
+    stale_job_min_hours: 168
+    stale_buyer_gap_hours: 168
+  description:
+    min_desc_chars_for_deliverable_hint: 220
+    deliverable_markers:
+      - deliverable
+      - deliverables
+      - milestone
+      - phase 1
+      - scope
+      - output
+    senior_keywords:
+      - senior
+      - staff
+      - principal
+    senior_min_budget_usd: 500
+    complexity_keywords:
+      - automation
+      - ai agent
+      - security
+      - multi-step
+      - workflow
+    complexity_min_budget_usd: 100
+    extra_offplatform_phrases: []
+
+# DevSec upsell: tag multiple clusters on job when title+description match terms.
+# Used for Telegram tags and future Dashboard endpoints.
+upsell_triggers:
+  min_client_total_spent: 0
+  clusters:
+    SOAR:
+      - soar
+      - security automation
+      - tines
+      - swimlane
+      - wazuh
+      - thehive
+      - cortex
+      - shuffle
+      - demisto
+    DevSecOps:
+      - devsecops
+      - ci/cd security
+      - terraform security
+      - kubernetes security
+      - aws config
+      - cloudguard
+      - checkov
+      - prisma cloud
+      - shift left security
+    Forensic:
+      - pdf parsing
+      - banking data extraction
+      - ocr automation
+      - metadata removal
+      - exiftool
+      - data sanitization
+      - document watermarking
+      - legaltech automation
+      - document processing
+    ThreatHunting:
+      - grafana security
+      - prometheus alertmanager
+      - elk security
+      - siem
+      - splunk
+      - threat hunting
+      - ebpf
+      - falco
+      - security monitoring
+      - loki logging
+    RedTeam:
+      - red team
+      - breach and attack simulation
+      - bas
+      - pentest
+      - penetration test
+      - internal audit
+      - vulnerability management
+      - social engineering testing
+      - ctf
+      - bug bounty
+  # Legacy terms for backward compatibility / general security tags
+  terms:
+    - docker
+    - kubernetes
+    - api
+    - payment
+    - database
+    - aws
+    - server
+
+l1_weights:
+  keyword_match_bonus: 20
+  keyword_terms:
+    - python
+    - playwright
+  vip_client_spent_threshold: 50000
+  vip_client_bonus: 50
+  budget_above_median_bonus: 10
+  budget_median_reference: 500
+  preferred_country_bonus: 15
+  preferred_countries:
+    - USA
+    - United States
+    - United Kingdom
+    - UK
+    - Germany
+    - France
+    - Netherlands
+    - Canada
+  stop_words:
+    - adult
+    - wordpress
+  stop_word_penalty: 50
+  # Student / homework gigs — large L1 penalty (first match, same pattern as stop_words).
+  heavy_stop_words:
+    - homework
+    - exam
+    - student
+    - assignment for class
+    - cheap
+    - urgent fix
+    - "$10"
+  heavy_stop_word_penalty: 100
+
+# Ghost ROI Index (GRI): site-agnostic score 0–1 from job_signal; L1 can map to 0–100 when gri.enabled.
+# Per-site overrides: gri.sites.<site_id> may set competition_mode, weights, disabled factors (see plan §6A).
+#
+# Semantics (plan §8 — avoid double-counting):
+# - V_market (freshness): age decay from posted_at only.
+# - K_competition: applicants, invitations when applicants=0, optional proposals_tier string on job_signal.
+gri:
+  enabled: true
+  blend_legacy_weight: 0.25
+  # Route thresholds on assembled GRI (0–1)
+  tier_high: 0.8
+  tier_mid: 0.5
+  # Telegram/notify floor (human touch). Independent from feed_reading.save_min_gri (heart on feed).
+  adapter_enqueue_min_gri: 0.7
+  # Reserved for future operatorless auto-apply (not wired to click path yet). See docs/scoring_cascade.md.
+  auto_apply_min_gri: 0.85
+  # Skip notify when assembled tier is TRASH (GRI below tier_mid). Set false to notify on all L0 passes.
+  adapter_skip_notify_on_trash_tier: true
+  # Budget / imputation
+  micro_budget_max: 5.0
+  budget_ref_for_norm: 5000.0
+  estimated_hours_default: 10.0
+  impute_from_total_spent_factor: 0.02
+  median_fallback_budget: 500.0
+  # Client trust
+  hire_rate_bonus_threshold: 0.6
+  hire_rate_bonus_multiplier: 1.15
+  hire_rate_penalty_threshold: 0.2
+  hire_rate_penalty_multiplier: 0.55
+  payment_verified_trust_boost: 1.08
+  # Freshness (hours); decay toward floor
+  freshness_half_life_hours: 48.0
+  freshness_floor: 0.35
+  freshness_ceiling: 1.0
+  # When only sniffed_at exists (no posted_at), do not assume listing is stale.
+  sniff_freshness_floor: 0.48
+  premium_trust_boost: 1.03
+  buyer_activity_recency_hours: 168.0
+  buyer_activity_trust_boost: 1.04
+  sourcing_update_competition_ref: 10.0
+  sourcing_update_competition_weight: 0.18
+  complexity_qual_hours_week_ref: 30.0
+  complexity_qual_hours_weight: 0.07
+  # Competition (applicants + invitations proxy)
+  competition_applicants_ref: 25.0
+  competition_invitations_ref: 25.0
+  applicants_high_penalty: 20
+  competition_mode_default: applicants_or_invites
+  # Optional job_signal.proposals_tier (e.g. "5-10", "20-50" from UI). Midpoint used if applicants unknown.
+  proposals_tier_extra_k_factor: 0.35
+  # Complexity (plan §10.3: workload / engagement / tier feed complexity, not only description)
+  description_len_ref: 4000.0
+  tech_markers:
+    - python
+    - playwright
+    - kubernetes
+    - docker
+    - aws
+    - api
+    - sql
+    - postgres
+    - javascript
+    - typescript
+    - react
+    - node
+    - graphql
+    - llm
+    - automation
+  tech_marker_density_ref: 0.08
+  complexity_engagement_weeks_ref: 26.0
+  complexity_engagement_weight: 0.12
+  complexity_expert_tier_bump: 0.08
+  complexity_workload_more_than_30h_bump: 0.06
+  ontology_mandatory_weight: 0.04
+  # Scope mismatch (denominator multiplier >= 1)
+  team_scope_terms:
+    - team of
+    - developers for
+    - 10 developers
+    - long-term collaboration
+    - staff aug
+    - staff augmentation
+    - full-time position
+    - we need a team
+    - hire a team
+    - multiple engineers
+  scope_hit_base_multiplier: 1.35
+  scope_positions_multiplier: 1.25
+  # Plan §3: strong team/agency signals → cap GRI and block ZERO_TOUCH (solo / bot economics)
+  scope_force_manual_review_min_hits: 2
+  scope_gri_cap: 0.72
+  # Plan §7: binary gates on top of GRI (do not fold into the fraction)
+  gri_gates:
+    high_complexity_low_budget:
+      enabled: true
+      c_complexity_min: 2.2
+      b_norm_max: 0.22
+      force_job_tier: MANUAL_REVIEW
+  # Optional L2 (plan §4): flag gray zone only; no LLM call here — saves tokens until L2 node exists
+  l2_gray_zone:
+    enabled: true
+    gri_min: 0.5
+    gri_max: 0.79
+    # Plan §4: real Ollama L2 in gray zone. Enable true in production; tests stub HTTP.
+    llm_enabled: true
+    ollama_model: null
+    timeout_sec: 45
+    # Below fit_score with recommend=reject → force tier (MANUAL_REVIEW or TRASH).
+    reject_max_fit_score: 0.28
+    reject_force_tier: MANUAL_REVIEW
+  # Persona selection (after GRI) — plan §5 «Тризубец»
+  persona_sniper_gri: 0.85
+  persona_sniper_max_applicants: 8
+  persona_sniper_max_desc_chars: 1200
+  persona_consultant_min_budget_norm: 0.45
+  persona_specialist_stack_overlap_min: 2
+  persona_specialist_niche_terms:
+    - pdf redaction
+    - redaction
+    - ocr pipeline
+    - hipaa
+    - gdpr data
+  persona_consultant_risk_terms:
+    - docker
+    - kubernetes
+    - penetration test
+    - security audit
+    - soc 2
+    - pci-dss
+  persona_consultant_complexity_min: 2.45
+  # Must match upsell tag from collect_upsell_tags → consultant persona (value-based framing)
+  persona_consultant_on_security_valued_tag: true
+  # Per-site overrides only (e.g. competition_mode: none). Same GRI code for all sites.
+  sites: {}
+
+# Find-work: dwell on tiles with known GRI; auto-save (heart) when GRI >= save_min_gri.
+# Env: GHOST_FEED_LINGER_DISABLE=1, GHOST_FEED_INTER_LOAD_MORE_DISABLE=1
+feed_reading:
+  enabled: true
+  linger_min_gri: 0.58
+  linger_sleep_ms_min: 2000
+  linger_sleep_ms_max: 5000
+  save_min_gri: 0.85
+  pause_before_save_ms_min: 5000
+  pause_before_save_ms_max: 10000
+  max_cards_per_round: 24
+  # Two-phase: no Telegram until job detail page is opened and detail GraphQL is scored (see docs/ops_feed_detail_notify.md).
+  defer_notify_until_job_detail: false
+  detail_notify_wait_timeout_sec: 28
+
+# Optional: local Ollama infers USD equivalent when fixed budget and hourly are missing (narrow triage; rate-limited).
+budget_llm_infer:
+  enabled: false
+  ollama_model: null
+  timeout_sec: 22
+  max_calls_per_minute: 8
+  # Per feed sortie (see feed_scoring_run_ledger.begin_feed_sortie); null = no cap beyond per-minute.
+  max_calls_per_sortie: null
+  min_confidence: 0.55
+  # pass = skip infer on error/low confidence; no tier mutation here beyond GRI recompute when applied.
+  fail_open: pass
+  triage:
+    # L0 SOFT_HOLD_MISSING_BUDGET: allow infer even if B_source is not median_fallback (plan Part B).
+    also_when_l0_soft_hold_missing_budget: true
+    require_budget_value_null: true
+    require_hourly_budget_max_null: true
+    require_b_source_equals: median_fallback
+    require_gri_gray_zone: false

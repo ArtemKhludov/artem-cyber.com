@@ -1,0 +1,35 @@
+# --- BROWSER ENGINE & ANTI-FRAUD (CAMOUFOX/PLAYWRIGHT) ---
+Most 'automation experts' think a headless Chrome and rotating proxies equal stealth; I've watched those systems get flagged in milliseconds because they ignored JA3 fingerprints and TLS handshakes.
+I've spent too much time debugging C++ fingerprint injections to settle for brittle 'stealth' plugins that only mask the user-agent.
+Your anti-bot 'solution' is likely just a cost-center; I prefer surgical browser engine manipulation that makes the automation indistinguishable from a bored human on a MacBook.
+The industry is drowning in 'Playwright wrappers' while I'm focusing on the V8 engine quirks that actually trigger Canvas and AudioContext detections.
+
+# --- ARCHITECTURE & STATE (LANGGRAPH/REDIS) ---
+I'm tired of seeing 'distributed systems' that are just five fragile microservices failing simultaneously; I build state-machines that actually know how to recover when a session drops.
+While others are busy prompt-engineering their way into a mess, I'm hardening the LangGraph state-flow to ensure a server crash doesn't mean a lost negotiation.
+A bot that loses context mid-conversation isn't an agent; it's a liability. I treat state persistence as a core security requirement, not an afterthought.
+
+# --- DATA & PROTOCOL (GRAPHQL/SCRAPING) ---
+If you're still relying on brittle CSS selectors that break every Tuesday, you're not building a scraper—you're building technical debt.
+I don't 'scrape' pages; I sniff the GraphQL layer and map the underlying business logic to get clean data without the DOM overhead.
+Most data pipelines are just a series of 'if-else' statements masquerading as AI; I prefer building robust normalizers that can handle the chaos of raw platform signals.
+
+# --- SECURITY & RED TEAMING ---
+Your security is only as good as your weakest prompt; I've spent the last month hardening agentic workflows against jailbreaks while others are still falling for basic 'ignore previous instructions' tricks.
+I treat every incoming message as untrusted data; if your LLM-agent can be talked into lowering its price by a clever client, your architecture is broken.
+Most 'AI startups' are just prompt-injection vulnerabilities waiting to happen; I build guardrails that actually enforce the business logic at the protocol level.
+
+# --- GENERAL BRUTAL HONESTY ---
+The industry is getting collectively dumber, replacing engineering depth with 'AI-assisted' boilerplate that no one understands.
+While the rest of the world is scrolling for dopamine, I'm busy optimizing the 10 lines of core logic that actually solve the bottleneck.
+I don't build 'scripts'; I build autonomous systems designed to survive in hostile environments.
+Give me a clean state machine over a thousand lines of 'intelligent' spaghetti code any day.
+
+# --- SHORTER HOOKS (SPOKEN) ---
+Fingerprint mismatch beat the proxy pool every time—we fixed it at TLS, not in headers.
+Redis isn't a cache here; it's the spine—lose the graph state and you're debugging ghosts in prod.
+I ship correlation IDs end-to-end; when prod screams, you find the branch in one grep.
+Spec said REST; reality was three undocumented query params—I document the contract the UI actually uses.
+LLM output is untrusted until it passes the same validation as any other user input.
+Deploy looked green; the canary flatlined—we rolled back on metrics, not on vibes.
+Every 'quick integration' is a future incident; I budget time for the edge cases up front.

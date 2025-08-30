@@ -1,0 +1,145 @@
+# Global non-secret settings
+app:
+  name: ghost_engine
+  log_level: INFO
+
+timeouts:
+  http_seconds: 30
+  browser_seconds: 60
+
+human_delays:
+  typing_ms_min: 40
+  typing_ms_max: 120
+  between_actions_ms_min: 200
+  between_actions_ms_max: 800
+
+# Second entropy layer on top of Camoufox humanize (Playwright-level mouse/keyboard).
+human_entropy:
+  think_pause_probability: 0.07
+  think_pause_ms_min: 350
+  think_pause_ms_max: 2800
+  burst_run_probability: 0.14
+  burst_typing_ms_min: 12
+  burst_typing_ms_max: 42
+  double_key_probability: 0.018
+  typo_neighbor_key_probability: 0.004
+  jitter_before_scroll_probability: 0.38
+  scroll_reverse_probability: 0.12
+  scroll_double_step_probability: 0.22
+  micro_moves_before_action_max: 2
+
+# Job description reading simulation (ms ranges + RNG; dwell clamped).
+human_reading:
+  visible_timeout_ms: 15000
+  pre_smooth_scroll_ms_min: 80
+  pre_smooth_scroll_ms_max: 320
+  wait_after_smooth_scroll_ms_min: 400
+  wait_after_smooth_scroll_ms_max: 1200
+  post_scroll_jitter_probability: 0.42
+  jitter_scroll_px_min: 40
+  jitter_scroll_px_max: 180
+  ms_per_word_min: 65
+  ms_per_word_max: 105
+  reading_total_jitter_ms_min: -80
+  reading_total_jitter_ms_max: 420
+  dwell_total_ms_min: 1400
+  dwell_total_ms_max: 26000
+  reading_chunks_min: 5
+  reading_chunks_max: 14
+  micro_move_on_chunk_probability: 0.55
+  text_selection_probability: 0.62
+  pre_selection_ms_min: 120
+  pre_selection_ms_max: 420
+  post_selection_ms_min: 180
+  post_selection_ms_max: 550
+  clear_selection_ms_min: 80
+  clear_selection_ms_max: 240
+  max_chars_for_word_count: 24000
+
+# Anti-automation: pause + scroll between saved job-search URLs (e.g. Upwork filter tabs).
+human_job_search:
+  between_navigations_ms_min: 4000
+  between_navigations_ms_max: 18000
+  long_break_probability: 0.12
+  long_break_sec_min: 8.0
+  long_break_sec_max: 35.0
+  after_load_scroll_passes_min: 1
+  after_load_scroll_passes_max: 4
+  after_load_extra_delay_ms_min: 600
+  after_load_extra_delay_ms_max: 3500
+
+# Post-goto: wait for optional selector + settle delay (see site YAML page_ready_selector).
+human_navigation:
+  page_ready_timeout_ms: 12000
+  settle_delay_ms_min: 120
+  settle_delay_ms_max: 600
+
+# During dev_session idle: periodic micro-moves + small scrolls.
+human_idle_activity:
+  enabled: true
+  interval_sec_min: 90
+  interval_sec_max: 240
+  scroll_probability: 0.55
+
+# Local wall-clock quiet window (GHOST_AUTOMATION_TZ IANA, e.g. Europe/Berlin). Optional block exit.
+# automation_quiet_hours:
+#   start_hour: 2
+#   end_hour: 7
+#   block: false
+
+# Warn if --headless on these sites unless GHOST_ALLOW_HEADLESS_SENSITIVE=1.
+headful_recommended_site_ids:
+  - upwork
+
+# Feed drivers (see ghost_engine.browser.feed_policy — env is the source of truth):
+# GHOST_FEED_OVERLAP_THRESHOLD, GHOST_FEED_MAX_LOAD_MORE, GHOST_FEED_STEALTH_MAX_LOAD_MORE,
+# GHOST_FEED_SEEN_TTL_SEC, GHOST_FEED_AFTER_LOAD_SCROLL_ROUNDS, GHOST_FEED_EMPTY_FRESH_RETRIES,
+# GHOST_FEED_DUPLICATE_LOAD_STREAK_NEED, GHOST_FEED_MAX_POSTED_AGE_DAYS, GHOST_FEED_REDIS_SEEN_WALL_MIN_RATIO,
+# GHOST_FEED_OVERLAP_STREAK_BEFORE_STOP, GHOST_FEED_LOAD_MORE_CLICK_RETRIES,
+# GHOST_FEED_LOAD_MORE_RETRY_MS_MIN / _MAX, GHOST_OPS_L0_STREAK_THRESHOLD (or GHOST_AI_DIAG_THRESHOLD),
+# GHOST_FEED_STEALTH_FAST — stealth find-work: default ON (set 0/false for long warm-up + human_click Load More).
+
+# GraphQL sniffer: log volume + concurrent disk persists (per browser page).
+# log_sample_rate: fraction of responses logged at INFO (body preview + keys). 0 = only DEBUG.
+# Analytics run (full INFO + JSONL): GHOST_GRAPHQL_ANALYTICS=1 → see docs/graphql_analytics.md
+# Optional: GHOST_GRAPHQL_LOG_SAMPLE_RATE=0.1 overrides YAML without analytics mode.
+graphql_sniff:
+  log_sample_rate: 0
+  persist_max_concurrent: 3
+  persist_min_interval_ms: 0
+  # Full JSON bodies under data/<site_id>/graphql_raw/<YYYY-MM-DD>/ (not L0-gated). Short TTL noise.
+  # GHOST_GRAPHQL_RAW=0 disables; GHOST_GRAPHQL_RAW_RETENTION_DAYS overrides retention_days.
+  raw_capture:
+    enabled: true
+    retention_days: 2
+    prune_interval_sec: 3600
+
+# Upwork GraphQL: extra top-level ``data.<alias>`` keys whose value is a list of job-like nodes.
+# Example: ``extra_data_roots: [bestMatchJobs]`` when the API adds a new feed alias.
+upwork_graphql_parse:
+  extra_data_roots: []
+
+# LLM-assisted shape mismatch diagnostics (Ollama). Never applied to scoring automatically.
+# Force more runs: GHOST_GRAPHQL_SHAPE_DIAG=1. Logs: graphql_shape_diag.result
+graphql_shape_diag:
+  enabled: false
+  rate_limit_per_minute: 6
+  max_prompt_chars: 12000
+  timeout_sec: 25.0
+  telegram_summary: false
+  telegram_ops_topic: errors
+
+proxy_pools:
+  default: []
+  # Named pools referenced from config/sites/*.yaml
+
+# Telegram Command Center (operator chat IDs: env TELEGRAM_OPERATOR_CHAT_IDS only; never commit).
+telegram:
+  batch_interval_sec: 8
+  max_lines_per_summary: 12
+  max_outbound_per_minute: 20
+  max_batch_items: 50
+  brpop_idle_timeout_sec: 30
+  # Optional captcha alert from dev_session (browser process). Placeholders: {greeting}, {site_id}.
+  # Greeting defaults from env GHOST_CAPTCHA_ALERT_GREETING.
+  # captcha_alert_template: "{greeting}: captcha on {site_id} — need help or solver."
