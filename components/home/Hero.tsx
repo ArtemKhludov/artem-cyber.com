@@ -84,17 +84,17 @@ export function Hero() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               size="lg"
-              onClick={() => scrollToSection('#about')}
+              onClick={() => window.location.href = '/book?product=deep'}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              Начать
+              Выбрать трансформацию
               <ChevronDown className="ml-2 w-5 h-5" />
             </Button>
 
             <Button
               size="lg"
               variant="outline"
-              onClick={() => scrollToSection('#about')}
+              onClick={() => window.location.href = '/book?product=deep'}
               className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3 text-lg font-semibold"
             >
               <Play className="mr-2 w-5 h-5" />
