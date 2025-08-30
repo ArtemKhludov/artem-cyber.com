@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, Play, Sparkles } from 'lucide-react'
+import { ChevronDown, FileText, Sparkles } from 'lucide-react'
 
 export function Hero() {
   const [isVisible, setIsVisible] = useState(false)
@@ -93,12 +93,11 @@ export function Hero() {
 
             <Button
               size="lg"
-              variant="outline"
               onClick={() => window.location.href = '/book?product=deep'}
-              className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3 text-lg font-semibold"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              <Play className="mr-2 w-5 h-5" />
-              Посмотреть видео
+              <FileText className="mr-2 w-5 h-5" />
+              PDF-руководства
             </Button>
           </div>
 
