@@ -93,7 +93,7 @@ export function Hero() {
 
             <Button
               size="lg"
-              onClick={() => window.location.href = '/book?product=deep'}
+              onClick={() => scrollToSection('#pdf-files')}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               <FileText className="mr-2 w-5 h-5" />
