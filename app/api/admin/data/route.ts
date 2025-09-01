@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     if (type === 'requests') {
       const { data, error } = await supabase
-        .from('callback_requests')
+        .from('pdf_requests')
         .select('*')
         .order('created_at', { ascending: false })
 
