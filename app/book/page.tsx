@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useSupabase } from '@/components/providers/supabase-provider'
-import { Navbar } from '@/components/home/Navbar'
+import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
 import { Calendar, Clock, FileText, Brain, Zap, CheckCircle, Shield, Users } from 'lucide-react'
@@ -80,7 +80,7 @@ export default function BookPage() {
     if (selectedDate) params.set('date', selectedDate)
     if (selectedTime) params.set('time', selectedTime)
     params.set('amount', '4999')
-    
+
     router.push(`/checkout?${params.toString()}`)
   }
 
@@ -168,10 +168,10 @@ export default function BookPage() {
     }
   ]
 
-  return (
+    return (
     <div className="relative">
       {/* Главное меню */}
-      <Navbar onCallRequest={handleCallRequest} />
+      <MainHeader onCallRequest={handleCallRequest} />
       
       {/* Основной контент */}
       <main ref={sectionRef}>
@@ -203,18 +203,17 @@ export default function BookPage() {
                   Каждая программа разработана для разных уровней готовности к изменениям
                 </p>
               </div>
-              
+
               {/* Табы программ */}
               <div className="flex flex-wrap justify-center gap-4 mb-12">
                 {programs.map((program) => (
                   <button
                     key={program.id}
                     onClick={() => setActiveProgram(program.id)}
-                    className={`relative px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-                      activeProgram === program.id
+                    className={`relative px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${activeProgram === program.id
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     {program.popular && (
                       <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
@@ -236,9 +235,8 @@ export default function BookPage() {
                 {programs.map((program) => (
                   <div
                     key={program.id}
-                    className={`transition-all duration-500 ${
-                      activeProgram === program.id ? 'block' : 'hidden'
-                    }`}
+                    className={`transition-all duration-500 ${activeProgram === program.id ? 'block' : 'hidden'
+                      }`}
                   >
                     <div className="grid lg:grid-cols-2 gap-8 items-start">
                       <div>
@@ -254,7 +252,7 @@ export default function BookPage() {
                         <p className="text-gray-600 mb-6 leading-relaxed">
                           {program.description}
                         </p>
-                        
+
                         <div className="space-y-4">
                           {program.features.map((feature, index) => (
                             <div key={index} className="flex items-start">
@@ -266,7 +264,7 @@ export default function BookPage() {
                           ))}
                         </div>
                       </div>
-                      
+
                       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="text-center mb-6">
                           <div className="flex items-baseline justify-center mb-2">
@@ -279,7 +277,7 @@ export default function BookPage() {
                             <Clock className="w-4 h-4 mr-2" />
                             <span>{program.duration}</span>
                           </div>
-                          <Button 
+                          <Button
                             onClick={handleCallRequest}
                             className={`w-full bg-gradient-to-r ${program.gradient} hover:opacity-90 text-white`}
                           >
@@ -299,7 +297,7 @@ export default function BookPage() {
         <section className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              
+
               <div className="grid lg:grid-cols-2 gap-12 items-start">
                 {/* Cal.com Booking Widget */}
                 <div className="space-y-6">
@@ -307,9 +305,9 @@ export default function BookPage() {
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">
                       Выберите удобное время
                     </h2>
-                    
+
                     {isCalLoaded ? (
-                      <div 
+                      <div
                         data-cal-link={`${calUsername}/energylogic-session`}
                         data-cal-config='{"layout":"month_view","theme":"light"}'
                         className="min-h-[600px]"
@@ -350,7 +348,7 @@ export default function BookPage() {
                           Гарантия результата
                         </h4>
                         <p className="text-green-700 text-sm">
-                          Если в течение 7 дней после начала программы вы не увидите ценности, 
+                          Если в течение 7 дней после начала программы вы не увидите ценности,
                           мы вернем 100% стоимости.
                         </p>
                       </div>
@@ -369,7 +367,7 @@ export default function BookPage() {
                     Ответы на самые популярные вопросы о наших программах
                   </p>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                   {faqItems.map((item, index) => (
                     <div key={index} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -409,12 +407,12 @@ export default function BookPage() {
           </div>
         </section>
       </main>
-      
+
       {/* Footer */}
       <Footer />
-      
+
       {/* Call request modal */}
-      <CallRequestModal 
+      <CallRequestModal
         isOpen={isCallModalOpen}
         onClose={handleCloseCallModal}
       />

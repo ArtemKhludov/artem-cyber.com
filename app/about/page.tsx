@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Phone, Calendar, Brain, Zap, Heart, Target, Users, Award, Shield } from 'lucide-react'
 import Link from 'next/link'
-import { Navbar } from '@/components/home/Navbar'
+import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
 
@@ -89,10 +89,10 @@ export default function AboutPage() {
     '⚡️ Готов услышать правду — и сделать из неё действие'
   ]
 
-  return (
+    return (
     <div className="relative">
       {/* Главное меню */}
-      <Navbar onCallRequest={handleCallRequest} />
+      <MainHeader onCallRequest={handleCallRequest} />
       
       {/* Основной контент */}
       <main ref={sectionRef}>
@@ -122,7 +122,7 @@ export default function AboutPage() {
                     Мы объединяем:
                   </h2>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
                   {features.map((feature, index) => (
                     <div key={index} className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
@@ -268,12 +268,12 @@ export default function AboutPage() {
           </div>
         </section>
       </main>
-      
+
       {/* Footer */}
       <Footer />
-      
+
       {/* Call request modal */}
-      <CallRequestModal 
+      <CallRequestModal
         isOpen={isCallModalOpen}
         onClose={handleCloseCallModal}
       />

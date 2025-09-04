@@ -13,7 +13,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>
   logout: () => Promise<void>
   register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>
 }
@@ -58,8 +58,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json()
 
       if (response.ok) {
+        // Принудительно обновляем состояние пользователя
         setUser(data.user)
-        return { success: true }
+
+        // Дополнительно проверяем сессию для уверенности
+        setTimeout(async () => {
+          try {
+            const sessionResponse = await fetch('/api/auth/me')
+            if (sessionResponse.ok) {
+              const sessionData = await sessionResponse.json()
+              setUser(sessionData)
+            }
+          } catch (error) {
+            console.error('Session check failed:', error)
+          }
+        }, 100)
+
+        return { success: true, user: data.user }
       } else {
         return { success: false, error: data.error || 'Ошибка входа' }
       }

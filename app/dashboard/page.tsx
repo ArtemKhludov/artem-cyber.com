@@ -9,14 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  BookOpen, 
-  Download, 
-  Star, 
-  Trophy, 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
+import {
+  BookOpen,
+  Download,
+  Star,
+  Trophy,
+  Calendar,
+  Clock,
+  CheckCircle,
   PlayCircle,
   Gift,
   Award,
@@ -47,7 +47,7 @@ interface Course {
 }
 
 export default function DashboardPage() {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
   const router = useRouter()
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [courses, setCourses] = useState<Course[]>([])
@@ -74,7 +74,7 @@ export default function DashboardPage() {
   const loadUserData = async () => {
     try {
       const response = await fetch('/api/user/dashboard')
-      
+
       if (response.ok) {
         const data = await response.json()
         setPurchases(data.purchases)
@@ -197,12 +197,22 @@ export default function DashboardPage() {
         <div className="container mx-auto px-4 py-8">
           {/* Заголовок */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Добро пожаловать, {user.name || user.email}!
-            </h1>
-            <p className="text-xl text-gray-600">
-              Ваш личный кабинет для трансформации
-            </p>
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                  Добро пожаловать, {user.name || user.email}!
+                </h1>
+                <p className="text-xl text-gray-600">
+                  Ваш личный кабинет для трансформации
+                </p>
+              </div>
+              <Button
+                onClick={logout}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Выйти
+              </Button>
+            </div>
           </div>
 
           {/* Статистика */}
@@ -281,8 +291,8 @@ export default function DashboardPage() {
                         <div className="text-right">
                           <p className="text-2xl font-bold text-gray-900">{purchase.price.toLocaleString()} ₽</p>
                           <Badge className={getStatusColor(purchase.status)}>
-                            {purchase.status === 'completed' ? 'Завершено' : 
-                             purchase.status === 'in_progress' ? 'В процессе' : 'Ожидает'}
+                            {purchase.status === 'completed' ? 'Завершено' :
+                              purchase.status === 'in_progress' ? 'В процессе' : 'Ожидает'}
                           </Badge>
                         </div>
                       </div>
@@ -334,7 +344,7 @@ export default function DashboardPage() {
                             </div>
                             <Badge className={getDifficultyColor(course.difficulty)}>
                               {course.difficulty === 'beginner' ? 'Начальный' :
-                               course.difficulty === 'intermediate' ? 'Средний' : 'Продвинутый'}
+                                course.difficulty === 'intermediate' ? 'Средний' : 'Продвинутый'}
                             </Badge>
                           </div>
                         </div>

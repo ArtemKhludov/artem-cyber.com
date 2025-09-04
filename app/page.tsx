@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Navbar } from '@/components/home/Navbar'
+import { MainLayout } from '@/components/layout/MainLayout'
 import { Hero } from '@/components/home/Hero'
 import { AboutSection } from '@/components/home/AboutSection'
 import { ProductCarousel } from '@/components/home/ProductCarousel'
@@ -28,45 +28,44 @@ export default function Home() {
   }
 
   return (
-    <div className="relative">
-      {/* Главное меню с телефоном и кнопкой заказа звонка */}
-      <Navbar onCallRequest={handleCallRequest} />
-      
-      {/* Основной контент */}
-      <main>
-        {/* Hero блок */}
-        <Hero />
-        
-        {/* О проекте */}
-        <AboutSection onCallRequest={handleCallRequest} />
-        
-        {/* Карусель программ */}
-        <ProductCarousel />
-        
-        {/* PDF файлы */}
-        <PDFCarousel />
-        
-        {/* Преимущества */}
-        <Advantages />
-        
-        {/* Отзывы */}
-        <Reviews />
-        
-        {/* Форма обратной связи */}
-        <ContactForm />
-        
-        {/* Юридическая информация */}
-        <Legal />
-      </main>
-      
-      {/* Footer */}
-      <Footer />
-      
-      {/* Call request modal */}
-      <CallRequestModal 
-        isOpen={isCallModalOpen}
-        onClose={handleCloseCallModal}
-      />
-    </div>
+    <MainLayout>
+      <div className="relative">
+        {/* Основной контент */}
+        <main>
+          {/* Hero блок */}
+          <Hero />
+
+          {/* О проекте */}
+          <AboutSection onCallRequest={handleCallRequest} />
+
+          {/* Карусель программ */}
+          <ProductCarousel />
+
+          {/* PDF файлы */}
+          <PDFCarousel />
+
+          {/* Преимущества */}
+          <Advantages />
+
+          {/* Отзывы */}
+          <Reviews />
+
+          {/* Форма обратной связи */}
+          <ContactForm />
+
+          {/* Юридическая информация */}
+          <Legal />
+        </main>
+
+        {/* Footer */}
+        <Footer />
+
+        {/* Call request modal */}
+        <CallRequestModal
+          isOpen={isCallModalOpen}
+          onClose={handleCloseCallModal}
+        />
+      </div>
+    </MainLayout>
   )
 }

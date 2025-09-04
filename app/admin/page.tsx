@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { 
-  Phone, 
-  FileText, 
-  ShoppingCart, 
-  MessageSquare, 
-  Filter, 
+import {
+  Phone,
+  FileText,
+  ShoppingCart,
+  MessageSquare,
+  Filter,
   Download,
   Plus,
   Search,
@@ -23,6 +23,7 @@ import AddRequestModal from '@/components/admin/AddRequestModal'
 import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 import EditableCell from '@/components/admin/EditableCell'
 import { AdminGuard } from '@/components/auth/AdminGuard'
+import { useAuth } from '@/contexts/AuthContext'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -65,6 +66,7 @@ interface Purchase {
 }
 
 function AdminPageContent() {
+  const { logout } = useAuth()
   const [activeTab, setActiveTab] = useState<'requests' | 'purchases'>('requests')
   const [requests, setRequests] = useState<Request[]>([])
   const [purchases, setPurchases] = useState<Purchase[]>([])
@@ -80,26 +82,26 @@ function AdminPageContent() {
 
   // Фильтрация данных
   const filteredRequests = requests.filter(request => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (request.email && request.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (request.phone && request.phone.includes(searchTerm))
-    
+
     const matchesType = filter === 'all' || request.product_type === filter
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter
-    
+
     return matchesSearch && matchesType && matchesStatus
   })
 
   const filteredPurchases = purchases.filter(purchase => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       purchase.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (purchase.email && purchase.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (purchase.phone && purchase.phone.includes(searchTerm))
-    
+
     const matchesType = filter === 'all' || purchase.product_type === filter
     const matchesStatus = statusFilter === 'all' || purchase.status === statusFilter
-    
+
     return matchesSearch && matchesType && matchesStatus
   })
 
@@ -124,7 +126,7 @@ function AdminPageContent() {
     try {
       const response = await fetch('/api/admin/data?type=requests')
       const result = await response.json()
-      
+
       console.log('API response:', result)
 
       if (result.success) {
@@ -151,7 +153,7 @@ function AdminPageContent() {
     try {
       const response = await fetch('/api/admin/data?type=purchases')
       const result = await response.json()
-      
+
       console.log('API response purchases:', result)
 
       if (result.success) {
@@ -170,7 +172,7 @@ function AdminPageContent() {
     try {
       const response = await fetch('/api/admin/data?type=documents')
       const result = await response.json()
-      
+
       if (result.success) {
         setDocuments(result.data || [])
       }
@@ -196,8 +198,8 @@ function AdminPageContent() {
       const result = await response.json()
 
       if (result.success) {
-        setRequests(prev => 
-          prev.map(req => 
+        setRequests(prev =>
+          prev.map(req =>
             req.id === id ? { ...req, status: status as any } : req
           )
         )
@@ -226,8 +228,8 @@ function AdminPageContent() {
       const result = await response.json()
 
       if (result.success) {
-        setPurchases(prev => 
-          prev.map(pur => 
+        setPurchases(prev =>
+          prev.map(pur =>
             pur.id === id ? { ...pur, status: status as any } : pur
           )
         )
@@ -258,14 +260,14 @@ function AdminPageContent() {
 
       if (result.success) {
         if (type === 'request') {
-          setRequests(prev => 
-            prev.map(req => 
+          setRequests(prev =>
+            prev.map(req =>
               req.id === id ? { ...req, [field]: value } : req
             )
           )
         } else {
-          setPurchases(prev => 
-            prev.map(pur => 
+          setPurchases(prev =>
+            prev.map(pur =>
               pur.id === id ? { ...pur, [field]: value } : pur
             )
           )
@@ -350,10 +352,10 @@ function AdminPageContent() {
 
   const exportToCSV = () => {
     const data = activeTab === 'requests' ? requests : purchases
-    const headers = activeTab === 'requests' 
+    const headers = activeTab === 'requests'
       ? ['ID', 'Имя', 'Email', 'Телефон', 'Дата', 'Статус', 'Приоритет', 'Источник', 'Товар']
       : ['ID', 'Имя', 'Email', 'Телефон', 'Дата', 'Товар', 'Сумма', 'Статус', 'Способ оплаты']
-    
+
     const csvContent = [
       headers.join(','),
       ...data.map(item => {
@@ -413,14 +415,21 @@ function AdminPageContent() {
               <p className="text-white/70 mt-1">Управление заявками и покупками</p>
             </div>
             <div className="flex gap-3">
-              <Button 
+              <Button
+                onClick={logout}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Выйти
+              </Button>
+              <Button
                 onClick={exportToCSV}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Экспорт CSV
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
                   console.log('Button clicked!')
                   if (activeTab === 'requests') {
@@ -436,7 +445,7 @@ function AdminPageContent() {
                 <Download className="w-4 h-4 mr-2" />
                 Обновить {activeTab === 'requests' ? 'заявки' : 'покупки'}
               </Button>
-              <Button 
+              <Button
                 onClick={() => activeTab === 'requests' ? setShowAddRequestModal(true) : setShowAddPurchaseModal(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
@@ -454,11 +463,10 @@ function AdminPageContent() {
           <div className="flex">
             <button
               onClick={() => setActiveTab('requests')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'requests'
-                  ? 'bg-white text-gray-900'
-                  : 'text-white hover:bg-white/10'
-              }`}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'requests'
+                ? 'bg-white text-gray-900'
+                : 'text-white hover:bg-white/10'
+                }`}
             >
               <div className="flex items-center justify-center">
                 <Phone className="w-4 h-4 mr-2" />
@@ -467,11 +475,10 @@ function AdminPageContent() {
             </button>
             <button
               onClick={() => setActiveTab('purchases')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'purchases'
-                  ? 'bg-white text-gray-900'
-                  : 'text-white hover:bg-white/10'
-              }`}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'purchases'
+                ? 'bg-white text-gray-900'
+                : 'text-white hover:bg-white/10'
+                }`}
             >
               <div className="flex items-center justify-center">
                 <ShoppingCart className="w-4 h-4 mr-2" />
@@ -495,17 +502,17 @@ function AdminPageContent() {
                 className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
-      <AddPurchaseModal
-        isOpen={showAddPurchaseModal}
-        onClose={() => setShowAddPurchaseModal(false)}
-        onSuccess={() => {
-          console.log('Purchase added, refreshing...')
-          setShowAddPurchaseModal(false)
-          if (activeTab === 'purchases') {
-            fetchPurchases()
-          }
-        }}
-      />
+              <AddPurchaseModal
+                isOpen={showAddPurchaseModal}
+                onClose={() => setShowAddPurchaseModal(false)}
+                onSuccess={() => {
+                  console.log('Purchase added, refreshing...')
+                  setShowAddPurchaseModal(false)
+                  if (activeTab === 'purchases') {
+                    fetchPurchases()
+                  }
+                }}
+              />
             </div>
 
             {/* Status Filter */}
@@ -580,14 +587,14 @@ function AdminPageContent() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
             <div className="flex items-center">
               <Clock className="w-8 h-8 text-yellow-400 mr-3" />
               <div>
                 <p className="text-white/70 text-sm">Новые</p>
                 <p className="text-2xl font-bold text-white">
-                  {activeTab === 'requests' 
+                  {activeTab === 'requests'
                     ? requests.filter(r => r.status === 'new').length
                     : purchases.filter(p => p.status === 'pending').length
                   }
@@ -595,7 +602,7 @@ function AdminPageContent() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
             <div className="flex items-center">
               <User className="w-8 h-8 text-green-400 mr-3" />
@@ -604,7 +611,7 @@ function AdminPageContent() {
                   {activeTab === 'requests' ? 'В работе' : 'Завершенные'}
                 </p>
                 <p className="text-2xl font-bold text-white">
-                  {activeTab === 'requests' 
+                  {activeTab === 'requests'
                     ? requests.filter(r => r.status === 'in_progress').length
                     : purchases.filter(p => p.status === 'completed').length
                   }
@@ -612,7 +619,7 @@ function AdminPageContent() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
             <div className="flex items-center">
               <CreditCard className="w-8 h-8 text-purple-400 mr-3" />
@@ -621,7 +628,7 @@ function AdminPageContent() {
                   {activeTab === 'requests' ? 'Завершенные' : 'Общая сумма'}
                 </p>
                 <p className="text-2xl font-bold text-white">
-                  {activeTab === 'requests' 
+                  {activeTab === 'requests'
                     ? requests.filter(r => r.status === 'completed').length
                     : `${purchases.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0)} ₽`
                   }

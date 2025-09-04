@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Star, Quote, Filter, ThumbsUp } from 'lucide-react'
 import Link from 'next/link'
-import { Navbar } from '@/components/home/Navbar'
+import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
 
@@ -162,19 +162,18 @@ export default function ReviewsPage() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${
-          i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-        }`}
+        className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+          }`}
       />
     ))
   }
 
   const averageRating = allReviews.reduce((sum, review) => sum + review.rating, 0) / allReviews.length
 
-  return (
+    return (
     <div className="relative">
       {/* Главное меню */}
-      <Navbar onCallRequest={handleCallRequest} />
+      <MainHeader onCallRequest={handleCallRequest} />
       
       {/* Основной контент */}
       <main ref={sectionRef}>
@@ -231,7 +230,7 @@ export default function ReviewsPage() {
                     <Filter className="w-5 h-5 text-gray-400" />
                     <span className="font-medium text-gray-700">Фильтры:</span>
                   </div>
-                  
+
                   <select
                     value={filterRating || ''}
                     onChange={(e) => setFilterRating(e.target.value ? parseInt(e.target.value) : null)}
@@ -274,7 +273,7 @@ export default function ReviewsPage() {
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                         {review.name.charAt(0)}
                       </div>
-                      
+
                       <div className="flex-1">
                         <div className="flex items-center gap-4 mb-2">
                           <h3 className="font-semibold text-gray-900">{review.name}</h3>
@@ -287,7 +286,7 @@ export default function ReviewsPage() {
                             {review.program}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-4 mb-3">
                           <div className="flex">
                             {renderStars(review.rating)}
@@ -296,12 +295,12 @@ export default function ReviewsPage() {
                             {new Date(review.date).toLocaleDateString('ru-RU')}
                           </span>
                         </div>
-                        
+
                         <div className="relative">
                           <Quote className="absolute -top-2 -left-2 w-6 h-6 text-gray-300" />
                           <p className="text-gray-700 leading-relaxed pl-4">{review.text}</p>
                         </div>
-                        
+
                         <div className="flex items-center gap-4 mt-4 pt-4 border-t">
                           <button className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors">
                             <ThumbsUp className="w-4 h-4" />
@@ -357,12 +356,12 @@ export default function ReviewsPage() {
           </div>
         </section>
       </main>
-      
+
       {/* Footer */}
       <Footer />
-      
+
       {/* Call request modal */}
-      <CallRequestModal 
+      <CallRequestModal
         isOpen={isCallModalOpen}
         onClose={handleCloseCallModal}
       />

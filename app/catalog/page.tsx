@@ -6,7 +6,7 @@ import { FileText, Filter, Eye, ShoppingCart, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import type { Document } from '@/types'
-import { Navbar } from '@/components/home/Navbar'
+import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
 
@@ -235,8 +235,8 @@ export default function CatalogPage() {
   return (
     <div className="relative">
       {/* Главное меню */}
-      <Navbar onCallRequest={handleCallRequest} />
-
+      <MainHeader onCallRequest={handleCallRequest} />
+      
       {/* Основной контент */}
       <main ref={sectionRef}>
         {/* Hero Section */}

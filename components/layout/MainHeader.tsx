@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Phone, Menu, X } from 'lucide-react'
+import { Menu, X, Phone } from 'lucide-react'
 
 interface MainHeaderProps {
   onCallRequest?: () => void
@@ -14,7 +14,8 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
 
   const navigation = [
     { name: 'О проекте', href: '/about' },
-    { name: 'Каталог', href: '/catalog' },
+    { name: 'Программы', href: '/book' },
+    { name: 'PDF-файлы', href: '/catalog' },
     { name: 'Отзывы', href: '/reviews' },
     { name: 'Контакты', href: '/contacts' },
   ]
@@ -28,15 +29,22 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
     }
   }
 
+
+  // Единый стиль для всех страниц
+  const headerClasses = 'bg-white/95 backdrop-blur-md shadow-lg border-b sticky top-0 z-50'
+  const logoClasses = 'text-2xl font-bold text-gray-900'
+  const navLinkClasses = (baseClasses: string) => `${baseClasses} text-gray-700`
+
+  const buttonClasses = 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300'
+
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+    <header className={headerClasses}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold">
-              <span className="text-blue-600">Energy</span>
-              <span className="text-gray-900">Logic</span>
+            <span className={logoClasses}>
+              Energy<span className="text-blue-500">Logic</span>
             </span>
           </Link>
 
@@ -46,33 +54,32 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                className={navLinkClasses('text-sm font-medium hover:text-blue-500')}
               >
                 {item.name}
               </Link>
             ))}
           </nav>
 
-          {/* Phone and Call to Action Button */}
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Phone Number */}
-            <div className="flex items-center space-x-2">
-              <Phone className="w-4 h-4 text-gray-600" />
-              <a 
-                href="tel:+79991234567" 
-                className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                +7 (999) 123-45-67
-              </a>
-            </div>
-
+          {/* Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
             {/* Call Request Button */}
             <Button
+              size="sm"
               onClick={handleCallRequest}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
+              className={buttonClasses}
             >
               <Phone className="w-4 h-4 mr-2" />
               Заказать звонок
+            </Button>
+
+            {/* Personal Cabinet Button */}
+            <Button
+              size="sm"
+              asChild
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-200"
+            >
+              <Link href="/auth/login">Личный кабинет</Link>
             </Button>
           </div>
 
@@ -82,7 +89,7 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2"
+              className="p-2 text-gray-900"
             >
               {isMobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -95,7 +102,7 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t bg-white">
+          <div className="md:hidden bg-white border-t border-gray-200">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navigation.map((item) => (
                 <Link
@@ -107,18 +114,8 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
                   {item.name}
                 </Link>
               ))}
-              
-              {/* Mobile Phone */}
-              <div className="px-3 py-2 border-t border-gray-100">
-                <div className="flex items-center space-x-2 text-gray-700">
-                  <Phone className="w-4 h-4" />
-                  <a href="tel:+79991234567" className="text-sm font-medium hover:text-blue-600">
-                    +7 (999) 123-45-67
-                  </a>
-                </div>
-              </div>
 
-              <div className="px-3 py-2">
+              <div className="px-3 py-2 border-t border-gray-100 space-y-2">
                 <Button
                   onClick={() => {
                     handleCallRequest()
@@ -128,6 +125,14 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
                 >
                   <Phone className="w-4 h-4 mr-2" />
                   Заказать звонок
+                </Button>
+
+                <Button
+                  asChild
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Link href="/auth/login">Личный кабинет</Link>
                 </Button>
               </div>
             </div>

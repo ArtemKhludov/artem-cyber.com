@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Phone, Mail, MapPin, MessageCircle, Send, Clock, Users, Globe } from 'lucide-react'
 import Link from 'next/link'
-import { Navbar } from '@/components/home/Navbar'
+import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
 
@@ -36,7 +36,7 @@ export default function ContactsPage() {
       }
       setChatMessages([...chatMessages, newMessage])
       setChatMessage('')
-      
+
       // Имитация ответа менеджера
       setTimeout(() => {
         const managerResponse = {
@@ -105,10 +105,10 @@ export default function ContactsPage() {
     { name: 'Instagram', href: 'https://instagram.com/energylogic', icon: '🟣', color: 'hover:bg-purple-600' }
   ]
 
-  return (
+    return (
     <div className="relative">
       {/* Главное меню */}
-      <Navbar onCallRequest={handleCallRequest} />
+      <MainHeader onCallRequest={handleCallRequest} />
       
       {/* Основной контент */}
       <main ref={sectionRef}>
@@ -141,8 +141,8 @@ export default function ContactsPage() {
                       <contact.icon className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">{contact.title}</h3>
-                    <a 
-                      href={contact.href} 
+                    <a
+                      href={contact.href}
                       className="text-blue-600 hover:text-blue-700 font-medium block mb-1"
                     >
                       {contact.value}
@@ -160,7 +160,7 @@ export default function ContactsPage() {
                   <p className="text-gray-600 mb-6">
                     Оставьте свои контакты, и мы перезвоним вам в удобное время
                   </p>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Имя</label>
@@ -196,7 +196,7 @@ export default function ContactsPage() {
                         placeholder="О чем хотите поговорить?"
                       />
                     </div>
-                    <Button 
+                    <Button
                       onClick={handleCallRequest}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
                     >
@@ -215,7 +215,7 @@ export default function ContactsPage() {
                       <span className="text-sm text-green-600">Онлайн</span>
                     </div>
                   </div>
-                  
+
                   <p className="text-gray-600 mb-6">
                     Напишите нам прямо сейчас. Менеджер ответит в течение 2-3 минут
                   </p>
@@ -228,16 +228,14 @@ export default function ContactsPage() {
                         className={`mb-3 ${message.isUser ? 'text-right' : 'text-left'}`}
                       >
                         <div
-                          className={`inline-block max-w-xs px-4 py-2 rounded-lg text-sm ${
-                            message.isUser
+                          className={`inline-block max-w-xs px-4 py-2 rounded-lg text-sm ${message.isUser
                               ? 'bg-blue-600 text-white'
                               : 'bg-white text-gray-800 border border-gray-200'
-                          }`}
+                            }`}
                         >
                           <p>{message.text}</p>
-                          <p className={`text-xs mt-1 ${
-                            message.isUser ? 'text-blue-100' : 'text-gray-500'
-                          }`}>
+                          <p className={`text-xs mt-1 ${message.isUser ? 'text-blue-100' : 'text-gray-500'
+                            }`}>
                             {message.time}
                           </p>
                         </div>
@@ -328,12 +326,12 @@ export default function ContactsPage() {
           </div>
         </section>
       </main>
-      
+
       {/* Footer */}
       <Footer />
-      
+
       {/* Call request modal */}
-      <CallRequestModal 
+      <CallRequestModal
         isOpen={isCallModalOpen}
         onClose={handleCloseCallModal}
       />

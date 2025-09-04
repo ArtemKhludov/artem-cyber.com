@@ -23,15 +23,19 @@ function LoginForm() {
   useEffect(() => {
     if (user) {
       // Определяем куда перенаправить в зависимости от роли
+      console.log('useEffect redirect - user role:', user.role, 'redirect:', redirect)
       if (redirect && redirect !== '/') {
-        router.push(redirect)
+        console.log('Redirecting to custom redirect:', redirect)
+        window.location.href = redirect
       } else if (user.role === 'admin') {
-        router.push('/admin')
+        console.log('Redirecting admin to /admin')
+        window.location.href = '/admin'
       } else {
-        router.push('/dashboard')
+        console.log('Redirecting user to /dashboard')
+        window.location.href = '/dashboard'
       }
     }
-  }, [user, router, redirect])
+  }, [user, redirect])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,15 +44,9 @@ function LoginForm() {
 
     const result = await login(email, password)
 
-    if (result.success) {
-      // Определяем куда перенаправить в зависимости от роли
-      if (redirect && redirect !== '/') {
-        router.push(redirect)
-      } else if (user?.role === 'admin') {
-        router.push('/admin')
-      } else {
-        router.push('/dashboard')
-      }
+    if (result.success && result.user) {
+      console.log('Login successful, user role:', result.user.role)
+      // Не делаем перенаправление здесь - пусть useEffect сделает это
     } else {
       setError(result.error || 'Ошибка входа')
     }
