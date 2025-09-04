@@ -81,26 +81,24 @@ export function Legal() {
     <section ref={sectionRef} className="py-16 bg-gradient-to-b from-gray-50 to-white border-t border-gray-200">
       <div className="container mx-auto px-4">
         {/* Заголовок секции */}
-        <div className={`text-center mb-12 transform transition-all duration-1000 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`text-center mb-12 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Правовая информация
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Мы работаем полностью прозрачно и в соответствии с российским 
+            Мы работаем полностью прозрачно и в соответствии с российским
             и международным законодательством
           </p>
         </div>
 
         {/* Основные документы */}
-        <div className={`grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 transform transition-all duration-1000 delay-200 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 transform transition-all duration-1000 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           {legalLinks.map((link, index) => {
             const IconComponent = link.icon
             return (
-              <Link 
+              <Link
                 key={index}
                 href={link.href}
                 className="group block bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300"
@@ -127,9 +125,8 @@ export function Legal() {
         </div>
 
         {/* Дополнительная информация */}
-        <div className={`grid md:grid-cols-2 gap-8 transform transition-all duration-1000 delay-400 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`grid md:grid-cols-2 gap-8 transform transition-all duration-1000 delay-400 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           {additionalInfo.map((section, index) => (
             <div key={index} className="bg-gray-50 p-6 rounded-xl">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -148,26 +145,25 @@ export function Legal() {
         </div>
 
         {/* Контактная информация для правовых вопросов */}
-        <div className={`mt-12 bg-blue-50 p-6 rounded-xl text-center transform transition-all duration-1000 delay-600 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`mt-12 bg-blue-50 p-6 rounded-xl text-center transform transition-all duration-1000 delay-600 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Вопросы по правовым аспектам?
           </h3>
           <p className="text-gray-600 mb-4">
-            Наш юридический отдел готов ответить на любые вопросы, 
+            Наш юридический отдел готов ответить на любые вопросы,
             связанные с использованием наших услуг
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-sm">
-            <a 
-              href="mailto:legal@energylogic.com" 
+            <a
+              href="mailto:legal@energylogic.com"
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
               legal@energylogic.com
             </a>
             <span className="hidden sm:block text-gray-400">•</span>
-            <a 
-              href="tel:+79991234567" 
+            <a
+              href="tel:+79991234567"
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
               +7 (999) 123-45-67 (доб. 2)
@@ -176,18 +172,17 @@ export function Legal() {
         </div>
 
         {/* Информация о компании */}
-        <div className={`mt-8 text-center text-sm text-gray-500 transform transition-all duration-1000 delay-800 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`mt-8 text-center text-sm text-gray-500 transform transition-all duration-1000 delay-800 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           <div className="space-y-2">
             <p>
-              ООО "ЭнерджиЛоджик" • ИНН: 1234567890 • ОГРН: 1234567890123
+              ООО &ldquo;ЭнерджиЛоджик&rdquo; • ИНН: 1234567890 • ОГРН: 1234567890123
             </p>
             <p>
               Москва, ул. Примерная, д. 123, офис 456 • Лицензия № 123456 от 01.01.2020
             </p>
             <p className="mt-4 pt-4 border-t border-gray-200">
-              Все права защищены © 2024 EnergyLogic. 
+              Все права защищены © 2024 EnergyLogic.
               Использование материалов сайта возможно только с письменного разрешения правообладателя.
             </p>
           </div>

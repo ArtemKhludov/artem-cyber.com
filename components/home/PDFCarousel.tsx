@@ -32,14 +32,14 @@ export function PDFCarousel() {
   // Функция перемещения к слайду
   const moveToSlide = (index: number, withTransition = true) => {
     if (!carouselRef.current || isTransitioning) return;
-    
+
     console.log(`Перемещаемся к слайду ${index}, переход: ${withTransition}`);
-    
+
     setIsTransitioning(withTransition);
     carouselRef.current.style.transition = withTransition ? 'transform 0.5s ease-in-out' : 'none';
     carouselRef.current.style.transform = `translateX(-${index * cardWidth}px)`;
     setCurrentIndex(index);
-    
+
     if (withTransition) {
       setTimeout(() => {
         setIsTransitioning(false);
@@ -51,7 +51,7 @@ export function PDFCarousel() {
   // Проверка на зацикливание
   const checkForLoop = (index: number) => {
     if (!carouselRef.current || documents.length === 0) return;
-    
+
     // Если дошли до последнего набора - перепрыгиваем в начало среднего набора
     if (index >= documents.length * 2) {
       const newIndex = index - documents.length;
@@ -164,9 +164,9 @@ export function PDFCarousel() {
   }
 
   return (
-    <section 
+    <section
       id="pdf-files"
-      ref={sectionRef} 
+      ref={sectionRef}
       className="py-32 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden"
     >
       {/* Фоновые эффекты */}
@@ -209,7 +209,7 @@ export function PDFCarousel() {
             >
               <ChevronRight className="w-6 h-6 text-gray-800" />
             </button>
-            
+
             <div className="overflow-hidden">
               <div
                 ref={carouselRef}
@@ -239,8 +239,8 @@ export function PDFCarousel() {
 
         {/* Кнопка просмотра всех материалов */}
         <div className={`text-center mt-12 transition-all duration-1000 delay-600 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <Button 
-            asChild 
+          <Button
+            asChild
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold"
           >
             <Link href="/catalog">

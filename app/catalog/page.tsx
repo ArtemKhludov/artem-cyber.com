@@ -44,13 +44,12 @@ function DocumentCard({ document, index }: { document: Document; index: number }
   return (
     <div
       ref={cardRef}
-      className={`transform transition-all duration-700 ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-      }`}
+      className={`transform transition-all duration-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+        }`}
       style={{ transitionDelay: `${index * 50}ms` }}
     >
       <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 group h-full border border-gray-100 transform hover:scale-[1.02]">
-        
+
         {/* PDF Preview Section */}
         <div className="relative h-64 overflow-hidden">
           {/* Обложка как фон */}
@@ -62,7 +61,7 @@ function DocumentCard({ document, index }: { document: Document; index: number }
               onError={handleImageError}
             />
           )}
-          
+
           {/* Fallback градиент если нет обложки */}
           {(imageError || !document.cover_url) && (
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
@@ -82,10 +81,10 @@ function DocumentCard({ document, index }: { document: Document; index: number }
                 title={`Предпросмотр ${document.title}`}
                 onLoad={() => setPdfPreviewLoaded(true)}
               />
-              
+
               {/* Overlay для читаемости */}
               <div className="absolute inset-0 bg-black/20"></div>
-              
+
               {/* Индикатор предпросмотра */}
               <div className="absolute top-4 left-4 bg-white/90 rounded-lg px-3 py-1 text-xs font-medium text-gray-700">
                 📄 Первая страница
@@ -112,15 +111,15 @@ function DocumentCard({ document, index }: { document: Document; index: number }
           <h3 className="font-bold text-lg text-gray-900 mb-3 line-clamp-2 leading-tight">
             {document.title}
           </h3>
-          
+
           <p className="text-gray-600 text-sm line-clamp-3 mb-4 leading-relaxed">
             {document.description}
           </p>
 
           {/* Action Buttons */}
           <div className="space-y-2">
-            <Button 
-              asChild 
+            <Button
+              asChild
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2 rounded-xl transition-all duration-300 transform hover:scale-[1.02]"
             >
               <Link href={`/pdf/${document.id}`}>
@@ -128,10 +127,10 @@ function DocumentCard({ document, index }: { document: Document; index: number }
                 Посмотреть подробнее
               </Link>
             </Button>
-            
-            <Button 
-              asChild 
-              variant="outline" 
+
+            <Button
+              asChild
+              variant="outline"
               className="w-full border-2 border-blue-200 text-blue-600 hover:border-blue-500 hover:bg-blue-50 py-2 rounded-xl transition-all duration-300"
             >
               <Link href={`/checkout/${document.id}`}>
@@ -187,7 +186,7 @@ export default function CatalogPage() {
     try {
       setLoading(true)
       setError(null)
-      
+
       const { data, error: fetchError } = await supabase
         .from('documents')
         .select('*')
@@ -237,7 +236,7 @@ export default function CatalogPage() {
     <div className="relative">
       {/* Главное меню */}
       <Navbar onCallRequest={handleCallRequest} />
-      
+
       {/* Основной контент */}
       <main ref={sectionRef}>
         {/* Hero Section */}
@@ -260,15 +259,15 @@ export default function CatalogPage() {
         <section className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              
+
               {/* Controls */}
               <div className="bg-white rounded-xl p-6 shadow-sm mb-8 border border-gray-100">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                  
+
                   <div className="flex items-center gap-3">
                     <Filter className="w-5 h-5 text-gray-500" />
                     <span className="text-gray-700 font-medium">Сортировка:</span>
-                    <select 
+                    <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as any)}
                       className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
@@ -379,12 +378,12 @@ export default function CatalogPage() {
           </div>
         </section>
       </main>
-      
+
       {/* Footer */}
       <Footer />
-      
+
       {/* Call request modal */}
-      <CallRequestModal 
+      <CallRequestModal
         isOpen={isCallModalOpen}
         onClose={handleCloseCallModal}
       />

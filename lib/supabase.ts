@@ -5,6 +5,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholde
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Export createClient for server-side usage
+export { createClient }
+
 // Server-side client with service role key
 export const getSupabaseAdmin = () => {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {

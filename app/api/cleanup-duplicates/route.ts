@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 export async function POST(request: NextRequest) {
   try {
     console.log('🧹 API: Начинаем очистку дубликатов...')
-    
+
     // Получаем все документы
     const { data: allDocs, error: fetchError } = await supabase
       .from('documents')
@@ -12,16 +12,16 @@ export async function POST(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (fetchError) {
-      return NextResponse.json({ 
-        error: 'Ошибка получения документов', 
-        details: fetchError 
+      return NextResponse.json({
+        error: 'Ошибка получения документов',
+        details: fetchError
       }, { status: 500 })
     }
 
     if (!allDocs || allDocs.length === 0) {
-      return NextResponse.json({ 
-        message: 'Документов не найдено', 
-        duplicatesRemoved: 0 
+      return NextResponse.json({
+        message: 'Документов не найдено',
+        duplicatesRemoved: 0
       })
     }
 
@@ -37,17 +37,17 @@ export async function POST(request: NextRequest) {
     // Находим дубликаты
     const idsToDelete: string[] = []
     const report: any[] = []
-    
+
     Object.entries(groups).forEach(([title, docs]) => {
       if (docs.length > 1) {
         // Сортируем по дате (новые первыми)
         docs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        
+
         const keepDoc = docs[0]
         const duplicates = docs.slice(1)
-        
+
         idsToDelete.push(...duplicates.map(doc => doc.id))
-        
+
         report.push({
           title,
           totalCopies: docs.length,
@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
     })
 
     if (idsToDelete.length === 0) {
-      return NextResponse.json({ 
-        message: 'Дубликаты не найдены', 
+      return NextResponse.json({
+        message: 'Дубликаты не найдены',
         duplicatesRemoved: 0,
         report: []
       })
@@ -68,10 +68,10 @@ export async function POST(request: NextRequest) {
     // Удаляем дубликаты
     let deletedCount = 0
     const batchSize = 5
-    
+
     for (let i = 0; i < idsToDelete.length; i += batchSize) {
       const batch = idsToDelete.slice(i, i + batchSize)
-      
+
       const { error: deleteError } = await supabase
         .from('documents')
         .delete()
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       if (!deleteError) {
         deletedCount += batch.length
       }
-      
+
       // Небольшая пауза
       await new Promise(resolve => setTimeout(resolve, 200))
     }
@@ -94,9 +94,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ API Error:', error)
-    return NextResponse.json({ 
-      error: 'Внутренняя ошибка сервера', 
-      details: error 
+    return NextResponse.json({
+      error: 'Внутренняя ошибка сервера',
+      details: error
     }, { status: 500 })
   }
 }
@@ -117,7 +117,7 @@ export async function GET() {
       return acc
     }, {})
 
-    const duplicates = Object.entries(titleCounts).filter(([_, count]) => count > 1)
+    const duplicates = Object.entries(titleCounts).filter(([_, count]) => (count as number) > 1)
 
     return NextResponse.json({
       totalDocuments: docs.length,

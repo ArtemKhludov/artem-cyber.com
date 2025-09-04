@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
 import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 import EditableCell from '@/components/admin/EditableCell'
+import { AdminGuard } from '@/components/auth/AdminGuard'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -59,9 +60,11 @@ interface Purchase {
   currency: string
   status: 'pending' | 'completed' | 'cancelled'
   payment_method?: string
+  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  source?: 'website' | 'phone' | 'manual' | 'chat' | 'other'
 }
 
-export default function AdminPage() {
+function AdminPageContent() {
   const [activeTab, setActiveTab] = useState<'requests' | 'purchases'>('requests')
   const [requests, setRequests] = useState<Request[]>([])
   const [purchases, setPurchases] = useState<Purchase[]>([])
@@ -756,7 +759,7 @@ export default function AdminPage() {
                       </td>
                       {activeTab === 'requests' && (
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority)}`}>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'medium')}`}>
                             {item.priority === 'urgent' && 'Срочно'}
                             {item.priority === 'high' && 'Высокий'}
                             {item.priority === 'medium' && 'Средний'}
@@ -766,12 +769,12 @@ export default function AdminPage() {
                       )}
                       {activeTab === 'purchases' && (
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
-                          {item.amount} ₽
+                          {'amount' in item ? item.amount : 0} ₽
                         </td>
                       )}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center text-sm text-white">
-                          {getSourceIcon(item.source)}
+                          {getSourceIcon(item.source || 'other')}
                           <span className="ml-1">
                             {item.source === 'website' && 'Сайт'}
                             {item.source === 'phone' && 'Телефон'}
@@ -830,5 +833,13 @@ export default function AdminPage() {
         }}
       />
     </div>
+  )
+}
+
+export default function AdminPage() {
+  return (
+    <AdminGuard>
+      <AdminPageContent />
+    </AdminGuard>
   )
 }

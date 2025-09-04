@@ -64,9 +64,8 @@ export function MockReviews() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${
-          i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-        }`}
+        className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+          }`}
       />
     ))
   }
@@ -89,7 +88,7 @@ export function MockReviews() {
             <div className="absolute top-6 right-6 text-blue-100">
               <Quote className="w-16 h-16" />
             </div>
-            
+
             <div className="relative z-10">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -109,9 +108,9 @@ export function MockReviews() {
                   </div>
                 </div>
               </div>
-              
+
               <blockquote className="text-lg lg:text-xl text-gray-700 leading-relaxed italic">
-                "{mockReviews[currentReviewIndex].text}"
+                &ldquo;{mockReviews[currentReviewIndex].text}&rdquo;
               </blockquote>
             </div>
           </div>
@@ -122,11 +121,10 @@ export function MockReviews() {
               <button
                 key={index}
                 onClick={() => setCurrentReviewIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentReviewIndex
-                    ? 'bg-blue-600 scale-125'
-                    : 'bg-gray-300 hover:bg-gray-400'
-                }`}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentReviewIndex
+                  ? 'bg-blue-600 scale-125'
+                  : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
               />
             ))}
           </div>
@@ -136,9 +134,8 @@ export function MockReviews() {
             {mockReviews.slice(0, 3).map((review, index) => (
               <div
                 key={review.id}
-                className={`bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 ${
-                  index === currentReviewIndex ? 'ring-2 ring-blue-500' : ''
-                }`}
+                className={`bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 ${index === currentReviewIndex ? 'ring-2 ring-blue-500' : ''
+                  }`}
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">

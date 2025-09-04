@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "next"
+  ],
+  "rules": {
+    // React правила
+    "react/no-unescaped-entities": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    // Next.js правила
+    "@next/next/no-img-element": "warn",
+    // Общие правила
+    "no-console": "warn",
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-unused-vars": "warn"
+  }
+}

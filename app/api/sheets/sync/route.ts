@@ -185,7 +185,7 @@ async function getSheetId(sheetName: string): Promise<number> {
   const response = await sheets.spreadsheets.get({
     spreadsheetId: SPREADSHEET_ID
   })
-  
+
   const sheet = response.data.sheets?.find(s => s.properties?.title === sheetName)
   return sheet?.properties?.sheetId || 0
 }
@@ -196,12 +196,12 @@ async function syncAll() {
 }
 
 // Функция для добавления одной записи
-export async function addToSheets(type: 'request' | 'purchase', data: any) {
+async function addToSheets(type: 'request' | 'purchase', data: any) {
   try {
     const sheetName = type === 'request' ? 'Заявки' : 'Покупки'
-    
+
     let row: any[] = []
-    
+
     if (type === 'request') {
       row = [
         data.id,
@@ -246,3 +246,4 @@ export async function addToSheets(type: 'request' | 'purchase', data: any) {
     return false
   }
 }
+

@@ -172,13 +172,11 @@ export class DocumentService {
       id: doc.id.trim(),
       title: doc.title.trim(),
       description: doc.description.trim(),
-      price: doc.price || doc.price_rub,
       price_rub: Number(doc.price_rub),
       file_url: doc.file_url.trim(),
-      cover_url: doc.cover_url?.trim() || null,
+      cover_url: doc.cover_url?.trim() || '',
       created_at: doc.created_at,
-      updated_at: doc.updated_at,
-      page_count: doc.page_count || null
+      updated_at: doc.updated_at
     }
   }
 
@@ -194,10 +192,10 @@ export class DocumentService {
 
   // Получить количество страниц с кешированием
   static async getPageCount(document: Document): Promise<number> {
-    // Если есть сохраненное количество страниц
-    if (document.page_count && document.page_count > 0) {
-      return document.page_count
-    }
+    // Если есть сохраненное количество страниц (временно отключено)
+    // if (document.page_count && document.page_count > 0) {
+    //   return document.page_count
+    // }
 
     // Запрашиваем через API
     try {
@@ -260,25 +258,21 @@ export const fallbackDocuments: Document[] = [
     id: "fallback-1",
     title: "EnergyLogic: Искусство Перекалибровки Реальности",
     description: "Исследование глубинных механизмов трансформации восприятия и многоуровневой работы с слоями реальности",
-    price: 199,
     price_rub: 199,
     file_url: "#",
     cover_url: "/images/fallback-cover-1.jpg",
     created_at: "2025-01-16T12:00:00Z",
     updated_at: "2025-01-16T12:00:00Z",
-    page_count: 35
   },
   {
     id: "fallback-2", 
     title: "Карта Самопознания: Когда Я Ничего Не Понимаю",
     description: "Путешествие к истинному пониманию себя — это непрерывный процесс трансформации",
-    price: 199,
     price_rub: 199,
     file_url: "#",
     cover_url: "/images/fallback-cover-2.jpg",
     created_at: "2025-01-16T12:00:00Z",
     updated_at: "2025-01-16T12:00:00Z",
-    page_count: 28
   }
 ]
 
@@ -291,7 +285,7 @@ export class ImageValidationService {
     
     try {
       const response = await fetch(url, { method: 'HEAD' })
-      return response.ok && response.headers.get('content-type')?.startsWith('image/')
+      return response.ok && (response.headers.get('content-type')?.startsWith('image/') || false)
     } catch {
       return false
     }

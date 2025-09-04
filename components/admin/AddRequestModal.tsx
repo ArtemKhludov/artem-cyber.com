@@ -127,7 +127,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
       email: '',
       phone: '',
       source: 'manual',
-      product_type: '',
+      product_type: 'other',
       product_id: '',
       product_name: '',
       priority: 'medium',

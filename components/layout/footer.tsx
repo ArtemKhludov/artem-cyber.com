@@ -16,10 +16,10 @@ export function Footer() {
               Energy<span className="text-white">Logic</span>
             </Link>
             <p className="text-gray-300 max-w-md mb-6 leading-relaxed">
-              Революционная платформа для глубокой трансформации личности. 
+              Революционная платформа для глубокой трансформации личности.
               Используем ИИ и передовые технологии для анализа и изменения жизни.
             </p>
-            
+
             {/* Контактная информация */}
             <div className="space-y-3">
               <div className="flex items-center text-gray-300">
@@ -46,7 +46,7 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-6 text-white">Навигация</h3>
             <ul className="space-y-3">
               <li>
-                <Link 
+                <Link
                   href="/about"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
@@ -54,7 +54,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link 
+                <Link
                   href="/book"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
@@ -62,7 +62,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link 
+                <Link
                   href="/catalog"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
@@ -70,7 +70,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link 
+                <Link
                   href="/reviews"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
@@ -78,7 +78,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link 
+                <Link
                   href="/contacts"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
@@ -177,10 +177,10 @@ export function Footer() {
                 © 2024 EnergyLogic. Все права защищены.
               </p>
               <p className="text-gray-500 text-xs mt-1">
-                ООО "ЭнерджиЛоджик" • ИНН: 1234567890 • ОГРН: 1234567890123
+                ООО &ldquo;ЭнерджиЛоджик&rdquo; • ИНН: 1234567890 • ОГРН: 1234567890123
               </p>
             </div>
-            
+
             <div className="flex flex-wrap justify-center lg:justify-end space-x-6 text-sm">
               <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
                 Конфиденциальность

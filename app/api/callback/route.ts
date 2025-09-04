@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { addToSheets } from '../sheets/sync/route'
+import { addToSheets } from '../../../lib/google-sheets'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(

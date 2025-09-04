@@ -44,7 +44,7 @@ export function useDocuments(options: {
             const isValidImage = await ImageValidationService.validateImageUrl(doc.cover_url)
             if (!isValidImage) {
               console.warn(`⚠️ Invalid cover image for ${doc.title}, will use fallback`)
-              return { ...doc, cover_url: null }
+              return { ...doc, cover_url: '' }
             }
           }
           return doc
@@ -124,7 +124,7 @@ export function useDocument(id: string) {
         if (doc.cover_url) {
           const isValidImage = await ImageValidationService.validateImageUrl(doc.cover_url)
           if (!isValidImage) {
-            doc.cover_url = null
+            doc.cover_url = ''
           }
         }
         setDocument(doc)

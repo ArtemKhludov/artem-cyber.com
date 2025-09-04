@@ -1,30 +1,45 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
+import { useAuth } from '@/contexts/AuthContext'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
+  const { login, user } = useAuth()
+
+  // Если пользователь уже авторизован, перенаправляем
+  useEffect(() => {
+    if (user) {
+      router.push(redirect)
+    }
+  }, [user, router, redirect])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError('')
     
-    // TODO: Добавить реальную авторизацию
-    setTimeout(() => {
-      setLoading(false)
+    const result = await login(email, password)
+    
+    if (result.success) {
       router.push(redirect)
-    }, 1500)
+    } else {
+      setError(result.error || 'Ошибка входа')
+    }
+    
+    setLoading(false)
   }
 
   return (
@@ -44,6 +59,13 @@ export default function LoginPage() {
           </div>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                <span className="text-red-700 text-sm">{error}</span>
+              </div>
+            )}
+            
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -150,5 +172,13 @@ export default function LoginPage() {
         </div>
       </div>
     </PageLayout>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Загрузка...</div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

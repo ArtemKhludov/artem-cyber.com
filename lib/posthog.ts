@@ -2,9 +2,9 @@
 let serverPostHog: any = null
 
 export const getServerPostHog = () => {
-  if (!serverPostHog && typeof window === 'undefined') {
+  if (!serverPostHog && typeof window === 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
     const { PostHog } = require('posthog-node')
-    serverPostHog = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+    serverPostHog = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
       host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
     })
   }
@@ -13,10 +13,10 @@ export const getServerPostHog = () => {
 
 // Client-side PostHog initialization function
 export const initPostHog = () => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
     const { default: posthog } = require('posthog-js')
     
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
       loaded: (posthog: any) => {
         if (process.env.NODE_ENV === 'development') posthog.debug()
@@ -25,6 +25,7 @@ export const initPostHog = () => {
     
     return posthog
   }
+  return null
 }
 
 // Default export for server-side usage

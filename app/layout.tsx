@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,9 +26,11 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <SupabaseProvider>
           <PostHogProvider>
-            <div className="min-h-screen">
-              {children}
-            </div>
+            <AuthProvider>
+              <div className="min-h-screen">
+                {children}
+              </div>
+            </AuthProvider>
           </PostHogProvider>
         </SupabaseProvider>
       </body>

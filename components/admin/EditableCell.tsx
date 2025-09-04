@@ -28,8 +28,8 @@ export default function EditableCell({
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus()
-      if (type === 'text' || type === 'textarea') {
-        inputRef.current.select()
+      if ((type === 'text' || type === 'textarea') && 'select' in inputRef.current) {
+        (inputRef.current as HTMLInputElement).select()
       }
     }
   }, [isEditing, type])

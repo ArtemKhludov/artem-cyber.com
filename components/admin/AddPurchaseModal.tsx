@@ -22,10 +22,8 @@ const supabase = createClient(
 
 interface Document {
   id: string
-  title: string
-  description?: string
-  id: string
   name: string
+  title: string
   description?: string
 }
 
@@ -73,7 +71,12 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
         .order('title')
 
       if (error) throw error
-      setDocuments(data || [])
+      setDocuments((data || []).map(doc => ({
+        id: doc.id,
+        name: doc.title,
+        title: doc.title,
+        description: doc.description
+      })))
     } catch (error) {
       console.error('Error fetching documents:', error)
     }

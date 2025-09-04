@@ -6,9 +6,29 @@ import { ChevronDown, FileText, Sparkles } from 'lucide-react'
 
 export function Hero() {
   const [isVisible, setIsVisible] = useState(false)
+  const [starPositions, setStarPositions] = useState<Array<{left: string, top: string, delay: string, duration: string}>>([])
+  const [particlePositions, setParticlePositions] = useState<Array<{left: string, top: string, delay: string, duration: string}>>([])
 
   useEffect(() => {
     setIsVisible(true)
+    
+    // Генерируем позиции звезд
+    const stars = [...Array(50)].map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 3}s`,
+      duration: `${2 + Math.random() * 2}s`
+    }))
+    setStarPositions(stars)
+    
+    // Генерируем позиции частиц
+    const particles = [...Array(20)].map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 5}s`,
+      duration: `${5 + Math.random() * 5}s`
+    }))
+    setParticlePositions(particles)
   }, [])
 
   const scrollToSection = (sectionId: string) => {
@@ -24,15 +44,15 @@ export function Hero() {
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
         {/* Звездный эффект */}
         <div className="absolute inset-0">
-          {[...Array(50)].map((_, i) => (
+          {starPositions.map((star, i) => (
             <div
               key={i}
               className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
+                left: star.left,
+                top: star.top,
+                animationDelay: star.delay,
+                animationDuration: star.duration
               }}
             />
           ))}
@@ -51,9 +71,8 @@ export function Hero() {
 
       {/* Контент */}
       <div className="relative z-10 text-center text-white px-4">
-        <div className={`transform transition-all duration-1000 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           {/* Иконка */}
           <div className="flex justify-center mb-6">
             <div className="relative">
@@ -77,12 +96,12 @@ export function Hero() {
             Психоанализ. Без масок. <br />
             <span className="text-blue-300 font-semibold">20 минут → PDF-отчёт</span>
             <span className="text-gray-300 mx-4">•</span>
-            <span className="text-purple-300 font-semibold">21 день → новое „Я"</span>
+            <span className="text-purple-300 font-semibold">21 день → новое „Я&ldquo;</span>
           </p>
 
           {/* Кнопки */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
+            <Button
               size="lg"
               onClick={() => window.location.href = '/book?product=deep'}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
@@ -126,21 +145,21 @@ export function Hero() {
 
       {/* Floating particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+        {particlePositions.map((particle, i) => (
           <div
             key={i}
             className="absolute w-2 h-2 bg-blue-400/30 rounded-full"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${5 + Math.random() * 5}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 5}s`
+              left: particle.left,
+              top: particle.top,
+              animation: `float ${particle.duration} ease-in-out infinite`,
+              animationDelay: particle.delay
             }}
           />
         ))}
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% {
             transform: translateY(0px) rotate(0deg);

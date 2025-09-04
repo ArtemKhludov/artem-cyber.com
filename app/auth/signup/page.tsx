@@ -1,46 +1,76 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Phone, AlertCircle } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
+import { useAuth } from '@/contexts/AuthContext'
 
-export default function SignupPage() {
+function SignupForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: ''
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/'
+  const { register, user } = useAuth()
+
+  // Если пользователь уже авторизован, перенаправляем
+  useEffect(() => {
+    if (user) {
+      router.push(redirect)
+    }
+  }, [user, router, redirect])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    setLoading(true)
+    setError('')
+
+    // Валидация
     if (formData.password !== formData.confirmPassword) {
-      alert('Пароли не совпадают')
+      setError('Пароли не совпадают')
+      setLoading(false)
       return
     }
-    
-    setLoading(true)
-    
-    // TODO: Добавить реальную регистрацию
-    setTimeout(() => {
+
+    if (formData.password.length < 6) {
+      setError('Пароль должен содержать минимум 6 символов')
       setLoading(false)
-      router.push('/')
-    }, 1500)
+      return
+    }
+
+    const result = await register(
+      formData.email, 
+      formData.password, 
+      formData.name, 
+      formData.phone || undefined
+    )
+    
+    if (result.success) {
+      router.push(redirect)
+    } else {
+      setError(result.error || 'Ошибка регистрации')
+    }
+    
+    setLoading(false)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
       [e.target.name]: e.target.value
-    })
+    }))
   }
 
   return (
@@ -54,12 +84,19 @@ export default function SignupPage() {
             <p className="mt-2 text-sm text-gray-600">
               Или{' '}
               <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-                войдите в существующий
+                войдите в существующий аккаунт
               </Link>
             </p>
           </div>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                <span className="text-red-700 text-sm">{error}</span>
+              </div>
+            )}
+            
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -73,10 +110,9 @@ export default function SignupPage() {
                     id="name"
                     name="name"
                     type="text"
-                    autoComplete="name"
                     required
                     value={formData.name}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Введите ваше имя"
                   />
@@ -98,9 +134,29 @@ export default function SignupPage() {
                     autoComplete="email"
                     required
                     value={formData.email}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Введите ваш email"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                  Телефон (необязательно)
+                </label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Phone className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="+7 (999) 123-45-67"
                   />
                 </div>
               </div>
@@ -120,9 +176,9 @@ export default function SignupPage() {
                     autoComplete="new-password"
                     required
                     value={formData.password}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Создайте пароль"
+                    placeholder="Введите пароль"
                   />
                   <button
                     type="button"
@@ -153,9 +209,9 @@ export default function SignupPage() {
                     autoComplete="new-password"
                     required
                     value={formData.confirmPassword}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Повторите пароль"
+                    placeholder="Подтвердите пароль"
                   />
                   <button
                     type="button"
@@ -172,26 +228,6 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <div className="flex items-center">
-              <input
-                id="terms"
-                name="terms"
-                type="checkbox"
-                required
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-                Я принимаю{' '}
-                <Link href="/terms" className="text-blue-600 hover:text-blue-500">
-                  условия использования
-                </Link>
-                {' '}и{' '}
-                <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
-                  политику конфиденциальности
-                </Link>
-              </label>
-            </div>
-
             <div>
               <Button
                 type="submit"
@@ -201,7 +237,7 @@ export default function SignupPage() {
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Регистрируем...
+                    Создаем аккаунт...
                   </div>
                 ) : (
                   'Создать аккаунт'
@@ -221,5 +257,13 @@ export default function SignupPage() {
         </div>
       </div>
     </PageLayout>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div>Загрузка...</div>}>
+      <SignupForm />
+    </Suspense>
   )
 }
