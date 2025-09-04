@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const sessionToken = cookieStore.get('session_token')?.value
 
     if (!sessionToken) {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const { data: session, error: sessionError } = await supabase
       .from('user_sessions')
       .select('user_id, expires_at')
-      .eq('token', sessionToken)
+      .eq('session_token', sessionToken)
       .gt('expires_at', new Date().toISOString())
       .single()
 

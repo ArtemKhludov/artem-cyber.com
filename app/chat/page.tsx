@@ -1,22 +1,26 @@
-import { MessageCircle, Send, ArrowLeft } from 'lucide-react'
+'use client'
+
+import { MessageCircle, Send, ArrowLeft, Phone } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { PageLayout } from '@/components/layout/PageLayout'
-
-export const metadata = {
-  title: 'Чат с экспертами - EnergyLogic',
-  description: 'Получите персональную консультацию от экспертов EnergyLogic через чат',
-}
+import { CallRequestModal } from '@/components/modals/CallRequestModal'
+import { useState } from 'react'
 
 export default function ChatPage() {
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false)
+
+  const handleCallRequest = () => {
+    setIsCallModalOpen(true)
+  }
   return (
     <PageLayout>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Header */}
           <div className="mb-8">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -55,10 +59,11 @@ export default function ChatPage() {
                 <p className="text-gray-600 mb-6 max-w-md">
                   Мы работаем над интеграцией системы чата. Пока что вы можете заказать звонок или воспользоваться другими способами связи.
                 </p>
-                
+
                 {/* Alternative Contact Methods */}
                 <div className="space-y-3">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={handleCallRequest} className="w-full bg-blue-600 hover:bg-blue-700">
+                    <Phone className="w-4 h-4 mr-2" />
                     Заказать звонок
                   </Button>
                   <Button variant="outline" className="w-full" asChild>
@@ -124,6 +129,13 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+
+      {/* Call Request Modal */}
+      <CallRequestModal
+        isOpen={isCallModalOpen}
+        onClose={() => setIsCallModalOpen(false)}
+        sourcePage="/chat"
+      />
     </PageLayout>
   )
 }

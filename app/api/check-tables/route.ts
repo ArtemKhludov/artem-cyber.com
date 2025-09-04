@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
             'purchases',
             'callback_requests',
             'purchase_requests',
-            'pdf_requests',
             'general_requests',
             'managers',
             'analytics_events'
