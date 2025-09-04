@@ -22,7 +22,14 @@ function LoginForm() {
   // Если пользователь уже авторизован, перенаправляем
   useEffect(() => {
     if (user) {
-      router.push(redirect)
+      // Определяем куда перенаправить в зависимости от роли
+      if (redirect && redirect !== '/') {
+        router.push(redirect)
+      } else if (user.role === 'admin') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
     }
   }, [user, router, redirect])
 
@@ -30,15 +37,22 @@ function LoginForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    
+
     const result = await login(email, password)
-    
+
     if (result.success) {
-      router.push(redirect)
+      // Определяем куда перенаправить в зависимости от роли
+      if (redirect && redirect !== '/') {
+        router.push(redirect)
+      } else if (user?.role === 'admin') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
     } else {
       setError(result.error || 'Ошибка входа')
     }
-    
+
     setLoading(false)
   }
 
@@ -65,7 +79,7 @@ function LoginForm() {
                 <span className="text-red-700 text-sm">{error}</span>
               </div>
             )}
-            
+
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
