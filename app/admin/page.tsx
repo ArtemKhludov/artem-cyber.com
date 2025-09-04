@@ -16,7 +16,9 @@ import {
   Mail,
   Clock,
   CreditCard,
-  Package
+  Package,
+  Trash2,
+  Edit
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
@@ -301,6 +303,88 @@ function AdminPageContent() {
       alert('Ошибка синхронизации')
     } finally {
       setSyncing(false)
+    }
+  }
+
+  // Функция для удаления заявки или покупки
+  const deleteItem = async (id: string, type: 'request' | 'purchase') => {
+    if (!confirm(`Вы уверены, что хотите удалить эту ${type === 'request' ? 'заявку' : 'покупку'}?`)) {
+      return
+    }
+
+    try {
+      console.log('Deleting item:', { type, id })
+
+      // Проверяем, что тип корректный
+      if (type !== 'request' && type !== 'purchase') {
+        console.error('Invalid type:', type)
+        alert('Ошибка: неверный тип данных')
+        return
+      }
+
+      const response = await fetch(`/api/admin/data?type=${type}&id=${id}`, {
+        method: 'DELETE',
+      })
+
+      const responseData = await response.json()
+      console.log('Delete response:', responseData)
+
+      if (response.ok) {
+        alert(`${type === 'request' ? 'Заявка' : 'Покупка'} удалена успешно!`)
+        // Обновляем данные
+        if (type === 'request') {
+          fetchRequests()
+        } else {
+          fetchPurchases()
+        }
+      } else {
+        console.error('Delete failed:', responseData)
+        alert(`Ошибка удаления: ${responseData.error || 'Неизвестная ошибка'}`)
+      }
+    } catch (error) {
+      console.error('Delete error:', error)
+      alert('Ошибка удаления: ' + error.message)
+    }
+  }
+
+  // Функция для обновления заявки или покупки
+  const updateItem = async (id: string, type: 'request' | 'purchase', data: any) => {
+    try {
+      console.log('Updating item:', { type, id, data })
+
+      // Проверяем, что тип корректный
+      if (type !== 'request' && type !== 'purchase') {
+        console.error('Invalid type:', type)
+        alert('Ошибка: неверный тип данных')
+        return
+      }
+
+      const response = await fetch('/api/admin/data', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type, id, data })
+      })
+
+      const responseData = await response.json()
+      console.log('Update response:', responseData)
+
+      if (response.ok) {
+        alert(`${type === 'request' ? 'Заявка' : 'Покупка'} обновлена успешно!`)
+        // Обновляем данные
+        if (type === 'request') {
+          fetchRequests()
+        } else {
+          fetchPurchases()
+        }
+      } else {
+        console.error('Update failed:', responseData)
+        alert(`Ошибка обновления: ${responseData.error || 'Неизвестная ошибка'}`)
+      }
+    } catch (error) {
+      console.error('Update error:', error)
+      alert('Ошибка обновления: ' + error.message)
     }
   }
 
@@ -697,9 +781,11 @@ function AdminPageContent() {
                     <tr key={item.id} className="hover:bg-white/5">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-white">
-                            {item.name}
-                          </div>
+                          <EditableCell
+                            value={item.name}
+                            onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { name: newValue })}
+                            className="text-sm font-medium text-white"
+                          />
                           <div className="text-sm text-white/70">
                             ID: {item.id.slice(0, 8)}...
                           </div>
@@ -710,13 +796,21 @@ function AdminPageContent() {
                           {item.email && (
                             <div className="flex items-center mb-1">
                               <Mail className="w-3 h-3 mr-1 text-white/50" />
-                              {item.email}
+                              <EditableCell
+                                value={item.email}
+                                onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { email: newValue })}
+                                className="text-white"
+                              />
                             </div>
                           )}
                           {item.phone && (
                             <div className="flex items-center">
                               <Phone className="w-3 h-3 mr-1 text-white/50" />
-                              {item.phone}
+                              <EditableCell
+                                value={item.phone}
+                                onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { phone: newValue })}
+                                className="text-white"
+                              />
                             </div>
                           )}
                         </div>
@@ -757,26 +851,44 @@ function AdminPageContent() {
                             <option value="cancelled">Отменен</option>
                           </select>
                         ) : (
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}>
-                            {item.status === 'pending' && 'Ожидает оплаты'}
-                            {item.status === 'completed' && 'Оплачено'}
-                            {item.status === 'cancelled' && 'Отменено'}
-                          </span>
+                          <EditableCell
+                            value={item.status}
+                            type="select"
+                            options={[
+                              { value: 'pending', label: 'Ожидает оплаты' },
+                              { value: 'completed', label: 'Оплачено' },
+                              { value: 'cancelled', label: 'Отменено' }
+                            ]}
+                            onSave={(newValue) => updateItem(item.id, 'purchase', { status: newValue })}
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}
+                          />
                         )}
                       </td>
                       {activeTab === 'requests' && (
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'medium')}`}>
-                            {item.priority === 'urgent' && 'Срочно'}
-                            {item.priority === 'high' && 'Высокий'}
-                            {item.priority === 'medium' && 'Средний'}
-                            {item.priority === 'low' && 'Низкий'}
-                          </span>
+                          <EditableCell
+                            value={item.priority || 'medium'}
+                            type="select"
+                            options={[
+                              { value: 'urgent', label: 'Срочно' },
+                              { value: 'high', label: 'Высокий' },
+                              { value: 'medium', label: 'Средний' },
+                              { value: 'low', label: 'Низкий' }
+                            ]}
+                            onSave={(newValue) => updateItem(item.id, 'request', { priority: newValue })}
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'medium')}`}
+                          />
                         </td>
                       )}
                       {activeTab === 'purchases' && (
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
-                          {'amount' in item ? item.amount : 0} ₽
+                          <EditableCell
+                            value={'amount' in item ? item.amount : 0}
+                            type="number"
+                            onSave={(newValue) => updateItem(item.id, 'purchase', { amount: newValue })}
+                            className="text-white font-medium"
+                          />
+                          <span className="ml-1">₽</span>
                         </td>
                       )}
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -792,18 +904,27 @@ function AdminPageContent() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Button
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-white mr-2"
-                        >
-                          Просмотр
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          Редактировать
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={() => {
+                              // Просмотр - можно добавить модальное окно
+                              alert(`Просмотр ${activeTab === 'requests' ? 'заявки' : 'покупки'} ID: ${item.id}`)
+                            }}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Просмотр
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                            onClick={() => deleteItem(item.id, activeTab === 'requests' ? 'request' : 'purchase')}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Удалить
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
