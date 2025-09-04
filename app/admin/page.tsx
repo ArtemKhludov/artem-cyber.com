@@ -18,7 +18,10 @@ import {
   CreditCard,
   Package,
   Trash2,
-  Edit
+  Edit,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
@@ -82,30 +85,88 @@ function AdminPageContent() {
   const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
 
-  // Фильтрация данных
-  const filteredRequests = requests.filter(request => {
-    const matchesSearch = searchTerm === '' ||
-      request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (request.email && request.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (request.phone && request.phone.includes(searchTerm))
+  // Состояния для сортировки
+  const [sortField, setSortField] = useState<string>('created_at')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
-    const matchesType = filter === 'all' || request.product_type === filter
-    const matchesStatus = statusFilter === 'all' || request.status === statusFilter
+  // Функция для сортировки данных
+  const sortData = (data: any[], field: string, direction: 'asc' | 'desc') => {
+    return [...data].sort((a, b) => {
+      let aValue = a[field]
+      let bValue = b[field]
 
-    return matchesSearch && matchesType && matchesStatus
-  })
+      // Обработка разных типов данных
+      if (field === 'created_at') {
+        aValue = new Date(aValue).getTime()
+        bValue = new Date(bValue).getTime()
+      } else if (field === 'amount') {
+        aValue = Number(aValue) || 0
+        bValue = Number(bValue) || 0
+      } else if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase()
+        bValue = bValue.toLowerCase()
+      }
 
-  const filteredPurchases = purchases.filter(purchase => {
-    const matchesSearch = searchTerm === '' ||
-      purchase.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (purchase.email && purchase.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (purchase.phone && purchase.phone.includes(searchTerm))
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+      }
+    })
+  }
 
-    const matchesType = filter === 'all' || purchase.product_type === filter
-    const matchesStatus = statusFilter === 'all' || purchase.status === statusFilter
+  // Функция для обработки клика по заголовку
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
 
-    return matchesSearch && matchesType && matchesStatus
-  })
+  // Функция для отображения иконки сортировки
+  const getSortIcon = (field: string) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />
+    }
+    return sortDirection === 'asc'
+      ? <ArrowUp className="w-4 h-4 ml-1" />
+      : <ArrowDown className="w-4 h-4 ml-1" />
+  }
+
+  // Фильтрация и сортировка данных
+  const filteredRequests = sortData(
+    requests.filter(request => {
+      const matchesSearch = searchTerm === '' ||
+        request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (request.email && request.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (request.phone && request.phone.includes(searchTerm))
+
+      const matchesType = filter === 'all' || request.product_type === filter
+      const matchesStatus = statusFilter === 'all' || request.status === statusFilter
+
+      return matchesSearch && matchesType && matchesStatus
+    }),
+    sortField,
+    sortDirection
+  )
+
+  const filteredPurchases = sortData(
+    purchases.filter(purchase => {
+      const matchesSearch = searchTerm === '' ||
+        purchase.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (purchase.email && purchase.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (purchase.phone && purchase.phone.includes(searchTerm))
+
+      const matchesType = filter === 'all' || purchase.product_type === filter
+      const matchesStatus = statusFilter === 'all' || purchase.status === statusFilter
+
+      return matchesSearch && matchesType && matchesStatus
+    }),
+    sortField,
+    sortDirection
+  )
 
   useEffect(() => {
     // Загружаем данные при первой загрузке
@@ -736,40 +797,88 @@ function AdminPageContent() {
               <table className="w-full">
                 <thead className="bg-white/20">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                      Клиент
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center">
+                        Клиент
+                        {getSortIcon('name')}
+                      </div>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
                       Контакты
                     </th>
                     {activeTab === 'requests' && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                        Товар/Услуга
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                        onClick={() => handleSort('product_name')}
+                      >
+                        <div className="flex items-center">
+                          Товар/Услуга
+                          {getSortIcon('product_name')}
+                        </div>
                       </th>
                     )}
                     {activeTab === 'purchases' && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                        Товар
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                        onClick={() => handleSort('product_name')}
+                      >
+                        <div className="flex items-center">
+                          Товар
+                          {getSortIcon('product_name')}
+                        </div>
                       </th>
                     )}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                      Дата
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                      onClick={() => handleSort('created_at')}
+                    >
+                      <div className="flex items-center">
+                        Дата
+                        {getSortIcon('created_at')}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                      Статус
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center">
+                        Статус
+                        {getSortIcon('status')}
+                      </div>
                     </th>
                     {activeTab === 'requests' && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                        Приоритет
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                        onClick={() => handleSort('priority')}
+                      >
+                        <div className="flex items-center">
+                          Приоритет
+                          {getSortIcon('priority')}
+                        </div>
                       </th>
                     )}
                     {activeTab === 'purchases' && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                        Сумма
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                        onClick={() => handleSort('amount')}
+                      >
+                        <div className="flex items-center">
+                          Сумма
+                          {getSortIcon('amount')}
+                        </div>
                       </th>
                     )}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                      Источник
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                      onClick={() => handleSort('source')}
+                    >
+                      <div className="flex items-center">
+                        Источник
+                        {getSortIcon('source')}
+                      </div>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
                       Действия
