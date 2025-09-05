@@ -13,24 +13,26 @@ export async function POST(request: NextRequest) {
     const { name, phone, email, preferred_time, message, source_page, product_type, product_name, notes } = body
 
     // Валидация обязательных полей
-    if (!name || !phone) {
+    if (!name || (!phone && product_type !== 'chat_message')) {
       return NextResponse.json(
         { error: 'Имя и телефон обязательны' },
         { status: 400 }
       )
     }
 
-    // Валидация телефона (базовая проверка)
-    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/
-    if (!phoneRegex.test(phone)) {
-      return NextResponse.json(
-        { error: 'Неверный формат телефона' },
-        { status: 400 }
-      )
+    // Валидация телефона (базовая проверка) - пропускаем для чата
+    if (product_type !== 'chat_message') {
+      const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/
+      if (!phoneRegex.test(phone)) {
+        return NextResponse.json(
+          { error: 'Неверный формат телефона' },
+          { status: 400 }
+        )
+      }
     }
 
-    // Валидация email (если предоставлен)
-    if (email) {
+    // Валидация email (если предоставлен) - пропускаем для чата
+    if (email && product_type !== 'chat_message') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(email)) {
         return NextResponse.json(

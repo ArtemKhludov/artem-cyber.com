@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Phone, Mail, MapPin, MessageCircle, Send, Clock, Users, Globe } from 'lucide-react'
+import { Phone, Mail, MapPin, MessageCircle, Send, Clock, Users, Globe, User, ChevronDown, MessageSquare, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
@@ -18,6 +18,19 @@ export default function ContactsPage() {
   ])
   const sectionRef = useRef<HTMLElement>(null)
 
+  // Состояния для формы обратного звонка
+  const [callbackFormData, setCallbackFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    preferred_time: '',
+    message: '',
+    agreed: false
+  })
+  const [isCallbackSubmitting, setIsCallbackSubmitting] = useState(false)
+  const [isCallbackSubmitted, setIsCallbackSubmitted] = useState(false)
+  const [callbackSubmitError, setCallbackSubmitError] = useState<string | null>(null)
+
   const handleCallRequest = () => {
     setIsCallModalOpen(true)
   }
@@ -26,7 +39,59 @@ export default function ContactsPage() {
     setIsCallModalOpen(false)
   }
 
-  const handleSendMessage = () => {
+  const handleCallbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!callbackFormData.agreed) {
+      setCallbackSubmitError('Необходимо согласиться с условиями')
+      return
+    }
+
+    setIsCallbackSubmitting(true)
+    setCallbackSubmitError(null)
+
+    try {
+      const response = await fetch('/api/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: callbackFormData.name,
+          phone: callbackFormData.phone,
+          email: callbackFormData.email,
+          message: callbackFormData.message,
+          preferred_time: callbackFormData.preferred_time,
+          source_page: '/contacts',
+          product_type: 'callback_request',
+          product_name: 'Заказ обратного звонка',
+          notes: `Время для звонка: ${callbackFormData.preferred_time || 'В любое время'}. Сообщение: ${callbackFormData.message || 'Нет'}`
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Ошибка отправки заявки')
+      }
+
+      setIsCallbackSubmitted(true)
+      setCallbackFormData({ name: '', phone: '', email: '', preferred_time: '', message: '', agreed: false })
+
+      // Сброс формы через 5 секунд
+      setTimeout(() => {
+        setIsCallbackSubmitted(false)
+      }, 5000)
+
+    } catch (error) {
+      console.error('Error submitting callback form:', error)
+      setCallbackSubmitError(error instanceof Error ? error.message : 'Произошла ошибка при отправке')
+    } finally {
+      setIsCallbackSubmitting(false)
+    }
+  }
+
+  const handleSendMessage = async () => {
     if (chatMessage.trim()) {
       const newMessage = {
         id: chatMessages.length + 1,
@@ -35,18 +100,55 @@ export default function ContactsPage() {
         time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
       }
       setChatMessages([...chatMessages, newMessage])
+      const userMessage = chatMessage
       setChatMessage('')
 
-      // Имитация ответа менеджера
-      setTimeout(() => {
-        const managerResponse = {
-          id: chatMessages.length + 2,
-          text: 'Спасибо за сообщение! Менеджер свяжется с вами в ближайшее время.',
-          isUser: false,
-          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+      try {
+        // Отправляем сообщение в CRM-систему
+        const response = await fetch('/api/callback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: 'Пользователь чата',
+            phone: 'Не указан',
+            email: 'Не указан',
+            message: userMessage,
+            preferred_time: '',
+            source_page: '/contacts',
+            product_type: 'chat_message',
+            product_name: 'Сообщение из чата',
+            notes: `Сообщение из чата: ${userMessage}`
+          })
+        })
+
+        if (response.ok) {
+          // Успешная отправка - показываем подтверждение
+          setTimeout(() => {
+            const managerResponse = {
+              id: chatMessages.length + 2,
+              text: '✅ Сообщение получено! Менеджер свяжется с вами в ближайшее время.',
+              isUser: false,
+              time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+            }
+            setChatMessages(prev => [...prev, managerResponse])
+          }, 1000)
+        } else {
+          throw new Error('Ошибка отправки')
         }
-        setChatMessages(prev => [...prev, managerResponse])
-      }, 2000)
+      } catch (error) {
+        // Ошибка отправки - показываем сообщение об ошибке
+        setTimeout(() => {
+          const errorResponse = {
+            id: chatMessages.length + 2,
+            text: '❌ Произошла ошибка при отправке. Попробуйте еще раз или используйте форму "Заказать звонок".',
+            isUser: false,
+            time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+          }
+          setChatMessages(prev => [...prev, errorResponse])
+        }, 1000)
+      }
     }
   }
 
@@ -155,128 +257,288 @@ export default function ContactsPage() {
               {/* Основной контент */}
               <div className="grid lg:grid-cols-2 gap-12">
                 {/* Форма обратного звонка */}
-                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Заказать обратный звонок</h2>
-                  <p className="text-gray-600 mb-6">
-                    Оставьте свои контакты, и мы перезвоним вам в удобное время
-                  </p>
+                <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 p-8 rounded-2xl shadow-lg border border-blue-100 relative overflow-hidden">
+                  {/* Декоративные элементы */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-xl"></div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Имя</label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Ваше имя"
-                      />
+                  <div className="relative z-10">
+                    <div className="flex items-center space-x-3 mb-6">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <Phone className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                          Заказать обратный звонок
+                        </h2>
+                        <p className="text-sm text-gray-500">Мы перезвоним вам в удобное время</p>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Телефон</label>
-                      <input
-                        type="tel"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="+7 (999) 123-45-67"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Удобное время для звонка</label>
-                      <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option>В любое время</option>
-                        <option>9:00 - 12:00</option>
-                        <option>12:00 - 15:00</option>
-                        <option>15:00 - 18:00</option>
-                        <option>18:00 - 21:00</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Комментарий</label>
-                      <textarea
-                        rows={3}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="О чем хотите поговорить?"
-                      />
-                    </div>
-                    <Button
-                      onClick={handleCallRequest}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-                    >
-                      <Phone className="mr-2 w-4 h-4" />
-                      Заказать звонок
-                    </Button>
+
+                    <p className="text-gray-600 mb-6 text-lg">
+                      📞 Оставьте свои контакты, и мы перезвоним вам в удобное время
+                    </p>
+
+                    {!isCallbackSubmitted ? (
+                      <>
+                        {callbackSubmitError && (
+                          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+                            <p className="text-red-600 text-sm">{callbackSubmitError}</p>
+                          </div>
+                        )}
+
+                        <form onSubmit={handleCallbackSubmit} className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">👤 Ваше имя *</label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={callbackFormData.name}
+                                onChange={(e) => setCallbackFormData(prev => ({ ...prev, name: e.target.value }))}
+                                className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300"
+                                placeholder="Введите ваше имя"
+                                required
+                              />
+                              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                                <User className="w-5 h-5 text-gray-400" />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">📱 Телефон *</label>
+                            <div className="relative">
+                              <input
+                                type="tel"
+                                value={callbackFormData.phone}
+                                onChange={(e) => setCallbackFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300"
+                                placeholder="+7 (999) 123-45-67"
+                                required
+                              />
+                              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                                <Phone className="w-5 h-5 text-gray-400" />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">📧 Email (необязательно)</label>
+                            <div className="relative">
+                              <input
+                                type="email"
+                                value={callbackFormData.email}
+                                onChange={(e) => setCallbackFormData(prev => ({ ...prev, email: e.target.value }))}
+                                className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300"
+                                placeholder="your@email.com"
+                              />
+                              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                                <Mail className="w-5 h-5 text-gray-400" />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">⏰ Удобное время для звонка</label>
+                            <div className="relative">
+                              <select
+                                value={callbackFormData.preferred_time}
+                                onChange={(e) => setCallbackFormData(prev => ({ ...prev, preferred_time: e.target.value }))}
+                                className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300 appearance-none"
+                              >
+                                <option value="">В любое время</option>
+                                <option value="9:00 - 12:00">9:00 - 12:00</option>
+                                <option value="12:00 - 15:00">12:00 - 15:00</option>
+                                <option value="15:00 - 18:00">15:00 - 18:00</option>
+                                <option value="18:00 - 21:00">18:00 - 21:00</option>
+                              </select>
+                              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                                <Clock className="w-5 h-5 text-gray-400" />
+                              </div>
+                              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                                <ChevronDown className="w-5 h-5 text-gray-400" />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">💬 Комментарий</label>
+                            <div className="relative">
+                              <textarea
+                                rows={3}
+                                value={callbackFormData.message}
+                                onChange={(e) => setCallbackFormData(prev => ({ ...prev, message: e.target.value }))}
+                                className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300 resize-none"
+                                placeholder="О чем хотите поговорить?"
+                              />
+                              <div className="absolute left-4 top-4">
+                                <MessageSquare className="w-5 h-5 text-gray-400" />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Согласие с правовыми документами */}
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                            <div className="flex items-start space-x-3">
+                              <input
+                                type="checkbox"
+                                id="callback-disclaimer"
+                                checked={callbackFormData.agreed}
+                                onChange={(e) => setCallbackFormData(prev => ({ ...prev, agreed: e.target.checked }))}
+                                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                required
+                              />
+                              <label htmlFor="callback-disclaimer" className="text-sm text-gray-700 leading-relaxed">
+                                <span className="font-medium text-yellow-800">⚠️ Важно:</span>{' '}
+                                Нажимая кнопку, вы соглашаетесь с{' '}
+                                <Link href="/privacy" className="text-blue-600 hover:underline font-medium">
+                                  политикой конфиденциальности
+                                </Link>
+                                {', '}
+                                <Link href="/terms" className="text-blue-600 hover:underline font-medium">
+                                  пользовательским соглашением
+                                </Link>
+                                {' '}и{' '}
+                                <Link href="/disclaimer" className="text-blue-600 hover:underline font-medium">
+                                  отказом от ответственности
+                                </Link>
+                              </label>
+                            </div>
+                          </div>
+
+                          <Button
+                            type="submit"
+                            disabled={isCallbackSubmitting}
+                            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50"
+                          >
+                            {isCallbackSubmitting ? (
+                              <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                Отправляем...
+                              </div>
+                            ) : (
+                              <>
+                                <Phone className="mr-2 w-5 h-5" />
+                                Заказать звонок
+                              </>
+                            )}
+                          </Button>
+                        </form>
+                      </>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                          <CheckCircle className="w-8 h-8 text-white" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                          Спасибо за заявку!
+                        </h3>
+                        <p className="text-gray-600 text-lg">
+                          Мы получили вашу заявку и перезвоним вам в указанное время.
+                        </p>
+                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                          <p className="text-sm text-blue-700">
+                            Следующий шаг: наш специалист свяжется с вами для уточнения деталей
+                            и ответит на все ваши вопросы.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Онлайн чат */}
-                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Онлайн чат</h2>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-sm text-green-600">Онлайн</span>
-                    </div>
-                  </div>
+                <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 p-8 rounded-2xl shadow-lg border border-blue-100 relative overflow-hidden">
+                  {/* Декоративные элементы */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-xl"></div>
 
-                  <p className="text-gray-600 mb-6">
-                    Напишите нам прямо сейчас. Менеджер ответит в течение 2-3 минут
-                  </p>
-
-                  {/* Чат окно */}
-                  <div className="bg-gray-50 rounded-lg p-4 h-64 mb-4 overflow-y-auto">
-                    {chatMessages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`mb-3 ${message.isUser ? 'text-right' : 'text-left'}`}
-                      >
-                        <div
-                          className={`inline-block max-w-xs px-4 py-2 rounded-lg text-sm ${message.isUser
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-800 border border-gray-200'
-                            }`}
-                        >
-                          <p>{message.text}</p>
-                          <p className={`text-xs mt-1 ${message.isUser ? 'text-blue-100' : 'text-gray-500'
-                            }`}>
-                            {message.time}
-                          </p>
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <MessageCircle className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            Онлайн чат
+                          </h2>
+                          <p className="text-sm text-gray-500">Прямая связь с нашими специалистами</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Согласие с отказом от ответственности */}
-                  <div className="mb-4">
-                    <div className="flex items-start space-x-3">
-                      <input
-                        type="checkbox"
-                        id="chat-disclaimer"
-                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor="chat-disclaimer" className="text-sm text-gray-700 leading-relaxed">
-                        <span className="font-medium text-yellow-800">⚠️ Важно:</span>{' '}
-                        Я подтверждаю, что понимаю, что результаты не являются диагнозом, и принимаю ответственность за использование материалов.{' '}
-                        <Link href="/disclaimer" className="text-blue-600 hover:underline font-medium">
-                          Отказ от ответственности
-                        </Link>
-                      </label>
+                      <div className="flex items-center space-x-2 bg-green-100 px-3 py-1 rounded-full">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-sm text-green-700 font-medium">Онлайн</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Поле ввода */}
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={chatMessage}
-                      onChange={(e) => setChatMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Введите сообщение..."
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4"
-                    >
-                      <Send className="w-4 h-4" />
-                    </Button>
+                    <p className="text-gray-600 mb-6 text-lg">
+                      💬 Напишите нам прямо сейчас. Менеджер ответит в течение 2-3 минут
+                    </p>
+
+                    {/* Чат окно */}
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 h-64 mb-6 overflow-y-auto border border-white/50 shadow-inner">
+                      {chatMessages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`mb-4 ${message.isUser ? 'text-right' : 'text-left'}`}
+                        >
+                          <div
+                            className={`inline-block max-w-xs px-4 py-3 rounded-2xl text-sm shadow-sm ${message.isUser
+                              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                              : 'bg-white text-gray-800 border border-gray-200 shadow-md'
+                              }`}
+                          >
+                            <p className="leading-relaxed">{message.text}</p>
+                            <p className={`text-xs mt-2 ${message.isUser ? 'text-blue-100' : 'text-gray-500'
+                              }`}>
+                              {message.time}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Согласие с отказом от ответственности */}
+                    <div className="mb-4">
+                      <div className="flex items-start space-x-3">
+                        <input
+                          type="checkbox"
+                          id="chat-disclaimer"
+                          className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="chat-disclaimer" className="text-sm text-gray-700 leading-relaxed">
+                          <span className="font-medium text-yellow-800">⚠️ Важно:</span>{' '}
+                          Я подтверждаю, что понимаю, что результаты не являются диагнозом, и принимаю ответственность за использование материалов.{' '}
+                          <Link href="/disclaimer" className="text-blue-600 hover:underline font-medium">
+                            Отказ от ответственности
+                          </Link>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Поле ввода */}
+                    <div className="flex space-x-3">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          value={chatMessage}
+                          onChange={(e) => setChatMessage(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                          className="w-full px-4 py-3 pr-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300"
+                          placeholder="💬 Введите ваше сообщение..."
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <MessageCircle className="w-5 h-5 text-gray-400" />
+                        </div>
+                      </div>
+                      <Button
+                        onClick={handleSendMessage}
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                      >
+                        <Send className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
