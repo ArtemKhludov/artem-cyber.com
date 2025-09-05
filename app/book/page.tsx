@@ -90,7 +90,7 @@ export default function BookPage() {
 
   const programs = [
     {
-      id: 'mini',
+      id: 'mini-session',
       title: 'Mini-сессия',
       subtitle: 'Быстрая диагностика',
       price: '₽4,999',
@@ -108,7 +108,7 @@ export default function BookPage() {
       icon: '⚡'
     },
     {
-      id: 'deep',
+      id: 'deep-day',
       title: 'Глубокий день',
       subtitle: 'Полная трансформация',
       price: '₽24,999',
@@ -128,7 +128,7 @@ export default function BookPage() {
       icon: '🔮'
     },
     {
-      id: 'transformation',
+      id: 'transformation-21',
       title: '21 день',
       subtitle: 'Новое «Я»',
       price: '₽49,999',
@@ -168,11 +168,11 @@ export default function BookPage() {
     }
   ]
 
-    return (
+  return (
     <div className="relative">
       {/* Главное меню */}
       <MainHeader onCallRequest={handleCallRequest} />
-      
+
       {/* Основной контент */}
       <main ref={sectionRef}>
         {/* Hero Section */}
@@ -211,8 +211,8 @@ export default function BookPage() {
                     key={program.id}
                     onClick={() => setActiveProgram(program.id)}
                     className={`relative px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${activeProgram === program.id
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                   >
                     {program.popular && (

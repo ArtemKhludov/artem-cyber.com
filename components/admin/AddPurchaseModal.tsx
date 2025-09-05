@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { 
-  X, 
-  User, 
-  Mail, 
-  Phone, 
+import {
+  X,
+  User,
+  Mail,
+  Phone,
   CreditCard,
   Package,
   Save,
@@ -14,6 +14,7 @@ import {
   DollarSign
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PDF_DOCUMENTS, PROGRAMS, ADDITIONAL_SERVICES, getProductById } from '@/lib/pricing'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -65,13 +66,8 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
   const fetchDocuments = async () => {
     try {
-      const { data, error } = await supabase
-        .from('documents')
-        .select('id, title, description')
-        .order('title')
-
-      if (error) throw error
-      setDocuments((data || []).map(doc => ({
+      // Используем данные из конфигурации цен
+      setDocuments(PDF_DOCUMENTS.map(doc => ({
         id: doc.id,
         name: doc.title,
         title: doc.title,
@@ -83,10 +79,13 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
   }
 
   const fetchPrograms = async () => {
-    setPrograms([
-      { id: 'deep-day', name: 'Глубокий день', description: 'Мини-сессия "Глубокий день"' },
-      { id: '21-days', name: '21 день', description: 'Программа "21 день"' }
-    ])
+    // Используем данные из конфигурации цен
+    const allPrograms = [...PROGRAMS, ...ADDITIONAL_SERVICES]
+    setPrograms(allPrograms.map(program => ({
+      id: program.id,
+      name: program.name,
+      description: program.description
+    })))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -149,19 +148,21 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
   const handleProductChange = (productId: string) => {
     let productName = ''
-    
-    const doc = documents.find(d => d.id === productId)
-    if (doc) {
-      productName = doc.title
-    } else {
-      const prog = programs.find(p => p.id === productId)
-      productName = prog?.name || ''
+    let productPrice = 0
+
+    // Получаем продукт из конфигурации цен
+    const product = getProductById(productId)
+
+    if (product) {
+      productName = product.name || product.title
+      productPrice = product.price
     }
 
     setFormData(prev => ({
       ...prev,
       product_id: productId,
-      product_name: productName
+      product_name: productName,
+      amount: productPrice.toString()
     }))
   }
 

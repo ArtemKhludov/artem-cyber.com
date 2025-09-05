@@ -21,12 +21,14 @@ import {
   Edit,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Users
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
 import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 import EditableCell from '@/components/admin/EditableCell'
+import UserCard from '@/components/admin/UserCard'
 import { AdminGuard } from '@/components/auth/AdminGuard'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -72,9 +74,10 @@ interface Purchase {
 
 function AdminPageContent() {
   const { logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'requests' | 'purchases'>('requests')
+  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'users'>('requests')
   const [requests, setRequests] = useState<Request[]>([])
   const [purchases, setPurchases] = useState<Purchase[]>([])
+  const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -83,6 +86,8 @@ function AdminPageContent() {
   const [showAddRequestModal, setShowAddRequestModal] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false)
+  const [showUserCard, setShowUserCard] = useState(false)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [documents, setDocuments] = useState<any[]>([])
 
   // Состояния для сортировки
@@ -168,6 +173,19 @@ function AdminPageContent() {
     sortDirection
   )
 
+  const filteredUsers = sortData(
+    users.filter(user => {
+      const matchesSearch = searchTerm === '' ||
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.phone && user.phone.includes(searchTerm))
+
+      return matchesSearch
+    }),
+    sortField,
+    sortDirection
+  )
+
   useEffect(() => {
     // Загружаем данные при первой загрузке
     fetchRequests()
@@ -178,8 +196,10 @@ function AdminPageContent() {
   useEffect(() => {
     if (activeTab === 'requests') {
       fetchRequests()
-    } else {
+    } else if (activeTab === 'purchases') {
       fetchPurchases()
+    } else if (activeTab === 'users') {
+      fetchUsers()
     }
   }, [activeTab, filter, statusFilter, dateFilter])
 
@@ -229,6 +249,36 @@ function AdminPageContent() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchUsers = async () => {
+    console.log('Fetching users...')
+    setLoading(true)
+    try {
+      const response = await fetch('/api/users')
+      const result = await response.json()
+
+      if (result.success) {
+        setUsers(result.data || [])
+        console.log('Users loaded:', result.data?.length || 0)
+      } else {
+        console.error('Error loading users:', result.error)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const openUserCard = (userId: string) => {
+    setSelectedUserId(userId)
+    setShowUserCard(true)
+  }
+
+  const closeUserCard = () => {
+    setShowUserCard(false)
+    setSelectedUserId(null)
   }
 
   const fetchDocuments = async () => {
@@ -630,6 +680,18 @@ function AdminPageContent() {
                 Покупки ({purchases.length})
               </div>
             </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'users'
+                ? 'bg-white text-gray-900'
+                : 'text-white hover:bg-white/10'
+                }`}
+            >
+              <div className="flex items-center justify-center">
+                <Users className="w-4 h-4 mr-2" />
+                Пользователи ({users.length})
+              </div>
+            </button>
           </div>
         </div>
 
@@ -641,7 +703,7 @@ function AdminPageContent() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder={`Поиск по ${activeTab === 'requests' ? 'заявкам' : 'покупкам'}...`}
+                placeholder={`Поиск по ${activeTab === 'requests' ? 'заявкам' : activeTab === 'purchases' ? 'покупкам' : 'пользователям'}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -719,15 +781,17 @@ function AdminPageContent() {
             <div className="flex items-center">
               {activeTab === 'requests' ? (
                 <Phone className="w-8 h-8 text-blue-400 mr-3" />
-              ) : (
+              ) : activeTab === 'purchases' ? (
                 <ShoppingCart className="w-8 h-8 text-green-400 mr-3" />
+              ) : (
+                <Users className="w-8 h-8 text-purple-400 mr-3" />
               )}
               <div>
                 <p className="text-white/70 text-sm">
-                  {activeTab === 'requests' ? 'Всего заявок' : 'Всего покупок'}
+                  {activeTab === 'requests' ? 'Всего заявок' : activeTab === 'purchases' ? 'Всего покупок' : 'Всего пользователей'}
                 </p>
                 <p className="text-2xl font-bold text-white">
-                  {activeTab === 'requests' ? requests.length : purchases.length}
+                  {activeTab === 'requests' ? requests.length : activeTab === 'purchases' ? purchases.length : users.length}
                 </p>
               </div>
             </div>
@@ -789,7 +853,7 @@ function AdminPageContent() {
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
               <p className="text-white/70 mt-2">
-                Загрузка {activeTab === 'requests' ? 'заявок' : 'покупок'}...
+                Загрузка {activeTab === 'requests' ? 'заявок' : activeTab === 'purchases' ? 'покупок' : 'пользователей'}...
               </p>
             </div>
           ) : (
@@ -797,18 +861,52 @@ function AdminPageContent() {
               <table className="w-full">
                 <thead className="bg-white/20">
                   <tr>
-                    <th
-                      className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                      onClick={() => handleSort('name')}
-                    >
-                      <div className="flex items-center">
-                        Клиент
-                        {getSortIcon('name')}
-                      </div>
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                      Контакты
-                    </th>
+                    {activeTab === 'users' ? (
+                      <>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Пользователь
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Телефон
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Заявки
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Покупки
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Потрачено
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Регистрация
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Последняя активность
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Действия
+                        </th>
+                      </>
+                    ) : (
+                      <>
+                        <th
+                          className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                          onClick={() => handleSort('name')}
+                        >
+                          <div className="flex items-center">
+                            Клиент
+                            {getSortIcon('name')}
+                          </div>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                          Контакты
+                        </th>
+                      </>
+                    )}
                     {activeTab === 'requests' && (
                       <th
                         className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
@@ -897,171 +995,224 @@ function AdminPageContent() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
-                  {(activeTab === 'requests' ? filteredRequests : filteredPurchases).map((item) => (
-                    <tr key={item.id} className="hover:bg-white/5">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <EditableCell
-                            value={item.name}
-                            onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { name: newValue })}
-                            className="text-sm font-medium text-white"
-                          />
-                          <div className="text-sm text-white/70">
-                            ID: {item.id.slice(0, 8)}...
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">
-                          {item.email && (
-                            <div className="flex items-center mb-1">
-                              <Mail className="w-3 h-3 mr-1 text-white/50" />
-                              <EditableCell
-                                value={item.email}
-                                onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { email: newValue })}
-                                className="text-white"
-                              />
-                            </div>
-                          )}
-                          {item.phone && (
-                            <div className="flex items-center">
-                              <Phone className="w-3 h-3 mr-1 text-white/50" />
-                              <EditableCell
-                                value={item.phone}
-                                onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { phone: newValue })}
-                                className="text-white"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      {activeTab === 'requests' && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                          {item.product_name || 'Не указан'}
-                        </td>
-                      )}
-                      {activeTab === 'requests' && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                          <div className="flex items-center">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {item.source_page === '/' ? 'Главная' :
-                                item.source_page === '/about' ? 'О проекте' :
-                                  item.source_page === '/contacts' ? 'Контакты' :
-                                    item.source_page === '/catalog' ? 'Каталог' :
-                                      item.source_page === '/book' ? 'Программы' :
-                                        item.source_page || 'Не указан'}
-                            </span>
-                          </div>
-                        </td>
-                      )}
-                      {activeTab === 'purchases' && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                          <div className="flex items-center">
-                            {item.product_type === 'pdf' ? (
-                              <FileText className="w-4 h-4 mr-2 text-blue-400" />
-                            ) : (
-                              <Package className="w-4 h-4 mr-2 text-green-400" />
-                            )}
-                            {item.product_name}
-                          </div>
-                        </td>
-                      )}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                        {new Date(item.created_at).toLocaleDateString('ru-RU')}
-                        <br />
-                        <span className="text-white/50">
-                          {new Date(item.created_at).toLocaleTimeString('ru-RU')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {activeTab === 'requests' ? (
-                          <select
-                            value={item.status}
-                            onChange={(e) => updateRequestStatus(item.id, e.target.value)}
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)} border-0 focus:ring-2 focus:ring-blue-500`}
-                          >
-                            <option value="new">Новый</option>
-                            <option value="completed">Завершен</option>
-                            <option value="cancelled">Отменен</option>
-                          </select>
-                        ) : (
-                          <EditableCell
-                            value={item.status}
-                            type="select"
-                            options={[
-                              { value: 'pending', label: 'Ожидает оплаты' },
-                              { value: 'completed', label: 'Оплачено' },
-                              { value: 'cancelled', label: 'Отменено' }
-                            ]}
-                            onSave={(newValue) => updateItem(item.id, 'purchase', { status: newValue })}
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}
-                          />
-                        )}
-                      </td>
-                      {activeTab === 'requests' && (
+                  {activeTab === 'users' ? (
+                    filteredUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-white/5">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <EditableCell
-                            value={item.priority || 'medium'}
-                            type="select"
-                            options={[
-                              { value: 'urgent', label: 'Срочно' },
-                              { value: 'high', label: 'Высокий' },
-                              { value: 'medium', label: 'Средний' },
-                              { value: 'low', label: 'Низкий' }
-                            ]}
-                            onSave={(newValue) => updateItem(item.id, 'request', { priority: newValue })}
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'medium')}`}
-                          />
+                          <div>
+                            <div className="text-sm font-medium text-white">
+                              {user.name}
+                            </div>
+                            <div className="text-sm text-white/70">
+                              ID: {user.id.slice(0, 8)}...
+                            </div>
+                          </div>
                         </td>
-                      )}
-                      {activeTab === 'purchases' && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
-                          <EditableCell
-                            value={'amount' in item ? item.amount : 0}
-                            type="number"
-                            onSave={(newValue) => updateItem(item.id, 'purchase', { amount: newValue })}
-                            className="text-white font-medium"
-                          />
-                          <span className="ml-1">₽</span>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-white">
+                            {user.email || 'Не указан'}
+                          </div>
                         </td>
-                      )}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center text-sm text-white">
-                          {getSourceIcon(item.source || 'other')}
-                          <span className="ml-1">
-                            {item.source === 'website' && 'Сайт'}
-                            {item.source === 'phone' && 'Телефон'}
-                            {item.source === 'chat' && 'Чат'}
-                            {item.source === 'manual' && 'Ручной ввод'}
-                            {item.source === 'other' && 'Другое'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-white">
+                            {user.phone}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          {user.total_requests || 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          {user.total_purchases || 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          {user.total_spent || 0} ₽
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          {new Date(user.created_at).toLocaleDateString('ru-RU')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          {new Date(user.last_activity).toLocaleDateString('ru-RU')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Button
                             size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                            onClick={() => {
-                              // Просмотр - можно добавить модальное окно
-                              alert(`Просмотр ${activeTab === 'requests' ? 'заявки' : 'покупки'} ID: ${item.id}`)
-                            }}
+                            variant="outline"
+                            className="mr-2"
+                            onClick={() => openUserCard(user.id)}
                           >
                             <Edit className="w-4 h-4 mr-1" />
                             Просмотр
                           </Button>
-                          <Button
-                            size="sm"
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                            onClick={() => deleteItem(item.id, activeTab === 'requests' ? 'request' : 'purchase')}
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Удалить
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    (activeTab === 'requests' ? filteredRequests : filteredPurchases).map((item) => (
+                      <tr key={item.id} className="hover:bg-white/5">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <EditableCell
+                              value={item.name}
+                              onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { name: newValue })}
+                              className="text-sm font-medium text-white"
+                            />
+                            <div className="text-sm text-white/70">
+                              ID: {item.id.slice(0, 8)}...
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-white">
+                            {item.email && (
+                              <div className="flex items-center mb-1">
+                                <Mail className="w-3 h-3 mr-1 text-white/50" />
+                                <EditableCell
+                                  value={item.email}
+                                  onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { email: newValue })}
+                                  className="text-white"
+                                />
+                              </div>
+                            )}
+                            {item.phone && (
+                              <div className="flex items-center">
+                                <Phone className="w-3 h-3 mr-1 text-white/50" />
+                                <EditableCell
+                                  value={item.phone}
+                                  onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { phone: newValue })}
+                                  className="text-white"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        {activeTab === 'requests' && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                            {item.product_name || 'Не указан'}
+                          </td>
+                        )}
+                        {activeTab === 'requests' && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                            <div className="flex items-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {item.source_page === '/' ? 'Главная' :
+                                  item.source_page === '/about' ? 'О проекте' :
+                                    item.source_page === '/contacts' ? 'Контакты' :
+                                      item.source_page === '/catalog' ? 'Каталог' :
+                                        item.source_page === '/book' ? 'Программы' :
+                                          item.source_page || 'Не указан'}
+                              </span>
+                            </div>
+                          </td>
+                        )}
+                        {activeTab === 'purchases' && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                            <div className="flex items-center">
+                              {item.product_type === 'pdf' ? (
+                                <FileText className="w-4 h-4 mr-2 text-blue-400" />
+                              ) : (
+                                <Package className="w-4 h-4 mr-2 text-green-400" />
+                              )}
+                              {item.product_name}
+                            </div>
+                          </td>
+                        )}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          {new Date(item.created_at).toLocaleDateString('ru-RU')}
+                          <br />
+                          <span className="text-white/50">
+                            {new Date(item.created_at).toLocaleTimeString('ru-RU')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {activeTab === 'requests' ? (
+                            <select
+                              value={item.status}
+                              onChange={(e) => updateRequestStatus(item.id, e.target.value)}
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)} border-0 focus:ring-2 focus:ring-blue-500`}
+                            >
+                              <option value="new">Новый</option>
+                              <option value="completed">Завершен</option>
+                              <option value="cancelled">Отменен</option>
+                            </select>
+                          ) : (
+                            <EditableCell
+                              value={item.status}
+                              type="select"
+                              options={[
+                                { value: 'pending', label: 'Ожидает оплаты' },
+                                { value: 'completed', label: 'Оплачено' },
+                                { value: 'cancelled', label: 'Отменено' }
+                              ]}
+                              onSave={(newValue) => updateItem(item.id, 'purchase', { status: newValue })}
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}
+                            />
+                          )}
+                        </td>
+                        {activeTab === 'requests' && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <EditableCell
+                              value={item.priority || 'medium'}
+                              type="select"
+                              options={[
+                                { value: 'urgent', label: 'Срочно' },
+                                { value: 'high', label: 'Высокий' },
+                                { value: 'medium', label: 'Средний' },
+                                { value: 'low', label: 'Низкий' }
+                              ]}
+                              onSave={(newValue) => updateItem(item.id, 'request', { priority: newValue })}
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'medium')}`}
+                            />
+                          </td>
+                        )}
+                        {activeTab === 'purchases' && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
+                            <EditableCell
+                              value={'amount' in item ? item.amount : 0}
+                              type="number"
+                              onSave={(newValue) => updateItem(item.id, 'purchase', { amount: newValue })}
+                              className="text-white font-medium"
+                            />
+                            <span className="ml-1">₽</span>
+                          </td>
+                        )}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center text-sm text-white">
+                            {getSourceIcon(item.source || 'other')}
+                            <span className="ml-1">
+                              {item.source === 'website' && 'Сайт'}
+                              {item.source === 'phone' && 'Телефон'}
+                              {item.source === 'chat' && 'Чат'}
+                              {item.source === 'manual' && 'Ручной ввод'}
+                              {item.source === 'other' && 'Другое'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                              onClick={() => {
+                                // Просмотр - можно добавить модальное окно
+                                alert(`Просмотр ${activeTab === 'requests' ? 'заявки' : 'покупки'} ID: ${item.id}`)
+                              }}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Просмотр
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-red-600 hover:bg-red-700 text-white"
+                              onClick={() => deleteItem(item.id, activeTab === 'requests' ? 'request' : 'purchase')}
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Удалить
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1094,7 +1245,16 @@ function AdminPageContent() {
           }
         }}
       />
-    </div>
+
+      {/* User Card Modal */}
+      {selectedUserId && (
+        <UserCard
+          userId={selectedUserId}
+          isOpen={showUserCard}
+          onClose={closeUserCard}
+        />
+      )}
+    </div >
   )
 }
 

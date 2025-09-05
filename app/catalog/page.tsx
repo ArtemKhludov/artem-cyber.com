@@ -102,7 +102,14 @@ function DocumentCard({ document, index }: { document: Document; index: number }
 
           {/* Price Tag */}
           <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-            {document.price_rub.toLocaleString('ru-RU')} ₽
+            {document.originalPrice ? (
+              <div className="text-center">
+                <div className="line-through text-xs opacity-75">{document.originalPrice.toLocaleString('ru-RU')} ₽</div>
+                <div>{document.price_rub.toLocaleString('ru-RU')} ₽</div>
+              </div>
+            ) : (
+              <div>{document.price_rub.toLocaleString('ru-RU')} ₽</div>
+            )}
           </div>
         </div>
 
@@ -187,18 +194,17 @@ export default function CatalogPage() {
       setLoading(true)
       setError(null)
 
-      const { data, error: fetchError } = await supabase
-        .from('documents')
-        .select('*')
-        .order('created_at', { ascending: false })
+      // Используем наш API с обновленными ценами
+      const response = await fetch('/api/documents')
+      const result = await response.json()
 
-      if (fetchError) {
-        throw fetchError
+      if (!response.ok) {
+        throw new Error(result.error || 'Ошибка загрузки документов')
       }
 
-      if (data && data.length > 0) {
-        setDocuments(data)
-        console.log(`✅ Загружено ${data.length} документов в каталог`)
+      if (result.data && result.data.length > 0) {
+        setDocuments(result.data)
+        console.log(`✅ Загружено ${result.data.length} документов в каталог с обновленными ценами`)
       } else {
         console.log('⚠️ Документы не найдены')
         setError('Документы не найдены')
@@ -236,7 +242,7 @@ export default function CatalogPage() {
     <div className="relative">
       {/* Главное меню */}
       <MainHeader onCallRequest={handleCallRequest} />
-      
+
       {/* Основной контент */}
       <main ref={sectionRef}>
         {/* Hero Section */}

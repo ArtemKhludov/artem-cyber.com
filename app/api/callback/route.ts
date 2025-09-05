@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { addToSheets } from '../../../lib/google-sheets'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -43,6 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Сохранение заявки в базу данных
+    // Триггер автоматически создаст или свяжет пользователя
     const { data, error } = await supabase
       .from('callback_requests')
       .insert([
@@ -70,12 +70,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Синхронизация с Google Sheets
-    try {
-      await addToSheets('request', data)
-    } catch (sheetsError) {
-      console.error('Google Sheets sync error:', sheetsError)
-    }
+    // Синхронизация с Google Sheets (отключена для тестирования)
+    // try {
+    //   await addToSheets('request', data)
+    // } catch (sheetsError) {
+    //   console.error('Google Sheets sync error:', sheetsError)
+    // }
 
     // Отправка уведомления в Telegram
     try {

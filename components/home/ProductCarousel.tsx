@@ -12,7 +12,7 @@ export function ProductCarousel() {
 
   const programs = [
     {
-      id: 'mini',
+      id: 'mini-session',
       name: 'Mini-сессия',
       subtitle: 'Быстрая диагностика',
       duration: '20 минут',
@@ -30,7 +30,7 @@ export function ProductCarousel() {
       icon: '⚡'
     },
     {
-      id: 'deep',
+      id: 'deep-day',
       name: 'Глубокий день',
       subtitle: 'Полная трансформация',
       duration: '6 часов',
@@ -50,7 +50,7 @@ export function ProductCarousel() {
       icon: '🔮'
     },
     {
-      id: 'transformation',
+      id: 'transformation-21',
       name: '21 день',
       subtitle: 'Новое «Я»',
       duration: '21 день',
@@ -101,20 +101,19 @@ export function ProductCarousel() {
     <section id="programs" ref={sectionRef} className="py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
         {/* Заголовок секции */}
-        <div className={`text-center mb-16 transform transition-all duration-1000 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`text-center mb-16 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           <span className="text-blue-600 font-semibold text-sm uppercase tracking-wide">
             Наши программы
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mt-2 mb-6">
-            Выберите свой путь к 
+            Выберите свой путь к
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {" "}трансформации
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Каждая программа разработана для определенного уровня готовности к изменениям. 
+            Каждая программа разработана для определенного уровня готовности к изменениям.
             От быстрой диагностики до полной перестройки личности.
           </p>
         </div>
@@ -126,9 +125,8 @@ export function ProductCarousel() {
             {programs.map((program, index) => (
               <div
                 key={program.id}
-                className={`relative transform transition-all duration-1000 ${
-                  isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                }`}
+                className={`relative transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                  }`}
                 style={{ transitionDelay: `${index * 200}ms` }}
               >
                 {/* Популярный тег */}
@@ -142,9 +140,8 @@ export function ProductCarousel() {
                 )}
 
                 {/* Карточка программы */}
-                <div className={`relative bg-white rounded-2xl shadow-xl overflow-hidden border-2 transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
-                  program.popular ? 'border-purple-200' : 'border-gray-100'
-                }`}>
+                <div className={`relative bg-white rounded-2xl shadow-xl overflow-hidden border-2 transition-all duration-300 hover:shadow-2xl hover:scale-105 ${program.popular ? 'border-purple-200' : 'border-gray-100'
+                  }`}>
                   {/* Градиентный хедер */}
                   <div className={`bg-gradient-to-r ${program.gradient} p-6 text-white`}>
                     <div className="text-3xl mb-2">{program.icon}</div>
@@ -184,8 +181,8 @@ export function ProductCarousel() {
                     </div>
 
                     {/* Кнопка */}
-                    <Button 
-                      asChild 
+                    <Button
+                      asChild
                       className={`w-full bg-gradient-to-r ${program.gradient} hover:opacity-90 text-white`}
                     >
                       <Link href={`/book?product=${program.id}`}>
@@ -208,26 +205,24 @@ export function ProductCarousel() {
               <button
                 key={index}
                 onClick={() => setActiveSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  activeSlide === index 
-                    ? 'bg-blue-600 scale-125' 
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${activeSlide === index
+                    ? 'bg-blue-600 scale-125'
                     : 'bg-gray-300 hover:bg-gray-400'
-                }`}
+                  }`}
               />
             ))}
           </div>
         </div>
 
         {/* Дополнительная информация */}
-        <div className={`mt-16 text-center transform transition-all duration-1000 delay-500 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`mt-16 text-center transform transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Не знаете, какую программу выбрать?
             </h3>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Пройдите бесплатный тест на готовность к изменениям, и мы подберем 
+              Пройдите бесплатный тест на готовность к изменениям, и мы подберем
               оптимальную программу именно для вас.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
