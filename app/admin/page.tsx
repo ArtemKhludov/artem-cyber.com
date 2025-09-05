@@ -820,6 +820,17 @@ function AdminPageContent() {
                         </div>
                       </th>
                     )}
+                    {activeTab === 'requests' && (
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                        onClick={() => handleSort('source_page')}
+                      >
+                        <div className="flex items-center">
+                          Источник
+                          {getSortIcon('source_page')}
+                        </div>
+                      </th>
+                    )}
                     {activeTab === 'purchases' && (
                       <th
                         className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
@@ -927,6 +938,20 @@ function AdminPageContent() {
                       {activeTab === 'requests' && (
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                           {item.product_name || 'Не указан'}
+                        </td>
+                      )}
+                      {activeTab === 'requests' && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          <div className="flex items-center">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {item.source_page === '/' ? 'Главная' :
+                                item.source_page === '/about' ? 'О проекте' :
+                                  item.source_page === '/contacts' ? 'Контакты' :
+                                    item.source_page === '/catalog' ? 'Каталог' :
+                                      item.source_page === '/book' ? 'Программы' :
+                                        item.source_page || 'Не указан'}
+                            </span>
+                          </div>
                         </td>
                       )}
                       {activeTab === 'purchases' && (

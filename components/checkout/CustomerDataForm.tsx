@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { User, Mail, Phone, MapPin } from 'lucide-react'
 
@@ -175,6 +176,21 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
                         )}
                     </Button>
                 </div>
+
+                <p className="text-xs text-gray-500 text-center mt-4">
+                    Нажимая кнопку, вы соглашаетесь с{' '}
+                    <Link href="/privacy" className="text-blue-600 hover:underline font-medium">
+                        политикой конфиденциальности
+                    </Link>
+                    {', '}
+                    <Link href="/terms" className="text-blue-600 hover:underline font-medium">
+                        пользовательским соглашением
+                    </Link>
+                    {' '}и{' '}
+                    <Link href="/refund" className="text-blue-600 hover:underline font-medium">
+                        условиями возврата
+                    </Link>
+                </p>
             </form>
 
             <div className="mt-4 text-xs text-gray-500">

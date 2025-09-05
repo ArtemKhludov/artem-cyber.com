@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Coins, Loader2, ExternalLink } from 'lucide-react'
 import type { Document } from '@/types'
@@ -45,7 +46,7 @@ export function CryptomusPayment({ document, userEmail, userCountry, userIP }: C
 
       const { paymentUrl: url } = await response.json()
       setPaymentUrl(url)
-      
+
       // Автоматически открываем ссылку для оплаты
       window.open(url, '_blank')
     } catch (error) {
@@ -131,6 +132,12 @@ export function CryptomusPayment({ document, userEmail, userCountry, userIP }: C
         </div>
 
         <div className="text-center">
+          <p className="text-xs text-gray-500 mb-2">
+            Оплачивая, вы автоматически соглашаетесь с{' '}
+            <Link href="/refund" className="text-blue-600 hover:underline font-medium">
+              Условиями возврата
+            </Link>
+          </p>
           <p className="text-xs text-gray-500">
             Безопасная оплата через Cryptomus
           </p>

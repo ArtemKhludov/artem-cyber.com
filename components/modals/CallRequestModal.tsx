@@ -49,12 +49,12 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
       }
 
       setIsSubmitted(true)
-      
+
       // Показываем анимацию загрузки через 2 секунды
       setTimeout(() => {
         setShowRedirect(true)
       }, 2000)
-      
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка')
     } finally {
@@ -82,7 +82,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300" onClick={resetAndClose}>
       <div className="bg-gradient-to-br from-white via-gray-50 to-white rounded-2xl max-w-lg w-full mx-4 shadow-2xl transform transition-all animate-in zoom-in-95 duration-300 border border-gray-100 overflow-hidden max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        
+
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 p-6 text-white relative overflow-hidden">
           {/* Звездный эффект */}
@@ -100,7 +100,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
               />
             ))}
           </div>
-          
+
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
@@ -133,11 +133,11 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                     <CheckCircle className="w-12 h-12 text-white" />
                     <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full animate-ping opacity-20"></div>
                   </div>
-                  
+
                   <h3 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
                     Спасибо за заявку!
                   </h3>
-                  
+
                   <p className="text-gray-600 mb-6 text-lg">
                     Ваша заявка получена, мы с вами скоро свяжемся
                   </p>
@@ -145,7 +145,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                   {/* Sparkles animation */}
                   <div className="flex justify-center space-x-2 mb-6">
                     {[...Array(5)].map((_, i) => (
-                      <Sparkles 
+                      <Sparkles
                         key={i}
                         className="w-6 h-6 text-yellow-500 animate-bounce"
                         style={{ animationDelay: `${i * 0.2}s` }}
@@ -159,11 +159,11 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                   <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-spin">
                     <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full"></div>
                   </div>
-                  
+
                   <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
                     Перенаправляем через {countdown} сек...
                   </h3>
-                  
+
                   <p className="text-gray-600 mb-6">
                     Спасибо! Переходим на главную страницу
                   </p>
@@ -184,14 +184,14 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
-                
+
                 <Link href="/">
                   <Button variant="outline" className="w-full border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105">
                     <Home className="w-5 h-5 mr-2" />
                     На главную страницу
                   </Button>
                 </Link>
-                
+
                 <Link href="/chat">
                   <Button className="w-full bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                     <MessageCircle className="w-5 h-5 mr-2" />
@@ -339,6 +339,10 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                 Нажимая кнопку, вы соглашаетесь с{' '}
                 <Link href="/privacy" className="text-blue-600 hover:underline font-medium">
                   политикой конфиденциальности
+                </Link>
+                {' '}и{' '}
+                <Link href="/terms" className="text-blue-600 hover:underline font-medium">
+                  пользовательским соглашением
                 </Link>
               </p>
             </>

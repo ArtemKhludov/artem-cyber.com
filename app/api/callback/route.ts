@@ -84,7 +84,13 @@ export async function POST(request: NextRequest) {
 📦 Тип: ${product_type || 'callback'}
 🛍️ Товар/Услуга: ${product_name || 'Заказ звонка'}
 �� Заметки: ${notes || 'Нет'}
-🌐 Источник: ${source_page || 'unknown'}`
+🌐 Источник: ${source_page === '/' ? 'Главная страница' :
+          source_page === '/about' ? 'О проекте' :
+            source_page === '/contacts' ? 'Контакты' :
+              source_page === '/catalog' ? 'Каталог' :
+                source_page === '/book' ? 'Программы' :
+                  source_page === '/chat' ? 'Чат' :
+                    source_page || 'Не указан'}`
 
       const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
+import { Legal } from '@/components/home/Legal'
 
 export default function AboutPage() {
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
@@ -89,11 +90,11 @@ export default function AboutPage() {
     '⚡️ Готов услышать правду — и сделать из неё действие'
   ]
 
-    return (
+  return (
     <div className="relative">
       {/* Главное меню */}
       <MainHeader onCallRequest={handleCallRequest} />
-      
+
       {/* Основной контент */}
       <main ref={sectionRef}>
         {/* Hero Section */}
@@ -243,6 +244,9 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
+
+        {/* Правовая информация */}
+        <Legal />
 
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">

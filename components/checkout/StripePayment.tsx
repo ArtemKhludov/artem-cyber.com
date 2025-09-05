@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { CreditCard, Loader2 } from 'lucide-react'
 import type { Document } from '@/types'
@@ -45,7 +46,7 @@ export function StripePayment({ document, userEmail, userCountry, userIP }: Stri
       }
 
       const { sessionUrl } = await response.json()
-      
+
       // Перенаправляем на Stripe Checkout
       window.location.href = sessionUrl
     } catch (error) {
@@ -83,6 +84,12 @@ export function StripePayment({ document, userEmail, userCountry, userIP }: Stri
       </Button>
 
       <div className="text-center">
+        <p className="text-xs text-gray-500 mb-2">
+          Оплачивая, вы автоматически соглашаетесь с{' '}
+          <Link href="/refund" className="text-blue-600 hover:underline font-medium">
+            Условиями возврата
+          </Link>
+        </p>
         <p className="text-xs text-gray-500">
           Безопасная оплата через Stripe
         </p>

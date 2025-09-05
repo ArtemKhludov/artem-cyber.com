@@ -51,18 +51,18 @@ function SignupForm() {
     }
 
     const result = await register(
-      formData.email, 
-      formData.password, 
-      formData.name, 
+      formData.email,
+      formData.password,
+      formData.name,
       formData.phone || undefined
     )
-    
+
     if (result.success) {
       router.push(redirect)
     } else {
       setError(result.error || 'Ошибка регистрации')
     }
-    
+
     setLoading(false)
   }
 
@@ -96,7 +96,7 @@ function SignupForm() {
                 <span className="text-red-700 text-sm">{error}</span>
               </div>
             )}
-            
+
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -244,6 +244,17 @@ function SignupForm() {
                 )}
               </Button>
             </div>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              Нажимая кнопку, вы соглашаетесь с{' '}
+              <Link href="/privacy" className="text-blue-600 hover:underline font-medium">
+                политикой конфиденциальности
+              </Link>
+              {' '}и{' '}
+              <Link href="/terms" className="text-blue-600 hover:underline font-medium">
+                пользовательским соглашением
+              </Link>
+            </p>
           </form>
 
           <div className="text-center">

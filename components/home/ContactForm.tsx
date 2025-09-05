@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Send, Phone, Mail, MapPin, Clock, CheckCircle } from 'lucide-react'
 
@@ -15,6 +16,7 @@ export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -61,25 +63,49 @@ export function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
 
     setIsSubmitting(true)
+    setSubmitError(null)
 
     try {
-      // Здесь будет логика отправки формы
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Имитация отправки
-      
+      // Отправляем данные через тот же API, что и форма "Заказать звонок"
+      const response = await fetch('/api/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          message: formData.message,
+          preferred_time: '', // Пустое поле для формы обратной связи
+          source_page: window.location.pathname,
+          product_type: 'contact_form',
+          product_name: 'Обратная связь',
+          notes: `Сообщение: ${formData.message}`
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Ошибка отправки сообщения')
+      }
+
       setIsSubmitted(true)
       setFormData({ name: '', phone: '', email: '', message: '' })
-      
+
       // Сброс формы через 5 секунд
       setTimeout(() => {
         setIsSubmitted(false)
       }, 5000)
-      
+
     } catch (error) {
       console.error('Error submitting form:', error)
+      setSubmitError(error instanceof Error ? error.message : 'Произошла ошибка при отправке')
     } finally {
       setIsSubmitting(false)
     }
@@ -134,29 +160,27 @@ export function ContactForm() {
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Заголовок секции */}
-        <div className={`text-center mb-16 transform transition-all duration-1000 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
+        <div className={`text-center mb-16 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
           <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">
             Свяжитесь с нами
           </span>
           <h2 className="text-4xl md:text-5xl font-bold mt-2 mb-6">
-            Готовы изменить свою 
+            Готовы изменить свою
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               {" "}жизнь?
             </span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Остались вопросы? Хотите узнать больше о наших программах? 
+            Остались вопросы? Хотите узнать больше о наших программах?
             Напишите нам, и мы поможем выбрать идеальный путь трансформации.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Левая часть - контактная информация */}
-          <div className={`transform transition-all duration-1000 ${
-            isVisible ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'
-          }`}>
+          <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'
+            }`}>
             <div className="space-y-8">
               <div>
                 <h3 className="text-2xl font-bold mb-6">Как с нами связаться</h3>
@@ -222,14 +246,19 @@ export function ContactForm() {
           </div>
 
           {/* Правая часть - форма */}
-          <div className={`transform transition-all duration-1000 delay-300 ${
-            isVisible ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
-          }`}>
+          <div className={`transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
+            }`}>
             <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
               {!isSubmitted ? (
                 <>
                   <h3 className="text-2xl font-bold text-white mb-6">Отправить сообщение</h3>
-                  
+
+                  {submitError && (
+                    <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
+                      <p className="text-red-200 text-sm">{submitError}</p>
+                    </div>
+                  )}
+
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
@@ -240,9 +269,8 @@ export function ContactForm() {
                           type="text"
                           value={formData.name}
                           onChange={(e) => handleInputChange('name', e.target.value)}
-                          className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                            errors.name ? 'border-red-500' : 'border-white/20'
-                          }`}
+                          className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.name ? 'border-red-500' : 'border-white/20'
+                            }`}
                           placeholder="Введите ваше имя"
                         />
                         {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
@@ -256,9 +284,8 @@ export function ContactForm() {
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => handleInputChange('phone', e.target.value)}
-                          className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                            errors.phone ? 'border-red-500' : 'border-white/20'
-                          }`}
+                          className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.phone ? 'border-red-500' : 'border-white/20'
+                            }`}
                           placeholder="+7 (999) 123-45-67"
                         />
                         {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
@@ -273,9 +300,8 @@ export function ContactForm() {
                         type="email"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
-                        className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                          errors.email ? 'border-red-500' : 'border-white/20'
-                        }`}
+                        className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.email ? 'border-red-500' : 'border-white/20'
+                          }`}
                         placeholder="your@email.com"
                       />
                       {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
@@ -289,9 +315,8 @@ export function ContactForm() {
                         rows={4}
                         value={formData.message}
                         onChange={(e) => handleInputChange('message', e.target.value)}
-                        className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none ${
-                          errors.message ? 'border-red-500' : 'border-white/20'
-                        }`}
+                        className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none ${errors.message ? 'border-red-500' : 'border-white/20'
+                          }`}
                         placeholder="Расскажите, чем мы можем помочь..."
                       />
                       {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message}</p>}
@@ -314,6 +339,17 @@ export function ContactForm() {
                         </div>
                       )}
                     </Button>
+
+                    <p className="text-xs text-gray-400 text-center mt-4">
+                      Нажимая кнопку, вы соглашаетесь с{' '}
+                      <Link href="/privacy" className="text-blue-400 hover:underline font-medium">
+                        политикой конфиденциальности
+                      </Link>
+                      {' '}и{' '}
+                      <Link href="/terms" className="text-blue-400 hover:underline font-medium">
+                        пользовательским соглашением
+                      </Link>
+                    </p>
                   </form>
                 </>
               ) : (
@@ -329,7 +365,7 @@ export function ContactForm() {
                   </p>
                   <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
                     <p className="text-sm text-gray-400">
-                      Следующий шаг: наш специалист проанализирует ваш запрос и предложит 
+                      Следующий шаг: наш специалист проанализирует ваш запрос и предложит
                       оптимальное решение именно для вашей ситуации.
                     </p>
                   </div>

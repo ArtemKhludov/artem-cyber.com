@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Clock, 
-  MessageCircle, 
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  MessageCircle,
   Send,
   CheckCircle,
   User,
@@ -39,7 +39,7 @@ export function ContactsPageContent() {
 
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
+
     setIsSubmitting(false)
     setIsSubmitted(true)
 
@@ -117,8 +117,8 @@ export function ContactsPageContent() {
                 <contact.icon className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">{contact.title}</h3>
-              <a 
-                href={contact.link} 
+              <a
+                href={contact.link}
                 className="text-blue-600 hover:text-blue-700 font-medium block mb-2 transition-colors"
                 {...(contact.link.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
@@ -133,7 +133,7 @@ export function ContactsPageContent() {
           {/* Contact Form */}
           <div className="bg-white rounded-2xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Написать нам</h2>
-            
+
             {isSubmitted ? (
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -167,7 +167,7 @@ export function ContactsPageContent() {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                       Телефон
@@ -265,6 +265,10 @@ export function ContactsPageContent() {
                   Нажимая кнопку, вы соглашаетесь с{' '}
                   <Link href="/privacy" className="text-blue-600 hover:underline">
                     политикой конфиденциальности
+                  </Link>
+                  {' '}и{' '}
+                  <Link href="/terms" className="text-blue-600 hover:underline">
+                    пользовательским соглашением
                   </Link>
                 </p>
               </form>

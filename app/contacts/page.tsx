@@ -105,11 +105,11 @@ export default function ContactsPage() {
     { name: 'Instagram', href: 'https://instagram.com/energylogic', icon: '🟣', color: 'hover:bg-purple-600' }
   ]
 
-    return (
+  return (
     <div className="relative">
       {/* Главное меню */}
       <MainHeader onCallRequest={handleCallRequest} />
-      
+
       {/* Основной контент */}
       <main ref={sectionRef}>
         {/* Hero Section */}
@@ -229,8 +229,8 @@ export default function ContactsPage() {
                       >
                         <div
                           className={`inline-block max-w-xs px-4 py-2 rounded-lg text-sm ${message.isUser
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-800 border border-gray-200'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-800 border border-gray-200'
                             }`}
                         >
                           <p>{message.text}</p>
@@ -241,6 +241,24 @@ export default function ContactsPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Согласие с отказом от ответственности */}
+                  <div className="mb-4">
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id="chat-disclaimer"
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="chat-disclaimer" className="text-sm text-gray-700 leading-relaxed">
+                        <span className="font-medium text-yellow-800">⚠️ Важно:</span>{' '}
+                        Я подтверждаю, что понимаю, что результаты не являются диагнозом, и принимаю ответственность за использование материалов.{' '}
+                        <Link href="/disclaimer" className="text-blue-600 hover:underline font-medium">
+                          Отказ от ответственности
+                        </Link>
+                      </label>
+                    </div>
                   </div>
 
                   {/* Поле ввода */}

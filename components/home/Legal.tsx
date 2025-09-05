@@ -31,28 +31,28 @@ export function Legal() {
       title: 'Политика конфиденциальности',
       description: 'Как мы защищаем ваши персональные данные и обеспечиваем безопасность',
       href: '/privacy',
-      updated: '15.01.2024'
+      updated: new Date().toLocaleDateString('ru-RU')
     },
     {
       icon: FileText,
       title: 'Пользовательское соглашение',
       description: 'Условия использования платформы и наших услуг',
       href: '/terms',
-      updated: '10.01.2024'
+      updated: new Date().toLocaleDateString('ru-RU')
     },
     {
       icon: RotateCcw,
       title: 'Условия возврата',
       description: 'Политика возврата средств и гарантии качества услуг',
       href: '/refund',
-      updated: '20.12.2023'
+      updated: new Date().toLocaleDateString('ru-RU')
     },
     {
       icon: AlertCircle,
       title: 'Отказ от ответственности',
       description: 'Важная информация об ограничениях и рисках',
       href: '/disclaimer',
-      updated: '05.01.2024'
+      updated: new Date().toLocaleDateString('ru-RU')
     }
   ]
 

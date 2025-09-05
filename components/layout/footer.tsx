@@ -191,6 +191,9 @@ export function Footer() {
               <Link href="/refund" className="text-gray-400 hover:text-white transition-colors">
                 Возврат средств
               </Link>
+              <Link href="/disclaimer" className="text-gray-400 hover:text-white transition-colors">
+                Отказ от ответственности
+              </Link>
               <Link href="/sitemap" className="text-gray-400 hover:text-white transition-colors">
                 Карта сайта
               </Link>
