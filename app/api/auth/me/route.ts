@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
             .select(`
         user_id,
         expires_at,
+        last_activity,
         users (
           id,
           email,
@@ -35,7 +36,34 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Недействительная сессия' }, { status: 401 })
         }
 
-        return NextResponse.json(session.users)
+        // Проверяем время неактивности (30 минут) - только если поле существует
+        if (session.last_activity) {
+            const lastActivity = new Date(session.last_activity)
+            const now = new Date()
+            const inactiveTime = now.getTime() - lastActivity.getTime()
+            const maxInactiveTime = 30 * 60 * 1000 // 30 минут в миллисекундах
+
+            if (inactiveTime > maxInactiveTime) {
+                // Сессия истекла из-за неактивности
+                await supabase
+                    .from('user_sessions')
+                    .delete()
+                    .eq('session_token', sessionToken)
+
+                return NextResponse.json({ error: 'Сессия истекла из-за неактивности' }, { status: 401 })
+            }
+
+            // Обновляем время последней активности
+            await supabase
+                .from('user_sessions')
+                .update({ last_activity: now.toISOString() })
+                .eq('session_token', sessionToken)
+        }
+
+        return NextResponse.json({
+            ...session.users,
+            last_activity: session.last_activity || new Date().toISOString()
+        })
     } catch (error) {
         console.error('Session check error:', error)
         return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })

@@ -12,6 +12,7 @@ import { ContactForm } from '@/components/home/ContactForm'
 import { Legal } from '@/components/home/Legal'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
+import { SessionChecker } from '@/components/auth/SessionChecker'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -29,6 +30,7 @@ export default function Home() {
 
   return (
     <MainLayout>
+      <SessionChecker />
       <div className="relative">
         {/* Основной контент */}
         <main>

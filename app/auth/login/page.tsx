@@ -9,6 +9,7 @@ import { PageLayout } from '@/components/layout/PageLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import UserNotFoundModal from '@/components/auth/UserNotFoundModal'
 import ResetPasswordModal from '@/components/auth/ResetPasswordModal'
+import { SessionChecker } from '@/components/auth/SessionChecker'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -234,6 +235,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={<div>Загрузка...</div>}>
+      <SessionChecker />
       <LoginForm />
     </Suspense>
   )

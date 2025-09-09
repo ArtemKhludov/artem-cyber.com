@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
 
 interface User {
   id: string
@@ -8,6 +8,7 @@ interface User {
   name: string
   role: 'user' | 'admin'
   created_at: string
+  last_activity?: string
 }
 
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>
   logout: () => Promise<void>
   register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>
+  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const checkSession = async () => {
+  const checkSession = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/me')
       if (response.ok) {
@@ -32,18 +34,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(userData)
       } else {
         setUser(null)
+        // Если сессия истекла, очищаем cookie
+        if (response.status === 401) {
+          document.cookie = 'session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+          // Перенаправляем на страницу входа если мы на защищенной странице
+          if (typeof window !== 'undefined' &&
+            (window.location.pathname.startsWith('/dashboard') ||
+              window.location.pathname.startsWith('/admin'))) {
+            window.location.href = '/auth/login'
+          }
+        }
       }
     } catch (error) {
       console.error('Session check failed:', error)
       setUser(null)
+      // При ошибке сети тоже очищаем cookie
+      document.cookie = 'session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  // Отслеживание активности пользователя
+  useEffect(() => {
+    if (!user) return
+
+    let activityTimer: NodeJS.Timeout
+
+    const resetActivityTimer = () => {
+      clearTimeout(activityTimer)
+      activityTimer = setTimeout(() => {
+        // Проверяем сессию каждые 5 минут
+        checkSession()
+      }, 5 * 60 * 1000) // 5 минут
+    }
+
+    // Слушаем события активности
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click']
+
+    events.forEach(event => {
+      document.addEventListener(event, resetActivityTimer, true)
+    })
+
+    // Начальный таймер
+    resetActivityTimer()
+
+    return () => {
+      clearTimeout(activityTimer)
+      events.forEach(event => {
+        document.removeEventListener(event, resetActivityTimer, true)
+      })
+    }
+  }, [user, checkSession])
 
   useEffect(() => {
     checkSession()
-  }, [])
+  }, [checkSession])
 
   const login = async (email: string, password: string) => {
     try {
@@ -92,6 +138,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const refreshSession = async () => {
+    await checkSession()
+  }
+
   const register = async (email: string, password: string, name: string, phone?: string) => {
     try {
       const response = await fetch('/api/auth/register', {
@@ -115,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, refreshSession }}>
       {children}
     </AuthContext.Provider>
   )

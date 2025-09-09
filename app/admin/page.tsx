@@ -22,7 +22,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Users
+  Users,
+  DollarSign
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
@@ -30,6 +31,8 @@ import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 import EditableCell from '@/components/admin/EditableCell'
 import UserCard from '@/components/admin/UserCard'
 import { EnhancedUsersList } from '@/components/admin/EnhancedUsersList'
+import { DocumentsManagement } from '@/components/admin/DocumentsManagement'
+import { PricingManagement } from '@/components/admin/PricingManagement'
 import { AdminGuard } from '@/components/auth/AdminGuard'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -75,7 +78,7 @@ interface Purchase {
 
 function AdminPageContent() {
   const { logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'users'>('requests')
+  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'users' | 'documents' | 'pricing'>('requests')
   const [requests, setRequests] = useState<Request[]>([])
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [users, setUsers] = useState<any[]>([])
@@ -693,6 +696,30 @@ function AdminPageContent() {
                 Пользователи ({users.length})
               </div>
             </button>
+            <button
+              onClick={() => setActiveTab('documents')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'documents'
+                ? 'bg-white text-gray-900'
+                : 'text-white hover:bg-white/10'
+                }`}
+            >
+              <div className="flex items-center justify-center">
+                <FileText className="w-4 h-4 mr-2" />
+                Документы
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('pricing')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'pricing'
+                ? 'bg-white text-gray-900'
+                : 'text-white hover:bg-white/10'
+                }`}
+            >
+              <div className="flex items-center justify-center">
+                <DollarSign className="w-4 h-4 mr-2" />
+                Цены
+              </div>
+            </button>
           </div>
         </div>
 
@@ -850,7 +877,11 @@ function AdminPageContent() {
 
         {/* Table */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
-          {loading ? (
+          {activeTab === 'documents' ? (
+            <DocumentsManagement />
+          ) : activeTab === 'pricing' ? (
+            <PricingManagement />
+          ) : loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
               <p className="text-white/70 mt-2">

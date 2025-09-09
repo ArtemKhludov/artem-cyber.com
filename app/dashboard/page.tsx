@@ -1,9 +1,9 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -47,8 +47,7 @@ interface Course {
 }
 
 export default function DashboardPage() {
-  const { user, loading, logout } = useAuth()
-  const router = useRouter()
+  const { user, logout } = useAuth()
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [stats, setStats] = useState({
@@ -57,12 +56,6 @@ export default function DashboardPage() {
     completedCourses: 0,
     totalSpent: 0
   })
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/login?redirect=/dashboard')
-    }
-  }, [user, loading, router])
 
   useEffect(() => {
     if (user) {
@@ -150,20 +143,6 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <MainLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-        </div>
-      </MainLayout>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
-
   const getProductTypeLabel = (type: string) => {
     switch (type) {
       case 'mini': return 'Mini-сессия'
@@ -189,6 +168,17 @@ export default function DashboardPage() {
       case 'advanced': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  // Если пользователь не загружен, показываем загрузку
+  if (!user) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
+      </MainLayout>
+    )
   }
 
   return (
