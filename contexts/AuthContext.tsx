@@ -92,20 +92,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (email: string, password: string, name: string, phone?: string) => {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ email, password, name, phone }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        return { success: true }
+        return { success: true, user: data.user }
       } else {
         return { success: false, error: data.error || 'Ошибка регистрации' }
       }

@@ -56,7 +56,9 @@ export async function POST(request: NextRequest) {
           product_type: product_type || 'callback',
           product_name: product_name || 'Заказ звонка',
           notes: notes || null,
-          source: 'website'
+          source: 'website',
+          status: 'new',
+          priority: 'medium'
         }
       ])
       .select()

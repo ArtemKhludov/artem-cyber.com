@@ -29,6 +29,7 @@ import AddRequestModal from '@/components/admin/AddRequestModal'
 import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 import EditableCell from '@/components/admin/EditableCell'
 import UserCard from '@/components/admin/UserCard'
+import { EnhancedUsersList } from '@/components/admin/EnhancedUsersList'
 import { AdminGuard } from '@/components/auth/AdminGuard'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -255,7 +256,7 @@ function AdminPageContent() {
     console.log('Fetching users...')
     setLoading(true)
     try {
-      const response = await fetch('/api/users')
+      const response = await fetch('/api/users/enhanced')
       const result = await response.json()
 
       if (result.success) {
@@ -996,56 +997,30 @@ function AdminPageContent() {
                 </thead>
                 <tbody className="divide-y divide-white/10">
                   {activeTab === 'users' ? (
-                    filteredUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-white/5">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-white">
-                              {user.name}
-                            </div>
-                            <div className="text-sm text-white/70">
-                              ID: {user.id.slice(0, 8)}...
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-white">
-                            {user.email || 'Не указан'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-white">
-                            {user.phone}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                          {user.total_requests || 0}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                          {user.total_purchases || 0}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                          {user.total_spent || 0} ₽
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                          {new Date(user.created_at).toLocaleDateString('ru-RU')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                          {new Date(user.last_activity).toLocaleDateString('ru-RU')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="mr-2"
-                            onClick={() => openUserCard(user.id)}
-                          >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Просмотр
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
+                    <tr>
+                      <td colSpan={9} className="px-6 py-4">
+                        <div className="bg-white rounded-lg p-4">
+                          <EnhancedUsersList
+                            onUserSelect={(user) => openUserCard(user.id)}
+                            onUserEdit={(user) => openUserCard(user.id)}
+                            onUserDelete={async (userId) => {
+                              if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                                try {
+                                  const response = await fetch(`/api/users/${userId}`, {
+                                    method: 'DELETE'
+                                  })
+                                  if (response.ok) {
+                                    fetchUsers()
+                                  }
+                                } catch (error) {
+                                  console.error('Error deleting user:', error)
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      </td>
+                    </tr>
                   ) : (
                     (activeTab === 'requests' ? filteredRequests : filteredPurchases).map((item) => (
                       <tr key={item.id} className="hover:bg-white/5">

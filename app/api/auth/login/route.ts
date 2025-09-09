@@ -21,13 +21,13 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (userError || !user) {
-            return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 })
+            return NextResponse.json({ error: 'Пользователь с таким email не зарегистрирован' }, { status: 401 })
         }
 
         // Проверяем пароль
         const isValidPassword = await bcrypt.compare(password, user.password_hash)
         if (!isValidPassword) {
-            return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 })
+            return NextResponse.json({ error: 'Неверный пароль' }, { status: 401 })
         }
 
         // Создаем сессию

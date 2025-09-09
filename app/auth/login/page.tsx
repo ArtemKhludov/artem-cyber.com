@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { useAuth } from '@/contexts/AuthContext'
+import UserNotFoundModal from '@/components/auth/UserNotFoundModal'
+import ResetPasswordModal from '@/components/auth/ResetPasswordModal'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -14,6 +16,8 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showUserNotFoundModal, setShowUserNotFoundModal] = useState(false)
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
@@ -48,10 +52,31 @@ function LoginForm() {
       console.log('Login successful, user role:', result.user.role)
       // Не делаем перенаправление здесь - пусть useEffect сделает это
     } else {
-      setError(result.error || 'Ошибка входа')
+      // Проверяем, является ли ошибка связанной с несуществующим пользователем
+      if (result.error?.includes('не зарегистрирован') || result.error?.includes('не найден') || result.error?.includes('не существует')) {
+        // Показываем модальное окно с несуществующим пользователем
+        setShowUserNotFoundModal(true)
+      } else {
+        setError(result.error || 'Ошибка входа')
+      }
     }
 
     setLoading(false)
+  }
+
+  const handleUserNotFoundRegister = () => {
+    setShowUserNotFoundModal(false)
+    router.push('/auth/signup')
+  }
+
+  const handleUserNotFoundResetPassword = () => {
+    setShowUserNotFoundModal(false)
+    setShowResetPasswordModal(true)
+  }
+
+  const handleCloseModals = () => {
+    setShowUserNotFoundModal(false)
+    setShowResetPasswordModal(false)
   }
 
   return (
@@ -183,6 +208,25 @@ function LoginForm() {
           </div>
         </div>
       </div>
+
+      {/* Модальные окна */}
+      <UserNotFoundModal
+        isOpen={showUserNotFoundModal}
+        onClose={handleCloseModals}
+        onRegister={handleUserNotFoundRegister}
+        onResetPassword={handleUserNotFoundResetPassword}
+        email={email}
+      />
+
+      <ResetPasswordModal
+        isOpen={showResetPasswordModal}
+        onClose={handleCloseModals}
+        onBack={() => {
+          setShowResetPasswordModal(false)
+          setShowUserNotFoundModal(true)
+        }}
+        email={email}
+      />
     </PageLayout>
   )
 }
