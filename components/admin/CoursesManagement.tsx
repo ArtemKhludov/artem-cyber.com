@@ -26,6 +26,7 @@ import {
 import {
     FileText,
     Plus,
+    Minus,
     Edit,
     Trash2,
     Save,
@@ -46,6 +47,7 @@ import {
 } from 'lucide-react'
 import type { Document } from '@/types'
 import { CourseModalTabs } from './CourseModalTabs'
+import { WorkbooksManager } from './WorkbooksManager'
 
 interface CourseFormData {
     title: string
@@ -72,7 +74,9 @@ export function CoursesManagement() {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [editingDocument, setEditingDocument] = useState<Document | null>(null)
     const [uploading, setUploading] = useState<{ [key: string]: boolean }>({})
-    const [activeModalTab, setActiveModalTab] = useState<'basic' | 'files' | 'settings'>('basic')
+    const [activeModalTab, setActiveModalTab] = useState<'basic' | 'files' | 'settings' | 'workbooks'>('basic')
+    const [showWorkbooksManager, setShowWorkbooksManager] = useState(false)
+    const [selectedDocumentForWorkbooks, setSelectedDocumentForWorkbooks] = useState<Document | null>(null)
 
     const [newDocument, setNewDocument] = useState<CourseFormData>({
         title: '',
@@ -254,6 +258,341 @@ export function CoursesManagement() {
         } catch (error) {
             console.error('Ошибка удаления документа:', error)
             alert('Ошибка удаления документа')
+        }
+    }
+
+    const handleQuickAddWorkbook = async (document: Document) => {
+        try {
+            const response = await fetch('/api/admin/workbooks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    document_id: document.id,
+                    title: `Рабочая тетрадь ${(document.workbook_count || 0) + 1}`,
+                    description: 'Автоматически созданная рабочая тетрадь',
+                    file_url: 'https://placeholder.com/workbook.pdf', // Временный URL-заглушка
+                    order_index: (document.workbook_count || 0) + 1
+                }),
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                // Обновляем локальное состояние
+                setDocuments(documents.map(doc =>
+                    doc.id === document.id
+                        ? { ...doc, workbook_count: (doc.workbook_count || 0) + 1 }
+                        : doc
+                ))
+                alert('Рабочая тетрадь добавлена! Не забудьте загрузить файл через кнопку 📚.')
+            } else {
+                const error = await response.json()
+                alert(`Ошибка: ${error.error}`)
+            }
+        } catch (error) {
+            console.error('Ошибка добавления рабочей тетради:', error)
+            alert('Ошибка добавления рабочей тетради')
+        }
+    }
+
+    const handleQuickRemoveWorkbook = async (document: Document) => {
+        if (!confirm('Вы уверены, что хотите удалить последнюю рабочую тетрадь?')) {
+            return
+        }
+
+        try {
+            // Сначала получаем список рабочих тетрадей
+            const workbooksResponse = await fetch(`/api/admin/workbooks?documentId=${document.id}`)
+            if (!workbooksResponse.ok) {
+                throw new Error('Не удалось получить список рабочих тетрадей')
+            }
+
+            const workbooksData = await workbooksResponse.json()
+            const workbooks = workbooksData.workbooks || []
+
+            if (workbooks.length === 0) {
+                alert('Нет рабочих тетрадей для удаления')
+                return
+            }
+
+            // Находим последнюю рабочую тетрадь (с максимальным order_index)
+            const lastWorkbook = workbooks.reduce((prev, current) =>
+                (prev.order_index > current.order_index) ? prev : current
+            )
+
+            // Удаляем последнюю рабочую тетрадь
+            const deleteResponse = await fetch(`/api/admin/workbooks?id=${lastWorkbook.id}`, {
+                method: 'DELETE',
+            })
+
+            if (deleteResponse.ok) {
+                // Обновляем локальное состояние
+                setDocuments(documents.map(doc =>
+                    doc.id === document.id
+                        ? { ...doc, workbook_count: Math.max((doc.workbook_count || 0) - 1, 0) }
+                        : doc
+                ))
+                alert('Рабочая тетрадь удалена!')
+            } else {
+                const error = await deleteResponse.json()
+                alert(`Ошибка: ${error.error}`)
+            }
+        } catch (error) {
+            console.error('Ошибка удаления рабочей тетради:', error)
+            alert('Ошибка удаления рабочей тетради')
+        }
+    }
+
+    const handleEnableWorkbooks = async (document: Document) => {
+        try {
+            // Сначала включаем рабочие тетради для курса
+            const updateResponse = await fetch(`/api/admin/documents/${document.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    has_workbook: true
+                }),
+            })
+
+            if (!updateResponse.ok) {
+                throw new Error('Не удалось включить рабочие тетради для курса')
+            }
+
+            // Затем создаем первую рабочую тетрадь
+            const workbookResponse = await fetch('/api/admin/workbooks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    document_id: document.id,
+                    title: 'Рабочая тетрадь 1',
+                    description: 'Первая рабочая тетрадь курса',
+                    file_url: 'https://placeholder.com/workbook.pdf', // Временный URL-заглушка
+                    order_index: 1
+                }),
+            })
+
+            if (workbookResponse.ok) {
+                // Обновляем локальное состояние
+                setDocuments(documents.map(doc =>
+                    doc.id === document.id
+                        ? {
+                            ...doc,
+                            has_workbook: true,
+                            workbook_count: 1
+                        }
+                        : doc
+                ))
+                alert('Рабочие тетради включены! Добавлена первая тетрадь. Не забудьте загрузить файл через кнопку 📚.')
+            } else {
+                const error = await workbookResponse.json()
+                alert(`Ошибка создания первой тетради: ${error.error}`)
+            }
+        } catch (error) {
+            console.error('Ошибка включения рабочих тетрадей:', error)
+            alert('Ошибка включения рабочих тетрадей')
+        }
+    }
+
+    // Функции для управления видео
+    const handleQuickAddVideo = async (document: Document) => {
+        try {
+            const currentVideos = document.video_urls || []
+            const newVideoUrl = 'https://placeholder.com/video.mp4'
+            const updatedVideos = [...currentVideos, newVideoUrl]
+
+            const response = await fetch(`/api/admin/documents/${document.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    video_urls: updatedVideos,
+                    video_count: updatedVideos.length,
+                    has_videos: true
+                }),
+            })
+
+            if (response.ok) {
+                setDocuments(documents.map(doc =>
+                    doc.id === document.id
+                        ? {
+                            ...doc,
+                            video_urls: updatedVideos,
+                            video_count: updatedVideos.length,
+                            has_videos: true
+                        }
+                        : doc
+                ))
+                alert(`Видео добавлено! Теперь ${updatedVideos.length} видео. Не забудьте загрузить файл.`)
+            } else {
+                const error = await response.json()
+                alert(`Ошибка: ${error.error}`)
+            }
+        } catch (error) {
+            console.error('Ошибка добавления видео:', error)
+            alert('Ошибка добавления видео')
+        }
+    }
+
+    const handleQuickRemoveVideo = async (document: Document) => {
+        if (!confirm('Вы уверены, что хотите удалить последнее видео?')) {
+            return
+        }
+
+        try {
+            const currentVideos = document.video_urls || []
+            if (currentVideos.length === 0) {
+                alert('Нет видео для удаления')
+                return
+            }
+
+            const updatedVideos = currentVideos.slice(0, -1) // Удаляем последнее видео
+
+            const response = await fetch(`/api/admin/documents/${document.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    video_urls: updatedVideos,
+                    video_count: updatedVideos.length,
+                    has_videos: updatedVideos.length > 0
+                }),
+            })
+
+            if (response.ok) {
+                setDocuments(documents.map(doc =>
+                    doc.id === document.id
+                        ? {
+                            ...doc,
+                            video_urls: updatedVideos,
+                            video_count: updatedVideos.length,
+                            has_videos: updatedVideos.length > 0
+                        }
+                        : doc
+                ))
+                alert('Видео удалено!')
+            } else {
+                const error = await response.json()
+                alert(`Ошибка: ${error.error}`)
+            }
+        } catch (error) {
+            console.error('Ошибка удаления видео:', error)
+            alert('Ошибка удаления видео')
+        }
+    }
+
+    const handleEnableVideos = async (document: Document) => {
+        try {
+            const response = await fetch(`/api/admin/documents/${document.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    video_urls: ['https://placeholder.com/video.mp4'],
+                    video_count: 1,
+                    has_videos: true
+                }),
+            })
+
+            if (response.ok) {
+                setDocuments(documents.map(doc =>
+                    doc.id === document.id
+                        ? {
+                            ...doc,
+                            video_urls: ['https://placeholder.com/video.mp4'],
+                            video_count: 1,
+                            has_videos: true
+                        }
+                        : doc
+                ))
+                alert('Видео включено! Добавлено первое видео. Не забудьте загрузить файл.')
+            } else {
+                const error = await response.json()
+                alert(`Ошибка: ${error.error}`)
+            }
+        } catch (error) {
+            console.error('Ошибка включения видео:', error)
+            alert('Ошибка включения видео')
+        }
+    }
+
+    // Функции для управления аудио
+    const handleEnableAudio = async (document: Document) => {
+        try {
+            const response = await fetch(`/api/admin/documents/${document.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    audio_url: 'https://placeholder.com/audio.mp3',
+                    has_audio: true
+                }),
+            })
+
+            if (response.ok) {
+                setDocuments(documents.map(doc =>
+                    doc.id === document.id
+                        ? {
+                            ...doc,
+                            audio_url: 'https://placeholder.com/audio.mp3',
+                            has_audio: true
+                        }
+                        : doc
+                ))
+                alert('Аудио включено! Не забудьте загрузить файл.')
+            } else {
+                const error = await response.json()
+                alert(`Ошибка: ${error.error}`)
+            }
+        } catch (error) {
+            console.error('Ошибка включения аудио:', error)
+            alert('Ошибка включения аудио')
+        }
+    }
+
+    const handleDisableAudio = async (document: Document) => {
+        if (!confirm('Вы уверены, что хотите отключить аудио?')) {
+            return
+        }
+
+        try {
+            const response = await fetch(`/api/admin/documents/${document.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    audio_url: null,
+                    has_audio: false
+                }),
+            })
+
+            if (response.ok) {
+                setDocuments(documents.map(doc =>
+                    doc.id === document.id
+                        ? {
+                            ...doc,
+                            audio_url: null,
+                            has_audio: false
+                        }
+                        : doc
+                ))
+                alert('Аудио отключено!')
+            } else {
+                const error = await response.json()
+                alert(`Ошибка: ${error.error}`)
+            }
+        } catch (error) {
+            console.error('Ошибка отключения аудио:', error)
+            alert('Ошибка отключения аудио')
         }
     }
 
@@ -699,13 +1038,131 @@ export function CoursesManagement() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex gap-1">
-                                            {document.cover_url && <Image className="w-4 h-4 text-blue-500" title="Обложка" />}
-                                            {document.file_url && <File className="w-4 h-4 text-green-500" title="PDF" />}
-                                            {document.video_preview_url && <Play className="w-4 h-4 text-purple-500" title="Превью" />}
-                                            {document.workbook_url && <BookOpen className="w-4 h-4 text-orange-500" title="Тетрадь" />}
-                                            {document.audio_url && <Volume2 className="w-4 h-4 text-red-500" title="Аудио" />}
-                                            {document.video_urls && document.video_urls.length > 0 && <Video className="w-4 h-4 text-indigo-500" title="Видео" />}
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex gap-1">
+                                                {document.cover_url && <Image className="w-4 h-4 text-blue-500" title="Обложка" />}
+                                                {document.file_url && <File className="w-4 h-4 text-green-500" title="PDF" />}
+                                                {document.video_preview_url && <Play className="w-4 h-4 text-purple-500" title="Превью" />}
+                                                {document.workbook_url && <BookOpen className="w-4 h-4 text-orange-500" title="Тетрадь" />}
+                                                {document.audio_url && <Volume2 className="w-4 h-4 text-red-500" title="Аудио" />}
+                                                {document.video_urls && document.video_urls.length > 0 && <Video className="w-4 h-4 text-indigo-500" title="Видео" />}
+                                            </div>
+                                            {/* Рабочие тетради */}
+                                            {document.has_workbook ? (
+                                                <div className="flex items-center gap-1 ml-2">
+                                                    <span className="text-xs text-gray-500">
+                                                        {document.workbook_count || 0} тетрадей
+                                                    </span>
+                                                    <div className="flex gap-1">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => handleQuickAddWorkbook(document)}
+                                                            className="h-5 w-5 p-0 text-green-600 hover:text-green-700"
+                                                            title="Добавить тетрадь"
+                                                        >
+                                                            <Plus className="h-3 w-3" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => handleQuickRemoveWorkbook(document)}
+                                                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
+                                                            title="Удалить последнюю тетрадь"
+                                                            disabled={!document.workbook_count || document.workbook_count <= 0}
+                                                        >
+                                                            <Minus className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-1 ml-2">
+                                                    <span className="text-xs text-gray-400">Нет тетрадей</span>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => handleEnableWorkbooks(document)}
+                                                        className="h-5 w-5 p-0 text-blue-600 hover:text-blue-700"
+                                                        title="Включить рабочие тетради"
+                                                    >
+                                                        <Plus className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            )}
+
+                                            {/* Видео */}
+                                            {document.has_videos ? (
+                                                <div className="flex items-center gap-1 ml-2">
+                                                    <span className="text-xs text-gray-500">
+                                                        {document.video_count || 0} видео
+                                                    </span>
+                                                    <div className="flex gap-1">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => handleQuickAddVideo(document)}
+                                                            className="h-5 w-5 p-0 text-indigo-600 hover:text-indigo-700"
+                                                            title="Добавить видео"
+                                                        >
+                                                            <Plus className="h-3 w-3" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => handleQuickRemoveVideo(document)}
+                                                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
+                                                            title="Удалить последнее видео"
+                                                            disabled={!document.video_count || document.video_count <= 0}
+                                                        >
+                                                            <Minus className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-1 ml-2">
+                                                    <span className="text-xs text-gray-400">Нет видео</span>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => handleEnableVideos(document)}
+                                                        className="h-5 w-5 p-0 text-indigo-600 hover:text-indigo-700"
+                                                        title="Включить видео"
+                                                    >
+                                                        <Plus className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            )}
+
+                                            {/* Аудио */}
+                                            <div className="flex items-center gap-1 ml-2">
+                                                {document.has_audio ? (
+                                                    <>
+                                                        <span className="text-xs text-gray-500">Есть аудио</span>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => handleDisableAudio(document)}
+                                                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
+                                                            title="Отключить аудио"
+                                                        >
+                                                            <Minus className="h-3 w-3" />
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="text-xs text-gray-400">Нет аудио</span>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => handleEnableAudio(document)}
+                                                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
+                                                            title="Включить аудио"
+                                                        >
+                                                            <Plus className="h-3 w-3" />
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     </TableCell>
                                     <TableCell>{formatDate(document.created_at)}</TableCell>
@@ -717,6 +1174,17 @@ export function CoursesManagement() {
                                                 onClick={() => setEditingDocument(document)}
                                             >
                                                 <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setSelectedDocumentForWorkbooks(document)
+                                                    setShowWorkbooksManager(true)
+                                                }}
+                                                className="text-blue-600 hover:text-blue-700"
+                                            >
+                                                <BookOpen className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 size="sm"
@@ -1086,6 +1554,33 @@ export function CoursesManagement() {
                             <Button onClick={() => handleUpdateDocument(editingDocument)}>
                                 <Save className="h-4 w-4 mr-2" />
                                 Сохранить
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {/* Модальное окно управления рабочими тетрадями */}
+            {showWorkbooksManager && selectedDocumentForWorkbooks && (
+                <Dialog open={showWorkbooksManager} onOpenChange={setShowWorkbooksManager}>
+                    <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>
+                                Управление рабочими тетрадями: {selectedDocumentForWorkbooks.title}
+                            </DialogTitle>
+                            <DialogDescription>
+                                Добавляйте, редактируйте и упорядочивайте рабочие тетради для курса
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <WorkbooksManager
+                                documentId={selectedDocumentForWorkbooks.id}
+                                documentTitle={selectedDocumentForWorkbooks.title}
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setShowWorkbooksManager(false)}>
+                                Закрыть
                             </Button>
                         </DialogFooter>
                     </DialogContent>

@@ -62,6 +62,16 @@ export interface DailyRoom {
   }
 }
 
+// Workbook interface for multiple workbooks per course
+export interface Workbook {
+  id: string
+  title: string
+  description?: string
+  file_url: string
+  order_index: number
+  is_active: boolean
+}
+
 // Document types for PDF preview and mini-courses
 export interface Document {
   id: string
@@ -74,7 +84,8 @@ export interface Document {
   updated_at: string
   // Новые поля для мини-курсов
   course_type?: 'pdf' | 'mini_course'
-  workbook_url?: string
+  workbook_url?: string // DEPRECATED: используйте workbooks array
+  workbooks?: Workbook[] // Новое поле для множественных рабочих тетрадей
   video_urls?: string[]
   audio_url?: string
   video_preview_url?: string
@@ -83,6 +94,7 @@ export interface Document {
   has_workbook?: boolean
   has_audio?: boolean
   has_videos?: boolean
+  workbook_count?: number // Количество рабочих тетрадей
 }
 
 // Purchase types for payment tracking

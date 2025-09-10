@@ -9,6 +9,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Это должно быть настроено в Stripe Dashboard
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
 
+export async function HEAD() {
+  return new NextResponse(null, { status: 200 })
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const signature = request.headers.get('stripe-signature')!

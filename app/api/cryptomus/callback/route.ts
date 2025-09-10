@@ -12,6 +12,10 @@ function verifyCryptomusSignature(data: any, signature: string): boolean {
   return signature === expectedSignature
 }
 
+export async function HEAD() {
+  return new NextResponse(null, { status: 200 })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -39,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Определяем статус платежа
     let paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded'
-    
+
     switch (status) {
       case 'paid':
       case 'paid_over':

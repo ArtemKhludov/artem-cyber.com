@@ -88,32 +88,86 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                 )}
             </div>
 
-            {/* Рабочая тетрадь */}
-            {document.has_workbook && document.workbook_url && (
+            {/* Рабочие тетради */}
+            {document.has_workbook && (document.workbooks && document.workbooks.length > 0 || document.workbook_url) && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <div className="flex items-center gap-3 mb-4">
                         <FileText className="w-6 h-6 text-green-600" />
-                        <h3 className="text-lg font-semibold text-gray-900">Рабочая тетрадь</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                            Рабочие тетради
+                            {document.workbooks && document.workbooks.length > 0 && (
+                                <span className="text-sm text-gray-500 ml-2">
+                                    ({document.workbooks.length} тетрадей)
+                                </span>
+                            )}
+                        </h3>
                     </div>
-                    <p className="text-gray-600 mb-4">
-                        Краткая рабочая тетрадь (7-10 страниц) с таблицами и чек-листами:
-                    </p>
-                    <ul className="text-sm text-gray-600 mb-4 space-y-1">
-                        <li>• «Истинное намерение или ложное?»</li>
-                        <li>• «Алгоритм перезаписи в 5 шагов»</li>
-                        <li>• «Дневник намерения (шаблон на неделю)»</li>
-                    </ul>
-                    {isPurchased ? (
-                        <Button
-                            onClick={() => handleDownload(document.workbook_url!, `${document.title}-workbook.pdf`)}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                            <Download className="w-4 h-4 mr-2" />
-                            Скачать тетрадь
-                        </Button>
+                    
+                    {document.workbooks && document.workbooks.length > 0 ? (
+                        // Новые множественные рабочие тетради
+                        <div className="space-y-4">
+                            <p className="text-gray-600">
+                                Рабочие тетради с таблицами, чек-листами и практическими заданиями:
+                            </p>
+                            <div className="space-y-3">
+                                {document.workbooks.map((workbook, index) => (
+                                    <div key={workbook.id} className="border border-gray-200 rounded-lg p-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex-1">
+                                                <h4 className="font-medium text-gray-900 mb-1">
+                                                    {workbook.title}
+                                                </h4>
+                                                {workbook.description && (
+                                                    <p className="text-sm text-gray-600">
+                                                        {workbook.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {isPurchased ? (
+                                                    <Button
+                                                        onClick={() => handleDownload(workbook.file_url, `${workbook.title}.pdf`)}
+                                                        size="sm"
+                                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                                    >
+                                                        <Download className="w-4 h-4 mr-1" />
+                                                        Скачать
+                                                    </Button>
+                                                ) : (
+                                                    <div className="text-sm text-gray-500">
+                                                        Доступно после покупки
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     ) : (
-                        <div className="text-sm text-gray-500">
-                            Доступно после покупки
+                        // Старая одиночная рабочая тетрадь (для обратной совместимости)
+                        <div>
+                            <p className="text-gray-600 mb-4">
+                                Краткая рабочая тетрадь (7-10 страниц) с таблицами и чек-листами:
+                            </p>
+                            <ul className="text-sm text-gray-600 mb-4 space-y-1">
+                                <li>• «Истинное намерение или ложное?»</li>
+                                <li>• «Алгоритм перезаписи в 5 шагов»</li>
+                                <li>• «Дневник намерения (шаблон на неделю)»</li>
+                            </ul>
+                            {isPurchased ? (
+                                <Button
+                                    onClick={() => handleDownload(document.workbook_url!, `${document.title}-workbook.pdf`)}
+                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Скачать тетрадь
+                                </Button>
+                            ) : (
+                                <div className="text-sm text-gray-500">
+                                    Доступно после покупки
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

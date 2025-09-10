@@ -36,65 +36,105 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
     }
 
-    // Получаем покупки пользователя
+    // Получаем покупки пользователя из таблицы purchases (связанные с документами)
     const { data: purchases, error: purchasesError } = await supabase
       .from('purchases')
       .select(`
         id,
-        product_name,
-        product_type,
-        price,
-        status,
+        document_id,
+        payment_method,
+        payment_status,
+        amount_paid,
+        currency,
         created_at,
-        progress
+        updated_at,
+        documents (
+          id,
+          title,
+          description,
+          price_rub,
+          cover_url,
+          course_type,
+          has_workbook,
+          has_videos,
+          has_audio,
+          video_count,
+          workbook_count,
+          course_duration_minutes
+        )
       `)
-      .eq('user_id', user.id)
+      .eq('user_email', user.email)
+      .eq('payment_status', 'completed')
       .order('created_at', { ascending: false })
 
     if (purchasesError) {
       console.error('Ошибка получения покупок:', purchasesError)
     }
 
-    // Получаем курсы пользователя
-    const { data: courses, error: coursesError } = await supabase
-      .from('user_courses')
+    // Получаем заказы пользователя (для совместимости со старой системой)
+    const { data: orders, error: ordersError } = await supabase
+      .from('orders')
       .select(`
         id,
-        course_id,
-        progress,
+        amount,
         status,
+        pdf_url,
+        session_date,
+        session_time,
         created_at,
-        courses (
-          id,
-          title,
-          description,
-          total_lessons,
-          duration,
-          difficulty,
-          thumbnail
-        )
+        updated_at
       `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (coursesError) {
-      console.error('Ошибка получения курсов:', coursesError)
+    if (ordersError) {
+      console.error('Ошибка получения заказов:', ordersError)
     }
 
     // Получаем статистику
     const totalPurchases = purchases?.length || 0
-    const totalCourses = courses?.length || 0
-    const completedCourses = courses?.filter(c => c.status === 'completed').length || 0
-    const totalSpent = purchases?.reduce((sum, p) => sum + p.price, 0) || 0
+    const totalOrders = orders?.length || 0
+    const completedOrders = orders?.filter(o => o.status === 'completed').length || 0
+    const totalSpent = (purchases?.reduce((sum, p) => sum + p.amount_paid, 0) || 0) +
+      (orders?.reduce((sum, o) => sum + o.amount, 0) || 0)
+
+    // Форматируем данные для фронтенда
+    const formattedPurchases = purchases?.map(purchase => ({
+      id: purchase.id,
+      product_name: purchase.documents?.title || 'Курс',
+      product_type: purchase.documents?.course_type === 'mini_course' ? 'mini_course' : 'pdf',
+      price: purchase.amount_paid,
+      status: purchase.payment_status === 'completed' ? 'completed' : 'pending',
+      created_at: purchase.created_at,
+      document: purchase.documents,
+      progress: 0 // Пока не реализовано отслеживание прогресса
+    })) || []
+
+    const formattedOrders = orders?.map(order => ({
+      id: order.id,
+      product_name: 'Энергетическая диагностика',
+      product_type: 'session',
+      price: order.amount,
+      status: order.status === 'completed' ? 'completed' : 'pending',
+      created_at: order.created_at,
+      pdf_url: order.pdf_url,
+      session_date: order.session_date,
+      session_time: order.session_time,
+      progress: order.status === 'completed' ? 100 : 0
+    })) || []
+
+    // Объединяем покупки и заказы
+    const allPurchases = [...formattedPurchases, ...formattedOrders]
 
     return NextResponse.json({
       user,
-      purchases: purchases || [],
-      courses: courses || [],
+      purchases: allPurchases,
+      courses: formattedPurchases, // Курсы - это только покупки документов
+      orders: formattedOrders, // Заказы - это сессии диагностики
       stats: {
-        totalPurchases,
-        totalCourses,
-        completedCourses,
+        totalPurchases: totalPurchases + totalOrders,
+        totalCourses: totalPurchases,
+        completedCourses: completedOrders,
         totalSpent
       }
     })

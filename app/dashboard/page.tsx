@@ -21,17 +21,34 @@ import {
   Gift,
   Award,
   Target,
-  TrendingUp
+  TrendingUp,
+  Volume2
 } from 'lucide-react'
 
 interface Purchase {
   id: string
   product_name: string
-  product_type: 'mini' | 'deep' | 'transformation'
+  product_type: 'mini_course' | 'pdf' | 'session'
   price: number
   status: 'completed' | 'in_progress' | 'pending'
   created_at: string
   progress?: number
+  document?: {
+    id: string
+    title: string
+    description: string
+    cover_url: string
+    course_type: 'pdf' | 'mini_course'
+    has_workbook: boolean
+    has_videos: boolean
+    has_audio: boolean
+    video_count: number
+    workbook_count: number
+    course_duration_minutes: number
+  }
+  pdf_url?: string
+  session_date?: string
+  session_time?: string
 }
 
 interface Course {
@@ -44,6 +61,12 @@ interface Course {
   thumbnail: string
   duration: string
   difficulty: 'beginner' | 'intermediate' | 'advanced'
+  course_type: 'pdf' | 'mini_course'
+  has_workbook: boolean
+  has_videos: boolean
+  has_audio: boolean
+  video_count: number
+  workbook_count: number
 }
 
 export default function DashboardPage() {
@@ -71,17 +94,31 @@ export default function DashboardPage() {
       if (response.ok) {
         const data = await response.json()
         setPurchases(data.purchases)
-        setCourses(data.courses.map((course: any) => ({
-          id: course.id,
-          title: course.courses.title,
-          description: course.courses.description,
-          progress: course.progress,
-          total_lessons: course.courses.total_lessons,
-          completed_lessons: Math.floor((course.progress / 100) * course.courses.total_lessons),
-          thumbnail: course.courses.thumbnail,
-          duration: course.courses.duration,
-          difficulty: course.courses.difficulty
-        })))
+
+        // Преобразуем курсы из покупок
+        const courseData = data.courses.map((purchase: any) => ({
+          id: purchase.id,
+          title: purchase.document?.title || purchase.product_name,
+          description: purchase.document?.description || 'Купленный курс',
+          progress: purchase.progress || 0,
+          total_lessons: purchase.document?.course_type === 'mini_course' ?
+            (purchase.document?.workbook_count || 0) + (purchase.document?.video_count || 0) + 1 : 1,
+          completed_lessons: Math.floor((purchase.progress || 0) / 100 *
+            (purchase.document?.course_type === 'mini_course' ?
+              (purchase.document?.workbook_count || 0) + (purchase.document?.video_count || 0) + 1 : 1)),
+          thumbnail: purchase.document?.cover_url || '/api/placeholder/300/200',
+          duration: purchase.document?.course_duration_minutes ?
+            `${Math.floor(purchase.document.course_duration_minutes / 60)}ч ${purchase.document.course_duration_minutes % 60}м` : 'Не указано',
+          difficulty: 'beginner' as const,
+          course_type: purchase.document?.course_type || 'pdf',
+          has_workbook: purchase.document?.has_workbook || false,
+          has_videos: purchase.document?.has_videos || false,
+          has_audio: purchase.document?.has_audio || false,
+          video_count: purchase.document?.video_count || 0,
+          workbook_count: purchase.document?.workbook_count || 0
+        }))
+
+        setCourses(courseData)
         setStats(data.stats)
       } else {
         // Если API недоступен, используем моковые данные
@@ -145,9 +182,9 @@ export default function DashboardPage() {
 
   const getProductTypeLabel = (type: string) => {
     switch (type) {
-      case 'mini': return 'Mini-сессия'
-      case 'deep': return 'Глубокий день'
-      case 'transformation': return '21 день'
+      case 'mini_course': return 'Мини-курс'
+      case 'pdf': return 'PDF-документ'
+      case 'session': return 'Энергетическая диагностика'
       default: return type
     }
   }
@@ -298,14 +335,39 @@ export default function DashboardPage() {
                         </div>
                       )}
                       <div className="flex gap-2 mt-4">
-                        <Button size="sm" variant="outline">
-                          <Download className="h-4 w-4 mr-2" />
-                          Скачать
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <PlayCircle className="h-4 w-4 mr-2" />
-                          Начать
-                        </Button>
+                        {purchase.product_type === 'session' ? (
+                          <>
+                            {purchase.pdf_url && (
+                              <Button size="sm" variant="outline" asChild>
+                                <a href={purchase.pdf_url} target="_blank" rel="noopener noreferrer">
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Скачать отчет
+                                </a>
+                              </Button>
+                            )}
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={`/download/${purchase.id}`} target="_blank" rel="noopener noreferrer">
+                                <PlayCircle className="h-4 w-4 mr-2" />
+                                Просмотр
+                              </a>
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={`/download/${purchase.id}`} target="_blank" rel="noopener noreferrer">
+                                <PlayCircle className="h-4 w-4 mr-2" />
+                                Открыть курс
+                              </a>
+                            </Button>
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={`/pdf/${purchase.document?.id}`} target="_blank" rel="noopener noreferrer">
+                                <BookOpen className="h-4 w-4 mr-2" />
+                                Просмотр
+                              </a>
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -323,19 +385,44 @@ export default function DashboardPage() {
                         <div className="flex-1">
                           <CardTitle className="text-xl mb-2">{course.title}</CardTitle>
                           <CardDescription className="mb-4">{course.description}</CardDescription>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {course.duration}
-                            </div>
+
+                          {/* Информация о типе курса */}
+                          <div className="flex items-center gap-2 mb-3">
+                            <Badge className={course.course_type === 'mini_course' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
+                              {course.course_type === 'mini_course' ? 'Мини-курс' : 'PDF-документ'}
+                            </Badge>
+                            {course.duration !== 'Не указано' && (
+                              <div className="flex items-center gap-1 text-sm text-gray-600">
+                                <Clock className="h-4 w-4" />
+                                {course.duration}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Доступные материалы */}
+                          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                             <div className="flex items-center gap-1">
                               <BookOpen className="h-4 w-4" />
-                              {course.completed_lessons}/{course.total_lessons} уроков
+                              Основной PDF
                             </div>
-                            <Badge className={getDifficultyColor(course.difficulty)}>
-                              {course.difficulty === 'beginner' ? 'Начальный' :
-                                course.difficulty === 'intermediate' ? 'Средний' : 'Продвинутый'}
-                            </Badge>
+                            {course.has_workbook && (
+                              <div className="flex items-center gap-1">
+                                <BookOpen className="h-4 w-4 text-orange-500" />
+                                {course.workbook_count} тетрадей
+                              </div>
+                            )}
+                            {course.has_videos && (
+                              <div className="flex items-center gap-1">
+                                <PlayCircle className="h-4 w-4 text-indigo-500" />
+                                {course.video_count} видео
+                              </div>
+                            )}
+                            {course.has_audio && (
+                              <div className="flex items-center gap-1">
+                                <Volume2 className="h-4 w-4 text-red-500" />
+                                Аудио
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
@@ -353,13 +440,17 @@ export default function DashboardPage() {
                         <Progress value={course.progress} className="h-2" />
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                          <PlayCircle className="h-4 w-4 mr-2" />
-                          Продолжить
+                        <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
+                          <a href={`/download/${course.id}`} target="_blank" rel="noopener noreferrer">
+                            <PlayCircle className="h-4 w-4 mr-2" />
+                            Открыть курс
+                          </a>
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          Содержание
+                        <Button size="sm" variant="outline" asChild>
+                          <a href={`/pdf/${course.id}`} target="_blank" rel="noopener noreferrer">
+                            <BookOpen className="h-4 w-4 mr-2" />
+                            Просмотр
+                          </a>
                         </Button>
                       </div>
                     </CardContent>

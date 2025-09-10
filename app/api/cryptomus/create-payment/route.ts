@@ -15,6 +15,15 @@ function createCryptomusSignature(data: any): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Проверяем наличие переменных окружения
+    if (!CRYPTOMUS_API_KEY || !CRYPTOMUS_MERCHANT_ID) {
+      console.error('Missing Cryptomus environment variables')
+      return NextResponse.json(
+        { error: 'Cryptomus service not configured' },
+        { status: 500 }
+      )
+    }
+
     const {
       documentId,
       amount,
