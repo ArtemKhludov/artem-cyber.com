@@ -41,7 +41,7 @@ export default function Home() {
           <AboutSection onCallRequest={handleCallRequest} />
 
           {/* Карусель программ */}
-          <ProductCarousel />
+          <ProductCarousel onCallRequest={handleCallRequest} />
 
           {/* PDF файлы */}
           <PDFCarousel />

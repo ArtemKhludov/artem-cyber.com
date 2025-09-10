@@ -5,10 +5,23 @@ import { Button } from '@/components/ui/button'
 import { Clock, Users, Star, ArrowRight, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
-export function ProductCarousel() {
+interface ProductCarouselProps {
+  onCallRequest?: () => void
+}
+
+export function ProductCarousel({ onCallRequest }: ProductCarouselProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
   const sectionRef = useRef<HTMLElement>(null)
+
+  const handleCallRequest = () => {
+    if (onCallRequest) {
+      onCallRequest()
+    } else {
+      // Fallback - открываем модальное окно напрямую
+      window.location.href = '/contacts'
+    }
+  }
 
   const programs = [
     {
@@ -229,7 +242,10 @@ export function ProductCarousel() {
               <Button variant="outline" className="border-blue-500 text-blue-600 hover:bg-blue-50">
                 Пройти тест
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button 
+                onClick={handleCallRequest}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 Получить консультацию
               </Button>
             </div>
