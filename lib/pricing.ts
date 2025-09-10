@@ -34,8 +34,8 @@ export const PDF_DOCUMENTS: PDFDocument[] = [
         description: "Исследование глубинных механизмов трансформации восприятия и многоуровневой работы с слоями реальности. Практическое руководство по изменению фундаментальных убеждений.",
         price: 2990,
         originalPrice: 3990,
-        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/pdfs/EnergyLogic-Iskusstvo-Perekalibrovki-Realnosti.pdf",
-        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/covers/EnergyLogic-Iskusstvo-Perekalibrovki-Realnosti.png",
+        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/energylogic-iskusstvo-perekalibrovki-realnosti/main.pdf",
+        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/energylogic-iskusstvo-perekalibrovki-realnosti/cover.png",
         page_count: 45,
         category: "Основные"
     },
@@ -45,8 +45,8 @@ export const PDF_DOCUMENTS: PDFDocument[] = [
         description: "Практическое руководство по навигации в периоды неопределенности и поиску внутренних ориентиров.",
         price: 1990,
         originalPrice: 2490,
-        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/pdfs/Karta-Samopoznaniya.pdf",
-        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/covers/Karta-Samopoznaniya.png",
+        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/karta-samopoznaniya-kogda-ya-nichego-ne-ponimayu/main.pdf",
+        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/karta-samopoznaniya-kogda-ya-nichego-ne-ponimayu/cover.png",
         page_count: 32,
         category: "Самопознание"
     },
@@ -56,8 +56,8 @@ export const PDF_DOCUMENTS: PDFDocument[] = [
         description: "Научный семинар, посвященный нейробиологическим основам эмоциональных процессов.",
         price: 2490,
         originalPrice: 3290,
-        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/pdfs/Nejrobiologiya-emocij.pdf",
-        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/covers/Nejrobiologiya-emocij.png",
+        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/nejrobiologiya-emocij-biologicheskie-osnovy-i-metody-sinhronizacii/main.pdf",
+        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/nejrobiologiya-emocij-biologicheskie-osnovy-i-metody-sinhronizacii/cover.png",
         page_count: 38,
         category: "Наука"
     },
@@ -67,8 +67,8 @@ export const PDF_DOCUMENTS: PDFDocument[] = [
         description: "Глубинное исследование механизмов, через которые внешние системы встраиваются в наше сознание без личной воли, и методы распознавания этих вставок.",
         price: 3490,
         originalPrice: 4490,
-        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/pdfs/Raspoznavanie-vneshnih-scenariev.pdf",
-        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/covers/Raspoznavanie-vneshnih-scenariev.png",
+        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/raspoznavanie-vneshnih-scenariev-instrumenty-samonablyudeniya/main.pdf",
+        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/raspoznavanie-vneshnih-scenariev-instrumenty-samonablyudeniya/cover.png",
         page_count: 52,
         category: "Психология"
     },
@@ -78,8 +78,8 @@ export const PDF_DOCUMENTS: PDFDocument[] = [
         description: "Если принять за аксиому, что реальность настраиваема и её свойства можно менять так же, как параметры в сложной системе, то открывается совершенно иное понимание мироздания и нашего места в нём.",
         price: 3990,
         originalPrice: 4990,
-        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/pdfs/Nastraivaemaya-realnost.pdf",
-        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/covers/Nastraivaemaya-realnost.png",
+        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/nastraivaemaya-realnost-metafizicheskaya-model-soznaniya/main.pdf",
+        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/nastraivaemaya-realnost-metafizicheskaya-model-soznaniya/cover.png",
         page_count: 48,
         category: "Философия"
     },
@@ -89,8 +89,8 @@ export const PDF_DOCUMENTS: PDFDocument[] = [
         description: "Глубинные механизмы формирования реальности через настройку личного сознания и его синхронизацию с метаполем.",
         price: 4990,
         originalPrice: 6990,
-        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/pdfs/Kvantovaya-Arhitektura-Namereniya.pdf",
-        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/Documents/covers/Kvantovaya-Arhitektura-Namereniya.png",
+        file_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/kvantovaya-arhitektura-namereniya-metod-soznatelnoj-perezapisi-realnosti/main.pdf",
+        cover_url: "https://mcexzjzowwanxawbiizd.supabase.co/storage/v1/object/public/course-materials/courses/kvantovaya-arhitektura-namereniya-metod-soznatelnoj-perezapisi-realnosti/cover.png",
         page_count: 65,
         category: "Квантовая физика"
     }

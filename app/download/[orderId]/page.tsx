@@ -9,6 +9,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useSupabase } from '@/components/providers/supabase-provider'
 import { PageLayout } from '@/components/layout/PageLayout'
+import { CourseContent } from '@/components/course/CourseContent'
+import type { Document } from '@/types'
 
 interface Order {
   id: string
@@ -28,6 +30,7 @@ export default function DownloadPage() {
   const { user, supabase } = useSupabase()
 
   const [order, setOrder] = useState<Order | null>(null)
+  const [document, setDocument] = useState<Document | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [downloading, setDownloading] = useState(false)
@@ -35,23 +38,37 @@ export default function DownloadPage() {
   const orderId = params.orderId as string
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    const fetchOrderAndDocument = async () => {
       if (!orderId || !user) return
 
       try {
-        const { data, error } = await supabase
+        // Получаем заказ
+        const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .select('*')
           .eq('id', orderId)
           .eq('user_id', user.id)
           .single()
 
-        if (error) {
+        if (orderError) {
           setError('Заказ не найден или у вас нет доступа')
           return
         }
 
-        setOrder(data)
+        setOrder(orderData)
+
+        // Если есть document_id в заказе, получаем информацию о документе
+        if ((orderData as any).document_id) {
+          const { data: documentData, error: documentError } = await supabase
+            .from('documents')
+            .select('*')
+            .eq('id', (orderData as any).document_id)
+            .single()
+
+          if (!documentError && documentData) {
+            setDocument(documentData)
+          }
+        }
       } catch (err) {
         setError('Ошибка загрузки данных')
         console.error('Error fetching order:', err)
@@ -60,7 +77,7 @@ export default function DownloadPage() {
       }
     }
 
-    fetchOrder()
+    fetchOrderAndDocument()
   }, [orderId, user, supabase])
 
   const handleDownload = async () => {
@@ -69,13 +86,13 @@ export default function DownloadPage() {
     setDownloading(true)
     try {
       // Create a link and trigger download
-      const link = document.createElement('a')
+      const link = window.document.createElement('a')
       link.href = order.pdf_url
       link.download = `energylogic-report-${order.id}.pdf`
       link.target = '_blank'
-      document.body.appendChild(link)
+      window.document.body.appendChild(link)
       link.click()
-      document.body.removeChild(link)
+      window.document.body.removeChild(link)
 
       // Track download in PostHog
       if (typeof window !== 'undefined' && (window as any).posthog) {
@@ -178,8 +195,8 @@ export default function DownloadPage() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Статус:</span>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isCompleted
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-yellow-100 text-yellow-800'
                   }`}>
                   {isCompleted ? 'Завершен' : 'В обработке'}
                 </span>
@@ -222,47 +239,68 @@ export default function DownloadPage() {
                 </svg>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-green-800 mb-2">
-                    PDF-отчет готов к скачиванию
+                    {document?.course_type === 'mini_course' ? 'Мини-курс готов к изучению' : 'PDF-отчет готов к скачиванию'}
                   </h3>
                   <p className="text-green-700 mb-4">
-                    Ваш персональный отчет содержит детальный анализ энергетического состояния,
-                    рекомендации и план действий.
+                    {document?.course_type === 'mini_course'
+                      ? 'Ваш мини-курс содержит основной PDF, рабочую тетрадь, видео-уроки и аудио-настройку.'
+                      : 'Ваш персональный отчет содержит детальный анализ энергетического состояния, рекомендации и план действий.'
+                    }
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button
-                      onClick={handleDownload}
-                      disabled={downloading}
-                      className="flex items-center space-x-2"
-                    >
-                      {downloading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          <span>Скачивание...</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                          <span>Скачать PDF</span>
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleViewOnline}
-                      className="flex items-center space-x-2"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>Просмотр онлайн</span>
-                    </Button>
-                  </div>
+                  {document?.course_type === 'mini_course' ? (
+                    <div className="text-sm text-green-600 mb-4">
+                      <p>Доступные материалы:</p>
+                      <ul className="list-disc list-inside mt-1 space-y-1">
+                        <li>Основной PDF-документ</li>
+                        {document.has_workbook && <li>Рабочая тетрадь</li>}
+                        {document.has_videos && <li>{document.video_count || 0} видео-урока</li>}
+                        {document.has_audio && <li>Аудио-настройка</li>}
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        className="flex items-center space-x-2"
+                      >
+                        {downloading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Скачивание...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                            <span>Скачать PDF</span>
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleViewOnline}
+                        className="flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        </svg>
+                        <span>Просмотр онлайн</span>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+
+            {/* Контент мини-курса */}
+            {document?.course_type === 'mini_course' && (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <CourseContent document={document} isPurchased={true} />
+              </div>
+            )}
 
             {/* What's Inside */}
             <div className="bg-white rounded-lg shadow-lg p-6">
@@ -359,3 +397,4 @@ export default function DownloadPage() {
     </PageLayout>
   )
 }
+

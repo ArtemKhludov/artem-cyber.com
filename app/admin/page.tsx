@@ -31,7 +31,7 @@ import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 import EditableCell from '@/components/admin/EditableCell'
 import UserCard from '@/components/admin/UserCard'
 import { EnhancedUsersList } from '@/components/admin/EnhancedUsersList'
-import { DocumentsManagement } from '@/components/admin/DocumentsManagement'
+import { CoursesManagement } from '@/components/admin/CoursesManagement'
 import { PricingManagement } from '@/components/admin/PricingManagement'
 import { AdminGuard } from '@/components/auth/AdminGuard'
 import { useAuth } from '@/contexts/AuthContext'
@@ -78,7 +78,7 @@ interface Purchase {
 
 function AdminPageContent() {
   const { logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'users' | 'documents' | 'pricing'>('requests')
+  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'users' | 'courses' | 'pricing'>('requests')
   const [requests, setRequests] = useState<Request[]>([])
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [users, setUsers] = useState<any[]>([])
@@ -697,15 +697,15 @@ function AdminPageContent() {
               </div>
             </button>
             <button
-              onClick={() => setActiveTab('documents')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'documents'
+              onClick={() => setActiveTab('courses')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'courses'
                 ? 'bg-white text-gray-900'
                 : 'text-white hover:bg-white/10'
                 }`}
             >
               <div className="flex items-center justify-center">
                 <FileText className="w-4 h-4 mr-2" />
-                Документы
+                Курсы
               </div>
             </button>
             <button
@@ -877,8 +877,8 @@ function AdminPageContent() {
 
         {/* Table */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
-          {activeTab === 'documents' ? (
-            <DocumentsManagement />
+          {activeTab === 'courses' ? (
+            <CoursesManagement />
           ) : activeTab === 'pricing' ? (
             <PricingManagement />
           ) : loading ? (

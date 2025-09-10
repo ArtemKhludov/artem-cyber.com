@@ -62,7 +62,7 @@ export interface DailyRoom {
   }
 }
 
-// Document types for PDF preview
+// Document types for PDF preview and mini-courses
 export interface Document {
   id: string
   title: string
@@ -72,6 +72,17 @@ export interface Document {
   cover_url: string
   created_at: string
   updated_at: string
+  // Новые поля для мини-курсов
+  course_type?: 'pdf' | 'mini_course'
+  workbook_url?: string
+  video_urls?: string[]
+  audio_url?: string
+  video_preview_url?: string
+  course_duration_minutes?: number
+  video_count?: number
+  has_workbook?: boolean
+  has_audio?: boolean
+  has_videos?: boolean
 }
 
 // Purchase types for payment tracking
