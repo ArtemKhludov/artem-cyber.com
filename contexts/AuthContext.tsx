@@ -6,7 +6,7 @@ interface User {
   id: string
   email: string
   name: string
-  role: 'user' | 'admin'
+  role: 'customer' | 'admin'
   created_at: string
   last_activity?: string
 }

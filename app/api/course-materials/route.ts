@@ -57,9 +57,9 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Получаем файл из приватного bucket (используем правильное имя)
+        // Получаем файл из приватного bucket
         const { data, error } = await supabase.storage
-            .from('course-materials')
+            .from('course-materials-private')
             .download(filePath)
 
         if (error) {
