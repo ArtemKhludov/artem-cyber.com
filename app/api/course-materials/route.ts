@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
         const { data: purchase, error: purchaseError } = await supabase
             .from('purchases')
             .select('id')
-            .eq('user_id', user.id)
+            .eq('user_email', user.email)
             .eq('document_id', documentId)
-            .eq('status', 'completed')
+            .eq('payment_status', 'completed')
             .single()
 
         if (purchaseError || !purchase) {
@@ -57,9 +57,9 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Получаем файл из приватного bucket
+        // Получаем файл из приватного bucket (используем правильное имя)
         const { data, error } = await supabase.storage
-            .from('course-materials-private')
+            .from('course-materials')
             .download(filePath)
 
         if (error) {
