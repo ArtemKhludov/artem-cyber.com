@@ -16,10 +16,13 @@
 4. Скопируйте содержимое файла `create-user-roles-system.sql`
 5. Вставьте в редактор и нажмите **"Run"**
 
-### Шаг 2: Выполните RLS политики для приватного бакета
+### Шаг 2: Настройте RLS политики для приватного бакета
 
-1. В том же SQL Editor выполните содержимое файла `setup-private-bucket-rls.sql`
-2. Это настроит безопасность для приватного бакета `course-materials-private`
+**ВАЖНО**: Не используйте SQL Editor для настройки RLS политик storage!
+
+1. Следуйте инструкциям в файле `SETUP_RLS_POLICIES_GUIDE.md`
+2. Настройте политики через Supabase Dashboard → Storage → Manage RLS policies
+3. Это настроит безопасность для приватного бакета `course-materials-private`
 
 ### Шаг 3: Проверьте систему ролей
 
