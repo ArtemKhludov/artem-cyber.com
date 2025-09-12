@@ -18,11 +18,14 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Получаем информацию о рабочих тетрадях для каждого документа
+        // Получаем информацию о рабочих тетрадях, видео и аудио для каждого документа
         const documentIds = dbDocuments?.map(doc => doc.id) || []
         let workbooksData: Record<string, any[]> = {}
+        let videosData: Record<string, any[]> = {}
+        let audioData: Record<string, any[]> = {}
 
         if (documentIds.length > 0) {
+            // Получаем рабочие тетради
             const { data: workbooks, error: workbooksError } = await supabase
                 .from('course_workbooks')
                 .select('*')
@@ -39,8 +42,57 @@ export async function GET(request: NextRequest) {
                         id: workbook.id,
                         title: workbook.title,
                         description: workbook.description,
+                        file_url: workbook.file_url,
                         video_url: workbook.video_url,
                         order_index: workbook.order_index
+                    })
+                    return acc
+                }, {})
+            }
+
+            // Получаем видео
+            const { data: videos, error: videosError } = await supabase
+                .from('course_videos')
+                .select('*')
+                .in('document_id', documentIds)
+                .eq('is_active', true)
+                .order('order_index', { ascending: true })
+
+            if (!videosError && videos) {
+                videosData = videos.reduce((acc, video) => {
+                    if (!acc[video.document_id]) {
+                        acc[video.document_id] = []
+                    }
+                    acc[video.document_id].push({
+                        id: video.id,
+                        title: video.title,
+                        description: video.description,
+                        file_url: video.file_url,
+                        order_index: video.order_index
+                    })
+                    return acc
+                }, {})
+            }
+
+            // Получаем аудио
+            const { data: audio, error: audioError } = await supabase
+                .from('course_audio')
+                .select('*')
+                .in('document_id', documentIds)
+                .eq('is_active', true)
+                .order('order_index', { ascending: true })
+
+            if (!audioError && audio) {
+                audioData = audio.reduce((acc, audioItem) => {
+                    if (!acc[audioItem.document_id]) {
+                        acc[audioItem.document_id] = []
+                    }
+                    acc[audioItem.document_id].push({
+                        id: audioItem.id,
+                        title: audioItem.title,
+                        description: audioItem.description,
+                        file_url: audioItem.file_url,
+                        order_index: audioItem.order_index
                     })
                     return acc
                 }, {})
@@ -56,6 +108,8 @@ export async function GET(request: NextRequest) {
             )
 
             const workbooks = workbooksData[dbDoc.id] || []
+            const videos = videosData[dbDoc.id] || []
+            const audio = audioData[dbDoc.id] || []
 
             return {
                 ...dbDoc,
@@ -66,6 +120,14 @@ export async function GET(request: NextRequest) {
                 workbook_count: workbooks.length,
                 has_workbook: workbooks.length > 0,
                 workbooks: workbooks,
+                // Добавляем информацию о видео
+                video_count: videos.length,
+                has_videos: videos.length > 0,
+                videos: videos,
+                // Добавляем информацию об аудио
+                audio_count: audio.length,
+                has_audio: audio.length > 0,
+                audio: audio,
                 // Добавляем дополнительные поля из конфигурации
                 ...(pricingDoc && {
                     originalPrice: pricingDoc.originalPrice,

@@ -113,20 +113,26 @@ export interface Document {
   course_type?: 'pdf' | 'mini_course'
   workbook_url?: string // DEPRECATED: используйте workbooks array
   workbooks?: Workbook[] // Новое поле для множественных рабочих тетрадей
-  video_urls?: string[]
-  audio_url?: string
+  video_urls?: string[] // DEPRECATED: используйте videos array
+  videos?: CourseVideo[] // Новое поле для множественных видео
+  audio_url?: string // DEPRECATED: используйте audio array
+  audio?: CourseAudio[] // Новое поле для множественных аудио
   video_preview_url?: string
   course_duration_minutes?: number
   video_count?: number
+  audio_count?: number // Количество аудио файлов
   has_workbook?: boolean
   has_audio?: boolean
   has_videos?: boolean
   workbook_count?: number // Количество рабочих тетрадей
-  
+
   // Новые поля для предпросмотра курса
   main_pdf_title?: string // Название главного PDF
   main_pdf_description?: string // Описание главного PDF
   course_description?: string // Общее описание курса
+  
+  // Поля для курс-плеера
+  purchase_date?: string // Дата покупки курса
 }
 
 // Purchase types for payment tracking

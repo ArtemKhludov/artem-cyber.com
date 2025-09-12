@@ -174,25 +174,30 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
             )}
 
             {/* Видео */}
-            {document.has_videos && document.video_urls && document.video_urls.length > 0 && (
+            {document.has_videos && document.videos && document.videos.length > 0 && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <div className="flex items-center gap-3 mb-4">
                         <Video className="w-6 h-6 text-purple-600" />
                         <h3 className="text-lg font-semibold text-gray-900">Видео-уроки</h3>
                         <span className="text-sm text-gray-500">
-                            ({document.video_count || document.video_urls.length} видео по 5-7 минут)
+                            ({document.video_count || document.videos.length} видео по 5-7 минут)
                         </span>
                     </div>
 
                     <div className="space-y-4">
-                        {document.video_urls.map((videoUrl, index) => (
-                            <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        {document.videos.map((video, index) => (
+                            <div key={video.id} className="border border-gray-200 rounded-lg p-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex-1">
                                         <h4 className="font-medium text-gray-900 mb-1">
-                                            {videoTitles[index] || `Видео ${index + 1}`}
+                                            {video.title || `Видео ${index + 1}`}
                                         </h4>
-                                        <p className="text-sm text-gray-600">
+                                        {video.description && (
+                                            <p className="text-sm text-gray-600 mb-1">
+                                                {video.description}
+                                            </p>
+                                        )}
+                                        <p className="text-sm text-gray-500">
                                             Продолжительность: 5-7 минут
                                         </p>
                                     </div>
@@ -208,7 +213,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                     Смотреть
                                                 </Button>
                                                 <Button
-                                                    onClick={() => handleDownload(videoUrl, `${document.title}-video-${index + 1}.mp4`)}
+                                                    onClick={() => handleDownload(video.file_url, `${video.title || document.title}-video-${index + 1}.mp4`)}
                                                     size="sm"
                                                     variant="outline"
                                                 >
@@ -230,46 +235,70 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
             )}
 
             {/* Аудио-настройка */}
-            {document.has_audio && document.audio_url && (
+            {document.has_audio && document.audio && document.audio.length > 0 && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <div className="flex items-center gap-3 mb-4">
                         <Volume2 className="w-6 h-6 text-orange-600" />
                         <h3 className="text-lg font-semibold text-gray-900">Аудио-настройка</h3>
-                        <span className="text-sm text-gray-500">(5 минут)</span>
+                        <span className="text-sm text-gray-500">
+                            ({document.audio_count || document.audio.length} аудио по 5 минут)
+                        </span>
                     </div>
-                    <p className="text-gray-600 mb-4">
-                        Ведёшь голосом простую практику: «Закрой глаза, почувствуй искру, зафиксируй её, отпусти шум».
-                        Это повышает ценность и выглядит как «премиум-дополнение».
-                    </p>
-                    {isPurchased ? (
-                        <div className="flex gap-3">
-                            <Button
-                                onClick={() => {
-                                    if (!isPurchased) {
-                                        alert('Для прослушивания аудио необходимо приобрести мини-курс')
-                                        return
-                                    }
-                                    // Здесь можно добавить встроенный аудио-плеер
-                                    window.open(document.audio_url, '_blank')
-                                }}
-                                className="bg-orange-600 hover:bg-orange-700 text-white"
-                            >
-                                <Play className="w-4 h-4 mr-2" />
-                                Слушать онлайн
-                            </Button>
-                            <Button
-                                onClick={() => handleDownload(document.audio_url || '', `${document.title}-audio.mp3`)}
-                                variant="outline"
-                            >
-                                <Download className="w-4 h-4 mr-2" />
-                                Скачать MP3
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="text-sm text-gray-500">
-                            Доступно после покупки
-                        </div>
-                    )}
+
+                    <div className="space-y-4">
+                        {document.audio.map((audioItem, index) => (
+                            <div key={audioItem.id} className="border border-gray-200 rounded-lg p-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <h4 className="font-medium text-gray-900 mb-1">
+                                            {audioItem.title || `Аудио ${index + 1}`}
+                                        </h4>
+                                        {audioItem.description && (
+                                            <p className="text-sm text-gray-600 mb-1">
+                                                {audioItem.description}
+                                            </p>
+                                        )}
+                                        <p className="text-sm text-gray-500">
+                                            Продолжительность: 5 минут
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        {isPurchased ? (
+                                            <>
+                                                <Button
+                                                    onClick={() => {
+                                                        if (!isPurchased) {
+                                                            alert('Для прослушивания аудио необходимо приобрести мини-курс')
+                                                            return
+                                                        }
+                                                        // Здесь можно добавить встроенный аудио-плеер
+                                                        window.open(audioItem.file_url, '_blank')
+                                                    }}
+                                                    size="sm"
+                                                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                                                >
+                                                    <Play className="w-4 h-4 mr-1" />
+                                                    Слушать
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleDownload(audioItem.file_url, `${audioItem.title || document.title}-audio-${index + 1}.mp3`)}
+                                                    size="sm"
+                                                    variant="outline"
+                                                >
+                                                    <Download className="w-4 h-4 mr-1" />
+                                                    Скачать
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <div className="text-sm text-gray-500">
+                                                Доступно после покупки
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
