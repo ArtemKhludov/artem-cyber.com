@@ -31,31 +31,25 @@ export default function PDFPage({ params }: PDFPageProps) {
         setLoading(true)
         setError(null)
 
-        // Загружаем основной документ
-        const { data: document, error: docError } = await supabase
-          .from('documents')
-          .select('*')
-          .eq('id', id)
-          .single()
+        // Загружаем основной документ через API
+        const response = await fetch('/api/documents')
+        if (!response.ok) {
+          throw new Error('Ошибка загрузки документов')
+        }
 
-        if (docError) {
+        const { data: documents } = await response.json()
+        const document = documents.find((doc: any) => doc.id === id)
+
+        if (!document) {
           throw new Error('Документ не найден')
         }
 
         setDocument(document)
 
         // Загружаем другие документы
-        const { data: others, error: othersError } = await supabase
-          .from('documents')
-          .select('*')
-          .neq('id', id)
-          .order('created_at', { ascending: false })
-          .limit(5)
-
-        if (!othersError && others) {
-          setOtherDocuments(others)
-          setLoading(false)
-        }
+        const otherDocuments = documents.filter((doc: any) => doc.id !== id).slice(0, 5)
+        setOtherDocuments(otherDocuments)
+        setLoading(false)
 
       } catch (err) {
         console.error('Error loading document:', err)
