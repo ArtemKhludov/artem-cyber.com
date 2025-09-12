@@ -66,7 +66,7 @@ export function Footer() {
                   href="/catalog"
                   className="text-gray-300 hover:text-blue-400 transition-colors text-left"
                 >
-                  PDF-файлы
+                  Курсы
                 </Link>
               </li>
               <li>

@@ -643,7 +643,7 @@ export function CoursesManagement() {
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900">Управление курсами</h2>
-                    <p className="text-gray-600">Создавайте и редактируйте мини-курсы и PDF документы</p>
+                    <p className="text-gray-600">Создавайте и редактируйте курсы</p>
                 </div>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>

@@ -179,9 +179,9 @@ export function PDFCarousel() {
       <div className="container mx-auto px-4 relative z-10">
         {/* Заголовок секции */}
         <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">PDF-руководства</span>
+          <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Курсы</span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mt-2 mb-6">
-            PDF-руководства для
+            Курсы для
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               {" "}самостоятельной работы
             </span>

@@ -6,12 +6,12 @@ import { ChevronDown, FileText, Sparkles } from 'lucide-react'
 
 export function Hero() {
   const [isVisible, setIsVisible] = useState(false)
-  const [starPositions, setStarPositions] = useState<Array<{left: string, top: string, delay: string, duration: string}>>([])
-  const [particlePositions, setParticlePositions] = useState<Array<{left: string, top: string, delay: string, duration: string}>>([])
+  const [starPositions, setStarPositions] = useState<Array<{ left: string, top: string, delay: string, duration: string }>>([])
+  const [particlePositions, setParticlePositions] = useState<Array<{ left: string, top: string, delay: string, duration: string }>>([])
 
   useEffect(() => {
     setIsVisible(true)
-    
+
     // Генерируем позиции звезд
     const stars = [...Array(50)].map(() => ({
       left: `${Math.random() * 100}%`,
@@ -20,7 +20,7 @@ export function Hero() {
       duration: `${2 + Math.random() * 2}s`
     }))
     setStarPositions(stars)
-    
+
     // Генерируем позиции частиц
     const particles = [...Array(20)].map(() => ({
       left: `${Math.random() * 100}%`,
@@ -112,11 +112,11 @@ export function Hero() {
 
             <Button
               size="lg"
-              onClick={() => scrollToSection('#pdf-files')}
+              onClick={() => window.location.href = '/catalog'}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               <FileText className="mr-2 w-5 h-5" />
-              PDF-руководства
+              Курсы от ИИ
             </Button>
           </div>
 

@@ -67,7 +67,7 @@ function DocumentCard({ document, index }: { document: Document; index: number }
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
               <div className="text-center">
                 <FileText className="w-16 h-16 text-white/80 mx-auto mb-2" />
-                <p className="text-white/80 text-sm font-medium">PDF документ</p>
+                <p className="text-white/80 text-sm font-medium">Курс</p>
               </div>
             </div>
           )}
@@ -96,7 +96,7 @@ function DocumentCard({ document, index }: { document: Document; index: number }
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
             <div className="text-center text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
               <Eye className="w-12 h-12 mx-auto mb-2 animate-pulse" />
-              <p className="text-sm font-medium">Предпросмотр PDF</p>
+              <p className="text-sm font-medium">Предпросмотр курса</p>
             </div>
           </div>
 
@@ -133,20 +133,20 @@ function DocumentCard({ document, index }: { document: Document; index: number }
                     (document.workbook_count || 0) < 5 ? 'ие тетради' : 'ых тетрадей'}
                 </span>
               </div>
-                    {document.workbooks && document.workbooks.length > 0 && (
-                        <div className="mt-2 text-xs text-gray-500">
-                            {document.workbooks.map((workbook, index) => (
-                                <div key={workbook.id} className="flex items-center justify-between">
-                                    <span className="truncate">
-                                        {index + 1}. {workbook.title}
-                                    </span>
-                                    {workbook.video_url && (
-                                        <span className="text-blue-600 ml-2">🎥</span>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
+              {document.workbooks && document.workbooks.length > 0 && (
+                <div className="mt-2 text-xs text-gray-500">
+                  {document.workbooks.map((workbook, index) => (
+                    <div key={workbook.id} className="flex items-center justify-between">
+                      <span className="truncate">
+                        {index + 1}. {workbook.title}
+                      </span>
+                      {workbook.video_url && (
+                        <span className="text-blue-600 ml-2">🎥</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -278,7 +278,7 @@ export default function CatalogPage() {
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Каталог PDF-материалов
+                  Каталог курсов
                 </span>
               </h1>
               <p className="text-xl md:text-2xl mb-12 text-blue-100 leading-relaxed">
@@ -312,7 +312,7 @@ export default function CatalogPage() {
                   </div>
 
                   <div className="text-sm text-gray-600">
-                    <span className="font-medium text-blue-600">{sortedDocuments.length}</span> материалов доступно
+                    <span className="font-medium text-blue-600">{sortedDocuments.length}</span> курсов доступно
                   </div>
                 </div>
               </div>
@@ -321,7 +321,7 @@ export default function CatalogPage() {
               {loading && (
                 <div className="flex flex-col items-center justify-center py-20">
                   <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mb-4"></div>
-                  <span className="text-gray-600 text-lg">Загружаем каталог...</span>
+                  <span className="text-gray-600 text-lg">Загружаем курсы...</span>
                 </div>
               )}
 
@@ -343,7 +343,7 @@ export default function CatalogPage() {
                 <div className="text-center py-20">
                   <FileText className="w-20 h-20 text-gray-400 mx-auto mb-6" />
                   <h3 className="text-2xl font-semibold text-gray-600 mb-4">Каталог временно пуст</h3>
-                  <p className="text-gray-500 text-lg">Материалы будут добавлены в ближайшее время</p>
+                  <p className="text-gray-500 text-lg">Курсы будут добавлены в ближайшее время</p>
                 </div>
               )}
 
@@ -363,11 +363,11 @@ export default function CatalogPage() {
                   {/* Statistics */}
                   <div className="mt-16">
                     <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-100">
-                      <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">Статистика каталога</h3>
+                      <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">Статистика курсов</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="text-center">
                           <div className="text-3xl font-bold text-blue-600 mb-1">{sortedDocuments.length}</div>
-                          <div className="text-gray-600">Всего материалов</div>
+                          <div className="text-gray-600">Всего курсов</div>
                         </div>
                         <div className="text-center">
                           <div className="text-3xl font-bold text-purple-600 mb-1">50K+</div>
@@ -379,7 +379,7 @@ export default function CatalogPage() {
                         </div>
                       </div>
                       <p className="text-sm text-gray-500 mt-6 text-center">
-                        Каталог автоматически обновляется при добавлении новых материалов
+                        Каталог автоматически обновляется при добавлении новых курсов
                       </p>
                     </div>
                   </div>

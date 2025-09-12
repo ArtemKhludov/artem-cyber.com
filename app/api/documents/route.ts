@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { PDF_DOCUMENTS } from '@/lib/pricing'
 
 export async function GET(request: NextRequest) {
     try {
@@ -99,23 +98,17 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Объединяем данные из базы с конфигурацией цен
+        // Объединяем данные из базы данных (цены берутся из админ панели)
         const documentsWithPricing = (dbDocuments || []).map(dbDoc => {
-            // Ищем соответствующий документ в конфигурации цен
-            const pricingDoc = PDF_DOCUMENTS.find(pdf =>
-                pdf.title === dbDoc.title ||
-                pdf.id === dbDoc.id
-            )
-
             const workbooks = workbooksData[dbDoc.id] || []
             const videos = videosData[dbDoc.id] || []
             const audio = audioData[dbDoc.id] || []
 
             return {
                 ...dbDoc,
-                // Используем цены из конфигурации, если они есть
-                price: pricingDoc?.price || dbDoc.price,
-                price_rub: pricingDoc?.price || dbDoc.price_rub,
+                // Используем цены из базы данных (управляются через админ панель)
+                price: dbDoc.price_rub || dbDoc.price,
+                price_rub: dbDoc.price_rub || dbDoc.price,
                 // Добавляем информацию о рабочих тетрадях
                 workbook_count: workbooks.length,
                 has_workbook: workbooks.length > 0,
@@ -127,12 +120,7 @@ export async function GET(request: NextRequest) {
                 // Добавляем информацию об аудио
                 audio_count: audio.length,
                 has_audio: audio.length > 0,
-                audio: audio,
-                // Добавляем дополнительные поля из конфигурации
-                ...(pricingDoc && {
-                    originalPrice: pricingDoc.originalPrice,
-                    category: pricingDoc.category
-                })
+                audio: audio
             }
         })
 

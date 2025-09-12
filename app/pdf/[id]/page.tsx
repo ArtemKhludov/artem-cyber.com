@@ -54,7 +54,8 @@ export default function PDFPage({ params }: PDFPageProps) {
 
         if (!othersError && others) {
           setOtherDocuments(others)
-        setLoading(false)        }
+          setLoading(false)
+        }
 
       } catch (err) {
         console.error('Error loading document:', err)
@@ -113,16 +114,16 @@ export default function PDFPage({ params }: PDFPageProps) {
   return (
     <PageLayout>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-        
+
         <PDFPreview document={document} />
-        
+
         <MockReviews />
-        
+
         {otherDocuments.length > 0 && (
           <section className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white relative overflow-hidden">
             <div className="absolute inset-0">
               <div className="absolute top-0 left-0 w-full h-full opacity-20">
-                <div 
+                <div
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='white' stroke-width='0.5' opacity='0.05'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23grid)' /%3E%3C/svg%3E")`
                   }}
@@ -130,12 +131,12 @@ export default function PDFPage({ params }: PDFPageProps) {
                 ></div>
               </div>
               <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-              <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+              <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
             </div>
-            
+
             <div className="container mx-auto px-4 relative z-10">
               <div className="text-center mb-16">
-                <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">PDF-руководства</span>
+                <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Курсы</span>
                 <h2 className="text-4xl md:text-5xl font-bold mt-2 mb-6">
                   Другие полезные
                   <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">

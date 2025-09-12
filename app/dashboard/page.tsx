@@ -195,7 +195,7 @@ export default function DashboardPage() {
   const getProductTypeLabel = (type: string) => {
     switch (type) {
       case 'mini_course': return 'Мини-курс'
-      case 'pdf': return 'PDF-документ'
+      case 'pdf': return 'Курс'
       case 'session': return 'Энергетическая диагностика'
       default: return type
     }
@@ -395,7 +395,7 @@ export default function DashboardPage() {
                           {/* Информация о типе курса */}
                           <div className="flex items-center gap-2 mb-3">
                             <Badge className={course.course_type === 'mini_course' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
-                              {course.course_type === 'mini_course' ? 'Мини-курс' : 'PDF-документ'}
+                              {course.course_type === 'mini_course' ? 'Мини-курс' : 'Курс'}
                             </Badge>
                             {course.duration !== 'Не указано' && (
                               <div className="flex items-center gap-1 text-sm text-gray-600">
