@@ -3,12 +3,29 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params
+        const { id } = await context.params
         const body = await request.json()
-        const { title, description, price_rub, file_url, cover_url, page_count } = body
+        const {
+            title,
+            description,
+            course_description,
+            main_pdf_title,
+            main_pdf_description,
+            price_rub,
+            file_url,
+            cover_url,
+            page_count,
+            course_type,
+            video_preview_url,
+            course_duration_minutes,
+            video_count,
+            has_workbook,
+            has_audio,
+            has_videos
+        } = body
 
         if (!id) {
             return NextResponse.json({ error: 'ID документа обязателен' }, { status: 400 })
@@ -19,6 +36,9 @@ export async function PUT(
         const updateData: any = {}
         if (title) updateData.title = title
         if (description !== undefined) updateData.description = description
+        if (course_description !== undefined) updateData.course_description = course_description
+        if (main_pdf_title !== undefined) updateData.main_pdf_title = main_pdf_title
+        if (main_pdf_description !== undefined) updateData.main_pdf_description = main_pdf_description
         if (price_rub) {
             updateData.price_rub = parseInt(price_rub)
             updateData.price = parseInt(price_rub) // дублирование для совместимости
@@ -26,6 +46,13 @@ export async function PUT(
         if (file_url) updateData.file_url = file_url
         if (cover_url !== undefined) updateData.cover_url = cover_url
         if (page_count) updateData.page_count = parseInt(page_count)
+        if (course_type !== undefined) updateData.course_type = course_type
+        if (video_preview_url !== undefined) updateData.video_preview_url = video_preview_url
+        if (course_duration_minutes !== undefined) updateData.course_duration_minutes = course_duration_minutes ? parseInt(course_duration_minutes) : null
+        if (video_count !== undefined) updateData.video_count = video_count ? parseInt(video_count) : null
+        if (has_workbook !== undefined) updateData.has_workbook = has_workbook
+        if (has_audio !== undefined) updateData.has_audio = has_audio
+        if (has_videos !== undefined) updateData.has_videos = has_videos
 
         const { data: document, error } = await supabase
             .from('documents')
@@ -81,10 +108,10 @@ export async function PUT(
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params
+        const { id } = await context.params
 
         if (!id) {
             return NextResponse.json({ error: 'ID документа обязателен' }, { status: 400 })

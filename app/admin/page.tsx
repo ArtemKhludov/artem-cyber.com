@@ -458,7 +458,7 @@ function AdminPageContent() {
       }
     } catch (error) {
       console.error('Delete error:', error)
-      alert('Ошибка удаления: ' + error.message)
+      alert('Ошибка удаления: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'))
     }
   }
 
@@ -499,7 +499,7 @@ function AdminPageContent() {
       }
     } catch (error) {
       console.error('Update error:', error)
-      alert('Ошибка обновления: ' + error.message)
+      alert('Ошибка обновления: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'))
     }
   }
 

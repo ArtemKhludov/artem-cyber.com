@@ -143,7 +143,7 @@ export function DocumentCard({
 
         <div className="space-y-2">
           <Link 
-            href={`/pdf/${document.id}`}
+            href={`/courses/${document.id}`}
             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 shadow hover:bg-primary/90 h-9 px-4 py-2 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
           >
             <Eye className="mr-2 w-4 h-4" />

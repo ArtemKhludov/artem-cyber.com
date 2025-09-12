@@ -154,7 +154,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     const product = getProductById(productId)
 
     if (product) {
-      productName = product.name || product.title
+      productName = (product as any).name || (product as any).title
       productPrice = product.price
     }
 

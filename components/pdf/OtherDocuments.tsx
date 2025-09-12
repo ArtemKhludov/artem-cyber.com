@@ -41,17 +41,16 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
       {/* Background Effects */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 w-full h-full opacity-20">
-          <div className="w-full h-full" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3Cpattern id=\'grid\' width=\'60\' height=\'60\' patternUnits=\'userSpaceOnUse\'%3E%3Cpath d=\'M 60 0 L 0 0 0 60\' fill=\'none\' stroke=\'white\' stroke-width=\'0.5\' opacity=\'0.05\'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\'100%25\' height=\'100%25\' fill=\'url(%23grid)\' /%3E%3C/svg%3E")'}}></div>
+          <div className="w-full h-full" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3Cpattern id=\'grid\' width=\'60\' height=\'60\' patternUnits=\'userSpaceOnUse\'%3E%3Cpath d=\'M 60 0 L 0 0 0 60\' fill=\'none\' stroke=\'white\' stroke-width=\'0.5\' opacity=\'0.05\'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\'100%25\' height=\'100%25\' fill=\'url(%23grid)\' /%3E%3C/svg%3E")' }}></div>
         </div>
         <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className={`text-center mb-16 transform transition-all duration-1000 ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`}>
-          <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">PDF-руководства</span>
+        <div className={`text-center mb-16 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
+          <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Курсы</span>
           <h2 className="text-4xl md:text-5xl font-bold mt-2 mb-6">
             Другие полезные
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> материалы</span>
@@ -63,14 +62,14 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
 
         {/* Бесконечная карусель */}
         <div className="relative overflow-hidden">
-          <div 
+          <div
             className="carousel-container"
-            onMouseEnter={(e) => e.currentTarget.style.animationPlayState = 'paused'} 
+            onMouseEnter={(e) => e.currentTarget.style.animationPlayState = 'paused'}
             onMouseLeave={(e) => e.currentTarget.style.animationPlayState = 'running'}
           >
-            <div 
+            <div
               className="carousel-track flex gap-6"
-              style={{ 
+              style={{
                 animation: 'infiniteScroll 60s linear infinite',
                 width: `${documents.length * 3 * 350}px`
               }}
@@ -99,7 +98,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         <span className="text-white font-bold text-lg">PDF</span>
                       </div>
                       <div className="absolute inset-0 bg-black/20"></div>
-                      
+
                       {/* Hover overlay */}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <div className="text-center text-white">
@@ -117,7 +116,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       <p className="text-gray-300 text-sm line-clamp-2 mb-4">
                         {doc.description}
                       </p>
-                      
+
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-xl font-bold text-white">
                           {doc.price_rub.toLocaleString('ru-RU')} ₽
@@ -125,18 +124,18 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <Button 
-                          asChild 
+                        <Button
+                          asChild
                           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                         >
-                          <Link href={`/pdf/${doc.id}`}>
+                          <Link href={`/courses/${doc.id}`}>
                             <Eye className="mr-2 w-4 h-4" />
                             Посмотреть
                           </Link>
                         </Button>
-                        <Button 
-                          asChild 
-                          variant="outline" 
+                        <Button
+                          asChild
+                          variant="outline"
                           className="w-full border-blue-200 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400"
                         >
                           <Link href={`/checkout/${doc.id}`}>
@@ -149,7 +148,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                   </div>
                 </div>
               ))}
-              
+
               {/* Второй набор документов для бесконечности */}
               {documents.map((doc, index) => (
                 <div
@@ -174,7 +173,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         <span className="text-white font-bold text-lg">PDF</span>
                       </div>
                       <div className="absolute inset-0 bg-black/20"></div>
-                      
+
                       {/* Hover overlay */}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <div className="text-center text-white">
@@ -192,7 +191,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       <p className="text-gray-300 text-sm line-clamp-2 mb-4">
                         {doc.description}
                       </p>
-                      
+
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-xl font-bold text-white">
                           {doc.price_rub.toLocaleString('ru-RU')} ₽
@@ -200,18 +199,18 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <Button 
-                          asChild 
+                        <Button
+                          asChild
                           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                         >
-                          <Link href={`/pdf/${doc.id}`}>
+                          <Link href={`/courses/${doc.id}`}>
                             <Eye className="mr-2 w-4 h-4" />
                             Посмотреть
                           </Link>
                         </Button>
-                        <Button 
-                          asChild 
-                          variant="outline" 
+                        <Button
+                          asChild
+                          variant="outline"
                           className="w-full border-blue-200 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400"
                         >
                           <Link href={`/checkout/${doc.id}`}>
@@ -249,7 +248,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         <span className="text-white font-bold text-lg">PDF</span>
                       </div>
                       <div className="absolute inset-0 bg-black/20"></div>
-                      
+
                       {/* Hover overlay */}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <div className="text-center text-white">
@@ -267,7 +266,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       <p className="text-gray-300 text-sm line-clamp-2 mb-4">
                         {doc.description}
                       </p>
-                      
+
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-xl font-bold text-white">
                           {doc.price_rub.toLocaleString('ru-RU')} ₽
@@ -275,18 +274,18 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <Button 
-                          asChild 
+                        <Button
+                          asChild
                           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                         >
-                          <Link href={`/pdf/${doc.id}`}>
+                          <Link href={`/courses/${doc.id}`}>
                             <Eye className="mr-2 w-4 h-4" />
                             Посмотреть
                           </Link>
                         </Button>
-                        <Button 
-                          asChild 
-                          variant="outline" 
+                        <Button
+                          asChild
+                          variant="outline"
                           className="w-full border-blue-200 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400"
                         >
                           <Link href={`/checkout/${doc.id}`}>

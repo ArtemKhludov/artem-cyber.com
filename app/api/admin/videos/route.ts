@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import type { Workbook } from '@/types'
+import type { CourseVideo } from '@/types'
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET - получить все рабочие тетради для курса
+// GET - получить все видео для курса
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
@@ -20,25 +20,25 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        const { data: workbooks, error } = await supabase
-            .from('course_workbooks')
+        const { data: videos, error } = await supabase
+            .from('course_videos')
             .select('*')
             .eq('document_id', documentId)
             .eq('is_active', true)
             .order('order_index', { ascending: true })
 
         if (error) {
-            console.error('Error fetching workbooks:', error)
+            console.error('Error fetching videos:', error)
             return NextResponse.json(
-                { error: 'Failed to fetch workbooks' },
+                { error: 'Failed to fetch videos' },
                 { status: 500 }
             )
         }
 
-        return NextResponse.json({ workbooks })
+        return NextResponse.json({ videos })
 
     } catch (error) {
-        console.error('Error in GET /api/admin/workbooks:', error)
+        console.error('Error in GET /api/admin/videos:', error)
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }
@@ -46,41 +46,24 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST - создать новую рабочую тетрадь
+// POST - создать новое видео
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { document_id, title, description, file_url, video_url, order_index } = body
+        const { document_id, title, description, file_url, order_index } = body
 
-        if (!document_id || !title) {
+        if (!document_id || !title || !file_url) {
             return NextResponse.json(
-                { error: 'Document ID and title are required' },
+                { error: 'Document ID, title and file URL are required' },
                 { status: 400 }
             )
         }
 
-        // Если file_url не указан, используем заглушку
-        const finalFileUrl = file_url || 'https://placeholder.com/workbook.pdf'
-
-        // Проверяем, что документ существует
-        const { data: document, error: docError } = await supabase
-            .from('documents')
-            .select('id')
-            .eq('id', document_id)
-            .single()
-
-        if (docError || !document) {
-            return NextResponse.json(
-                { error: 'Document not found' },
-                { status: 404 }
-            )
-        }
-
-        // Если order_index не указан, получаем следующий доступный
+        // Определяем порядок, если не указан
         let finalOrderIndex = order_index
         if (!finalOrderIndex) {
             const { data: maxOrder } = await supabase
-                .from('course_workbooks')
+                .from('course_videos')
                 .select('order_index')
                 .eq('document_id', document_id)
                 .order('order_index', { ascending: false })
@@ -90,14 +73,13 @@ export async function POST(request: NextRequest) {
             finalOrderIndex = (maxOrder?.order_index || 0) + 1
         }
 
-        const { data: workbook, error } = await supabase
-            .from('course_workbooks')
+        const { data: video, error } = await supabase
+            .from('course_videos')
             .insert({
                 document_id,
                 title,
                 description: description || null,
-                file_url: finalFileUrl,
-                video_url: video_url || null,
+                file_url,
                 order_index: finalOrderIndex,
                 is_active: true
             })
@@ -105,17 +87,17 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (error) {
-            console.error('Error creating workbook:', error)
+            console.error('Error creating video:', error)
             return NextResponse.json(
-                { error: 'Failed to create workbook' },
+                { error: 'Failed to create video' },
                 { status: 500 }
             )
         }
 
-        return NextResponse.json({ workbook }, { status: 201 })
+        return NextResponse.json({ video })
 
     } catch (error) {
-        console.error('Error in POST /api/admin/workbooks:', error)
+        console.error('Error in POST /api/admin/videos:', error)
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }
@@ -123,15 +105,15 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// PUT - обновить рабочую тетрадь
+// PUT - обновить видео
 export async function PUT(request: NextRequest) {
     try {
         const body = await request.json()
-        const { id, title, description, file_url, video_url, order_index, is_active } = body
+        const { id, title, description, file_url, order_index, is_active } = body
 
         if (!id) {
             return NextResponse.json(
-                { error: 'Workbook ID is required' },
+                { error: 'Video ID is required' },
                 { status: 400 }
             )
         }
@@ -140,29 +122,35 @@ export async function PUT(request: NextRequest) {
         if (title !== undefined) updateData.title = title
         if (description !== undefined) updateData.description = description
         if (file_url !== undefined) updateData.file_url = file_url
-        if (video_url !== undefined) updateData.video_url = video_url
         if (order_index !== undefined) updateData.order_index = order_index
         if (is_active !== undefined) updateData.is_active = is_active
 
-        const { data: workbook, error } = await supabase
-            .from('course_workbooks')
+        const { data: video, error } = await supabase
+            .from('course_videos')
             .update(updateData)
             .eq('id', id)
             .select()
             .single()
 
         if (error) {
-            console.error('Error updating workbook:', error)
+            console.error('Error updating video:', error)
             return NextResponse.json(
-                { error: 'Failed to update workbook' },
+                { error: 'Failed to update video' },
                 { status: 500 }
             )
         }
 
-        return NextResponse.json({ workbook })
+        if (!video) {
+            return NextResponse.json(
+                { error: 'Video not found' },
+                { status: 404 }
+            )
+        }
+
+        return NextResponse.json({ video })
 
     } catch (error) {
-        console.error('Error in PUT /api/admin/workbooks:', error)
+        console.error('Error in PUT /api/admin/videos:', error)
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }
@@ -170,7 +158,7 @@ export async function PUT(request: NextRequest) {
     }
 }
 
-// DELETE - удалить рабочую тетрадь
+// DELETE - удалить видео
 export async function DELETE(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
@@ -178,20 +166,20 @@ export async function DELETE(request: NextRequest) {
 
         if (!id) {
             return NextResponse.json(
-                { error: 'Workbook ID is required' },
+                { error: 'Video ID is required' },
                 { status: 400 }
             )
         }
 
         const { error } = await supabase
-            .from('course_workbooks')
+            .from('course_videos')
             .delete()
             .eq('id', id)
 
         if (error) {
-            console.error('Error deleting workbook:', error)
+            console.error('Error deleting video:', error)
             return NextResponse.json(
-                { error: 'Failed to delete workbook' },
+                { error: 'Failed to delete video' },
                 { status: 500 }
             )
         }
@@ -199,7 +187,7 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ success: true })
 
     } catch (error) {
-        console.error('Error in DELETE /api/admin/workbooks:', error)
+        console.error('Error in DELETE /api/admin/videos:', error)
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

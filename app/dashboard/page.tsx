@@ -126,7 +126,7 @@ export default function DashboardPage() {
           {
             id: '1',
             product_name: 'Mini-сессия',
-            product_type: 'mini',
+            product_type: 'session',
             price: 4999,
             status: 'completed',
             created_at: '2024-01-15',
@@ -135,7 +135,7 @@ export default function DashboardPage() {
           {
             id: '2',
             product_name: 'Глубокий день',
-            product_type: 'deep',
+            product_type: 'session',
             price: 24999,
             status: 'in_progress',
             created_at: '2024-01-20',
@@ -153,7 +153,13 @@ export default function DashboardPage() {
             completed_lessons: 9,
             thumbnail: '/api/placeholder/300/200',
             duration: '2 часа',
-            difficulty: 'beginner'
+            difficulty: 'beginner',
+            course_type: 'mini_course',
+            has_workbook: true,
+            has_videos: true,
+            has_audio: false,
+            video_count: 5,
+            workbook_count: 3
           },
           {
             id: '2',
@@ -164,7 +170,13 @@ export default function DashboardPage() {
             completed_lessons: 2,
             thumbnail: '/api/placeholder/300/200',
             duration: '3 часа',
-            difficulty: 'advanced'
+            difficulty: 'advanced',
+            course_type: 'pdf',
+            has_workbook: false,
+            has_videos: false,
+            has_audio: true,
+            video_count: 0,
+            workbook_count: 0
           }
         ])
 
@@ -355,15 +367,9 @@ export default function DashboardPage() {
                         ) : (
                           <>
                             <Button size="sm" variant="outline" asChild>
-                              <a href={`/download/${purchase.id}`} target="_blank" rel="noopener noreferrer">
+                              <a href={`/courses/${purchase.document?.id}/player`}>
                                 <PlayCircle className="h-4 w-4 mr-2" />
                                 Открыть курс
-                              </a>
-                            </Button>
-                            <Button size="sm" variant="outline" asChild>
-                              <a href={`/pdf/${purchase.document?.id}`} target="_blank" rel="noopener noreferrer">
-                                <BookOpen className="h-4 w-4 mr-2" />
-                                Просмотр
                               </a>
                             </Button>
                           </>
@@ -447,7 +453,7 @@ export default function DashboardPage() {
                           </a>
                         </Button>
                         <Button size="sm" variant="outline" asChild>
-                          <a href={`/pdf/${course.id}`} target="_blank" rel="noopener noreferrer">
+                          <a href={`/courses/${course.id}`} target="_blank" rel="noopener noreferrer">
                             <BookOpen className="h-4 w-4 mr-2" />
                             Просмотр
                           </a>

@@ -68,8 +68,35 @@ export interface Workbook {
   title: string
   description?: string
   file_url: string
+  video_url?: string  // URL видео-объяснения для воркбука
   order_index: number
   is_active: boolean
+}
+
+// Интерфейс для видео курса
+export interface CourseVideo {
+  id: string
+  document_id: string
+  title: string
+  description?: string
+  file_url: string
+  order_index: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// Интерфейс для аудио курса
+export interface CourseAudio {
+  id: string
+  document_id: string
+  title: string
+  description?: string
+  file_url: string
+  order_index: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 // Document types for PDF preview and mini-courses
@@ -95,6 +122,11 @@ export interface Document {
   has_audio?: boolean
   has_videos?: boolean
   workbook_count?: number // Количество рабочих тетрадей
+  
+  // Новые поля для предпросмотра курса
+  main_pdf_title?: string // Название главного PDF
+  main_pdf_description?: string // Описание главного PDF
+  course_description?: string // Общее описание курса
 }
 
 // Purchase types for payment tracking

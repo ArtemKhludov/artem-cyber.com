@@ -4,11 +4,11 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 // GET /api/users/[id]/activity - Получить историю активности пользователя
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const supabase = getSupabaseAdmin()
-        const userId = params.id
+        const { id: userId } = await context.params
         const { searchParams } = new URL(request.url)
 
         const page = parseInt(searchParams.get('page') || '1')

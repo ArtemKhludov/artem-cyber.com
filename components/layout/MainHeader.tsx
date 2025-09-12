@@ -15,7 +15,7 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
   const navigation = [
     { name: 'О проекте', href: '/about' },
     { name: 'Программы', href: '/book' },
-    { name: 'PDF-файлы', href: '/catalog' },
+    { name: 'Курсы', href: '/catalog' },
     { name: 'Отзывы', href: '/reviews' },
     { name: 'Контакты', href: '/contacts' },
   ]

@@ -143,10 +143,10 @@ export function PricingManagement() {
 
         if (originalPrice === newPrice) return null
 
-        if (newPrice > originalPrice) {
-            return <span className="text-green-600 text-sm">↗ +{formatPrice(newPrice - originalPrice)}</span>
+        if (newPrice > (originalPrice || 0)) {
+            return <span className="text-green-600 text-sm">↗ +{formatPrice(newPrice - (originalPrice || 0))}</span>
         } else {
-            return <span className="text-red-600 text-sm">↘ -{formatPrice(originalPrice - newPrice)}</span>
+            return <span className="text-red-600 text-sm">↘ -{formatPrice((originalPrice || 0) - newPrice)}</span>
         }
     }
 

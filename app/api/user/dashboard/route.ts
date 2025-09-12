@@ -54,13 +54,7 @@ export async function GET(request: NextRequest) {
           description,
           price_rub,
           cover_url,
-          course_type,
-          has_workbook,
-          has_videos,
-          has_audio,
-          video_count,
-          workbook_count,
-          course_duration_minutes
+          course_type
         )
       `)
       .eq('user_email', user.email)
@@ -69,6 +63,43 @@ export async function GET(request: NextRequest) {
 
     if (purchasesError) {
       console.error('Ошибка получения покупок:', purchasesError)
+    }
+
+    // Получаем состав курсов из course_composition
+    const courseIds = purchases?.map(p => p.document_id) || []
+    let courseComposition: Record<string, any> = {}
+    let courseWorkbooks: Record<string, any[]> = {}
+
+    if (courseIds.length > 0) {
+      const { data: composition, error: compositionError } = await supabase
+        .from('course_composition')
+        .select('*')
+        .in('course_id', courseIds)
+
+      if (!compositionError && composition) {
+        courseComposition = composition.reduce((acc, comp) => {
+          acc[comp.course_id] = comp
+          return acc
+        }, {})
+      }
+
+      // Получаем рабочие тетради из course_workbooks
+      const { data: workbooks, error: workbooksError } = await supabase
+        .from('course_workbooks')
+        .select('*')
+        .in('document_id', courseIds)
+        .eq('is_active', true)
+        .order('order_index', { ascending: true })
+
+      if (!workbooksError && workbooks) {
+        courseWorkbooks = workbooks.reduce((acc, workbook) => {
+          if (!acc[workbook.document_id]) {
+            acc[workbook.document_id] = []
+          }
+          acc[workbook.document_id].push(workbook)
+          return acc
+        }, {})
+      }
     }
 
     // Получаем заказы пользователя (для совместимости со старой системой)
@@ -99,16 +130,37 @@ export async function GET(request: NextRequest) {
       (orders?.reduce((sum, o) => sum + o.amount, 0) || 0)
 
     // Форматируем данные для фронтенда
-    const formattedPurchases = purchases?.map(purchase => ({
-      id: purchase.id,
-      product_name: purchase.documents?.title || 'Курс',
-      product_type: purchase.documents?.course_type === 'mini_course' ? 'mini_course' : 'pdf',
-      price: purchase.amount_paid,
-      status: purchase.payment_status === 'completed' ? 'completed' : 'pending',
-      created_at: purchase.created_at,
-      document: purchase.documents,
-      progress: 0 // Пока не реализовано отслеживание прогресса
-    })) || []
+    const formattedPurchases = purchases?.map(purchase => {
+      const composition = courseComposition[purchase.document_id] || {}
+      const workbooks = courseWorkbooks[purchase.document_id] || []
+
+      return {
+        id: purchase.id,
+        product_name: (purchase.documents as any)?.title || 'Курс',
+        product_type: (purchase.documents as any)?.course_type === 'mini_course' ? 'mini_course' : 'pdf',
+        price: purchase.amount_paid,
+        status: purchase.payment_status === 'completed' ? 'completed' : 'pending',
+        created_at: purchase.created_at,
+        document: {
+          ...purchase.documents,
+          has_workbook: workbooks.length > 0,
+          has_videos: (composition.video_count || 0) > 0,
+          has_audio: (composition.audio_count || 0) > 0,
+          video_count: composition.video_count || 0,
+          workbook_count: workbooks.length,
+          workbooks: workbooks.map(wb => ({
+            id: wb.id,
+            title: wb.title,
+            description: wb.description,
+            file_url: wb.file_url,
+            video_url: wb.video_url,
+            order_index: wb.order_index
+          })),
+          course_duration_minutes: composition.total_items ? composition.total_items * 10 : 30 // Примерная длительность
+        },
+        progress: 0 // Пока не реализовано отслеживание прогресса
+      }
+    }) || []
 
     const formattedOrders = orders?.map(order => ({
       id: order.id,
@@ -136,6 +188,12 @@ export async function GET(request: NextRequest) {
         totalCourses: totalPurchases,
         completedCourses: completedOrders,
         totalSpent
+      }
+    }, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
     })
 

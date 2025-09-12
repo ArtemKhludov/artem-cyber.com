@@ -4,7 +4,7 @@ import type { Document } from '@/types'
 
 // Универсальный сервис для работы с документами
 export class DocumentService {
-  
+
   // Получить все документы с автоматической дедупликацией и валидацией
   static async getAllDocuments(): Promise<Document[]> {
     try {
@@ -41,33 +41,33 @@ export class DocumentService {
   static async getUniqueDocuments(limit?: number): Promise<Document[]> {
     try {
       const documents = await this.getAllDocuments()
-      
+
       // Удаляем дубликаты по title (берем самый новый)
       const uniqueMap = new Map<string, Document>()
-      
+
       documents.forEach(doc => {
         const key = doc.title.trim().toLowerCase()
         const existing = uniqueMap.get(key)
-        
+
         if (!existing || new Date(doc.updated_at) > new Date(existing.updated_at)) {
           uniqueMap.set(key, doc)
         }
       })
-      
+
       let uniqueDocuments = Array.from(uniqueMap.values())
-      
+
       // Сортируем по актуальности
       uniqueDocuments.sort((a, b) => {
         const dateA = new Date(a.updated_at).getTime()
         const dateB = new Date(b.updated_at).getTime()
         return dateB - dateA
       })
-      
+
       // Применяем лимит если указан
       if (limit && limit > 0) {
         uniqueDocuments = uniqueDocuments.slice(0, limit)
       }
-      
+
       console.log(`📄 Returning ${uniqueDocuments.length} unique documents`)
       return uniqueDocuments
 
@@ -123,7 +123,7 @@ export class DocumentService {
       const otherDocuments = allDocuments
         .filter(doc => doc.id !== currentId)
         .slice(0, Math.max(1, limit))
-      
+
       console.log(`📚 Found ${otherDocuments.length} other documents`)
       return otherDocuments
 
@@ -136,7 +136,7 @@ export class DocumentService {
   // Валидация документа
   private static validateDocument(doc: any): boolean {
     if (!doc || typeof doc !== 'object') return false
-    
+
     // Обязательные поля
     const requiredFields = ['id', 'title', 'description', 'price_rub', 'file_url']
     for (const field of requiredFields) {
@@ -200,13 +200,13 @@ export class DocumentService {
     // Запрашиваем через API
     try {
       const response = await fetch(`/api/pdf/pages?url=${encodeURIComponent(document.file_url)}`)
-      
+
       if (!response.ok) {
         throw new Error(`API responded with ${response.status}`)
       }
 
       const data = await response.json()
-      
+
       if (data.success && data.pageCount && data.pageCount > 0) {
         console.log(`📄 Got page count for ${document.title}: ${data.pageCount}`)
         return data.pageCount
@@ -225,25 +225,25 @@ export class DocumentService {
 
 // Сервис для статистики покупок
 export class PurchaseStatsService {
-  
+
   static calculatePurchaseStats(documentId: string, createdAt: string) {
     const createdDate = new Date(createdAt)
     const now = new Date()
     const daysSinceLaunch = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
-    
+
     // Генерируем консистентную статистику на основе ID
     const seed = documentId.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
     const basePurchases = 20 + (seed % 81) // 20-100
-    
+
     // Рост 1% в день
     const totalPurchases = Math.floor(basePurchases * Math.pow(1.01, Math.max(0, daysSinceLaunch)))
-    
+
     // Покупки за сегодня
     const todayPurchases = Math.max(0, (seed + daysSinceLaunch) % 6)
-    
+
     // Активные пользователи
     const activeUsers = Math.max(1, 1 + ((seed * daysSinceLaunch) % 8))
-    
+
     return {
       total: totalPurchases,
       today: todayPurchases,
@@ -265,7 +265,7 @@ export const fallbackDocuments: Document[] = [
     updated_at: "2025-01-16T12:00:00Z",
   },
   {
-    id: "fallback-2", 
+    id: "fallback-2",
     title: "Карта Самопознания: Когда Я Ничего Не Понимаю",
     description: "Путешествие к истинному пониманию себя — это непрерывный процесс трансформации",
     price_rub: 199,
@@ -278,11 +278,11 @@ export const fallbackDocuments: Document[] = [
 
 // Утилиты для проверки доступности изображений
 export class ImageValidationService {
-  
+
   // Проверить доступность изображения
   static async validateImageUrl(url: string): Promise<boolean> {
     if (!url) return false
-    
+
     try {
       const response = await fetch(url, { method: 'HEAD' })
       return response.ok && (response.headers.get('content-type')?.startsWith('image/') || false)
@@ -296,12 +296,12 @@ export class ImageValidationService {
     const hash = title.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
     const colors = [
       'from-blue-500 to-purple-600',
-      'from-green-500 to-blue-600', 
+      'from-green-500 to-blue-600',
       'from-purple-500 to-pink-600',
       'from-orange-500 to-red-600',
       'from-teal-500 to-green-600'
     ]
-    
+
     return `bg-gradient-to-br ${colors[hash % colors.length]}`
   }
 }

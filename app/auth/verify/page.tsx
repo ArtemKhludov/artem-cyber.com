@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
     const [message, setMessage] = useState('')
     const router = useRouter()
@@ -103,5 +103,22 @@ export default function VerifyEmailPage() {
                 </div>
             </div>
         </PageLayout>
+    )
+}
+
+export default function VerifyEmailPage() {
+    return (
+        <Suspense fallback={
+            <PageLayout>
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+                    <div className="text-center">
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+                        <p className="text-gray-600">Загрузка...</p>
+                    </div>
+                </div>
+            </PageLayout>
+        }>
+            <VerifyEmailContent />
+        </Suspense>
     )
 }

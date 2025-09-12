@@ -85,7 +85,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
       try {
         setPageCountLoading(true)
 
-        const response = await fetch(`/api/pdf/pages?url=${encodeURIComponent(document.file_url)}`)
+        const response = await fetch(`/api/courses/pages?url=${encodeURIComponent(document.file_url)}`)
         const data = await response.json()
 
         if (data.success && data.pageCount) {
@@ -194,7 +194,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
               <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-medium text-blue-800">
-                  {isMiniCourse ? 'Предпросмотр мини-курса' : 'Предпросмотр PDF-документа'}
+                  {isMiniCourse ? 'Предпросмотр курса' : 'Предпросмотр курса'}
                 </span>
               </div>
 
@@ -262,7 +262,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2.5 text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  {isMiniCourse ? 'Купить мини-курс' : 'Купить PDF-файл'} за {document.price_rub.toLocaleString('ru-RU')} ₽
+                  {isMiniCourse ? 'Купить курс' : 'Купить курс'} за {document.price_rub.toLocaleString('ru-RU')} ₽
                 </Button>
 
                 <Button
@@ -321,22 +321,45 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                 <ul className="space-y-2 text-sm text-gray-700 text-left">
                   {isMiniCourse ? (
                     <>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Основной PDF-документ (20-30 страниц)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Рабочая тетрадь с чек-листами</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">2-3 видео-урока (по 5-7 минут)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Аудио-настройка (5 минут)</span>
-                      </li>
+                      {/* Главный PDF */}
+                      {document.main_pdf_title && (
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="text-xs">{document.main_pdf_title}</span>
+                        </li>
+                      )}
+
+                      {/* Рабочие тетради */}
+                      {(document.workbook_count || 0) > 0 && (
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="text-xs">{document.workbook_count || 0} рабоч{(document.workbook_count || 0) === 1 ? 'ая тетрадь' : (document.workbook_count || 0) < 5 ? 'ие тетради' : 'ых тетрадей'}</span>
+                        </li>
+                      )}
+
+                      {/* Видео уроки */}
+                      {(document.video_count || 0) > 0 && (
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="text-xs">{document.video_count || 0} видео-урок{(document.video_count || 0) === 1 ? '' : (document.video_count || 0) < 5 ? 'а' : 'ов'}</span>
+                        </li>
+                      )}
+
+                      {/* Аудио материалы */}
+                      {((document as any).audio_count || 0) > 0 && (
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="text-xs">{(document as any).audio_count || 0} аудио-материал{((document as any).audio_count || 0) === 1 ? '' : ((document as any).audio_count || 0) < 5 ? 'а' : 'ов'}</span>
+                        </li>
+                      )}
+
+                      {/* Длительность курса */}
+                      {document.course_duration_minutes && (
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="text-xs">Длительность: {document.course_duration_minutes} минут</span>
+                        </li>
+                      )}
                       <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
                         <span className="text-xs">Бессрочный доступ ко всем материалам</span>
@@ -346,7 +369,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                     <>
                       <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Полный доступ к PDF-документу</span>
+                        <span className="text-xs">Полный доступ к курсу</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>

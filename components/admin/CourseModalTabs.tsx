@@ -88,7 +88,7 @@ export function CourseModalTabs({
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                     }`}
                 >
-                    <FileImage className="w-4 h-4 inline mr-2" />
+                    <FileText className="w-4 h-4 inline mr-2" />
                     Файлы курса
                 </button>
                 <button
@@ -157,7 +157,7 @@ export function CourseModalTabs({
                                 <Input
                                     id="page_count"
                                     type="number"
-                                    value={isEditing ? (formData as Document).page_count || 0 : (formData as CourseFormData).page_count}
+                                    value={isEditing ? ((formData as any).page_count || 0) : (formData as CourseFormData).page_count}
                                     onChange={(e) => setFormData({ ...formData, page_count: e.target.value })}
                                     placeholder="45"
                                 />

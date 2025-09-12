@@ -39,7 +39,7 @@ export function CatalogContent({ documents }: CatalogContentProps) {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Каталог <span className="text-blue-600">PDF-документов</span>
+            Каталог <span className="text-blue-600">курсов</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Полная библиотека материалов для самостоятельной работы и глубокого самопознания
@@ -95,8 +95,8 @@ export function CatalogContent({ documents }: CatalogContentProps) {
               >
                 {/* Cover Image */}
                 <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={doc.cover_url} 
+                  <img
+                    src={doc.cover_url}
                     alt={doc.title}
                     className="w-full h-full object-cover"
                   />
@@ -104,7 +104,7 @@ export function CatalogContent({ documents }: CatalogContentProps) {
                   <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-lg p-2">
                     <FileText className="w-6 h-6 text-white" />
                   </div>
-                  
+
                   {/* Overlay on hover */}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <div className="text-center">
@@ -123,6 +123,33 @@ export function CatalogContent({ documents }: CatalogContentProps) {
                     {doc.description}
                   </p>
 
+                  {/* Информация о рабочих тетрадях */}
+                  {doc.has_workbook && (doc.workbook_count || 0) > 0 && (
+                    <div className="mb-4">
+                      <div className="flex items-center text-sm text-orange-600 bg-orange-50 rounded-lg px-3 py-2">
+                        <FileText className="w-4 h-4 mr-2" />
+                        <span className="font-medium">
+                          {doc.workbook_count || 0} рабоч{(doc.workbook_count || 0) === 1 ? 'ая тетрадь' :
+                            (doc.workbook_count || 0) < 5 ? 'ие тетради' : 'ых тетрадей'}
+                        </span>
+                      </div>
+                      {doc.workbooks && doc.workbooks.length > 0 && (
+                        <div className="mt-2 text-xs text-gray-500">
+                          {doc.workbooks.map((workbook, index) => (
+                            <div key={workbook.id} className="flex items-center justify-between">
+                              <span className="truncate">
+                                {index + 1}. {workbook.title}
+                              </span>
+                              {workbook.video_url && (
+                                <span className="text-blue-600 ml-2">🎥</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Price */}
                   <div className="mb-4">
                     <span className="text-2xl font-bold text-gray-900">
@@ -133,7 +160,7 @@ export function CatalogContent({ documents }: CatalogContentProps) {
                   {/* Action buttons */}
                   <div className="space-y-2">
                     <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
-                      <Link href={`/pdf/${doc.id}`}>
+                      <Link href={`/courses/${doc.id}`}>
                         <Eye className="mr-2 w-4 h-4" />
                         Предпросмотр
                       </Link>

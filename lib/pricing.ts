@@ -242,5 +242,5 @@ export function getPopularProducts(): Product[] {
 }
 
 export function getAvailableProducts(): Product[] {
-    return [...PROGRAMS, ...ADDITIONAL_SERVICES, ...PDF_DOCUMENTS].filter(product => product.available)
+    return [...PROGRAMS, ...ADDITIONAL_SERVICES, ...PDF_DOCUMENTS].filter(product => (product as any).available) as Product[]
 }

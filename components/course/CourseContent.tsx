@@ -53,13 +53,13 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
             return
         }
 
-        const link = document.createElement('a')
+        const link = window.document.createElement('a')
         link.href = url
         link.download = filename
         link.target = '_blank'
-        document.body.appendChild(link)
+        window.document.body.appendChild(link)
         link.click()
-        document.body.removeChild(link)
+        window.document.body.removeChild(link)
     }
 
     return (
@@ -102,7 +102,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                             )}
                         </h3>
                     </div>
-                    
+
                     {document.workbooks && document.workbooks.length > 0 ? (
                         // Новые множественные рабочие тетради
                         <div className="space-y-4">
@@ -258,7 +258,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                 Слушать онлайн
                             </Button>
                             <Button
-                                onClick={() => handleDownload(document.audio_url, `${document.title}-audio.mp3`)}
+                                onClick={() => handleDownload(document.audio_url || '', `${document.title}-audio.mp3`)}
                                 variant="outline"
                             >
                                 <Download className="w-4 h-4 mr-2" />

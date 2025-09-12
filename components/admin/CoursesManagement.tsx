@@ -52,12 +52,14 @@ import { WorkbooksManager } from './WorkbooksManager'
 interface CourseFormData {
     title: string
     description: string
+    course_description?: string
+    main_pdf_title?: string
+    main_pdf_description?: string
     price_rub: string
     course_type: 'pdf' | 'mini_course'
     file_url: string
     cover_url: string
     page_count: string
-    workbook_url: string
     video_urls: string[]
     audio_url: string
     video_preview_url: string
@@ -81,12 +83,14 @@ export function CoursesManagement() {
     const [newDocument, setNewDocument] = useState<CourseFormData>({
         title: '',
         description: '',
+        course_description: '',
+        main_pdf_title: '',
+        main_pdf_description: '',
         price_rub: '',
         course_type: 'mini_course',
         file_url: '',
         cover_url: '',
         page_count: '',
-        workbook_url: '',
         video_urls: ['', '', ''],
         audio_url: '',
         video_preview_url: '',
@@ -96,6 +100,18 @@ export function CoursesManagement() {
         has_audio: true,
         has_videos: true
     })
+
+    // Функция для генерации правильного slug из названия курса
+    const generateSlug = (title: string): string => {
+        if (!title) return 'untitled'
+
+        return title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '') // Удаляем все кроме букв, цифр и пробелов
+            .replace(/\s+/g, '-')        // Заменяем пробелы на дефисы
+            .replace(/-+/g, '-')         // Убираем множественные дефисы
+            .replace(/^-|-$/g, '') || 'untitled' // Убираем дефисы в начале и конце
+    }
 
     useEffect(() => {
         loadDocuments()
@@ -187,12 +203,14 @@ export function CoursesManagement() {
                 setNewDocument({
                     title: '',
                     description: '',
+                    course_description: '',
+                    main_pdf_title: '',
+                    main_pdf_description: '',
                     price_rub: '',
                     course_type: 'mini_course',
                     file_url: '',
                     cover_url: '',
                     page_count: '',
-                    workbook_url: '',
                     video_urls: ['', '', ''],
                     audio_url: '',
                     video_preview_url: '',
@@ -317,7 +335,7 @@ export function CoursesManagement() {
             }
 
             // Находим последнюю рабочую тетрадь (с максимальным order_index)
-            const lastWorkbook = workbooks.reduce((prev, current) =>
+            const lastWorkbook = workbooks.reduce((prev: any, current: any) =>
                 (prev.order_index > current.order_index) ? prev : current
             )
 
@@ -580,9 +598,9 @@ export function CoursesManagement() {
                     doc.id === document.id
                         ? {
                             ...doc,
-                            audio_url: null,
+                            audio_url: undefined,
                             has_audio: false
-                        }
+                        } as Document
                         : doc
                 ))
                 alert('Аудио отключено!')
@@ -654,12 +672,44 @@ export function CoursesManagement() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="description">Описание</Label>
+                                <Label htmlFor="description">Описание курса</Label>
                                 <Textarea
                                     id="description"
                                     value={newDocument.description}
                                     onChange={(e) => setNewDocument({ ...newDocument, description: e.target.value })}
                                     placeholder="Описание курса"
+                                    rows={3}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="course_description">Подробное описание курса</Label>
+                                <Textarea
+                                    id="course_description"
+                                    value={newDocument.course_description || ''}
+                                    onChange={(e) => setNewDocument({ ...newDocument, course_description: e.target.value })}
+                                    placeholder="Подробное описание курса для страницы предпросмотра"
+                                    rows={4}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="main_pdf_title">Название главного PDF</Label>
+                                <Input
+                                    id="main_pdf_title"
+                                    value={newDocument.main_pdf_title || ''}
+                                    onChange={(e) => setNewDocument({ ...newDocument, main_pdf_title: e.target.value })}
+                                    placeholder="Название главного PDF файла"
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="main_pdf_description">Описание главного PDF</Label>
+                                <Textarea
+                                    id="main_pdf_description"
+                                    value={newDocument.main_pdf_description || ''}
+                                    onChange={(e) => setNewDocument({ ...newDocument, main_pdf_description: e.target.value })}
+                                    placeholder="Описание главного PDF файла"
                                     rows={3}
                                 />
                             </div>
@@ -718,7 +768,7 @@ export function CoursesManagement() {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    handleFileUpload(file, `courses/${newDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/cover.png`, 'cover_url')
+                                                    handleFileUpload(file, `courses/${generateSlug(newDocument.title)}/cover.png`, 'cover_url')
                                                 }
                                             }}
                                             className="hidden"
@@ -754,7 +804,7 @@ export function CoursesManagement() {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    handleFileUpload(file, `courses/${newDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/main.pdf`, 'file_url')
+                                                    handleFileUpload(file, `courses/${generateSlug(newDocument.title)}/main.pdf`, 'file_url')
                                                 }
                                             }}
                                             className="hidden"
@@ -790,7 +840,7 @@ export function CoursesManagement() {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    handleFileUpload(file, `courses/${newDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/preview.mp4`, 'video_preview_url')
+                                                    handleFileUpload(file, `courses/${generateSlug(newDocument.title)}/preview/preview.mp4`, 'video_preview_url')
                                                 }
                                             }}
                                             className="hidden"
@@ -811,41 +861,7 @@ export function CoursesManagement() {
                                     </div>
                                 </div>
 
-                                {/* Рабочая тетрадь */}
-                                <div className="grid gap-2">
-                                    <Label>Рабочая тетрадь</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={newDocument.workbook_url}
-                                            onChange={(e) => setNewDocument({ ...newDocument, workbook_url: e.target.value })}
-                                            placeholder="URL рабочей тетради"
-                                        />
-                                        <input
-                                            type="file"
-                                            accept=".pdf"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    handleFileUpload(file, `courses/${newDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/workbook.pdf`, 'workbook_url')
-                                                }
-                                            }}
-                                            className="hidden"
-                                            id="workbook-upload"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => document.getElementById('workbook-upload')?.click()}
-                                            disabled={uploading[`new_workbook_url`]}
-                                        >
-                                            {uploading[`new_workbook_url`] ? (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                            ) : (
-                                                <Upload className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                </div>
+                                {/* Рабочие тетради управляются через иконку книги 📚 в списке курсов */}
 
                                 {/* Аудио */}
                                 <div className="grid gap-2">
@@ -862,7 +878,7 @@ export function CoursesManagement() {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    handleFileUpload(file, `courses/${newDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/audio.mp3`, 'audio_url')
+                                                    handleFileUpload(file, `courses/${generateSlug(newDocument.title)}/audio.mp3`, 'audio_url')
                                                 }
                                             }}
                                             className="hidden"
@@ -903,7 +919,7 @@ export function CoursesManagement() {
                                                 onChange={(e) => {
                                                     const file = e.target.files?.[0]
                                                     if (file) {
-                                                        handleFileUpload(file, `courses/${newDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/videos/video${index + 1}.mp4`, 'video_urls')
+                                                        handleFileUpload(file, `courses/${generateSlug(newDocument.title)}/videos/video${index + 1}.mp4`, 'video_urls')
                                                     }
                                                 }}
                                                 className="hidden"
@@ -1040,12 +1056,12 @@ export function CoursesManagement() {
                                     <TableCell>
                                         <div className="flex items-center gap-2">
                                             <div className="flex gap-1">
-                                                {document.cover_url && <Image className="w-4 h-4 text-blue-500" title="Обложка" />}
-                                                {document.file_url && <File className="w-4 h-4 text-green-500" title="PDF" />}
-                                                {document.video_preview_url && <Play className="w-4 h-4 text-purple-500" title="Превью" />}
-                                                {document.workbook_url && <BookOpen className="w-4 h-4 text-orange-500" title="Тетрадь" />}
-                                                {document.audio_url && <Volume2 className="w-4 h-4 text-red-500" title="Аудио" />}
-                                                {document.video_urls && document.video_urls.length > 0 && <Video className="w-4 h-4 text-indigo-500" title="Видео" />}
+                                                {document.cover_url && <Image className="w-4 h-4 text-blue-500" />}
+                                                {document.file_url && <File className="w-4 h-4 text-green-500" />}
+                                                {document.video_preview_url && <Play className="w-4 h-4 text-purple-500" />}
+                                                {document.workbook_url && <BookOpen className="w-4 h-4 text-orange-500" />}
+                                                {document.audio_url && <Volume2 className="w-4 h-4 text-red-500" />}
+                                                {document.video_urls && document.video_urls.length > 0 && <Video className="w-4 h-4 text-indigo-500" />}
                                             </div>
                                             {/* Рабочие тетради */}
                                             {document.has_workbook ? (
@@ -1225,11 +1241,43 @@ export function CoursesManagement() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-description">Описание</Label>
+                                <Label htmlFor="edit-description">Описание курса</Label>
                                 <Textarea
                                     id="edit-description"
                                     value={editingDocument.description}
                                     onChange={(e) => setEditingDocument({ ...editingDocument, description: e.target.value })}
+                                    rows={3}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-course_description">Подробное описание курса</Label>
+                                <Textarea
+                                    id="edit-course_description"
+                                    value={editingDocument.course_description || ''}
+                                    onChange={(e) => setEditingDocument({ ...editingDocument, course_description: e.target.value })}
+                                    placeholder="Подробное описание курса для страницы предпросмотра"
+                                    rows={4}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-main_pdf_title">Название главного PDF</Label>
+                                <Input
+                                    id="edit-main_pdf_title"
+                                    value={editingDocument.main_pdf_title || ''}
+                                    onChange={(e) => setEditingDocument({ ...editingDocument, main_pdf_title: e.target.value })}
+                                    placeholder="Название главного PDF файла"
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-main_pdf_description">Описание главного PDF</Label>
+                                <Textarea
+                                    id="edit-main_pdf_description"
+                                    value={editingDocument.main_pdf_description || ''}
+                                    onChange={(e) => setEditingDocument({ ...editingDocument, main_pdf_description: e.target.value })}
+                                    placeholder="Описание главного PDF файла"
                                     rows={3}
                                 />
                             </div>
@@ -1261,8 +1309,8 @@ export function CoursesManagement() {
                                     <Input
                                         id="edit-page_count"
                                         type="number"
-                                        value={editingDocument.page_count || 0}
-                                        onChange={(e) => setEditingDocument({ ...editingDocument, page_count: parseInt(e.target.value) })}
+                                        value={(editingDocument as any).page_count || 0}
+                                        onChange={(e) => setEditingDocument({ ...editingDocument, page_count: parseInt(e.target.value) } as any)}
                                     />
                                 </div>
                             </div>
@@ -1286,7 +1334,7 @@ export function CoursesManagement() {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    handleFileUpload(file, `courses/${editingDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/cover.png`, 'cover_url', editingDocument.id)
+                                                    handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/cover.png`, 'cover_url', editingDocument.id)
                                                 }
                                             }}
                                             className="hidden"
@@ -1322,7 +1370,7 @@ export function CoursesManagement() {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    handleFileUpload(file, `courses/${editingDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/main.pdf`, 'file_url', editingDocument.id)
+                                                    handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/main.pdf`, 'file_url', editingDocument.id)
                                                 }
                                             }}
                                             className="hidden"
@@ -1358,7 +1406,7 @@ export function CoursesManagement() {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    handleFileUpload(file, `courses/${editingDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/preview.mp4`, 'video_preview_url', editingDocument.id)
+                                                    handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/preview/preview.mp4`, 'video_preview_url', editingDocument.id)
                                                 }
                                             }}
                                             className="hidden"
@@ -1379,41 +1427,7 @@ export function CoursesManagement() {
                                     </div>
                                 </div>
 
-                                {/* Рабочая тетрадь */}
-                                <div className="grid gap-2">
-                                    <Label>Рабочая тетрадь</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={editingDocument.workbook_url || ''}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, workbook_url: e.target.value })}
-                                            placeholder="URL рабочей тетради"
-                                        />
-                                        <input
-                                            type="file"
-                                            accept=".pdf"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    handleFileUpload(file, `courses/${editingDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/workbook.pdf`, 'workbook_url', editingDocument.id)
-                                                }
-                                            }}
-                                            className="hidden"
-                                            id="edit-workbook-upload"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => document.getElementById('edit-workbook-upload')?.click()}
-                                            disabled={uploading[`${editingDocument.id}_workbook_url`]}
-                                        >
-                                            {uploading[`${editingDocument.id}_workbook_url`] ? (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                            ) : (
-                                                <Upload className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                </div>
+                                {/* Рабочие тетради управляются через иконку книги 📚 в списке курсов */}
 
                                 {/* Аудио */}
                                 <div className="grid gap-2">
@@ -1430,7 +1444,7 @@ export function CoursesManagement() {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0]
                                                 if (file) {
-                                                    handleFileUpload(file, `courses/${editingDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/audio.mp3`, 'audio_url', editingDocument.id)
+                                                    handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/audio.mp3`, 'audio_url', editingDocument.id)
                                                 }
                                             }}
                                             className="hidden"
@@ -1471,7 +1485,7 @@ export function CoursesManagement() {
                                                 onChange={(e) => {
                                                     const file = e.target.files?.[0]
                                                     if (file) {
-                                                        handleFileUpload(file, `courses/${editingDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}/videos/video${index + 1}.mp4`, 'video_urls', editingDocument.id)
+                                                        handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/videos/video${index + 1}.mp4`, 'video_urls', editingDocument.id)
                                                     }
                                                 }}
                                                 className="hidden"
@@ -1576,6 +1590,14 @@ export function CoursesManagement() {
                             <WorkbooksManager
                                 documentId={selectedDocumentForWorkbooks.id}
                                 documentTitle={selectedDocumentForWorkbooks.title}
+                                onWorkbooksChange={(count) => {
+                                    // Обновляем количество рабочих тетрадей в списке курсов
+                                    setDocuments(documents.map(doc =>
+                                        doc.id === selectedDocumentForWorkbooks.id
+                                            ? { ...doc, workbook_count: count }
+                                            : doc
+                                    ))
+                                }}
                             />
                         </div>
                         <DialogFooter>

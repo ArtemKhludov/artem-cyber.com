@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
 
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
+        const supabase = getSupabaseAdmin()
 
         // Помечаем покупку как неудачную
         const { error } = await supabase

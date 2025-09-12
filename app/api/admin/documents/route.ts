@@ -25,7 +25,9 @@ async function checkAdminAuth() {
             .gt('expires_at', new Date().toISOString())
             .single()
 
-        if (error || !session || session.users.role !== 'admin') {
+        const users = session?.users as any
+        const userRole = Array.isArray(users) ? users[0]?.role : users?.role
+        if (error || !session || userRole !== 'admin') {
             return { error: 'Недостаточно прав' }
         }
 
@@ -69,7 +71,24 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { title, description, price_rub, file_url, cover_url, page_count } = body
+        const {
+            title,
+            description,
+            course_description,
+            main_pdf_title,
+            main_pdf_description,
+            price_rub,
+            file_url,
+            cover_url,
+            page_count,
+            course_type,
+            video_preview_url,
+            course_duration_minutes,
+            video_count,
+            has_workbook,
+            has_audio,
+            has_videos
+        } = body
 
         if (!title || !price_rub || !file_url) {
             return NextResponse.json({ error: 'Необходимы поля: title, price_rub, file_url' }, { status: 400 })
@@ -82,10 +101,20 @@ export async function POST(request: NextRequest) {
             .insert({
                 title,
                 description: description || '',
+                course_description: course_description || '',
+                main_pdf_title: main_pdf_title || '',
+                main_pdf_description: main_pdf_description || '',
                 price_rub: parseInt(price_rub),
                 price: parseInt(price_rub), // дублирование для совместимости
                 file_url,
-                cover_url: cover_url || ''
+                cover_url: cover_url || '',
+                course_type: course_type || 'mini_course',
+                video_preview_url: video_preview_url || '',
+                course_duration_minutes: course_duration_minutes ? parseInt(course_duration_minutes) : null,
+                video_count: video_count ? parseInt(video_count) : null,
+                has_workbook: has_workbook || false,
+                has_audio: has_audio || false,
+                has_videos: has_videos || false
             })
             .select()
             .single()

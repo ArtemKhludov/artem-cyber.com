@@ -66,8 +66,7 @@ function SignupForm() {
     const result = await register(
       formData.email,
       formData.password,
-      formData.name,
-      formData.phone || undefined
+      formData.name
     )
 
     if (result.success) {

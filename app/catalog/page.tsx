@@ -102,9 +102,9 @@ function DocumentCard({ document, index }: { document: Document; index: number }
 
           {/* Price Tag */}
           <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-            {document.originalPrice ? (
+            {(document as any).originalPrice ? (
               <div className="text-center">
-                <div className="line-through text-xs opacity-75">{document.originalPrice.toLocaleString('ru-RU')} ₽</div>
+                <div className="line-through text-xs opacity-75">{(document as any).originalPrice.toLocaleString('ru-RU')} ₽</div>
                 <div>{document.price_rub.toLocaleString('ru-RU')} ₽</div>
               </div>
             ) : (
@@ -123,13 +123,40 @@ function DocumentCard({ document, index }: { document: Document; index: number }
             {document.description}
           </p>
 
+          {/* Информация о рабочих тетрадях */}
+          {document.has_workbook && (document.workbook_count || 0) > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center text-sm text-orange-600 bg-orange-50 rounded-lg px-3 py-2">
+                <FileText className="w-4 h-4 mr-2" />
+                <span className="font-medium">
+                  {document.workbook_count || 0} рабоч{(document.workbook_count || 0) === 1 ? 'ая тетрадь' :
+                    (document.workbook_count || 0) < 5 ? 'ие тетради' : 'ых тетрадей'}
+                </span>
+              </div>
+                    {document.workbooks && document.workbooks.length > 0 && (
+                        <div className="mt-2 text-xs text-gray-500">
+                            {document.workbooks.map((workbook, index) => (
+                                <div key={workbook.id} className="flex items-center justify-between">
+                                    <span className="truncate">
+                                        {index + 1}. {workbook.title}
+                                    </span>
+                                    {workbook.video_url && (
+                                        <span className="text-blue-600 ml-2">🎥</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="space-y-2">
             <Button
               asChild
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2 rounded-xl transition-all duration-300 transform hover:scale-[1.02]"
             >
-              <Link href={`/pdf/${document.id}`}>
+              <Link href={`/courses/${document.id}`}>
                 <Eye className="mr-2 w-4 h-4" />
                 Посмотреть подробнее
               </Link>

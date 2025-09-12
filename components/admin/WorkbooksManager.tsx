@@ -32,26 +32,30 @@ import {
     ArrowUp,
     ArrowDown,
     Eye,
-    EyeOff
+    EyeOff,
+    PlayCircle,
+    FileText
 } from 'lucide-react'
 import type { Workbook } from '@/types'
 
 interface WorkbooksManagerProps {
     documentId: string
     documentTitle: string
+    onWorkbooksChange?: (count: number) => void
 }
 
-export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManagerProps) {
+export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange }: WorkbooksManagerProps) {
     const [workbooks, setWorkbooks] = useState<Workbook[]>([])
     const [loading, setLoading] = useState(true)
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [editingWorkbook, setEditingWorkbook] = useState<Workbook | null>(null)
     const [uploading, setUploading] = useState<{ [key: string]: boolean }>({})
-    
+
     const [newWorkbook, setNewWorkbook] = useState({
         title: '',
         description: '',
         file_url: '',
+        video_url: '',
         order_index: 0
     })
 
@@ -64,7 +68,10 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
             const response = await fetch(`/api/admin/workbooks?documentId=${documentId}`)
             if (response.ok) {
                 const data = await response.json()
-                setWorkbooks(data.workbooks || [])
+                const workbooksList = data.workbooks || []
+                setWorkbooks(workbooksList)
+                // Уведомляем родительский компонент об изменении количества
+                onWorkbooksChange?.(workbooksList.length)
             } else {
                 console.error('Ошибка загрузки рабочих тетрадей')
             }
@@ -75,14 +82,20 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
         }
     }
 
-    const handleFileUpload = async (file: File, workbookId?: string) => {
-        const uploadKey = workbookId || 'new'
+    const handleFileUpload = async (file: File, workbookId?: string, fileType: 'pdf' | 'video' = 'pdf') => {
+        const uploadKey = workbookId ? `${workbookId}_${fileType}` : `new_${fileType}`
         setUploading(prev => ({ ...prev, [uploadKey]: true }))
-        
+
         try {
             const formData = new FormData()
             formData.append('file', file)
-            formData.append('path', `courses/${documentTitle.toLowerCase().replace(/[^a-z0-9]/g, '-')}/workbooks/workbook-${workbooks.length + 1}.pdf`)
+
+            // Определяем путь и расширение файла
+            const fileExtension = fileType === 'pdf' ? '.pdf' : '.mp4'
+            const fileName = fileType === 'pdf' ? 'workbook' : 'video'
+            const path = `courses/${documentTitle.toLowerCase().replace(/[^a-z0-9]/g, '-')}/workbooks/${fileName}-${workbooks.length + 1}${fileExtension}`
+
+            formData.append('path', path)
             formData.append('bucket', 'course-materials')
 
             const response = await fetch('/api/storage/upload', {
@@ -95,9 +108,17 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                 const publicUrl = data.url
 
                 if (workbookId && editingWorkbook) {
-                    setEditingWorkbook({ ...editingWorkbook, file_url: publicUrl })
+                    if (fileType === 'pdf') {
+                        setEditingWorkbook({ ...editingWorkbook, file_url: publicUrl })
+                    } else {
+                        setEditingWorkbook({ ...editingWorkbook, video_url: publicUrl })
+                    }
                 } else {
-                    setNewWorkbook({ ...newWorkbook, file_url: publicUrl })
+                    if (fileType === 'pdf') {
+                        setNewWorkbook({ ...newWorkbook, file_url: publicUrl })
+                    } else {
+                        setNewWorkbook({ ...newWorkbook, video_url: publicUrl })
+                    }
                 }
             } else {
                 alert('Ошибка загрузки файла')
@@ -125,11 +146,14 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
 
             if (response.ok) {
                 const data = await response.json()
-                setWorkbooks([...workbooks, data.workbook])
+                const newWorkbooksList = [...workbooks, data.workbook]
+                setWorkbooks(newWorkbooksList)
+                onWorkbooksChange?.(newWorkbooksList.length)
                 setNewWorkbook({
                     title: '',
                     description: '',
                     file_url: '',
+                    video_url: '',
                     order_index: 0
                 })
                 setIsAddDialogOpen(false)
@@ -180,7 +204,9 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
             })
 
             if (response.ok) {
-                setWorkbooks(workbooks.filter(w => w.id !== id))
+                const newWorkbooksList = workbooks.filter(w => w.id !== id)
+                setWorkbooks(newWorkbooksList)
+                onWorkbooksChange?.(newWorkbooksList.length)
             } else {
                 const error = await response.json()
                 alert(`Ошибка: ${error.error}`)
@@ -227,7 +253,7 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
         if (newIndex < 0 || newIndex >= workbooks.length) return
 
         const targetWorkbook = workbooks[newIndex]
-        
+
         try {
             // Обновляем порядок обеих рабочих тетрадей
             await Promise.all([
@@ -294,7 +320,7 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                                     placeholder="Название рабочей тетради"
                                 />
                             </div>
-                            
+
                             <div className="grid gap-2">
                                 <Label htmlFor="workbook-description">Описание</Label>
                                 <Textarea
@@ -320,7 +346,7 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                                         onChange={(e) => {
                                             const file = e.target.files?.[0]
                                             if (file) {
-                                                handleFileUpload(file)
+                                                handleFileUpload(file, undefined, 'pdf')
                                             }
                                         }}
                                         className="hidden"
@@ -330,15 +356,53 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                                         type="button"
                                         variant="outline"
                                         onClick={() => document.getElementById('workbook-file-upload')?.click()}
-                                        disabled={uploading['new']}
+                                        disabled={uploading['new_pdf']}
                                     >
-                                        {uploading['new'] ? (
+                                        {uploading['new_pdf'] ? (
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                                         ) : (
                                             <Upload className="h-4 w-4" />
                                         )}
                                     </Button>
                                 </div>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label>Видео-объяснение (опционально)</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={newWorkbook.video_url}
+                                        onChange={(e) => setNewWorkbook({ ...newWorkbook, video_url: e.target.value })}
+                                        placeholder="URL видео-объяснения"
+                                    />
+                                    <input
+                                        type="file"
+                                        accept="video/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0]
+                                            if (file) {
+                                                handleFileUpload(file, undefined, 'video')
+                                            }
+                                        }}
+                                        className="hidden"
+                                        id="workbook-video-upload"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => document.getElementById('workbook-video-upload')?.click()}
+                                        disabled={uploading['new_video']}
+                                    >
+                                        {uploading['new_video'] ? (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                        ) : (
+                                            <Upload className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    Видео будет отображаться перед рабочей тетрадью для пользователей
+                                </p>
                             </div>
                         </div>
                         <DialogFooter>
@@ -368,6 +432,7 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                                 <TableHead>Порядок</TableHead>
                                 <TableHead>Название</TableHead>
                                 <TableHead>Описание</TableHead>
+                                <TableHead>Материалы</TableHead>
                                 <TableHead>Статус</TableHead>
                                 <TableHead>Действия</TableHead>
                             </TableRow>
@@ -401,6 +466,26 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                                     <TableCell>
                                         <div className="text-sm text-gray-600 max-w-xs truncate">
                                             {workbook.description || 'Без описания'}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1">
+                                                <FileText className="h-4 w-4 text-green-600" />
+                                                {workbook.file_url ? (
+                                                    <span className="text-xs text-green-600">PDF</span>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400">Нет PDF</span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <PlayCircle className="h-4 w-4 text-blue-600" />
+                                                {workbook.video_url ? (
+                                                    <span className="text-xs text-blue-600">Видео</span>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400">Нет видео</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -467,7 +552,7 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                                     onChange={(e) => setEditingWorkbook({ ...editingWorkbook, title: e.target.value })}
                                 />
                             </div>
-                            
+
                             <div className="grid gap-2">
                                 <Label htmlFor="edit-workbook-description">Описание</Label>
                                 <Textarea
@@ -492,7 +577,7 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                                         onChange={(e) => {
                                             const file = e.target.files?.[0]
                                             if (file) {
-                                                handleFileUpload(file, editingWorkbook.id)
+                                                handleFileUpload(file, editingWorkbook.id, 'pdf')
                                             }
                                         }}
                                         className="hidden"
@@ -502,15 +587,53 @@ export function WorkbooksManager({ documentId, documentTitle }: WorkbooksManager
                                         type="button"
                                         variant="outline"
                                         onClick={() => document.getElementById('edit-workbook-file-upload')?.click()}
-                                        disabled={uploading[editingWorkbook.id]}
+                                        disabled={uploading[`${editingWorkbook.id}_pdf`]}
                                     >
-                                        {uploading[editingWorkbook.id] ? (
+                                        {uploading[`${editingWorkbook.id}_pdf`] ? (
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                                         ) : (
                                             <Upload className="h-4 w-4" />
                                         )}
                                     </Button>
                                 </div>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label>Видео-объяснение</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={editingWorkbook.video_url || ''}
+                                        onChange={(e) => setEditingWorkbook({ ...editingWorkbook, video_url: e.target.value })}
+                                        placeholder="URL видео-объяснения"
+                                    />
+                                    <input
+                                        type="file"
+                                        accept="video/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0]
+                                            if (file) {
+                                                handleFileUpload(file, editingWorkbook.id, 'video')
+                                            }
+                                        }}
+                                        className="hidden"
+                                        id="edit-workbook-video-upload"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => document.getElementById('edit-workbook-video-upload')?.click()}
+                                        disabled={uploading[`${editingWorkbook.id}_video`]}
+                                    >
+                                        {uploading[`${editingWorkbook.id}_video`] ? (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                        ) : (
+                                            <Upload className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    Видео будет отображаться перед рабочей тетрадью для пользователей
+                                </p>
                             </div>
                         </div>
                         <DialogFooter>

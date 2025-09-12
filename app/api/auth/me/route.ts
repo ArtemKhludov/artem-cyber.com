@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         const { data: profile, error: profileError } = await supabase
             .from('user_profiles')
             .select('role')
-            .eq('email', session.users.email)
+            .eq('email', (session.users as any)?.email)
             .single()
 
         const userRole = profile?.role || 'customer'
