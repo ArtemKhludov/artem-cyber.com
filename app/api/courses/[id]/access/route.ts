@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { cookies } from 'next/headers'
 
 export async function GET(
   request: NextRequest,
@@ -7,12 +8,12 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params
-    
-    // Получаем заголовки авторизации
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = request.headers.get('x-session-token')
-    
-    if (!authHeader && !sessionToken) {
+
+    // Получаем токен сессии из cookies
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get('session_token')?.value
+
+    if (!sessionToken) {
       return NextResponse.json(
         { error: 'Необходима авторизация' },
         { status: 401 }
@@ -20,35 +21,32 @@ export async function GET(
     }
 
     const supabase = getSupabaseAdmin()
-    
-    // Проверяем авторизацию пользователя
-    let user = null
-    if (sessionToken) {
-      const { data: session } = await supabase
-        .from('user_sessions')
-        .select(`
-          user_id,
-          users (
-            id,
-            email,
-            role
-          )
-        `)
-        .eq('session_token', sessionToken)
-        .gt('expires_at', new Date().toISOString())
-        .single()
-      
-      if (session?.users) {
-        user = Array.isArray(session.users) ? session.users[0] : session.users
-      }
-    }
 
-    if (!user) {
+    // Проверяем сессию пользователя
+    const { data: session, error: sessionError } = await supabase
+      .from('user_sessions')
+      .select(`
+        user_id,
+        expires_at,
+        users (
+          id,
+          email,
+          name,
+          role
+        )
+      `)
+      .eq('session_token', sessionToken)
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    if (sessionError || !session) {
       return NextResponse.json(
         { error: 'Пользователь не авторизован' },
         { status: 401 }
       )
     }
+
+    const user = Array.isArray(session.users) ? session.users[0] : session.users
 
     // Проверяем, существует ли курс
     const { data: course, error: courseError } = await supabase
@@ -82,7 +80,7 @@ export async function GET(
 
     // Получаем данные о материалах курса
     const documentIds = [id]
-    
+
     // Получаем рабочие тетради
     const { data: workbooks } = await supabase
       .from('course_workbooks')

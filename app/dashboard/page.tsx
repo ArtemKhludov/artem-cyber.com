@@ -89,7 +89,9 @@ export default function DashboardPage() {
 
   const loadUserData = async () => {
     try {
-      const response = await fetch('/api/user/dashboard')
+      const response = await fetch('/api/user/dashboard', {
+        credentials: 'include'
+      })
 
       if (response.ok) {
         const data = await response.json()

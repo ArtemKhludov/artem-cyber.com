@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Button } from '@/components/ui/button'
@@ -13,10 +13,51 @@ import {
     ArrowLeft,
     Clock,
     CheckCircle,
-    Lock
+    Lock,
+    Star,
+    Trophy,
+    TrendingUp,
+    Award,
+    Zap
 } from 'lucide-react'
 import Link from 'next/link'
 import type { Document, Workbook, CourseVideo, CourseAudio } from '@/types'
+
+interface CourseProgress {
+    user_email: string
+    course_id: string
+    material_type: string
+    material_id: string
+    material_title: string
+    status: 'not_started' | 'in_progress' | 'completed'
+    progress_percentage: number
+    time_spent: number
+    completed_at: string | null
+}
+
+interface CourseStats {
+    total_materials: number
+    completed_materials: number
+    completion_percentage: number
+    total_time_spent: number
+}
+
+interface UserPoints {
+    total_points: number
+    current_level: number
+    points_to_next_level: number
+    streak_days: number
+}
+
+interface Achievement {
+    id: string
+    achievement_type: string
+    achievement_title: string
+    achievement_description: string
+    points_awarded: number
+    icon: string
+    earned_at: string
+}
 
 export default function CoursePlayer() {
     const params = useParams()
@@ -28,7 +69,36 @@ export default function CoursePlayer() {
     const [error, setError] = useState<string | null>(null)
     const [activeVideo, setActiveVideo] = useState<string | null>(null)
     const [activeAudio, setActiveAudio] = useState<string | null>(null)
-    const [completedItems, setCompletedItems] = useState<Set<string>>(new Set())
+    const [courseProgress, setCourseProgress] = useState<CourseProgress[]>([])
+    const [courseStats, setCourseStats] = useState<CourseStats | null>(null)
+    const [userPoints, setUserPoints] = useState<UserPoints | null>(null)
+    const [recentAchievements, setRecentAchievements] = useState<Achievement[]>([])
+    const [showAchievement, setShowAchievement] = useState<Achievement | null>(null)
+    const [updatingProgress, setUpdatingProgress] = useState<string | null>(null)
+
+    // Функция для загрузки прогресса курса
+    const loadCourseProgress = useCallback(async () => {
+        try {
+            const response = await fetch(`/api/progress?courseId=${courseId}`, {
+                credentials: 'include'
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                setCourseProgress(data.courseProgress || [])
+                setCourseStats(data.courseStats)
+                setUserPoints(data.userPoints)
+                setRecentAchievements(data.newAchievements || [])
+                
+                // Показываем новое достижение
+                if (data.newAchievements && data.newAchievements.length > 0) {
+                    setShowAchievement(data.newAchievements[0])
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки прогресса:', error)
+        }
+    }, [courseId])
 
     useEffect(() => {
         const checkAccess = async () => {
@@ -36,20 +106,8 @@ export default function CoursePlayer() {
                 setLoading(true)
                 setError(null)
 
-                const sessionToken = document.cookie
-                    .split('; ')
-                    .find(row => row.startsWith('session_token='))
-                    ?.split('=')[1]
-
-                if (!sessionToken) {
-                    setError('Необходима авторизация')
-                    return
-                }
-
                 const response = await fetch(`/api/courses/${courseId}/access`, {
-                    headers: {
-                        'x-session-token': sessionToken
-                    }
+                    credentials: 'include'
                 })
 
                 if (!response.ok) {
@@ -70,6 +128,9 @@ export default function CoursePlayer() {
                 setCourse(data.course)
                 setUser(data.user)
 
+                // Загружаем прогресс курса
+                await loadCourseProgress()
+
             } catch (err) {
                 console.error('Error checking course access:', err)
                 setError('Ошибка загрузки курса')
@@ -81,10 +142,73 @@ export default function CoursePlayer() {
         if (courseId) {
             checkAccess()
         }
-    }, [courseId])
+    }, [courseId, loadCourseProgress])
 
-    const markAsCompleted = (itemId: string, itemType: string) => {
-        setCompletedItems(prev => new Set([...prev, `${itemType}_${itemId}`]))
+    // Функция для обновления прогресса материала
+    const updateMaterialProgress = async (
+        materialId: string, 
+        materialType: string, 
+        materialTitle: string, 
+        status: 'not_started' | 'in_progress' | 'completed',
+        progressPercentage: number = 100,
+        timeSpent: number = 0
+    ) => {
+        const progressKey = `${materialType}_${materialId}`
+        setUpdatingProgress(progressKey)
+
+        try {
+            const response = await fetch('/api/progress', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    courseId,
+                    materialType,
+                    materialId,
+                    materialTitle,
+                    status,
+                    progressPercentage,
+                    timeSpent
+                })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                
+                // Обновляем локальное состояние
+                setCourseStats(data.stats)
+                setUserPoints(data.userPoints)
+                
+                // Показываем новое достижение
+                if (data.newAchievements && data.newAchievements.length > 0) {
+                    setShowAchievement(data.newAchievements[0])
+                }
+                
+                // Перезагружаем прогресс
+                await loadCourseProgress()
+            } else {
+                console.error('Ошибка обновления прогресса:', await response.text())
+            }
+        } catch (error) {
+            console.error('Ошибка обновления прогресса:', error)
+        } finally {
+            setUpdatingProgress(null)
+        }
+    }
+
+    // Функция для проверки статуса материала
+    const getMaterialStatus = (materialId: string, materialType: string): 'not_started' | 'in_progress' | 'completed' => {
+        const progress = courseProgress.find(p => 
+            p.material_id === materialId && p.material_type === materialType
+        )
+        return progress?.status || 'not_started'
+    }
+
+    // Функция для проверки завершенности материала
+    const isMaterialCompleted = (materialId: string, materialType: string): boolean => {
+        return getMaterialStatus(materialId, materialType) === 'completed'
     }
 
     const handleDownload = (url: string, filename: string) => {
@@ -98,11 +222,26 @@ export default function CoursePlayer() {
     }
 
     const getTotalItems = (): number => {
-        let total = 1 // основной PDF
-        if (course?.workbooks) total += course.workbooks.length
-        if (course?.videos) total += course.videos.length
-        if (course?.audio) total += course.audio.length
-        return total
+        return courseStats?.total_materials || 0
+    }
+
+    const getCompletedItems = (): number => {
+        return courseStats?.completed_materials || 0
+    }
+
+    const getCompletionPercentage = (): number => {
+        return courseStats?.completion_percentage || 0
+    }
+
+    const getTotalStudyTime = (): string => {
+        const totalSeconds = courseStats?.total_time_spent || 0
+        const hours = Math.floor(totalSeconds / 3600)
+        const minutes = Math.floor((totalSeconds % 3600) / 60)
+        
+        if (hours > 0) {
+            return `${hours}ч ${minutes}м`
+        }
+        return `${minutes}м`
     }
 
     if (loading) {
@@ -129,13 +268,13 @@ export default function CoursePlayer() {
                         </p>
                         <div className="space-x-4">
                             <Button asChild>
-                                <Link href="/courses">
+                                <Link href="/catalog">
                                     <ArrowLeft className="w-4 h-4 mr-2" />
                                     К каталогу
                                 </Link>
                             </Button>
                             <Button asChild variant="outline">
-                                <Link href="/courses">
+                                <Link href="/catalog">
                                     Посмотреть другие курсы
                                 </Link>
                             </Button>
@@ -168,9 +307,16 @@ export default function CoursePlayer() {
                                     <Clock className="w-4 h-4" />
                                     <span>Куплен: {course.purchase_date ? new Date(course.purchase_date).toLocaleDateString('ru-RU') : 'Неизвестно'}</span>
                                 </div>
-                                <div className="text-sm text-gray-600">
-                                    Прогресс: {completedItems.size} из {getTotalItems()} материалов
+                                <div className="text-sm text-gray-600 mb-2">
+                                    Прогресс: {getCompletedItems()} из {getTotalItems()} материалов ({getCompletionPercentage()}%)
                                 </div>
+                                {userPoints && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Star className="w-4 h-4 text-yellow-500" />
+                                        <span className="text-yellow-600 font-medium">{userPoints.total_points} баллов</span>
+                                        <span className="text-gray-500">• Уровень {userPoints.current_level}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -185,7 +331,7 @@ export default function CoursePlayer() {
                                 <div className="flex items-center gap-3 mb-4">
                                     <FileText className="w-6 h-6 text-blue-600" />
                                     <h2 className="text-xl font-semibold text-gray-900">Основной материал</h2>
-                                    {completedItems.has(`pdf_main`) && (
+                                    {isMaterialCompleted('main', 'main_pdf') && (
                                         <CheckCircle className="w-5 h-5 text-green-500" />
                                     )}
                                 </div>
@@ -196,7 +342,6 @@ export default function CoursePlayer() {
                                     <Button
                                         onClick={() => {
                                             handleDownload(course.file_url, `${course.title}.pdf`)
-                                            markAsCompleted('main', 'pdf')
                                         }}
                                         className="bg-blue-600 hover:bg-blue-700 text-white"
                                     >
@@ -204,10 +349,38 @@ export default function CoursePlayer() {
                                         Скачать PDF
                                     </Button>
                                     <Button
-                                        onClick={() => markAsCompleted('main', 'pdf')}
+                                        onClick={() => updateMaterialProgress(
+                                            'main', 
+                                            'main_pdf', 
+                                            `${course.title} - Основной PDF`,
+                                            isMaterialCompleted('main', 'main_pdf') ? 'not_started' : 'completed',
+                                            100,
+                                            0
+                                        )}
                                         variant="outline"
+                                        disabled={updatingProgress === 'main_pdf_main'}
+                                        className={isMaterialCompleted('main', 'main_pdf') ? 'bg-green-50 border-green-200 text-green-700' : ''}
                                     >
-                                        Отметить как изученное
+                                        {updatingProgress === 'main_pdf_main' ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                Сохранение...
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {isMaterialCompleted('main', 'main_pdf') ? (
+                                                    <>
+                                                        <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                                                        Изучено
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Zap className="w-4 h-4 mr-2" />
+                                                        Отметить как изученное
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </div>
@@ -228,7 +401,7 @@ export default function CoursePlayer() {
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <h3 className="font-medium text-gray-900">{workbook.title}</h3>
-                                                            {completedItems.has(`workbook_${workbook.id}`) && (
+                                                            {isMaterialCompleted(workbook.id, 'workbook') && (
                                                                 <CheckCircle className="w-4 h-4 text-green-500" />
                                                             )}
                                                         </div>
@@ -240,7 +413,6 @@ export default function CoursePlayer() {
                                                         <Button
                                                             onClick={() => {
                                                                 handleDownload(workbook.file_url, `${workbook.title}.pdf`)
-                                                                markAsCompleted(workbook.id, 'workbook')
                                                             }}
                                                             size="sm"
                                                             className="bg-green-600 hover:bg-green-700 text-white"
@@ -249,11 +421,32 @@ export default function CoursePlayer() {
                                                             Скачать
                                                         </Button>
                                                         <Button
-                                                            onClick={() => markAsCompleted(workbook.id, 'workbook')}
+                                                            onClick={() => updateMaterialProgress(
+                                                                workbook.id, 
+                                                                'workbook', 
+                                                                workbook.title,
+                                                                isMaterialCompleted(workbook.id, 'workbook') ? 'not_started' : 'completed',
+                                                                100,
+                                                                0
+                                                            )}
                                                             size="sm"
                                                             variant="outline"
+                                                            disabled={updatingProgress === `workbook_${workbook.id}`}
+                                                            className={isMaterialCompleted(workbook.id, 'workbook') ? 'bg-green-50 border-green-200 text-green-700' : ''}
                                                         >
-                                                            Изучено
+                                                            {updatingProgress === `workbook_${workbook.id}` ? (
+                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                            ) : isMaterialCompleted(workbook.id, 'workbook') ? (
+                                                                <>
+                                                                    <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                                                                    Изучено
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Zap className="w-4 h-4 mr-1" />
+                                                                    Изучено
+                                                                </>
+                                                            )}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -373,31 +566,100 @@ export default function CoursePlayer() {
                             {/* Прогресс */}
                             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Прогресс курса</h3>
+                                
+                                {/* Прогресс-бар */}
+                                <div className="mb-4">
+                                    <div className="flex justify-between text-sm mb-2">
+                                        <span>Общий прогресс</span>
+                                        <span>{getCompletionPercentage()}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div 
+                                            className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
+                                            style={{ width: `${getCompletionPercentage()}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                {/* Статистика */}
+                                <div className="grid grid-cols-2 gap-4 mb-4 text-center">
+                                    <div className="bg-blue-50 rounded-lg p-3">
+                                        <div className="text-lg font-bold text-blue-600">{getCompletedItems()}</div>
+                                        <div className="text-xs text-blue-500">Завершено</div>
+                                    </div>
+                                    <div className="bg-green-50 rounded-lg p-3">
+                                        <div className="text-lg font-bold text-green-600">{getTotalStudyTime()}</div>
+                                        <div className="text-xs text-green-500">Время изучения</div>
+                                    </div>
+                                </div>
+
+                                {/* Детальный прогресс */}
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-sm">
                                         <span>Основной материал</span>
-                                        <span>{completedItems.has('pdf_main') ? '✓' : '○'}</span>
+                                        <span className={isMaterialCompleted('main', 'main_pdf') ? 'text-green-500' : 'text-gray-400'}>
+                                            {isMaterialCompleted('main', 'main_pdf') ? '✓' : '○'}
+                                        </span>
                                     </div>
                                     {course.workbooks?.map((workbook: Workbook) => (
                                         <div key={workbook.id} className="flex justify-between text-sm">
                                             <span className="truncate">{workbook.title}</span>
-                                            <span>{completedItems.has(`workbook_${workbook.id}`) ? '✓' : '○'}</span>
+                                            <span className={isMaterialCompleted(workbook.id, 'workbook') ? 'text-green-500' : 'text-gray-400'}>
+                                                {isMaterialCompleted(workbook.id, 'workbook') ? '✓' : '○'}
+                                            </span>
                                         </div>
                                     ))}
                                     {course.videos?.map((video: CourseVideo) => (
                                         <div key={video.id} className="flex justify-between text-sm">
                                             <span className="truncate">{video.title}</span>
-                                            <span>{completedItems.has(`video_${video.id}`) ? '✓' : '○'}</span>
+                                            <span className={isMaterialCompleted(video.id, 'video') ? 'text-green-500' : 'text-gray-400'}>
+                                                {isMaterialCompleted(video.id, 'video') ? '✓' : '○'}
+                                            </span>
                                         </div>
                                     ))}
                                     {course.audio?.map((audioItem: CourseAudio) => (
                                         <div key={audioItem.id} className="flex justify-between text-sm">
                                             <span className="truncate">{audioItem.title}</span>
-                                            <span>{completedItems.has(`audio_${audioItem.id}`) ? '✓' : '○'}</span>
+                                            <span className={isMaterialCompleted(audioItem.id, 'audio') ? 'text-green-500' : 'text-gray-400'}>
+                                                {isMaterialCompleted(audioItem.id, 'audio') ? '✓' : '○'}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Баллы и достижения */}
+                            {userPoints && (
+                                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                        <Star className="w-5 h-5 text-yellow-500" />
+                                        Ваши баллы
+                                    </h3>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Всего баллов:</span>
+                                            <span className="font-bold text-yellow-600">{userPoints.total_points}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Уровень:</span>
+                                            <span className="font-bold text-blue-600">{userPoints.current_level}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Серия дней:</span>
+                                            <span className="font-bold text-green-600">{userPoints.streak_days}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                                            <div 
+                                                className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full"
+                                                style={{ width: `${((userPoints.total_points % 100) / 100) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                        <div className="text-xs text-center text-gray-500">
+                                            До следующего уровня: {userPoints.points_to_next_level} баллов
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Информация о курсе */}
                             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
@@ -469,6 +731,31 @@ export default function CoursePlayer() {
                                 className="w-full"
                                 autoPlay
                             />
+                        </div>
+                    </div>
+                )}
+
+                {/* Уведомление о достижении */}
+                {showAchievement && (
+                    <div className="fixed top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl shadow-2xl p-6 max-w-sm z-50 animate-bounce">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="text-3xl">{showAchievement.icon}</div>
+                            <div>
+                                <h4 className="font-bold text-white text-lg">Достижение получено!</h4>
+                                <p className="text-yellow-100 text-sm">+{showAchievement.points_awarded} баллов</p>
+                            </div>
+                            <Button
+                                onClick={() => setShowAchievement(null)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-white hover:bg-white/20 ml-auto"
+                            >
+                                ✕
+                            </Button>
+                        </div>
+                        <div className="text-white">
+                            <h5 className="font-semibold mb-1">{showAchievement.achievement_title}</h5>
+                            <p className="text-sm text-yellow-100">{showAchievement.achievement_description}</p>
                         </div>
                     </div>
                 )}

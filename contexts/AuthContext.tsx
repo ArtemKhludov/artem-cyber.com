@@ -6,7 +6,7 @@ interface User {
   id: string
   email: string
   name: string
-  role: 'customer' | 'admin'
+  role: 'user' | 'admin'
   created_at: string
   last_activity?: string
 }
@@ -28,7 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSession = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/me')
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include'
+      })
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
@@ -110,7 +112,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Дополнительно проверяем сессию для уверенности
         setTimeout(async () => {
           try {
-            const sessionResponse = await fetch('/api/auth/me')
+            const sessionResponse = await fetch('/api/auth/me', {
+              credentials: 'include'
+            })
             if (sessionResponse.ok) {
               const sessionData = await sessionResponse.json()
               setUser(sessionData)
@@ -131,7 +135,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
       setUser(null)
     } catch (error) {
       console.error('Logout failed:', error)

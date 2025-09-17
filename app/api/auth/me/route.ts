@@ -35,14 +35,8 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Недействительная сессия' }, { status: 401 })
         }
 
-        // Получаем роль пользователя из user_profiles
-        const { data: profile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('role')
-            .eq('email', (session.users as any)?.email)
-            .single()
-
-        const userRole = profile?.role || 'customer'
+        // Получаем роль пользователя из таблицы users
+        const userRole = (session.users as any)?.role || 'user'
 
         // Проверяем время неактивности (30 минут) - только если поле существует
         if (session.last_activity) {
