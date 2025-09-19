@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { cookies } from 'next/headers'
+import {
+    SESSION_COOKIE_NAME,
+    attachSessionCookie,
+    getSessionDurations,
+    revokeSessionToken
+} from '@/lib/session'
+import { getClientIp, getUserAgent, verifyRequestOrigin } from '@/lib/security'
 
 export async function POST(request: NextRequest) {
     try {
-        const { access_token, email, name, picture } = await request.json()
+        try {
+            verifyRequestOrigin(request)
+        } catch (error) {
+            if (error instanceof Error) {
+                return NextResponse.json({ error: error.message }, { status: 403 })
+            }
+            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+        }
+
+        const { access_token, email, name, picture, remember = true } = await request.json()
 
         if (!access_token || !email || !name) {
             return NextResponse.json({ error: 'Недостаточно данных для авторизации' }, { status: 400 })
@@ -69,16 +85,27 @@ export async function POST(request: NextRequest) {
             user = newUser
         }
 
-        // Создаем сессию
+        const rememberMe = Boolean(remember)
+        const { idleMs } = getSessionDurations(rememberMe)
         const sessionToken = crypto.randomUUID()
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 дней
+        const now = new Date()
+        const expiresAt = new Date(now.getTime() + idleMs)
+        const clientIp = getClientIp(request)
+        const userAgent = getUserAgent(request)
+        const csrfSecret = crypto.randomUUID()
 
         const { error: sessionError } = await supabase
             .from('user_sessions')
             .insert({
                 user_id: user.id,
                 session_token: sessionToken,
-                expires_at: expiresAt.toISOString()
+                expires_at: expiresAt.toISOString(),
+                last_activity: now.toISOString(),
+                revoked_at: null,
+                remember_me: rememberMe,
+                ip_address: clientIp ?? null,
+                user_agent: userAgent ?? null,
+                csrf_secret: csrfSecret
             })
 
         if (sessionError) {
@@ -86,14 +113,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Ошибка создания сессии' }, { status: 500 })
         }
 
-        // Устанавливаем cookie
         const cookieStore = await cookies()
-        cookieStore.set('session_token', sessionToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60 // 7 дней
-        })
+        const previousToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
+
+        if (previousToken && previousToken !== sessionToken) {
+            await revokeSessionToken(previousToken, { supabase })
+        }
+
+        const cookieMaxAgeSeconds = Math.max(1, Math.floor((expiresAt.getTime() - now.getTime()) / 1000))
 
         // Отправка уведомления в Telegram
         try {
@@ -126,7 +153,7 @@ export async function POST(request: NextRequest) {
             console.error('Telegram error:', telegramError)
         }
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             message: 'Успешная авторизация через Google',
             user: {
                 id: user.id,
@@ -136,6 +163,12 @@ export async function POST(request: NextRequest) {
                 avatar_url: user.avatar_url
             }
         })
+
+        response.headers.set('X-Session-Expires-At', expiresAt.toISOString())
+        response.headers.set('X-Session-Remember-Me', rememberMe ? '1' : '0')
+        attachSessionCookie(response, sessionToken, cookieMaxAgeSeconds)
+
+        return response
 
     } catch (error) {
         console.error('Google OAuth error:', error)

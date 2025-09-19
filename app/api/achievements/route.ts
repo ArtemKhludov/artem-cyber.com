@@ -1,45 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { getSupabaseAdmin } from '@/lib/supabase'
+import {
+  SESSION_COOKIE_NAME,
+  attachSessionCookie,
+  clearSessionCookie,
+  getSessionErrorMessage,
+  validateSessionToken
+} from '@/lib/session'
+import { verifyRequestOrigin } from '@/lib/security'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-// Получение достижений пользователя
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const sessionToken = cookieStore.get('session_token')?.value
+    const supabase = getSupabaseAdmin()
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
+    const validation = await validateSessionToken(sessionToken, { supabase })
 
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 })
+    if (!validation.session || !validation.user) {
+      const response = NextResponse.json({ error: getSessionErrorMessage(validation.reason) }, { status: 401 })
+
+      if (sessionToken) {
+        clearSessionCookie(response)
+      }
+
+      return response
     }
 
-    // Получаем информацию о пользователе из сессии
-    const { data: session, error: sessionError } = await supabase
-      .from('user_sessions')
-      .select(`
-        user_id,
-        users!inner (
-          email,
-          name,
-          role
-        )
-      `)
-      .eq('session_token', sessionToken)
-      .eq('expires_at', '>', new Date().toISOString())
-      .single()
-
-    if (sessionError || !session) {
-      return NextResponse.json({ error: 'Недействительная сессия' }, { status: 401 })
-    }
-
-    const userEmail = (session.users as any).email
+    const userEmail = validation.user.email
     const includeRead = request.nextUrl.searchParams.get('includeRead') === 'true'
 
-    // Получаем достижения пользователя
     let query = supabase
       .from('user_achievements')
       .select('*')
@@ -47,7 +37,6 @@ export async function GET(request: NextRequest) {
       .order('earned_at', { ascending: false })
 
     if (!includeRead) {
-      // Получаем только новые достижения (за последние 24 часа)
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       query = query.gte('earned_at', yesterday)
     }
@@ -59,7 +48,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Ошибка получения достижений' }, { status: 500 })
     }
 
-    // Получаем уведомления о достижениях
     const { data: notifications, error: notificationsError } = await supabase
       .from('achievement_notifications')
       .select('*')
@@ -67,49 +55,54 @@ export async function GET(request: NextRequest) {
       .eq('is_read', false)
       .order('created_at', { ascending: false })
 
-    return NextResponse.json({
+    if (notificationsError) {
+      console.error('Ошибка получения уведомлений о достижениях:', notificationsError)
+    }
+
+    const response = NextResponse.json({
       achievements: achievements || [],
       notifications: notifications || []
     })
 
+    if (validation.shouldRefreshCookie && validation.cookieMaxAgeSeconds) {
+      attachSessionCookie(response, validation.session.session_token, validation.cookieMaxAgeSeconds)
+    }
+
+    return response
   } catch (error) {
     console.error('Ошибка API достижений:', error)
     return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
   }
 }
 
-// Отметка уведомлений как прочитанных
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const sessionToken = cookieStore.get('session_token')?.value
-
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 })
+    try {
+      verifyRequestOrigin(request)
+    } catch (error) {
+      if (error instanceof Error) {
+        return NextResponse.json({ error: error.message }, { status: 403 })
+      }
+      return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
     }
 
-    // Получаем информацию о пользователе из сессии
-    const { data: session, error: sessionError } = await supabase
-      .from('user_sessions')
-      .select(`
-        user_id,
-        users!inner (
-          email,
-          name,
-          role
-        )
-      `)
-      .eq('session_token', sessionToken)
-      .eq('expires_at', '>', new Date().toISOString())
-      .single()
+    const supabase = getSupabaseAdmin()
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
+    const validation = await validateSessionToken(sessionToken, { supabase })
 
-    if (sessionError || !session) {
-      return NextResponse.json({ error: 'Недействительная сессия' }, { status: 401 })
+    if (!validation.session || !validation.user) {
+      const response = NextResponse.json({ error: getSessionErrorMessage(validation.reason) }, { status: 401 })
+
+      if (sessionToken) {
+        clearSessionCookie(response)
+      }
+
+      return response
     }
 
-    const userEmail = (session.users as any).email
-    const body = await request.json()
-    const { action, notificationIds } = body
+    const userEmail = validation.user.email
+    const { action, notificationIds } = await request.json()
 
     if (action === 'markAsRead') {
       if (!notificationIds || !Array.isArray(notificationIds)) {
@@ -127,7 +120,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Ошибка обновления уведомлений' }, { status: 500 })
       }
 
-      return NextResponse.json({ success: true })
+      const response = NextResponse.json({ success: true })
+
+      if (validation.shouldRefreshCookie && validation.cookieMaxAgeSeconds) {
+        attachSessionCookie(response, validation.session.session_token, validation.cookieMaxAgeSeconds)
+      }
+
+      return response
     }
 
     if (action === 'markAllAsRead') {
@@ -142,11 +141,16 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Ошибка обновления уведомлений' }, { status: 500 })
       }
 
-      return NextResponse.json({ success: true })
+      const response = NextResponse.json({ success: true })
+
+      if (validation.shouldRefreshCookie && validation.cookieMaxAgeSeconds) {
+        attachSessionCookie(response, validation.session.session_token, validation.cookieMaxAgeSeconds)
+      }
+
+      return response
     }
 
     return NextResponse.json({ error: 'Неверное действие' }, { status: 400 })
-
   } catch (error) {
     console.error('Ошибка API обновления достижений:', error)
     return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })

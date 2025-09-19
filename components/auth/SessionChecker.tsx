@@ -7,32 +7,27 @@ export function SessionChecker() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const pathname = usePathname()
+    const current = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
 
     useEffect(() => {
         const checkSession = async () => {
             try {
-                const response = await fetch('/api/auth/me')
+                const response = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
 
                 if (response.ok) {
                     // Сессия валидна
                     if (pathname === '/auth/login' && searchParams.get('check_session') === 'true') {
-                        // На странице логина с проверкой - перенаправляем на dashboard
                         router.push('/dashboard')
                     }
                     // На других страницах ничего не делаем
                 } else {
-                    // Сессия невалидна - очищаем cookie
-                    document.cookie = 'session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-
-                    // Если мы на защищенной странице - перенаправляем на логин
                     if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-                        router.push('/auth/login')
+                        const redirect = `/auth/login?redirect=${encodeURIComponent(current)}`
+                        router.push(redirect)
                     }
                 }
             } catch (error) {
                 console.error('Ошибка проверки сессии:', error)
-                // При ошибке тоже очищаем cookie
-                document.cookie = 'session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
             }
         }
 

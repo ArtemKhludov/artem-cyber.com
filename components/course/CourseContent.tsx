@@ -62,6 +62,33 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
         window.document.body.removeChild(link)
     }
 
+    const toStoragePath = (fileUrl: string): string => {
+        try {
+            const noProto = fileUrl.replace(/^https?:\/\/[^/]+\/?/, '')
+            const match = noProto.match(/(?:^|\/)(course|courses)\/(.+)$/)
+            if (match) {
+                return `${match[1]}/${match[2]}`
+            }
+            const base = noProto.split('/')
+            const fileName = base[base.length - 1]
+            return `course/${document.id}/${fileName}`
+        } catch {
+            return `course/${document.id}/${encodeURIComponent(fileUrl)}`
+        }
+    }
+
+    const fetchSignedUrl = async (fileUrl: string): Promise<string> => {
+        const path = toStoragePath(fileUrl)
+        const res = await fetch(`/api/materials/signed-url?documentId=${encodeURIComponent(document.id)}&path=${encodeURIComponent(path)}`, {
+            credentials: 'include'
+        })
+        if (!res.ok) {
+            throw new Error('Access denied')
+        }
+        const data = await res.json()
+        return data.url as string
+    }
+
     return (
         <div className="space-y-6">
             {/* Основной PDF */}
@@ -75,7 +102,14 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                 </p>
                 {isPurchased ? (
                     <Button
-                        onClick={() => handleDownload(document.file_url, `${document.title}.pdf`)}
+                        onClick={async () => {
+                            try {
+                                const signed = await fetchSignedUrl(document.file_url)
+                                handleDownload(signed, `${document.title}.pdf`)
+                            } catch (e) {
+                                alert('Нет доступа к файлу')
+                            }
+                        }}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                         <Download className="w-4 h-4 mr-2" />
@@ -126,7 +160,14 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                             <div className="flex gap-2">
                                                 {isPurchased ? (
                                                     <Button
-                                                        onClick={() => handleDownload(workbook.file_url, `${workbook.title}.pdf`)}
+                                                        onClick={async () => {
+                                                            try {
+                                                                const signed = await fetchSignedUrl(workbook.file_url)
+                                                                handleDownload(signed, `${workbook.title}.pdf`)
+                                                            } catch {
+                                                                alert('Нет доступа к файлу')
+                                                            }
+                                                        }}
                                                         size="sm"
                                                         className="bg-green-600 hover:bg-green-700 text-white"
                                                     >
@@ -157,7 +198,14 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                             </ul>
                             {isPurchased ? (
                                 <Button
-                                    onClick={() => handleDownload(document.workbook_url!, `${document.title}-workbook.pdf`)}
+                                    onClick={async () => {
+                                        try {
+                                            const signed = await fetchSignedUrl(document.workbook_url!)
+                                            handleDownload(signed, `${document.title}-workbook.pdf`)
+                                        } catch {
+                                            alert('Нет доступа к файлу')
+                                        }
+                                    }}
                                     className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                     <Download className="w-4 h-4 mr-2" />
@@ -213,7 +261,14 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                     Смотреть
                                                 </Button>
                                                 <Button
-                                                    onClick={() => handleDownload(video.file_url, `${video.title || document.title}-video-${index + 1}.mp4`)}
+                                                    onClick={async () => {
+                                                        try {
+                                                            const signed = await fetchSignedUrl(video.file_url)
+                                                            handleDownload(signed, `${video.title || document.title}-video-${index + 1}.mp4`)
+                                                        } catch {
+                                                            alert('Нет доступа к файлу')
+                                                        }
+                                                    }}
                                                     size="sm"
                                                     variant="outline"
                                                 >
@@ -281,7 +336,14 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                     Слушать
                                                 </Button>
                                                 <Button
-                                                    onClick={() => handleDownload(audioItem.file_url, `${audioItem.title || document.title}-audio-${index + 1}.mp3`)}
+                                                    onClick={async () => {
+                                                        try {
+                                                            const signed = await fetchSignedUrl(audioItem.file_url)
+                                                            handleDownload(signed, `${audioItem.title || document.title}-audio-${index + 1}.mp3`)
+                                                        } catch {
+                                                            alert('Нет доступа к файлу')
+                                                        }
+                                                    }}
                                                     size="sm"
                                                     variant="outline"
                                                 >

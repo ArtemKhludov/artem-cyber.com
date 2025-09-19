@@ -10,6 +10,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import UserNotFoundModal from '@/components/auth/UserNotFoundModal'
 import ResetPasswordModal from '@/components/auth/ResetPasswordModal'
 import { SessionChecker } from '@/components/auth/SessionChecker'
+import dynamic from 'next/dynamic'
+
+const ReCAPTCHA = dynamic(() => import('react-google-recaptcha'), { ssr: false })
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -19,10 +22,17 @@ function LoginForm() {
   const [error, setError] = useState('')
   const [showUserNotFoundModal, setShowUserNotFoundModal] = useState(false)
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false)
+  const [remember, setRemember] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaRequired, setCaptchaRequired] = useState(false)
+  const [lockedUntil, setLockedUntil] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
   const { login, user } = useAuth()
+  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+  const recaptchaEnabled = Boolean(recaptchaSiteKey)
+  const [captchaKey, setCaptchaKey] = useState(0)
 
   // Если пользователь уже авторизован, перенаправляем
   useEffect(() => {
@@ -46,22 +56,54 @@ function LoginForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setLockedUntil(null)
 
-    const result = await login(email, password)
+    if (captchaRequired && recaptchaEnabled && !captchaToken) {
+      setError('Подтвердите, что вы не робот')
+      setLoading(false)
+      return
+    }
+
+    const result = await login(email, password, {
+      remember,
+      recaptchaToken: captchaToken ?? undefined
+    })
 
     if (result.success && result.user) {
       console.log('Login successful, user role:', result.user.role)
-      // Не делаем перенаправление здесь - пусть useEffect сделает это
+      setCaptchaRequired(false)
+      setCaptchaToken(null)
+      setLockedUntil(null)
     } else {
-      // Проверяем, является ли ошибка связанной с несуществующим пользователем
+      let errorMessage = result.error || 'Ошибка входа'
+
+      if (result.captchaRequired) {
+        if (!recaptchaEnabled) {
+          setCaptchaRequired(false)
+          errorMessage = 'Требуется подтверждение reCAPTCHA, но ключ не настроен'
+        } else {
+          setCaptchaRequired(true)
+          errorMessage = result.error || 'Подтвердите, что вы не робот'
+        }
+      } else {
+        setCaptchaRequired(false)
+      }
+
+      if (result.lockedUntil) {
+        setLockedUntil(result.lockedUntil)
+      } else {
+        setLockedUntil(null)
+      }
+
       if (result.error?.includes('не зарегистрирован') || result.error?.includes('не найден') || result.error?.includes('не существует')) {
-        // Показываем модальное окно с несуществующим пользователем
         setShowUserNotFoundModal(true)
       } else {
-        setError(result.error || 'Ошибка входа')
+        setError(errorMessage)
       }
     }
 
+    setCaptchaToken(null)
+    setCaptchaKey((prev) => prev + 1)
     setLoading(false)
   }
 
@@ -167,6 +209,8 @@ function LoginForm() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
+                  checked={remember}
+                  onChange={(event) => setRemember(event.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
@@ -180,6 +224,23 @@ function LoginForm() {
                 </a>
               </div>
             </div>
+
+            {lockedUntil && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                Попробуйте снова после {new Date(lockedUntil).toLocaleString('ru-RU')}
+              </div>
+            )}
+
+            {(captchaRequired && recaptchaEnabled) && (
+              <div className="flex justify-center">
+                <ReCAPTCHA
+                  key={captchaKey}
+                  sitekey={recaptchaSiteKey as string}
+                  onChange={(token: string | null) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                />
+              </div>
+            )}
 
             <div>
               <Button

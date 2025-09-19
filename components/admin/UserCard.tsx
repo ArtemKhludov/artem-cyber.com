@@ -15,13 +15,17 @@ import {
     Video,
     X,
     Edit,
-    Plus
+    Plus,
+    ShieldCheck,
+    ShieldOff
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AddPurchaseToUserModal from './AddPurchaseToUserModal'
 import AddRequestToUserModal from './AddRequestToUserModal'
 import EditRequestModal from './EditRequestModal'
 import EditPurchaseModal from './EditPurchaseModal'
+import GrantAccessModal from './GrantAccessModal'
+import RevokeAccessModal from './RevokeAccessModal'
 
 interface UserData {
     user: {
@@ -53,6 +57,15 @@ interface UserData {
         status: string
         payment_method: string
     }>
+    accesses: Array<{
+        id: string
+        document_id: string
+        document_title?: string
+        granted_at: string
+        revoked_at?: string | null
+        source?: string | null
+        metadata: Record<string, unknown>
+    }>
 }
 
 interface UserCardProps {
@@ -64,13 +77,18 @@ interface UserCardProps {
 export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
     const [userData, setUserData] = useState<UserData | null>(null)
     const [loading, setLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'purchases'>('overview')
+    const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'purchases' | 'access'>('overview')
     const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false)
     const [showAddRequestModal, setShowAddRequestModal] = useState(false)
     const [showEditRequestModal, setShowEditRequestModal] = useState(false)
     const [showEditPurchaseModal, setShowEditPurchaseModal] = useState(false)
     const [selectedRequest, setSelectedRequest] = useState<any>(null)
     const [selectedPurchase, setSelectedPurchase] = useState<any>(null)
+    const [showGrantAccessModal, setShowGrantAccessModal] = useState(false)
+    const [grantAccessDocumentId, setGrantAccessDocumentId] = useState<string | undefined>(undefined)
+    const [revokeAccessState, setRevokeAccessState] = useState<{ documentId: string } | null>(null)
+
+    const activeAccessCount = userData?.accesses?.filter((access) => !access.revoked_at).length ?? 0
 
     useEffect(() => {
         if (isOpen && userId) {
@@ -194,7 +212,8 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                         {[
                             { id: 'overview', label: 'Обзор', icon: User },
                             { id: 'requests', label: `Заявки (${userData?.requests.length || 0})`, icon: MessageSquare },
-                            { id: 'purchases', label: `Покупки (${userData?.purchases.length || 0})`, icon: ShoppingCart }
+                            { id: 'purchases', label: `Покупки (${userData?.purchases.length || 0})`, icon: ShoppingCart },
+                            { id: 'access', label: `Доступ (${activeAccessCount})`, icon: ShieldCheck }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -447,6 +466,94 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                     )}
                                 </div>
                             )}
+
+                            {activeTab === 'access' && userData && (
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg font-semibold">Доступ к курсам</h3>
+                                        <Button
+                                            size="sm"
+                                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                            onClick={() => {
+                                                setGrantAccessDocumentId(undefined)
+                                                setShowGrantAccessModal(true)
+                                            }}
+                                        >
+                                            <ShieldCheck className="w-4 h-4 mr-2" />
+                                            Выдать доступ
+                                        </Button>
+                                    </div>
+
+                                    {userData.accesses.length === 0 ? (
+                                        <div className="text-center py-8 text-gray-500">
+                                            <ShieldOff className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                            <p>Активных доступов нет</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {userData.accesses.map((access) => {
+                                                const isActive = !access.revoked_at
+                                                return (
+                                                    <div key={access.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex items-start space-x-3">
+                                                                {isActive ? (
+                                                                    <ShieldCheck className="w-5 h-5 text-green-600" />
+                                                                ) : (
+                                                                    <ShieldOff className="w-5 h-5 text-red-500" />
+                                                                )}
+                                                                <div className="flex-1">
+                                                                    <p className="font-medium">{access.document_title || 'Курс'}</p>
+                                                                    <p className="text-sm text-gray-600">
+                                                                        Выдан: {formatDate(access.granted_at)}
+                                                                        {access.source ? ` • ${access.source}` : ''}
+                                                                    </p>
+                                                                    {access.revoked_at && (
+                                                                        <p className="text-sm text-red-500">
+                                                                            Отозван: {formatDate(access.revoked_at)}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex flex-col items-end space-y-2">
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                                    {isActive ? 'Активен' : 'Отозван'}
+                                                                </span>
+                                                                {isActive ? (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        className="text-xs"
+                                                                        onClick={() => {
+                                                                            setRevokeAccessState({ documentId: access.document_id })
+                                                                        }}
+                                                                    >
+                                                                        <ShieldOff className="w-3 h-3 mr-1" />
+                                                                        Отозвать
+                                                                    </Button>
+                                                                ) : (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        className="text-xs"
+                                                                        onClick={() => {
+                                                                            setGrantAccessDocumentId(access.document_id)
+                                                                            setShowGrantAccessModal(true)
+                                                                        }}
+                                                                    >
+                                                                        <ShieldCheck className="w-3 h-3 mr-1" />
+                                                                        Выдать снова
+                                                                    </Button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -499,6 +606,39 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                     }}
                     purchase={selectedPurchase}
                     onSuccess={handleEditPurchaseSuccess}
+                />
+            )}
+
+            {/* Grant Access Modal */}
+            {userData && (
+                <GrantAccessModal
+                    isOpen={showGrantAccessModal}
+                    onClose={() => {
+                        setShowGrantAccessModal(false)
+                        setGrantAccessDocumentId(undefined)
+                    }}
+                    defaultEmail={userData.user.email}
+                    defaultUserId={userData.user.id}
+                    defaultDocumentId={grantAccessDocumentId}
+                    onSuccess={() => {
+                        setShowGrantAccessModal(false)
+                        fetchUserData()
+                    }}
+                />
+            )}
+
+            {/* Revoke Access Modal */}
+            {userData && revokeAccessState && (
+                <RevokeAccessModal
+                    isOpen={true}
+                    onClose={() => setRevokeAccessState(null)}
+                    defaultEmail={userData.user.email}
+                    defaultUserId={userData.user.id}
+                    defaultDocumentId={revokeAccessState.documentId}
+                    onSuccess={() => {
+                        setRevokeAccessState(null)
+                        fetchUserData()
+                    }}
                 />
             )}
         </div>

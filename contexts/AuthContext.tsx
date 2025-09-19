@@ -1,6 +1,14 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback,
+  useRef
+} from 'react'
 
 interface User {
   id: string
@@ -11,10 +19,23 @@ interface User {
   last_activity?: string
 }
 
+interface LoginOptions {
+  remember?: boolean
+  recaptchaToken?: string
+}
+
+interface LoginResult {
+  success: boolean
+  error?: string
+  user?: User
+  captchaRequired?: boolean
+  lockedUntil?: string
+}
+
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>
+  login: (email: string, password: string, options?: LoginOptions) => Promise<LoginResult>
   logout: () => Promise<void>
   register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>
   refreshSession: () => Promise<void>
@@ -22,154 +43,251 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+const ACTIVITY_PING_INTERVAL = 5 * 60 * 1000
+const IDLE_TIMEOUT = 30 * 60 * 1000
+const SESSION_COOKIE = 'session_token'
+
+function clearSessionCookie() {
+  if (typeof document === 'undefined') return
+  document.cookie = `${SESSION_COOKIE}=; Max-Age=0; path=/;`
+}
+
+function getCurrentPath() {
+  if (typeof window === 'undefined') return '/'
+  const { pathname, search } = window.location
+  return `${pathname}${search}`
+}
+
+function redirectToLogin() {
+  if (typeof window === 'undefined') return
+  const currentPath = getCurrentPath()
+  const loginUrl = `/auth/login?redirect=${encodeURIComponent(currentPath)}`
+
+  if (!window.location.pathname.startsWith('/auth')) {
+    window.location.href = loginUrl
+  }
+}
+
+async function sendSessionPing(useBeacon: boolean) {
+  const payload = JSON.stringify({ timestamp: Date.now() })
+
+  if (useBeacon && typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+    const data = new Blob([payload], { type: 'application/json' })
+    navigator.sendBeacon('/api/auth/me', data)
+    return
+  }
+
+  try {
+    await fetch('/api/auth/me', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: payload,
+      credentials: 'include',
+      keepalive: true,
+      cache: 'no-store'
+    })
+  } catch (error) {
+    console.error('Activity ping failed:', error)
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const lastActivityRef = useRef<number>(Date.now())
+  const lastPingRef = useRef<number>(0)
+  const pingInFlightRef = useRef(false)
 
-  const checkSession = useCallback(async () => {
+  const recordActivity = useCallback(() => {
+    lastActivityRef.current = Date.now()
+  }, [])
+
+  const pingSession = useCallback(
+    async (useBeacon = false) => {
+      if (pingInFlightRef.current && !useBeacon) {
+        return
+      }
+
+      pingInFlightRef.current = !useBeacon
+      try {
+        lastPingRef.current = Date.now()
+        await sendSessionPing(useBeacon)
+      } finally {
+        pingInFlightRef.current = false
+      }
+    },
+    []
+  )
+
+  const checkSession = useCallback(async (redirectOnFail = true) => {
     try {
       const response = await fetch('/api/auth/me', {
-        credentials: 'include'
+        credentials: 'include',
+        cache: 'no-store'
       })
+
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
-      } else {
-        setUser(null)
-        // Если сессия истекла, очищаем cookie
-        if (response.status === 401) {
-          document.cookie = 'session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-          // Перенаправляем на страницу входа если мы на защищенной странице
-          if (typeof window !== 'undefined' &&
-            (window.location.pathname.startsWith('/dashboard') ||
-              window.location.pathname.startsWith('/admin'))) {
-            window.location.href = '/auth/login'
-          }
+        return
+      }
+
+      setUser(null)
+
+      if (response.status === 401) {
+        clearSessionCookie()
+        if (redirectOnFail) {
+          redirectToLogin()
         }
       }
     } catch (error) {
       console.error('Session check failed:', error)
       setUser(null)
-      // При ошибке сети тоже очищаем cookie
-      document.cookie = 'session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
     } finally {
       setLoading(false)
     }
   }, [])
 
-  // Отслеживание активности пользователя
-  useEffect(() => {
-    if (!user) return
-
-    let activityTimer: NodeJS.Timeout
-
-    const resetActivityTimer = () => {
-      clearTimeout(activityTimer)
-      activityTimer = setTimeout(() => {
-        // Проверяем сессию каждые 5 минут
-        checkSession()
-      }, 5 * 60 * 1000) // 5 минут
-    }
-
-    // Слушаем события активности
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click']
-
-    events.forEach(event => {
-      document.addEventListener(event, resetActivityTimer, true)
-    })
-
-    // Начальный таймер
-    resetActivityTimer()
-
-    return () => {
-      clearTimeout(activityTimer)
-      events.forEach(event => {
-        document.removeEventListener(event, resetActivityTimer, true)
-      })
-    }
-  }, [user, checkSession])
-
   useEffect(() => {
     checkSession()
   }, [checkSession])
 
-  const login = async (email: string, password: string) => {
+  useEffect(() => {
+    if (!user) {
+      return
+    }
+
+    recordActivity()
+    lastPingRef.current = Date.now()
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        void pingSession(true)
+      }
+    }
+
+    const handleBeforeUnload = () => {
+      void pingSession(true)
+    }
+
+    const interval = setInterval(() => {
+      const now = Date.now()
+      const timeSinceActivity = now - lastActivityRef.current
+      const timeSincePing = now - lastPingRef.current
+
+      if (timeSinceActivity < IDLE_TIMEOUT && timeSincePing >= ACTIVITY_PING_INTERVAL) {
+        void pingSession()
+      }
+    }, 60 * 1000)
+
+    const events: Array<keyof DocumentEventMap> = [
+      'mousedown',
+      'mousemove',
+      'keypress',
+      'scroll',
+      'touchstart',
+      'click'
+    ]
+
+    events.forEach(event => {
+      document.addEventListener(event, recordActivity, true)
+    })
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      clearInterval(interval)
+      events.forEach(event => {
+        document.removeEventListener(event, recordActivity, true)
+      })
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [user, recordActivity, pingSession])
+
+  const login = useCallback(async (email: string, password: string, options: LoginOptions = {}) => {
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          remember: options.remember ?? false,
+          recaptchaToken: options.recaptchaToken
+        }),
+        credentials: 'include'
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        // Принудительно обновляем состояние пользователя
         setUser(data.user)
+        void checkSession(false)
+        return { success: true, user: data.user as User }
+      }
 
-        // Дополнительно проверяем сессию для уверенности
-        setTimeout(async () => {
-          try {
-            const sessionResponse = await fetch('/api/auth/me', {
-              credentials: 'include'
-            })
-            if (sessionResponse.ok) {
-              const sessionData = await sessionResponse.json()
-              setUser(sessionData)
-            }
-          } catch (error) {
-            console.error('Session check failed:', error)
-          }
-        }, 100)
-
-        return { success: true, user: data.user }
-      } else {
-        return { success: false, error: data.error || 'Ошибка входа' }
+      return {
+        success: false,
+        error: data.error || 'Ошибка входа',
+        captchaRequired: Boolean(data.captchaRequired),
+        lockedUntil: data.lockedUntil
       }
     } catch (error) {
+      console.error('Login failed:', error)
       return { success: false, error: 'Ошибка сети' }
     }
-  }
+  }, [checkSession])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       })
-      setUser(null)
     } catch (error) {
       console.error('Logout failed:', error)
+    } finally {
+      clearSessionCookie()
+      setUser(null)
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+        redirectToLogin()
+      }
     }
-  }
+  }, [])
 
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     await checkSession()
-  }
+  }, [checkSession])
 
-  const register = async (email: string, password: string, name: string, phone?: string) => {
+  const register = useCallback(async (email: string, password: string, name: string, phone?: string) => {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ email, password, name, phone }),
+        credentials: 'include'
       })
 
       const data = await response.json()
 
       if (response.ok) {
         return { success: true, user: data.user }
-      } else {
-        return { success: false, error: data.error || 'Ошибка регистрации' }
       }
+
+      return { success: false, error: data.error || 'Ошибка регистрации' }
     } catch (error) {
+      console.error('Register failed:', error)
       return { success: false, error: 'Ошибка сети' }
     }
-  }
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, register, refreshSession }}>

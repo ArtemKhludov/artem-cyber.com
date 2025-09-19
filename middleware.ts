@@ -1,26 +1,21 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Защищенные маршруты
 const protectedRoutes = ['/dashboard', '/admin']
-const authRoutes = ['/auth/login', '/auth/signup']
+const SESSION_COOKIE_NAME = 'session_token'
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
-    const sessionToken = request.cookies.get('session_token')?.value
+    const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value
 
-    // Проверяем, является ли маршрут защищенным
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
-    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
-    // Если пользователь на защищенном маршруте без сессии
     if (isProtectedRoute && !sessionToken) {
-        return NextResponse.redirect(new URL('/auth/login', request.url))
+        const loginUrl = new URL('/auth/login', request.url)
+        const currentPath = pathname + request.nextUrl.search
+        loginUrl.searchParams.set('redirect', currentPath)
+        return NextResponse.redirect(loginUrl)
     }
-
-    // Если пользователь на странице авторизации с активной сессией
-    // НО только если сессия действительно валидна
-    // НЕ перенаправляем автоматически на dashboard - пусть SessionChecker решает
 
     return NextResponse.next()
 }

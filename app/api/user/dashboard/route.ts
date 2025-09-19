@@ -1,42 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase'
 import { cookies } from 'next/headers'
+import { getSupabaseAdmin } from '@/lib/supabase'
+import {
+  SESSION_COOKIE_NAME,
+  attachSessionCookie,
+  clearSessionCookie,
+  getSessionErrorMessage,
+  validateSessionToken
+} from '@/lib/session'
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get('session_token')?.value
-
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-    }
-
     const supabase = getSupabaseAdmin()
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
+    const validation = await validateSessionToken(sessionToken, { supabase })
 
-    // Проверяем сессию
-    const { data: session, error: sessionError } = await supabase
-      .from('user_sessions')
-      .select('user_id, expires_at')
-      .eq('session_token', sessionToken)
-      .gt('expires_at', new Date().toISOString())
-      .single()
+    if (!validation.session || !validation.user) {
+      const response = NextResponse.json({ error: getSessionErrorMessage(validation.reason) }, { status: 401 })
 
-    if (sessionError || !session) {
-      return NextResponse.json({ error: 'Недействительная сессия' }, { status: 401 })
+      if (sessionToken) {
+        clearSessionCookie(response)
+      }
+
+      return response
     }
 
-    // Получаем данные пользователя
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('id, email, name, role, created_at')
-      .eq('id', session.user_id)
-      .single()
+    const user = validation.user
 
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
-    }
-
-    // Получаем покупки пользователя из таблицы purchases (связанные с документами)
     const { data: purchases, error: purchasesError } = await supabase
       .from('purchases')
       .select(`
@@ -65,7 +56,6 @@ export async function GET(request: NextRequest) {
       console.error('Ошибка получения покупок:', purchasesError)
     }
 
-    // Получаем состав курсов из course_composition
     const courseIds = purchases?.map(p => p.document_id) || []
     let courseComposition: Record<string, any> = {}
     let courseWorkbooks: Record<string, any[]> = {}
@@ -77,13 +67,12 @@ export async function GET(request: NextRequest) {
         .in('course_id', courseIds)
 
       if (!compositionError && composition) {
-        courseComposition = composition.reduce((acc, comp) => {
+        courseComposition = composition.reduce((acc: Record<string, any>, comp: any) => {
           acc[comp.course_id] = comp
           return acc
         }, {})
       }
 
-      // Получаем рабочие тетради из course_workbooks
       const { data: workbooks, error: workbooksError } = await supabase
         .from('course_workbooks')
         .select('*')
@@ -92,7 +81,7 @@ export async function GET(request: NextRequest) {
         .order('order_index', { ascending: true })
 
       if (!workbooksError && workbooks) {
-        courseWorkbooks = workbooks.reduce((acc, workbook) => {
+        courseWorkbooks = workbooks.reduce((acc: Record<string, any[]>, workbook: any) => {
           if (!acc[workbook.document_id]) {
             acc[workbook.document_id] = []
           }
@@ -102,47 +91,36 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Получаем заказы пользователя (для совместимости со старой системой)
     const { data: orders, error: ordersError } = await supabase
       .from('orders')
-      .select(`
-        id,
-        amount,
-        status,
-        pdf_url,
-        session_date,
-        session_time,
-        created_at,
-        updated_at
-      `)
-      .eq('user_id', user.id)
+      .select('id, amount, status, pdf_url, session_date, session_time, created_at, updated_at')
+      .eq('user_id', validation.session.user_id)
       .order('created_at', { ascending: false })
 
     if (ordersError) {
       console.error('Ошибка получения заказов:', ordersError)
     }
 
-    // Получаем статистику
     const totalPurchases = purchases?.length || 0
     const totalOrders = orders?.length || 0
     const completedOrders = orders?.filter(o => o.status === 'completed').length || 0
     const totalSpent = (purchases?.reduce((sum, p) => sum + p.amount_paid, 0) || 0) +
       (orders?.reduce((sum, o) => sum + o.amount, 0) || 0)
 
-    // Форматируем данные для фронтенда
     const formattedPurchases = purchases?.map(purchase => {
       const composition = courseComposition[purchase.document_id] || {}
       const workbooks = courseWorkbooks[purchase.document_id] || []
+      const document = purchase.documents as any
 
       return {
         id: purchase.id,
-        product_name: (purchase.documents as any)?.title || 'Курс',
-        product_type: (purchase.documents as any)?.course_type === 'mini_course' ? 'mini_course' : 'pdf',
+        product_name: document?.title || 'Курс',
+        product_type: document?.course_type === 'mini_course' ? 'mini_course' : 'pdf',
         price: purchase.amount_paid,
         status: purchase.payment_status === 'completed' ? 'completed' : 'pending',
         created_at: purchase.created_at,
         document: {
-          ...purchase.documents,
+          ...document,
           has_workbook: workbooks.length > 0,
           has_videos: (composition.video_count || 0) > 0,
           has_audio: (composition.audio_count || 0) > 0,
@@ -156,9 +134,9 @@ export async function GET(request: NextRequest) {
             video_url: wb.video_url,
             order_index: wb.order_index
           })),
-          course_duration_minutes: composition.total_items ? composition.total_items * 10 : 30 // Примерная длительность
+          course_duration_minutes: composition.total_items ? composition.total_items * 10 : 30
         },
-        progress: 0 // Пока не реализовано отслеживание прогресса
+        progress: 0
       }
     }) || []
 
@@ -175,14 +153,13 @@ export async function GET(request: NextRequest) {
       progress: order.status === 'completed' ? 100 : 0
     })) || []
 
-    // Объединяем покупки и заказы
     const allPurchases = [...formattedPurchases, ...formattedOrders]
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       user,
       purchases: allPurchases,
-      courses: formattedPurchases, // Курсы - это только покупки документов
-      orders: formattedOrders, // Заказы - это сессии диагностики
+      courses: formattedPurchases,
+      orders: formattedOrders,
       stats: {
         totalPurchases: totalPurchases + totalOrders,
         totalCourses: totalPurchases,
@@ -197,11 +174,13 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    if (validation.shouldRefreshCookie && validation.cookieMaxAgeSeconds) {
+      attachSessionCookie(response, validation.session.session_token, validation.cookieMaxAgeSeconds)
+    }
+
+    return response
   } catch (error) {
-    console.error('Ошибка получения данных пользователя:', error)
-    return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
-    )
+    console.error('Ошибка API dashboard пользователя:', error)
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
   }
 }

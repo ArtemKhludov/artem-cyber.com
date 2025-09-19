@@ -89,7 +89,7 @@ export default function CoursePlayer() {
                 setCourseStats(data.courseStats)
                 setUserPoints(data.userPoints)
                 setRecentAchievements(data.newAchievements || [])
-                
+
                 // Показываем новое достижение
                 if (data.newAchievements && data.newAchievements.length > 0) {
                     setShowAchievement(data.newAchievements[0])
@@ -146,9 +146,9 @@ export default function CoursePlayer() {
 
     // Функция для обновления прогресса материала
     const updateMaterialProgress = async (
-        materialId: string, 
-        materialType: string, 
-        materialTitle: string, 
+        materialId: string,
+        materialType: string,
+        materialTitle: string,
         status: 'not_started' | 'in_progress' | 'completed',
         progressPercentage: number = 100,
         timeSpent: number = 0
@@ -176,16 +176,16 @@ export default function CoursePlayer() {
 
             if (response.ok) {
                 const data = await response.json()
-                
+
                 // Обновляем локальное состояние
                 setCourseStats(data.stats)
                 setUserPoints(data.userPoints)
-                
+
                 // Показываем новое достижение
                 if (data.newAchievements && data.newAchievements.length > 0) {
                     setShowAchievement(data.newAchievements[0])
                 }
-                
+
                 // Перезагружаем прогресс
                 await loadCourseProgress()
             } else {
@@ -200,7 +200,7 @@ export default function CoursePlayer() {
 
     // Функция для проверки статуса материала
     const getMaterialStatus = (materialId: string, materialType: string): 'not_started' | 'in_progress' | 'completed' => {
-        const progress = courseProgress.find(p => 
+        const progress = courseProgress.find(p =>
             p.material_id === materialId && p.material_type === materialType
         )
         return progress?.status || 'not_started'
@@ -237,7 +237,7 @@ export default function CoursePlayer() {
         const totalSeconds = courseStats?.total_time_spent || 0
         const hours = Math.floor(totalSeconds / 3600)
         const minutes = Math.floor((totalSeconds % 3600) / 60)
-        
+
         if (hours > 0) {
             return `${hours}ч ${minutes}м`
         }
@@ -331,7 +331,7 @@ export default function CoursePlayer() {
                                 <div className="flex items-center gap-3 mb-4">
                                     <FileText className="w-6 h-6 text-blue-600" />
                                     <h2 className="text-xl font-semibold text-gray-900">Основной материал</h2>
-                                    {isMaterialCompleted('main', 'main_pdf') && (
+                                    {isMaterialCompleted(courseId, 'main_pdf') && (
                                         <CheckCircle className="w-5 h-5 text-green-500" />
                                     )}
                                 </div>
@@ -350,25 +350,25 @@ export default function CoursePlayer() {
                                     </Button>
                                     <Button
                                         onClick={() => updateMaterialProgress(
-                                            'main', 
-                                            'main_pdf', 
+                                            courseId,
+                                            'main_pdf',
                                             `${course.title} - Основной PDF`,
-                                            isMaterialCompleted('main', 'main_pdf') ? 'not_started' : 'completed',
+                                            isMaterialCompleted(courseId, 'main_pdf') ? 'not_started' : 'completed',
                                             100,
                                             0
                                         )}
                                         variant="outline"
-                                        disabled={updatingProgress === 'main_pdf_main'}
-                                        className={isMaterialCompleted('main', 'main_pdf') ? 'bg-green-50 border-green-200 text-green-700' : ''}
+                                        disabled={updatingProgress === `main_pdf_${courseId}`}
+                                        className={isMaterialCompleted(courseId, 'main_pdf') ? 'bg-green-50 border-green-200 text-green-700' : ''}
                                     >
-                                        {updatingProgress === 'main_pdf_main' ? (
+                                        {updatingProgress === `main_pdf_${courseId}` ? (
                                             <div className="flex items-center gap-2">
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                                                 Сохранение...
                                             </div>
                                         ) : (
                                             <>
-                                                {isMaterialCompleted('main', 'main_pdf') ? (
+                                                {isMaterialCompleted(courseId, 'main_pdf') ? (
                                                     <>
                                                         <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
                                                         Изучено
@@ -422,8 +422,8 @@ export default function CoursePlayer() {
                                                         </Button>
                                                         <Button
                                                             onClick={() => updateMaterialProgress(
-                                                                workbook.id, 
-                                                                'workbook', 
+                                                                workbook.id,
+                                                                'workbook',
                                                                 workbook.title,
                                                                 isMaterialCompleted(workbook.id, 'workbook') ? 'not_started' : 'completed',
                                                                 100,
@@ -472,7 +472,7 @@ export default function CoursePlayer() {
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <h3 className="font-medium text-gray-900">{video.title}</h3>
-                                                            {completedItems.has(`video_${video.id}`) && (
+                                                            {isMaterialCompleted(video.id, 'video') && (
                                                                 <CheckCircle className="w-4 h-4 text-green-500" />
                                                             )}
                                                         </div>
@@ -484,7 +484,14 @@ export default function CoursePlayer() {
                                                         <Button
                                                             onClick={() => {
                                                                 setActiveVideo(video.file_url)
-                                                                markAsCompleted(video.id, 'video')
+                                                                updateMaterialProgress(
+                                                                    video.id,
+                                                                    'video',
+                                                                    video.title,
+                                                                    'completed',
+                                                                    100,
+                                                                    1800
+                                                                )
                                                             }}
                                                             size="sm"
                                                             className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -499,6 +506,34 @@ export default function CoursePlayer() {
                                                         >
                                                             <Download className="w-4 h-4 mr-1" />
                                                             Скачать
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => updateMaterialProgress(
+                                                                video.id,
+                                                                'video',
+                                                                video.title,
+                                                                isMaterialCompleted(video.id, 'video') ? 'not_started' : 'completed',
+                                                                100,
+                                                                1800
+                                                            )}
+                                                            size="sm"
+                                                            variant="outline"
+                                                            disabled={updatingProgress === `video_${video.id}`}
+                                                            className={isMaterialCompleted(video.id, 'video') ? 'bg-green-50 border-green-200 text-green-700' : ''}
+                                                        >
+                                                            {updatingProgress === `video_${video.id}` ? (
+                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                            ) : isMaterialCompleted(video.id, 'video') ? (
+                                                                <>
+                                                                    <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                                                                    Изучено
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Zap className="w-4 h-4 mr-1" />
+                                                                    Изучено
+                                                                </>
+                                                            )}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -524,7 +559,7 @@ export default function CoursePlayer() {
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <h3 className="font-medium text-gray-900">{audioItem.title}</h3>
-                                                            {completedItems.has(`audio_${audioItem.id}`) && (
+                                                            {isMaterialCompleted(audioItem.id, 'audio') && (
                                                                 <CheckCircle className="w-4 h-4 text-green-500" />
                                                             )}
                                                         </div>
@@ -536,7 +571,14 @@ export default function CoursePlayer() {
                                                         <Button
                                                             onClick={() => {
                                                                 setActiveAudio(audioItem.file_url)
-                                                                markAsCompleted(audioItem.id, 'audio')
+                                                                updateMaterialProgress(
+                                                                    audioItem.id,
+                                                                    'audio',
+                                                                    audioItem.title,
+                                                                    'completed',
+                                                                    100,
+                                                                    1200
+                                                                )
                                                             }}
                                                             size="sm"
                                                             className="bg-orange-600 hover:bg-orange-700 text-white"
@@ -552,6 +594,34 @@ export default function CoursePlayer() {
                                                             <Download className="w-4 h-4 mr-1" />
                                                             Скачать
                                                         </Button>
+                                                        <Button
+                                                            onClick={() => updateMaterialProgress(
+                                                                audioItem.id,
+                                                                'audio',
+                                                                audioItem.title,
+                                                                isMaterialCompleted(audioItem.id, 'audio') ? 'not_started' : 'completed',
+                                                                100,
+                                                                1200
+                                                            )}
+                                                            size="sm"
+                                                            variant="outline"
+                                                            disabled={updatingProgress === `audio_${audioItem.id}`}
+                                                            className={isMaterialCompleted(audioItem.id, 'audio') ? 'bg-green-50 border-green-200 text-green-700' : ''}
+                                                        >
+                                                            {updatingProgress === `audio_${audioItem.id}` ? (
+                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                            ) : isMaterialCompleted(audioItem.id, 'audio') ? (
+                                                                <>
+                                                                    <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                                                                    Изучено
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Zap className="w-4 h-4 mr-1" />
+                                                                    Изучено
+                                                                </>
+                                                            )}
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -566,7 +636,7 @@ export default function CoursePlayer() {
                             {/* Прогресс */}
                             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Прогресс курса</h3>
-                                
+
                                 {/* Прогресс-бар */}
                                 <div className="mb-4">
                                     <div className="flex justify-between text-sm mb-2">
@@ -574,7 +644,7 @@ export default function CoursePlayer() {
                                         <span>{getCompletionPercentage()}%</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div 
+                                        <div
                                             className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
                                             style={{ width: `${getCompletionPercentage()}%` }}
                                         ></div>
@@ -597,8 +667,8 @@ export default function CoursePlayer() {
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-sm">
                                         <span>Основной материал</span>
-                                        <span className={isMaterialCompleted('main', 'main_pdf') ? 'text-green-500' : 'text-gray-400'}>
-                                            {isMaterialCompleted('main', 'main_pdf') ? '✓' : '○'}
+                                        <span className={isMaterialCompleted(courseId, 'main_pdf') ? 'text-green-500' : 'text-gray-400'}>
+                                            {isMaterialCompleted(courseId, 'main_pdf') ? '✓' : '○'}
                                         </span>
                                     </div>
                                     {course.workbooks?.map((workbook: Workbook) => (
@@ -649,7 +719,7 @@ export default function CoursePlayer() {
                                             <span className="font-bold text-green-600">{userPoints.streak_days}</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                                            <div 
+                                            <div
                                                 className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full"
                                                 style={{ width: `${((userPoints.total_points % 100) / 100) * 100}%` }}
                                             ></div>

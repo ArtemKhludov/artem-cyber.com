@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { syncCourseAccessByStatus } from '@/lib/course-access'
 import crypto from 'crypto'
 
 const CRYPTOMUS_API_KEY = process.env.CRYPTOMUS_API_KEY!
@@ -63,13 +64,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Обновляем статус покупки в базе данных
-    const { error } = await supabase
+    const { data: updatedPurchases, error } = await supabase
       .from('purchases')
       .update({
         payment_status: paymentStatus,
         updated_at: new Date().toISOString(),
       })
       .eq('cryptomus_order_id', order_id)
+      .select('id, document_id, user_id, user_email, payment_method')
 
     if (error) {
       console.error('Error updating purchase status:', error)
@@ -80,6 +82,16 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Payment ${order_id} status updated to: ${paymentStatus}`)
+
+    // Синхронизируем доступы в зависимости от статуса Cryptomus
+    await syncCourseAccessByStatus(supabase, updatedPurchases, paymentStatus, {
+      source: 'cryptomus',
+      reason: paymentStatus === 'refunded' ? 'cryptomus_refund' : paymentStatus === 'failed' ? 'cryptomus_failed' : undefined,
+      metadata: {
+        event: status,
+        order_id,
+      },
+    })
 
     // Возвращаем успешный ответ
     return NextResponse.json({ status: 'ok' })

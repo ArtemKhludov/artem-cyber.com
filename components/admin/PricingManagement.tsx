@@ -209,7 +209,7 @@ export function PricingManagement() {
                         Цены документов ({documents.length})
                     </CardTitle>
                     <CardDescription>
-                        Нажмите на цену для редактирования. Изменения сохраняются только после нажатия "Сохранить изменения"
+                        Нажмите на цену для редактирования. Изменения сохраняются только после нажатия &laquo;Сохранить изменения&raquo;
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -261,7 +261,7 @@ export function PricingManagement() {
                         <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                         <h3 className="text-lg font-medium text-gray-900 mb-2">Нет документов</h3>
                         <p className="text-gray-600">
-                            Сначала добавьте документы в разделе "Управление документами"
+                            Сначала добавьте документы в разделе &laquo;Управление документами&raquo;
                         </p>
                     </CardContent>
                 </Card>

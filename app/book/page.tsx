@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { useSupabase } from '@/components/providers/supabase-provider'
+import { useAuth } from '@/contexts/AuthContext'
 import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
@@ -17,7 +17,7 @@ export default function BookPage() {
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [activeProgram, setActiveProgram] = useState('mini')
-  const { user } = useSupabase()
+  const { user } = useAuth()
   const router = useRouter()
   const sectionRef = useRef<HTMLElement>(null)
 

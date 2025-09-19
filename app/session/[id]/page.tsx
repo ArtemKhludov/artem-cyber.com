@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useSupabase } from '@/components/providers/supabase-provider'
+import { useAuth } from '@/contexts/AuthContext'
 import { DailyIframe } from '@/lib/daily'
 import { PageLayout } from '@/components/layout/PageLayout'
 
@@ -31,7 +32,8 @@ interface Order {
 export default function SessionPage() {
   const params = useParams()
   const router = useRouter()
-  const { user, supabase } = useSupabase()
+  const { supabase } = useSupabase()
+  const { user } = useAuth()
 
   const [session, setSession] = useState<Session | null>(null)
   const [order, setOrder] = useState<Order | null>(null)

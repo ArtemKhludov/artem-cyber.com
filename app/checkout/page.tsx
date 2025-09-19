@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { useSupabase } from '@/components/providers/supabase-provider'
+import { useAuth } from '@/contexts/AuthContext'
 import { getStripe } from '@/lib/stripe'
 import { PageLayout } from '@/components/layout/PageLayout'
 
@@ -15,7 +15,7 @@ function CheckoutContent() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, supabase } = useSupabase()
+  const { user } = useAuth()
 
   // Get booking details from URL params
   const sessionDate = searchParams.get('date')

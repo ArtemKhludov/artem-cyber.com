@@ -20,7 +20,11 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id: userId,
         amount,
+        amount_paid: amount,
         status: 'pending',
+        payment_status: 'pending',
+        payment_method: 'stripe',
+        currency: 'RUB',
         session_date: sessionDate,
         session_time: sessionTime,
       })

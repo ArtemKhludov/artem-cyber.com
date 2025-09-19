@@ -57,6 +57,16 @@ export async function GET(
             console.error('Purchases error:', purchasesError)
         }
 
+        const { data: accesses, error: accessesError } = await supabase
+            .from('user_course_access')
+            .select('id, document_id, granted_at, revoked_at, source, metadata, documents:document_id (id, title)')
+            .eq('user_id', userId)
+            .order('granted_at', { ascending: false })
+
+        if (accessesError) {
+            console.error('Accesses error:', accessesError)
+        }
+
         // Формируем ответ
         const userData = {
             user: {
@@ -84,9 +94,18 @@ export async function GET(
                 id: purchase.id,
                 created_at: purchase.created_at,
                 product_name: purchase.product_name,
-                amount: purchase.amount,
-                status: purchase.status,
+                amount: purchase.amount_paid ?? purchase.amount ?? 0,
+                status: purchase.payment_status ?? purchase.status,
                 payment_method: purchase.payment_method || 'Не указан'
+            })),
+            accesses: (accesses || []).map(access => ({
+                id: access.id,
+                document_id: access.document_id,
+                document_title: (access as any).documents?.title || undefined,
+                granted_at: access.granted_at,
+                revoked_at: access.revoked_at,
+                source: access.source,
+                metadata: access.metadata || {},
             }))
         }
 

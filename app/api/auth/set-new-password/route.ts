@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import bcrypt from 'bcryptjs'
+import { verifyRequestOrigin } from '@/lib/security'
+import { revokeUserSessions } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
     try {
+        try {
+            verifyRequestOrigin(request)
+        } catch (error) {
+            if (error instanceof Error) {
+                return NextResponse.json({ error: error.message }, { status: 403 })
+            }
+            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+        }
+
         const { token, password } = await request.json()
 
         if (!token || !password) {
@@ -16,7 +27,6 @@ export async function POST(request: NextRequest) {
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем токен и его срок действия
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('id, email, name, reset_password_expires')
@@ -27,7 +37,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Недействительный или истекший токен' }, { status: 400 })
         }
 
-        // Проверяем срок действия токена
         const now = new Date()
         const expiresAt = new Date(user.reset_password_expires)
 
@@ -35,10 +44,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Токен истек. Запросите новый сброс пароля' }, { status: 400 })
         }
 
-        // Хешируем новый пароль
         const passwordHash = await bcrypt.hash(password, 12)
 
-        // Обновляем пароль и очищаем токен
         const { error: updateError } = await supabase
             .from('users')
             .update({
@@ -54,6 +61,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Ошибка обновления пароля' }, { status: 500 })
         }
 
+        await revokeUserSessions(user.id, { supabase })
 
         return NextResponse.json({
             message: 'Пароль успешно изменен. Теперь вы можете войти в систему с новым паролем'

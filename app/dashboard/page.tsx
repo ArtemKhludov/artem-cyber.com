@@ -24,6 +24,7 @@ import {
   TrendingUp,
   Volume2
 } from 'lucide-react'
+import { SessionDevices } from '@/components/dashboard/SessionDevices'
 
 interface Purchase {
   id: string
@@ -534,6 +535,8 @@ export default function DashboardPage() {
               </div>
             </TabsContent>
           </Tabs>
+
+          <SessionDevices />
         </div>
       </div>
     </MainLayout>

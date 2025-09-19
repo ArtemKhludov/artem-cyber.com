@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Тест API прогресса</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .info {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+        }
+
+        button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Тест API прогресса</h1>
+
+    <div id="results"></div>
+
+    <button onclick="testLogin()">1. Тест логина</button>
+    <button onclick="testProgressGet()">2. Получить прогресс</button>
+    <button onclick="testProgressPost()">3. Обновить прогресс</button>
+    <button onclick="testAchievements()">4. Получить достижения</button>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div class="' + type + '">' + message + '</div>';
+        }
+
+        async function testLogin() {
+            addResult('⏳ Выполняется логин...', 'info');
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'user@test.com', password: 'user123' }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addResult('✅ Логин успешен: ' + data.user.name, 'success');
+                } else {
+                    addResult('❌ Ошибка логина: ' + data.error, 'error');
+                }
+            } catch (error) {
+                addResult('❌ Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        async function testProgressGet() {
+            addResult('⏳ Получение прогресса...', 'info');
+
+            try {
+                const response = await fetch('/api/progress?courseId=7b3e63f4-45fb-44a3-93cd-ff4abeead3e4', {
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addResult('✅ Прогресс получен:', 'success');
+                    addResult('   Прогресс: ' + (data.courseProgress?.length || 0) + ' записей', 'success');
+                    addResult('   Статистика: ' + (data.courseStats ? 'есть' : 'нет'), 'success');
+                    addResult('   Баллы: ' + (data.userPoints?.total_points || 0), 'success');
+                } else {
+                    addResult('❌ Ошибка получения прогресса: ' + data.error, 'error');
+                }
+            } catch (error) {
+                addResult('❌ Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        async function testProgressPost() {
+            addResult('⏳ Обновление прогресса...', 'info');
+
+            try {
+                const response = await fetch('/api/progress', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        courseId: '7b3e63f4-45fb-44a3-93cd-ff4abeead3e4',
+                        materialType: 'main_pdf',
+                        materialId: 'main',
+                        materialTitle: 'Тест - Основной PDF',
+                        status: 'completed',
+                        progressPercentage: 100,
+                        timeSpent: 0
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addResult('✅ Прогресс обновлен:', 'success');
+                    addResult('   Новые баллы: ' + (data.userPoints?.total_points || 0), 'success');
+                    addResult('   Новых достижений: ' + (data.newAchievements?.length || 0), 'success');
+                } else {
+                    addResult('❌ Ошибка обновления прогресса: ' + data.error, 'error');
+                }
+            } catch (error) {
+                addResult('❌ Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        async function testAchievements() {
+            addResult('⏳ Получение достижений...', 'info');
+
+            try {
+                const response = await fetch('/api/achievements', {
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addResult('✅ Достижения получены: ' + (data.achievements?.length || 0), 'success');
+                    if (data.achievements && data.achievements.length > 0) {
+                        data.achievements.forEach((achievement, index) => {
+                            addResult(`   ${index + 1}. ${achievement.achievement_title} (${achievement.points_awarded} баллов)`, 'success');
+                        });
+                    }
+                } else {
+                    addResult('❌ Ошибка получения достижений: ' + data.error, 'error');
+                }
+            } catch (error) {
+                addResult('❌ Ошибка сети: ' + error.message, 'error');
+            }
+        }
+
+        // Автоматически запускаем тест логина
+        window.onload = function () {
+            setTimeout(testLogin, 1000);
+        };
+    </script>
+</body>
+
+</html>

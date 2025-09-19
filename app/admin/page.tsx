@@ -23,7 +23,8 @@ import {
   ArrowUp,
   ArrowDown,
   Users,
-  DollarSign
+  DollarSign,
+  Shield
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
@@ -34,6 +35,8 @@ import { EnhancedUsersList } from '@/components/admin/EnhancedUsersList'
 import { CoursesManagement } from '@/components/admin/CoursesManagement'
 import { PricingManagement } from '@/components/admin/PricingManagement'
 import { AdminGuard } from '@/components/auth/AdminGuard'
+import RevokeAccessModal from '@/components/admin/RevokeAccessModal'
+import GrantAccessModal from '@/components/admin/GrantAccessModal'
 import { useAuth } from '@/contexts/AuthContext'
 
 const supabase = createClient(
@@ -93,6 +96,10 @@ function AdminPageContent() {
   const [showUserCard, setShowUserCard] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [documents, setDocuments] = useState<any[]>([])
+  const [showGrantAccess, setShowGrantAccess] = useState(false)
+  const [grantDefaults, setGrantDefaults] = useState<{ email?: string; userId?: string; documentId?: string }>({})
+  const [showRevokeAccess, setShowRevokeAccess] = useState(false)
+  const [revokeDefaults, setRevokeDefaults] = useState<{ email?: string; userId?: string; documentId?: string }>({})
 
   // Состояния для сортировки
   const [sortField, setSortField] = useState<string>('created_at')
@@ -627,6 +634,16 @@ function AdminPageContent() {
               >
                 <Download className="w-4 h-4 mr-2" />
                 Экспорт CSV
+              </Button>
+              <Button
+                onClick={() => {
+                  setGrantDefaults({})
+                  setShowGrantAccess(true)
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Выдать доступ
               </Button>
               <Button
                 onClick={() => {
@@ -1206,6 +1223,31 @@ function AdminPageContent() {
                               <Edit className="w-4 h-4 mr-1" />
                               Просмотр
                             </Button>
+                            {activeTab === 'purchases' && (
+                              <Button
+                                size="sm"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                onClick={() => {
+                                  setGrantDefaults({ email: item.email, userId: item.user_id, documentId: item.product_id })
+                                  setShowGrantAccess(true)
+                                }}
+                              >
+                                Выдать доступ
+                              </Button>
+                            )}
+                            {activeTab === 'purchases' && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                                onClick={() => {
+                                  setRevokeDefaults({ email: item.email, userId: item.user_id, documentId: item.product_id })
+                                  setShowRevokeAccess(true)
+                                }}
+                              >
+                                Отозвать доступ
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               className="bg-red-600 hover:bg-red-700 text-white"
@@ -1260,6 +1302,29 @@ function AdminPageContent() {
           onClose={closeUserCard}
         />
       )}
+
+      {/* Grant Access Modal */}
+      <GrantAccessModal
+        isOpen={showGrantAccess}
+        onClose={() => setShowGrantAccess(false)}
+        defaultEmail={grantDefaults.email}
+        defaultUserId={grantDefaults.userId}
+        defaultDocumentId={grantDefaults.documentId}
+        onSuccess={() => {
+          if (activeTab === 'purchases') fetchPurchases()
+        }}
+      />
+
+      <RevokeAccessModal
+        isOpen={showRevokeAccess}
+        onClose={() => setShowRevokeAccess(false)}
+        defaultEmail={revokeDefaults.email}
+        defaultUserId={revokeDefaults.userId}
+        defaultDocumentId={revokeDefaults.documentId}
+        onSuccess={() => {
+          if (activeTab === 'purchases') fetchPurchases()
+        }}
+      />
     </div >
   )
 }

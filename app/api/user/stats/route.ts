@@ -1,56 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { getSupabaseAdmin } from '@/lib/supabase'
+import {
+  SESSION_COOKIE_NAME,
+  attachSessionCookie,
+  clearSessionCookie,
+  getSessionErrorMessage,
+  validateSessionToken
+} from '@/lib/session'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-// Получение статистики пользователя
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const sessionToken = cookieStore.get('session_token')?.value
+    const supabase = getSupabaseAdmin()
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
+    const validation = await validateSessionToken(sessionToken, { supabase })
 
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 })
+    if (!validation.session || !validation.user) {
+      const response = NextResponse.json({ error: getSessionErrorMessage(validation.reason) }, { status: 401 })
+
+      if (sessionToken) {
+        clearSessionCookie(response)
+      }
+
+      return response
     }
 
-    // Получаем информацию о пользователе из сессии
-    const { data: session, error: sessionError } = await supabase
-      .from('user_sessions')
-      .select(`
-        user_id,
-        users!inner (
-          email,
-          name,
-          role
-        )
-      `)
-      .eq('session_token', sessionToken)
-      .eq('expires_at', '>', new Date().toISOString())
-      .single()
+    const userEmail = validation.user.email
 
-    if (sessionError || !session) {
-      return NextResponse.json({ error: 'Недействительная сессия' }, { status: 401 })
-    }
-
-    const userEmail = (session.users as any).email
-
-    // Получаем сводку пользователя
     const { data: userSummary, error: summaryError } = await supabase
       .from('user_progress_summary')
       .select('*')
       .eq('user_email', userEmail)
-      .single()
+      .maybeSingle()
 
     if (summaryError) {
       console.error('Ошибка получения сводки пользователя:', summaryError)
       return NextResponse.json({ error: 'Ошибка получения статистики' }, { status: 500 })
     }
 
-    // Получаем статистику по всем курсам
     const { data: coursesStats, error: coursesError } = await supabase
       .from('course_statistics')
       .select(`
@@ -69,7 +57,6 @@ export async function GET(request: NextRequest) {
       console.error('Ошибка получения статистики курсов:', coursesError)
     }
 
-    // Получаем последние достижения
     const { data: recentAchievements, error: achievementsError } = await supabase
       .from('user_achievements')
       .select('*')
@@ -81,7 +68,6 @@ export async function GET(request: NextRequest) {
       console.error('Ошибка получения достижений:', achievementsError)
     }
 
-    // Получаем активность за последние 7 дней
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     const { data: recentActivity, error: activityError } = await supabase
       .from('course_progress')
@@ -99,19 +85,17 @@ export async function GET(request: NextRequest) {
       console.error('Ошибка получения активности:', activityError)
     }
 
-    // Вычисляем дополнительную статистику
-    const totalStudyHours = userSummary ? Math.round(userSummary.total_study_time / 3600 * 100) / 100 : 0
-    const averageCourseCompletion = userSummary && userSummary.courses_started > 0 
-      ? Math.round((userSummary.courses_completed / userSummary.courses_started) * 100) 
+    const totalStudyHours = userSummary ? Math.round((userSummary.total_study_time / 3600) * 100) / 100 : 0
+    const averageCourseCompletion = userSummary && userSummary.courses_started > 0
+      ? Math.round((userSummary.courses_completed / userSummary.courses_started) * 100)
       : 0
 
-    // Подготавливаем данные для графиков
     const weeklyActivity = []
     for (let i = 6; i >= 0; i--) {
       const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
       const dateStr = date.toISOString().split('T')[0]
-      
-      const dayActivity = recentActivity?.filter(activity => 
+
+      const dayActivity = recentActivity?.filter(activity =>
         activity.updated_at.startsWith(dateStr)
       ) || []
 
@@ -123,7 +107,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       userSummary: userSummary || {
         user_email: userEmail,
         total_points: 0,
@@ -145,6 +129,11 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    if (validation.shouldRefreshCookie && validation.cookieMaxAgeSeconds) {
+      attachSessionCookie(response, validation.session.session_token, validation.cookieMaxAgeSeconds)
+    }
+
+    return response
   } catch (error) {
     console.error('Ошибка API статистики пользователя:', error)
     return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })

@@ -1,26 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { cookies } from 'next/headers'
+import { SESSION_COOKIE_NAME, clearSessionCookie, revokeSessionToken } from '@/lib/session'
+import { verifyRequestOrigin } from '@/lib/security'
 
 export async function POST(request: NextRequest) {
     try {
+        try {
+            verifyRequestOrigin(request)
+        } catch (error) {
+            if (error instanceof Error) {
+                return NextResponse.json({ error: error.message }, { status: 403 })
+            }
+            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+        }
+
         const cookieStore = await cookies()
-        const sessionToken = cookieStore.get('session_token')?.value
+        const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
 
         if (sessionToken) {
             const supabase = getSupabaseAdmin()
-
-            // Удаляем сессию из базы данных
-            await supabase
-                .from('user_sessions')
-                .delete()
-                .eq('session_token', sessionToken)
+            await revokeSessionToken(sessionToken, { supabase })
         }
 
-        // Удаляем cookie
-        cookieStore.delete('session_token')
+        const response = NextResponse.json({ message: 'Выход выполнен успешно' })
+        clearSessionCookie(response)
 
-        return NextResponse.json({ message: 'Выход выполнен успешно' })
+        return response
     } catch (error) {
         console.error('Logout error:', error)
         return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })

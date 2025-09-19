@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { ReactElement } from 'react'
 import { Button } from '@/components/ui/button'
 import {
     Trophy,
@@ -84,7 +85,7 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
     }
 
     const getAchievementIcon = (icon: string) => {
-        const iconMap: { [key: string]: JSX.Element } = {
+        const iconMap: Record<string, ReactElement> = {
             '🎯': <Target className="w-6 h-6 text-blue-500" />,
             '🏆': <Trophy className="w-6 h-6 text-yellow-500" />,
             '🔥': <Flame className="w-6 h-6 text-red-500" />,

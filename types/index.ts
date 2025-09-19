@@ -1,3 +1,11 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json }
+  | Json[]
+
 export interface User {
   id: string
   email: string
@@ -9,11 +17,22 @@ export interface User {
 export interface Order {
   id: string
   user_id: string
-  stripe_payment_intent_id: string
+  stripe_payment_intent_id?: string
+  cryptomus_order_id?: string
   amount: number
+  amount_paid: number
   status: 'pending' | 'completed' | 'failed'
+  payment_status: 'pending' | 'completed' | 'failed' | 'refunded'
+  payment_method: 'stripe' | 'cryptomus'
+  currency: string
+  user_email?: string
+  user_country?: string
+  user_ip?: string
+  metadata?: Record<string, unknown>
   pdf_url?: string
   session_id?: string
+  session_date?: string | null
+  session_time?: string | null
   created_at: string
   updated_at: string
 }
@@ -138,6 +157,7 @@ export interface Document {
 // Purchase types for payment tracking
 export interface Purchase {
   id: string
+  user_id?: string
   user_email?: string
   document_id: string
   payment_method: 'stripe' | 'cryptomus'
@@ -148,8 +168,36 @@ export interface Purchase {
   currency: string
   user_country?: string
   user_ip?: string
+  metadata?: Record<string, unknown>
   created_at: string
   updated_at: string
+}
+
+export interface UserCourseAccess {
+  id: string
+  user_id: string
+  document_id: string
+  granted_at: string
+  expires_at?: string | null
+  granted_by?: string | null
+  source?: string | null
+  metadata: Record<string, unknown>
+  revoked_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AuditLog {
+  id: string
+  actor_id?: string | null
+  actor_email?: string | null
+  action: string
+  target_table?: string | null
+  target_id?: string | null
+  metadata: Record<string, unknown>
+  ip_address?: string | null
+  user_agent?: string | null
+  created_at: string
 }
 
 // Database types
@@ -189,6 +237,25 @@ export interface Database {
           updated_at?: string
         }
       }
+      user_course_access: {
+        Row: UserCourseAccess
+        Insert: Omit<UserCourseAccess, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Omit<UserCourseAccess, 'id' | 'created_at' | 'updated_at'>> & {
+          updated_at?: string
+        }
+      }
+      audit_logs: {
+        Row: AuditLog
+        Insert: Omit<AuditLog, 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: Partial<Omit<AuditLog, 'id' | 'created_at'>>
+      }
       profiles: {
         Row: User
         Insert: Omit<User, 'created_at' | 'updated_at'> & {
@@ -198,6 +265,72 @@ export interface Database {
         Update: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>> & {
           updated_at?: string
         }
+      }
+    }
+    Functions: {
+      grant_course_access: {
+        Args: {
+          p_user_id: string
+          p_document_id: string
+          p_source?: string | null
+          p_actor_id?: string | null
+          p_actor_email?: string | null
+          p_metadata?: Json
+        }
+        Returns: Array<{
+          access_id: string | null
+          user_id: string
+          document_id: string
+          action: string
+        }>
+      }
+      revoke_course_access: {
+        Args: {
+          p_user_id: string
+          p_document_id: string
+          p_source?: string | null
+          p_actor_id?: string | null
+          p_actor_email?: string | null
+          p_reason?: string | null
+          p_metadata?: Json
+        }
+        Returns: Array<{
+          access_id: string | null
+          user_id: string
+          document_id: string
+          action: string
+        }>
+      }
+      grant_course_access_from_purchase: {
+        Args: {
+          p_purchase_id: string
+          p_actor_id?: string | null
+          p_actor_email?: string | null
+          p_source?: string | null
+          p_metadata?: Json
+        }
+        Returns: Array<{
+          access_id: string | null
+          user_id: string
+          document_id: string
+          action: string
+        }>
+      }
+      revoke_course_access_from_purchase: {
+        Args: {
+          p_purchase_id: string
+          p_actor_id?: string | null
+          p_actor_email?: string | null
+          p_source?: string | null
+          p_reason?: string | null
+          p_metadata?: Json
+        }
+        Returns: Array<{
+          access_id: string | null
+          user_id: string
+          document_id: string
+          action: string
+        }>
       }
     }
   }

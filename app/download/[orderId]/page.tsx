@@ -8,6 +8,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useSupabase } from '@/components/providers/supabase-provider'
+import { useAuth } from '@/contexts/AuthContext'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { CourseContent } from '@/components/course/CourseContent'
 import type { Document } from '@/types'
@@ -27,7 +28,8 @@ interface Order {
 export default function DownloadPage() {
   const params = useParams()
   const router = useRouter()
-  const { user, supabase } = useSupabase()
+  const { supabase } = useSupabase()
+  const { user } = useAuth()
 
   const [order, setOrder] = useState<Order | null>(null)
   const [document, setDocument] = useState<Document | null>(null)
@@ -397,4 +399,3 @@ export default function DownloadPage() {
     </PageLayout>
   )
 }
-

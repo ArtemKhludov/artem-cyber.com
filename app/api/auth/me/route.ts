@@ -1,74 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase'
 import { cookies } from 'next/headers'
+import {
+    SESSION_COOKIE_NAME,
+    attachSessionCookie,
+    clearSessionCookie,
+    getSessionErrorMessage,
+    validateSessionToken
+} from '@/lib/session'
+import { verifyRequestOrigin } from '@/lib/security'
 
 export async function GET(request: NextRequest) {
     try {
         const cookieStore = await cookies()
-        const sessionToken = cookieStore.get('session_token')?.value
+        const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
+        const validation = await validateSessionToken(sessionToken)
 
-        if (!sessionToken) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        if (!validation.session || !validation.user) {
+            const response = NextResponse.json({
+                error: getSessionErrorMessage(validation.reason)
+            }, { status: 401 })
 
-        const supabase = getSupabaseAdmin()
-
-        // Проверяем сессию
-        const { data: session, error: sessionError } = await supabase
-            .from('user_sessions')
-            .select(`
-        user_id,
-        expires_at,
-        last_activity,
-        users (
-          id,
-          email,
-          name,
-          created_at
-        )
-      `)
-            .eq('session_token', sessionToken)
-            .gt('expires_at', new Date().toISOString())
-            .single()
-
-        if (sessionError || !session) {
-            return NextResponse.json({ error: 'Недействительная сессия' }, { status: 401 })
-        }
-
-        // Получаем роль пользователя из таблицы users
-        const userRole = (session.users as any)?.role || 'user'
-
-        // Проверяем время неактивности (30 минут) - только если поле существует
-        if (session.last_activity) {
-            const lastActivity = new Date(session.last_activity)
-            const now = new Date()
-            const inactiveTime = now.getTime() - lastActivity.getTime()
-            const maxInactiveTime = 30 * 60 * 1000 // 30 минут в миллисекундах
-
-            if (inactiveTime > maxInactiveTime) {
-                // Сессия истекла из-за неактивности
-                await supabase
-                    .from('user_sessions')
-                    .delete()
-                    .eq('session_token', sessionToken)
-
-                return NextResponse.json({ error: 'Сессия истекла из-за неактивности' }, { status: 401 })
+            if (sessionToken) {
+                clearSessionCookie(response)
             }
 
-            // Обновляем время последней активности
-            await supabase
-                .from('user_sessions')
-                .update({ last_activity: now.toISOString() })
-                .eq('session_token', sessionToken)
+            return response
         }
 
-        return NextResponse.json({
-            ...session.users,
-            role: userRole,
-            last_activity: session.last_activity || new Date().toISOString()
+        const response = NextResponse.json({
+            ...validation.user,
+            role: validation.user.role || 'user',
+            last_activity: validation.session.last_activity,
+            session: {
+                ip_address: validation.session.ip_address,
+                user_agent: validation.session.user_agent,
+                remember_me: Boolean(validation.session.remember_me),
+                expires_at: validation.sessionExpiresAt,
+                last_activity: validation.session.last_activity,
+            }
         })
+
+        if (validation.sessionExpiresAt) {
+            response.headers.set('X-Session-Expires-At', validation.sessionExpiresAt)
+        }
+
+        if (validation.shouldRefreshCookie && validation.cookieMaxAgeSeconds) {
+            attachSessionCookie(response, validation.session.session_token, validation.cookieMaxAgeSeconds)
+        }
+
+        return response
     } catch (error) {
         console.error('Session check error:', error)
+        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    }
+}
+
+export async function POST(request: NextRequest) {
+    try {
+        try {
+            verifyRequestOrigin(request)
+        } catch (error) {
+            if (error instanceof Error) {
+                return NextResponse.json({ error: error.message }, { status: 403 })
+            }
+            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+        }
+
+        const cookieStore = await cookies()
+        const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
+        const validation = await validateSessionToken(sessionToken)
+
+        if (!validation.session || !validation.user) {
+            const response = NextResponse.json({ success: false, error: getSessionErrorMessage(validation.reason) }, { status: 401 })
+
+            if (sessionToken) {
+                clearSessionCookie(response)
+            }
+
+            return response
+        }
+
+        const response = NextResponse.json({ success: true })
+
+        if (validation.shouldRefreshCookie && validation.cookieMaxAgeSeconds) {
+            attachSessionCookie(response, validation.session.session_token, validation.cookieMaxAgeSeconds)
+        }
+
+        return response
+    } catch (error) {
+        console.error('Session ping error:', error)
         return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
     }
 }

@@ -160,8 +160,8 @@ export default function ResetPasswordModal({
                                         <strong>Что делать дальше:</strong>
                                     </p>
                                     <ul className="text-blue-700 text-sm mt-2 space-y-1 text-left">
-                                        <li>• Проверьте папку "Входящие"</li>
-                                        <li>• Если письма нет, проверьте "Спам"</li>
+                                        <li>• Проверьте папку &laquo;Входящие&raquo;</li>
+                                        <li>• Если письма нет, проверьте &laquo;Спам&raquo;</li>
                                         <li>• Перейдите по ссылке в письме</li>
                                         <li>• Создайте новый пароль</li>
                                     </ul>

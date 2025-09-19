@@ -1,5 +1,11 @@
 import { getSupabaseAdmin } from './supabase'
 import { cookies } from 'next/headers'
+import {
+    SESSION_COOKIE_NAME,
+    getSessionErrorMessage,
+    validateSessionToken
+} from './session'
+import { ensureCourseAccessForUser } from './course-access'
 
 export interface CourseAccessCheck {
     hasAccess: boolean
@@ -16,7 +22,7 @@ export async function checkCourseAccess(courseId: string): Promise<CourseAccessC
     try {
         // Получаем токен сессии из cookies
         const cookieStore = await cookies()
-        const sessionToken = cookieStore.get('session')?.value || cookieStore.get('session_token')?.value
+        const sessionToken = cookieStore.get('session')?.value || cookieStore.get(SESSION_COOKIE_NAME)?.value
 
         if (!sessionToken) {
             return {
@@ -27,44 +33,54 @@ export async function checkCourseAccess(courseId: string): Promise<CourseAccessC
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем сессию пользователя
-        const { data: session, error: sessionError } = await supabase
-            .from('user_sessions')
-            .select(`
-        user_id,
-        users (
-          id,
-          email
-        )
-      `)
-            .eq('session_token', sessionToken)
-            .gt('expires_at', new Date().toISOString())
-            .single()
+        const validation = await validateSessionToken(sessionToken, { supabase })
 
-        if (sessionError || !session) {
+        if (!validation.session || !validation.user) {
             return {
                 hasAccess: false,
-                error: 'Недействительная сессия'
+                error: getSessionErrorMessage(validation.reason)
             }
         }
 
-        const userEmail = (session.users as any)?.email
+        const userEmail = validation.user.email
+        const userId = validation.session.user_id
 
-        // Проверяем доступ к курсу через покупку
-        const { data: purchase, error: purchaseError } = await supabase
-            .from('purchases')
-            .select('id')
-            .eq('user_email', userEmail)
+        const now = new Date()
+
+        // Ищем активную запись доступа (user_course_access) вместо прямого обращения к purchases
+        const { data: existingAccess, error: accessError } = await supabase
+            .from('user_course_access')
+            .select('id, expires_at, revoked_at')
+            .eq('user_id', userId)
             .eq('document_id', courseId)
-            .eq('payment_status', 'completed')
-            .single()
+            .is('revoked_at', null)
+            .maybeSingle()
 
-        if (purchaseError || !purchase) {
-            return {
-                hasAccess: false,
-                userEmail,
-                courseId,
-                error: 'Нет доступа к курсу. Пожалуйста, приобретите курс.'
+        if (accessError) {
+            console.error('Error fetching course access record:', accessError)
+        }
+
+        const isActive = existingAccess && (!existingAccess.expires_at || new Date(existingAccess.expires_at) > now)
+
+        if (!isActive) {
+            // Лениво восстанавливаем доступ из завершенных покупок (если удалили руками)
+            await ensureCourseAccessForUser(supabase, userId, courseId)
+
+            const { data: refreshedAccess } = await supabase
+                .from('user_course_access')
+                .select('id, expires_at, revoked_at')
+                .eq('user_id', userId)
+                .eq('document_id', courseId)
+                .is('revoked_at', null)
+                .maybeSingle()
+
+            if (!refreshedAccess || (refreshedAccess.expires_at && new Date(refreshedAccess.expires_at) <= now)) {
+                return {
+                    hasAccess: false,
+                    userEmail,
+                    courseId,
+                    error: 'Нет доступа к курсу. Пожалуйста, приобретите курс.'
+                }
             }
         }
 
@@ -90,7 +106,7 @@ export async function checkCourseAccess(courseId: string): Promise<CourseAccessC
 export async function checkAdminCourseAccess(courseId: string): Promise<CourseAccessCheck> {
     try {
         const cookieStore = await cookies()
-        const sessionToken = cookieStore.get('session')?.value || cookieStore.get('session_token')?.value
+        const sessionToken = cookieStore.get('session')?.value || cookieStore.get(SESSION_COOKIE_NAME)?.value
 
         if (!sessionToken) {
             return {
@@ -101,30 +117,17 @@ export async function checkAdminCourseAccess(courseId: string): Promise<CourseAc
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем сессию и роль пользователя
-        const { data: session, error: sessionError } = await supabase
-            .from('user_sessions')
-            .select(`
-        user_id,
-        users (
-          id,
-          email,
-          role
-        )
-      `)
-            .eq('session_token', sessionToken)
-            .gt('expires_at', new Date().toISOString())
-            .single()
+        const validation = await validateSessionToken(sessionToken, { supabase })
 
-        if (sessionError || !session) {
+        if (!validation.session || !validation.user) {
             return {
                 hasAccess: false,
-                error: 'Недействительная сессия'
+                error: getSessionErrorMessage(validation.reason)
             }
         }
 
-        const userEmail = (session.users as any)?.email
-        const userRole = (session.users as any)?.role
+        const userEmail = validation.user.email
+        const userRole = validation.user.role
 
         // Администраторы имеют доступ ко всем курсам
         if (userRole === 'admin') {

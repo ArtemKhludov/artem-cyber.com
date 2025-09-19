@@ -22,27 +22,17 @@ export function useCourseMaterials(documentId: string, materials: CourseMaterial
 
     const getSecureUrl = async (filePath: string): Promise<string> => {
         try {
-            const { data: { session } } = await supabase.auth.getSession()
-
-            if (!session?.access_token) {
-                throw new Error('User not authenticated')
-            }
-
             const response = await fetch(
-                `/api/course-materials?path=${encodeURIComponent(filePath)}&documentId=${documentId}`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${session.access_token}`,
-                    },
-                }
+                `/api/materials/signed-url?path=${encodeURIComponent(filePath)}&documentId=${encodeURIComponent(documentId)}`,
+                { credentials: 'include' }
             )
 
             if (!response.ok) {
                 throw new Error('Access denied')
             }
 
-            // Возвращаем URL для отображения
-            return URL.createObjectURL(await response.blob())
+            const data = await response.json()
+            return data.url as string
         } catch (error) {
             console.error('Error getting secure URL:', error)
             throw error
