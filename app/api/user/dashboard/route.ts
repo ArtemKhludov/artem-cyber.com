@@ -9,6 +9,14 @@ import {
   validateSessionToken
 } from '@/lib/session'
 
+type AccessRow = {
+  id: string
+  document_id: string | null
+  granted_at: string | null
+  expires_at: string | null
+  revoked_at: string | null
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin()
@@ -101,6 +109,22 @@ export async function GET(request: NextRequest) {
       console.error('Ошибка получения заказов:', ordersError)
     }
 
+    const { data: rawAccesses, error: accessesError } = await supabase
+      .from('user_course_access')
+      .select('id, document_id, granted_at, expires_at, revoked_at')
+      .eq('user_id', validation.session.user_id)
+
+    if (accessesError) {
+      console.error('Ошибка получения доступов:', accessesError)
+    }
+
+    const accessByDocument = (rawAccesses || []).reduce<Record<string, AccessRow>>((acc, access) => {
+      if (access.document_id) {
+        acc[access.document_id] = access as AccessRow
+      }
+      return acc
+    }, {})
+
     const totalPurchases = purchases?.length || 0
     const totalOrders = orders?.length || 0
     const completedOrders = orders?.filter(o => o.status === 'completed').length || 0
@@ -109,6 +133,19 @@ export async function GET(request: NextRequest) {
 
     const formattedPurchases = purchases?.map(purchase => {
       const composition = courseComposition[purchase.document_id] || {}
+      const access = purchase.document_id ? accessByDocument[purchase.document_id] : null
+      let accessStatus: 'active' | 'revoked' | 'expired' | 'pending' | undefined
+
+      if (access) {
+        if (access.revoked_at) {
+          accessStatus = 'revoked'
+        } else if (access.expires_at && new Date(access.expires_at) < new Date()) {
+          accessStatus = 'expired'
+        } else {
+          accessStatus = 'active'
+        }
+      }
+
       const workbooks = courseWorkbooks[purchase.document_id] || []
       const document = purchase.documents as any
 
@@ -117,8 +154,19 @@ export async function GET(request: NextRequest) {
         product_name: document?.title || 'Курс',
         product_type: document?.course_type === 'mini_course' ? 'mini_course' : 'pdf',
         price: purchase.amount_paid,
-        status: purchase.payment_status === 'completed' ? 'completed' : 'pending',
+        status: accessStatus ?? (purchase.payment_status === 'completed' ? 'completed' : 'pending'),
+        payment_status: purchase.payment_status,
         created_at: purchase.created_at,
+        receipt_url: (purchase as any)?.receipt_url ?? null,
+        access: access
+          ? {
+              id: access.id,
+              status: accessStatus ?? 'pending',
+              granted_at: access.granted_at,
+              expires_at: access.expires_at,
+              revoked_at: access.revoked_at
+            }
+          : null,
         document: {
           ...document,
           has_workbook: workbooks.length > 0,
@@ -148,6 +196,7 @@ export async function GET(request: NextRequest) {
       status: order.status === 'completed' ? 'completed' : 'pending',
       created_at: order.created_at,
       pdf_url: order.pdf_url,
+      receipt_url: order.pdf_url,
       session_date: order.session_date,
       session_time: order.session_time,
       progress: order.status === 'completed' ? 100 : 0

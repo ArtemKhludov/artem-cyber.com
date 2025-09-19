@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +22,61 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import type { Document, Workbook, CourseVideo, CourseAudio } from '@/types'
+import { initPostHog } from '@/lib/posthog'
+
+interface MaterialLink {
+    url: string
+    expiresIn: number
+    expiresAt: number
+}
+
+const STORAGE_OBJECT_PREFIX = '/storage/v1/object/'
+
+const normalizeStoragePath = (raw: string | null | undefined): string | null => {
+    if (!raw) return null
+    let value = raw.trim()
+
+    if (/^https?:\/\//i.test(value)) {
+        try {
+            const parsed = new URL(value)
+            const prefixIndex = parsed.pathname.indexOf(STORAGE_OBJECT_PREFIX)
+            if (prefixIndex >= 0) {
+                value = parsed.pathname.slice(prefixIndex + STORAGE_OBJECT_PREFIX.length)
+                const queryIndex = value.indexOf('?')
+                if (queryIndex >= 0) {
+                    value = value.slice(0, queryIndex)
+                }
+            } else {
+                return null
+            }
+        } catch (error) {
+            console.warn('Не удалось распарсить URL материала', error)
+            return null
+        }
+    }
+
+    value = value.replace(/^sign\//, '')
+    value = value.replace(/^public\//, '')
+    value = value.replace(/^course-materials\//, '')
+
+    return value.replace(/^\/+/, '')
+}
+
+const formatDurationSeconds = (totalSeconds: number): string => {
+    if (totalSeconds <= 0) {
+        return 'менее 1 сек'
+    }
+
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+
+    if (minutes >= 1) {
+        const secondsPart = seconds > 0 ? ` ${seconds} сек` : ''
+        return `${minutes} мин${secondsPart}`
+    }
+
+    return `${seconds} сек`
+}
 
 interface CourseProgress {
     user_email: string
@@ -62,6 +117,7 @@ interface Achievement {
 export default function CoursePlayer() {
     const params = useParams()
     const courseId = params.id as string
+    const router = useRouter()
 
     const [course, setCourse] = useState<Document | null>(null)
     const [user, setUser] = useState<any>(null)
@@ -75,6 +131,21 @@ export default function CoursePlayer() {
     const [recentAchievements, setRecentAchievements] = useState<Achievement[]>([])
     const [showAchievement, setShowAchievement] = useState<Achievement | null>(null)
     const [updatingProgress, setUpdatingProgress] = useState<string | null>(null)
+    const [materialLinks, setMaterialLinks] = useState<Record<string, MaterialLink>>({})
+    const [linkLoading, setLinkLoading] = useState<Record<string, boolean>>({})
+    const [linkErrors, setLinkErrors] = useState<Record<string, string>>({})
+    const [now, setNow] = useState(Date.now())
+    const hasMaterialLinks = Object.keys(materialLinks).length > 0
+    const track = useCallback((event: string, props?: Record<string, unknown>) => {
+        const ph = initPostHog()
+        ph?.capture(event, props)
+    }, [])
+
+    useEffect(() => {
+        if (!hasMaterialLinks) return
+        const timer = window.setInterval(() => setNow(Date.now()), 1000)
+        return () => window.clearInterval(timer)
+    }, [hasMaterialLinks])
 
     // Функция для загрузки прогресса курса
     const loadCourseProgress = useCallback(async () => {
@@ -111,15 +182,24 @@ export default function CoursePlayer() {
                 })
 
                 if (!response.ok) {
-                    const errorData = await response.json()
+                    let errorData: { error?: string } | null = null
+                    try {
+                        errorData = await response.json()
+                    } catch (jsonError) {
+                        console.warn('Не удалось разобрать ответ при проверке доступа к курсу', jsonError)
+                    }
+
                     if (response.status === 401) {
                         setError('Необходима авторизация')
+                        const redirectTarget = encodeURIComponent(`/courses/${courseId}/player`)
+                        router.replace(`/auth/login?redirect=${redirectTarget}`)
                     } else if (response.status === 403) {
-                        setError('Курс не приобретен')
+                        setError(errorData?.error || 'Курс не приобретен')
                     } else if (response.status === 404) {
                         setError('Курс не найден')
+                        router.replace(`/courses/${courseId}`)
                     } else {
-                        setError(errorData.error || 'Ошибка загрузки курса')
+                        setError(errorData?.error || 'Ошибка загрузки курса')
                     }
                     return
                 }
@@ -199,6 +279,100 @@ export default function CoursePlayer() {
     }
 
     // Функция для проверки статуса материала
+    const getMaterialKey = (materialType: string, materialId: string | number) => `${materialType}_${materialId}`
+
+    const ensureSignedLink = useCallback(async (
+        { key, path, expiresIn }: { key: string; path: string; expiresIn?: number }
+    ): Promise<MaterialLink> => {
+        const existing = materialLinks[key]
+        const nowTs = Date.now()
+        if (existing && existing.expiresAt - nowTs > 5000) {
+            return existing
+        }
+
+        setLinkLoading((prev) => ({ ...prev, [key]: true }))
+        try {
+            const params = new URLSearchParams({
+                documentId: courseId,
+                path
+            })
+
+            if (expiresIn) {
+                params.set('expiresIn', String(expiresIn))
+            }
+
+            const response = await fetch(`/api/materials/signed-url?${params.toString()}`, {
+                credentials: 'include'
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.error || 'Не удалось получить ссылку')
+            }
+
+            const data = await response.json()
+            const linkInfo: MaterialLink = {
+                url: data.url,
+                expiresIn: data.expiresIn,
+                expiresAt: Date.now() + data.expiresIn * 1000
+            }
+
+            setMaterialLinks((prev) => ({ ...prev, [key]: linkInfo }))
+            setLinkErrors((prev) => {
+                const next = { ...prev }
+                delete next[key]
+                return next
+            })
+
+            track('signed_url_issued', { courseId, key, path, expiresIn: data.expiresIn })
+            return linkInfo
+        } catch (error) {
+            console.error('Ошибка получения защищенной ссылки', error)
+            setLinkErrors((prev) => ({
+                ...prev,
+                [key]: error instanceof Error ? error.message : 'Неизвестная ошибка'
+            }))
+            try { track('signed_url_error', { courseId, key, path, message: error instanceof Error ? error.message : String(error) }) } catch { }
+            throw error
+        } finally {
+            setLinkLoading((prev) => {
+                const { [key]: _removed, ...rest } = prev
+                return rest
+            })
+        }
+    }, [courseId, materialLinks])
+
+    const renderLinkStatus = (key: string) => {
+        if (linkLoading[key]) {
+            return (
+                <p className="text-xs text-gray-500 mt-2" role="status">
+                    Готовим защищенную ссылку...
+                </p>
+            )
+        }
+
+        const errorMessage = linkErrors[key]
+        if (errorMessage) {
+            return (
+                <p className="text-xs text-red-500 mt-2" role="alert">
+                    {errorMessage}
+                </p>
+            )
+        }
+
+        const info = materialLinks[key]
+        if (info) {
+            const remainingSeconds = Math.max(0, Math.floor((info.expiresAt - now) / 1000))
+            return (
+                <p className="text-xs text-gray-500 mt-2">
+                    Ссылка истечёт через {formatDurationSeconds(remainingSeconds)}
+                </p>
+            )
+        }
+
+        return null
+    }
+
     const getMaterialStatus = (materialId: string, materialType: string): 'not_started' | 'in_progress' | 'completed' => {
         const progress = courseProgress.find(p =>
             p.material_id === materialId && p.material_type === materialType
@@ -211,14 +385,33 @@ export default function CoursePlayer() {
         return getMaterialStatus(materialId, materialType) === 'completed'
     }
 
-    const handleDownload = (url: string, filename: string) => {
-        const link = document.createElement('a')
-        link.href = url
-        link.download = filename
-        link.target = '_blank'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+    const handleDownload = async (materialKey: string, fileUrl: string, filename: string) => {
+        if (!fileUrl) {
+            console.warn('Попытка скачать материал без ссылки', materialKey)
+            return
+        }
+
+        try {
+            track('material_download_click', { courseId, materialKey })
+            let targetUrl = fileUrl
+            const normalizedPath = normalizeStoragePath(fileUrl)
+
+            if (normalizedPath) {
+                const link = await ensureSignedLink({ key: materialKey, path: normalizedPath })
+                targetUrl = link.url
+            }
+
+            const linkElement = document.createElement('a')
+            linkElement.href = targetUrl
+            linkElement.download = filename
+            linkElement.target = '_blank'
+            document.body.appendChild(linkElement)
+            linkElement.click()
+            document.body.removeChild(linkElement)
+        } catch (error) {
+            console.error('Не удалось скачать материал', error)
+            try { track('material_download_failed', { courseId, materialKey }) } catch { }
+        }
     }
 
     const getTotalItems = (): number => {
@@ -285,6 +478,8 @@ export default function CoursePlayer() {
         )
     }
 
+    const mainPdfKey = getMaterialKey('main_pdf', courseId)
+
     return (
         <PageLayout>
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -341,12 +536,22 @@ export default function CoursePlayer() {
                                 <div className="flex gap-3">
                                     <Button
                                         onClick={() => {
-                                            handleDownload(course.file_url, `${course.title}.pdf`)
+                                            void handleDownload(mainPdfKey, course.file_url, `${course.title}.pdf`)
                                         }}
                                         className="bg-blue-600 hover:bg-blue-700 text-white"
+                                        disabled={linkLoading[mainPdfKey]}
                                     >
-                                        <Download className="w-4 h-4 mr-2" />
-                                        Скачать PDF
+                                        {linkLoading[mainPdfKey] ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                Подготавливаем...
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <Download className="w-4 h-4 mr-2" />
+                                                Скачать PDF
+                                            </>
+                                        )}
                                     </Button>
                                     <Button
                                         onClick={() => updateMaterialProgress(
@@ -383,6 +588,7 @@ export default function CoursePlayer() {
                                         )}
                                     </Button>
                                 </div>
+                                {renderLinkStatus(mainPdfKey)}
                             </div>
 
                             {/* Рабочие тетради */}
@@ -395,63 +601,77 @@ export default function CoursePlayer() {
                                         </h2>
                                     </div>
                                     <div className="space-y-4">
-                                        {course.workbooks.map((workbook: Workbook) => (
-                                            <div key={workbook.id} className="border border-gray-200 rounded-lg p-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <h3 className="font-medium text-gray-900">{workbook.title}</h3>
-                                                            {isMaterialCompleted(workbook.id, 'workbook') && (
-                                                                <CheckCircle className="w-4 h-4 text-green-500" />
+                                        {course.workbooks.map((workbook: Workbook) => {
+                                            const workbookKey = getMaterialKey('workbook', workbook.id)
+                                            return (
+                                                <div key={workbook.id} className="border border-gray-200 rounded-lg p-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <h3 className="font-medium text-gray-900">{workbook.title}</h3>
+                                                                {isMaterialCompleted(workbook.id, 'workbook') && (
+                                                                    <CheckCircle className="w-4 h-4 text-green-500" />
+                                                                )}
+                                                            </div>
+                                                            {workbook.description && (
+                                                                <p className="text-sm text-gray-600 mb-3">{workbook.description}</p>
                                                             )}
                                                         </div>
-                                                        {workbook.description && (
-                                                            <p className="text-sm text-gray-600 mb-3">{workbook.description}</p>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            onClick={() => {
-                                                                handleDownload(workbook.file_url, `${workbook.title}.pdf`)
-                                                            }}
-                                                            size="sm"
-                                                            className="bg-green-600 hover:bg-green-700 text-white"
-                                                        >
-                                                            <Download className="w-4 h-4 mr-1" />
-                                                            Скачать
-                                                        </Button>
-                                                        <Button
-                                                            onClick={() => updateMaterialProgress(
-                                                                workbook.id,
-                                                                'workbook',
-                                                                workbook.title,
-                                                                isMaterialCompleted(workbook.id, 'workbook') ? 'not_started' : 'completed',
-                                                                100,
-                                                                0
-                                                            )}
-                                                            size="sm"
-                                                            variant="outline"
-                                                            disabled={updatingProgress === `workbook_${workbook.id}`}
-                                                            className={isMaterialCompleted(workbook.id, 'workbook') ? 'bg-green-50 border-green-200 text-green-700' : ''}
-                                                        >
-                                                            {updatingProgress === `workbook_${workbook.id}` ? (
-                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                                            ) : isMaterialCompleted(workbook.id, 'workbook') ? (
-                                                                <>
-                                                                    <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
-                                                                    Изучено
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <Zap className="w-4 h-4 mr-1" />
-                                                                    Изучено
-                                                                </>
-                                                            )}
-                                                        </Button>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                onClick={() => {
+                                                                    void handleDownload(workbookKey, workbook.file_url, `${workbook.title}.pdf`)
+                                                                }}
+                                                                size="sm"
+                                                                className="bg-green-600 hover:bg-green-700 text-white"
+                                                                disabled={linkLoading[workbookKey]}
+                                                            >
+                                                                {linkLoading[workbookKey] ? (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                                        Подготавливаем...
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <Download className="w-4 h-4 mr-1" />
+                                                                        Скачать
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                            <Button
+                                                                onClick={() => updateMaterialProgress(
+                                                                    workbook.id,
+                                                                    'workbook',
+                                                                    workbook.title,
+                                                                    isMaterialCompleted(workbook.id, 'workbook') ? 'not_started' : 'completed',
+                                                                    100,
+                                                                    0
+                                                                )}
+                                                                size="sm"
+                                                                variant="outline"
+                                                                disabled={updatingProgress === `workbook_${workbook.id}`}
+                                                                className={isMaterialCompleted(workbook.id, 'workbook') ? 'bg-green-50 border-green-200 text-green-700' : ''}
+                                                            >
+                                                                {updatingProgress === `workbook_${workbook.id}` ? (
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                                ) : isMaterialCompleted(workbook.id, 'workbook') ? (
+                                                                    <>
+                                                                        <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                                                                        Изучено
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <Zap className="w-4 h-4 mr-1" />
+                                                                        Изучено
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                        {renderLinkStatus(workbookKey)}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 </div>
                             )}

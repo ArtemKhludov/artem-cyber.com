@@ -14,9 +14,10 @@ interface CourseContentProps {
 export function CourseContent({ document, isPurchased = false }: CourseContentProps) {
     const [activeVideo, setActiveVideo] = useState<number | null>(null)
     const [isPlaying, setIsPlaying] = useState(false)
+    const [inlineError, setInlineError] = useState<string | null>(null)
 
     // Используем хук для безопасного доступа к материалам
-    const { materials, loading, error } = useCourseMaterials(document.id, {
+    const { materials, loading, error, refetch } = useCourseMaterials(document.id, {
         file_url: document.file_url,
         workbook_url: document.workbook_url,
         video_urls: document.video_urls,
@@ -43,6 +44,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
             alert('Для просмотра видео необходимо приобрести мини-курс')
             return
         }
+        setInlineError(null)
         setActiveVideo(index)
         setIsPlaying(true)
     }
@@ -83,7 +85,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
             credentials: 'include'
         })
         if (!res.ok) {
-            throw new Error('Access denied')
+            throw new Error('access_denied')
         }
         const data = await res.json()
         return data.url as string
@@ -104,10 +106,11 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                     <Button
                         onClick={async () => {
                             try {
+                                setInlineError(null)
                                 const signed = await fetchSignedUrl(document.file_url)
                                 handleDownload(signed, `${document.title}.pdf`)
                             } catch (e) {
-                                alert('Нет доступа к файлу')
+                                setInlineError('Не удалось получить безопасную ссылку. Ссылка могла истечь. Попробуйте снова.')
                             }
                         }}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -118,6 +121,21 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                 ) : (
                     <div className="text-sm text-gray-500">
                         Доступно после покупки
+                    </div>
+                )}
+                <div className="mt-2 text-xs text-gray-500">Ссылка действует около 2 минут. При истечении — запросите заново.</div>
+                {inlineError && (
+                    <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                        <Clock className="w-4 h-4 mt-0.5" />
+                        <div className="flex-1">
+                            <p>{inlineError}</p>
+                            <div className="mt-2 flex gap-2">
+                                <Button size="sm" variant="outline" onClick={() => { setInlineError(null); void refetch(); }}>Повторить</Button>
+                                <Button size="sm" variant="ghost" asChild>
+                                    <a href={`mailto:support@energylogic.ai?subject=${encodeURIComponent('Проблема со скачиванием PDF')}&body=${encodeURIComponent(`Документ: ${document.title} (${document.id})`)}`}>Связаться с поддержкой</a>
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -162,10 +180,11 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                     <Button
                                                         onClick={async () => {
                                                             try {
+                                                                setInlineError(null)
                                                                 const signed = await fetchSignedUrl(workbook.file_url)
                                                                 handleDownload(signed, `${workbook.title}.pdf`)
                                                             } catch {
-                                                                alert('Нет доступа к файлу')
+                                                                setInlineError('Не удалось получить ссылку на рабочую тетрадь. Попробуйте снова.')
                                                             }
                                                         }}
                                                         size="sm"
@@ -200,10 +219,11 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                 <Button
                                     onClick={async () => {
                                         try {
+                                            setInlineError(null)
                                             const signed = await fetchSignedUrl(document.workbook_url!)
                                             handleDownload(signed, `${document.title}-workbook.pdf`)
                                         } catch {
-                                            alert('Нет доступа к файлу')
+                                            setInlineError('Не удалось получить ссылку на рабочую тетрадь. Попробуйте снова.')
                                         }
                                     }}
                                     className="bg-green-600 hover:bg-green-700 text-white"
@@ -263,10 +283,11 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                 <Button
                                                     onClick={async () => {
                                                         try {
+                                                            setInlineError(null)
                                                             const signed = await fetchSignedUrl(video.file_url)
                                                             handleDownload(signed, `${video.title || document.title}-video-${index + 1}.mp4`)
                                                         } catch {
-                                                            alert('Нет доступа к файлу')
+                                                            setInlineError('Не удалось получить ссылку на видео. Попробуйте снова.')
                                                         }
                                                     }}
                                                     size="sm"
@@ -338,10 +359,11 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                 <Button
                                                     onClick={async () => {
                                                         try {
+                                                            setInlineError(null)
                                                             const signed = await fetchSignedUrl(audioItem.file_url)
                                                             handleDownload(signed, `${audioItem.title || document.title}-audio-${index + 1}.mp3`)
                                                         } catch {
-                                                            alert('Нет доступа к файлу')
+                                                            setInlineError('Не удалось получить ссылку на аудио. Попробуйте снова.')
                                                         }
                                                     }}
                                                     size="sm"

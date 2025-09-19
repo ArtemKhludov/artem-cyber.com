@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const protectedRoutes = ['/dashboard', '/admin']
+const protectedRoutes = ['/dashboard', '/admin', '/purchases', '/courses']
 const SESSION_COOKIE_NAME = 'session_token'
 
 export function middleware(request: NextRequest) {

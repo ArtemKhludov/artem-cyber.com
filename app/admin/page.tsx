@@ -24,14 +24,17 @@ import {
   ArrowDown,
   Users,
   DollarSign,
-  Shield
+  Shield,
+  AlertTriangle
 } from 'lucide-react'
+import * as Toast from '@radix-ui/react-toast'
 import { Button } from '@/components/ui/button'
 import AddRequestModal from '@/components/admin/AddRequestModal'
 import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 import EditableCell from '@/components/admin/EditableCell'
 import UserCard from '@/components/admin/UserCard'
 import { EnhancedUsersList } from '@/components/admin/EnhancedUsersList'
+import ChartsBlock from '@/components/admin/ChartsBlock'
 import { CoursesManagement } from '@/components/admin/CoursesManagement'
 import { PricingManagement } from '@/components/admin/PricingManagement'
 import { AdminGuard } from '@/components/auth/AdminGuard'
@@ -81,9 +84,10 @@ interface Purchase {
 
 function AdminPageContent() {
   const { logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'users' | 'courses' | 'pricing'>('requests')
+  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'payments' | 'users' | 'courses' | 'pricing'>('requests')
   const [requests, setRequests] = useState<Request[]>([])
   const [purchases, setPurchases] = useState<Purchase[]>([])
+  const [payments, setPayments] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -101,9 +105,23 @@ function AdminPageContent() {
   const [showRevokeAccess, setShowRevokeAccess] = useState(false)
   const [revokeDefaults, setRevokeDefaults] = useState<{ email?: string; userId?: string; documentId?: string }>({})
 
+  // Toast state
+  const [toastOpen, setToastOpen] = useState(false)
+  const [toastData, setToastData] = useState<{ title: string; description?: string; variant?: 'success' | 'error' } | null>(null)
+  const showToast = (title: string, description?: string, variant?: 'success' | 'error') => {
+    setToastData({ title, description, variant })
+    setToastOpen(true)
+  }
+
+  // Recent grants/revokes
+  const [recentEvents, setRecentEvents] = useState<Array<{ id: string; action?: string; created_at?: string; actor_email?: string; target_table?: string; target_id?: string }>>([])
+  const [recentLoading, setRecentLoading] = useState(false)
+
   // Состояния для сортировки
   const [sortField, setSortField] = useState<string>('created_at')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  // Выбор элементов для пакетных действий (только для Покупок)
+  const [selectedPurchaseIds, setSelectedPurchaseIds] = useState<Set<string>>(new Set())
 
   // Функция для сортировки данных
   const sortData = (data: any[], field: string, direction: 'asc' | 'desc') => {
@@ -168,6 +186,16 @@ function AdminPageContent() {
     sortDirection
   )
 
+  // Пагинация (клиентская) для таблиц
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  useEffect(() => { setPage(1) }, [activeTab, searchTerm, filter, statusFilter, dateFilter])
+  const paginate = (list: any[]) => {
+    const start = (page - 1) * pageSize
+    return list.slice(start, start + pageSize)
+  }
+  // Перенесено ниже, после объявления filteredPurchases и filteredUsers
+
   const filteredPurchases = sortData(
     purchases.filter(purchase => {
       const matchesSearch = searchTerm === '' ||
@@ -184,6 +212,68 @@ function AdminPageContent() {
     sortDirection
   )
 
+  const allSelected = filteredPurchases.length > 0 && filteredPurchases.every((p: any) => selectedPurchaseIds.has(p.id))
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedPurchaseIds(new Set())
+    } else {
+      setSelectedPurchaseIds(new Set(filteredPurchases.map((p: any) => p.id)))
+    }
+  }
+  const toggleSelectOne = (id: string) => {
+    setSelectedPurchaseIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  const bulkGrant = async () => {
+    if (selectedPurchaseIds.size === 0) return
+    if (!confirm(`Выдать доступ по ${selectedPurchaseIds.size} запись(ям)?`)) return
+    let ok = 0; let fail = 0
+    for (const id of selectedPurchaseIds) {
+      const item = filteredPurchases.find((p: any) => p.id === id)
+      if (!item) { fail++; continue }
+      const payload: any = { documentId: item.product_id }
+      if (item.user_id) payload.userId = item.user_id; else if (item.email) payload.email = item.email
+      try {
+        const res = await fetch('/api/admin/access/grant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (res.ok) ok++; else fail++
+      } catch { fail++ }
+    }
+    showToast('Пакетная выдача завершена', `Успех: ${ok}, Ошибки: ${fail}`, fail ? 'error' : 'success')
+    setSelectedPurchaseIds(new Set())
+    fetchPurchases()
+  }
+
+  const bulkRevoke = async () => {
+    if (selectedPurchaseIds.size === 0) return
+    if (!confirm(`Отозвать доступ по ${selectedPurchaseIds.size} запись(ям)?`)) return
+    let ok = 0; let fail = 0
+    for (const id of selectedPurchaseIds) {
+      const item = filteredPurchases.find((p: any) => p.id === id)
+      if (!item || !item.user_id || !item.product_id) { fail++; continue }
+      const payload: any = { userId: item.user_id, documentId: item.product_id, reason: 'manual' }
+      try {
+        const res = await fetch('/api/admin/access/revoke', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (res.ok) ok++; else fail++
+      } catch { fail++ }
+    }
+    showToast('Пакетный отзыв завершён', `Успех: ${ok}, Ошибки: ${fail}`, fail ? 'error' : 'success')
+    setSelectedPurchaseIds(new Set())
+    fetchPurchases()
+  }
+
+  // Totals for Purchases (based on current filters)
+  const purchasesTotalCount = filteredPurchases.length
+  const purchasesTotalAmount = filteredPurchases.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+
+  // Быстрые счётчики по статусам для Покупок
+  const purchasesPendingCount = purchases.filter(p => p.status === 'pending').length
+  const purchasesCompletedCount = purchases.filter(p => p.status === 'completed').length
+  const purchasesCancelledCount = purchases.filter(p => p.status === 'cancelled').length
+
   const filteredUsers = sortData(
     users.filter(user => {
       const matchesSearch = searchTerm === '' ||
@@ -197,6 +287,11 @@ function AdminPageContent() {
     sortDirection
   )
 
+  // Показатели и страницы (после инициализации всех filtered-списков)
+  const totalRows = activeTab === 'requests' ? filteredRequests.length : activeTab === 'purchases' ? filteredPurchases.length : filteredUsers.length
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize))
+  const visibleRows = activeTab === 'requests' ? paginate(filteredRequests) : activeTab === 'purchases' ? paginate(filteredPurchases) : paginate(filteredUsers)
+
   useEffect(() => {
     // Загружаем данные при первой загрузке
     fetchRequests()
@@ -204,15 +299,63 @@ function AdminPageContent() {
     fetchDocuments()
   }, [])
 
+  // Синхронизация состояния фильтров/сортировки с URL
+  useEffect(() => {
+    // Инициализация из URL один раз
+    const params = new URLSearchParams(window.location.search)
+    const s = params.get('s'); if (s !== null) setSearchTerm(s)
+    const f = params.get('f'); if (f !== null) setFilter(f)
+    const sf = params.get('sf'); if (sf !== null) setStatusFilter(sf)
+    const df = params.get('df'); if (df !== null) setDateFilter(df)
+    const sortF = params.get('sort'); if (sortF !== null) setSortField(sortF)
+    const sortD = params.get('dir') as 'asc' | 'desc' | null; if (sortD === 'asc' || sortD === 'desc') setSortDirection(sortD)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (searchTerm) params.set('s', searchTerm); else params.delete('s')
+    if (filter !== 'all') params.set('f', filter); else params.delete('f')
+    if (statusFilter !== 'all') params.set('sf', statusFilter); else params.delete('sf')
+    if (dateFilter !== 'all') params.set('df', dateFilter); else params.delete('df')
+    if (sortField) params.set('sort', sortField)
+    if (sortDirection) params.set('dir', sortDirection)
+    const newUrl = `${window.location.pathname}?${params.toString()}`
+    window.history.replaceState(null, '', newUrl)
+  }, [searchTerm, filter, statusFilter, dateFilter, sortField, sortDirection])
+
   useEffect(() => {
     if (activeTab === 'requests') {
       fetchRequests()
     } else if (activeTab === 'purchases') {
       fetchPurchases()
+    } else if (activeTab === 'payments') {
+      fetchPayments()
     } else if (activeTab === 'users') {
       fetchUsers()
     }
   }, [activeTab, filter, statusFilter, dateFilter])
+
+  useEffect(() => {
+    // fetch recent grants/revokes (best-effort)
+    const fetchRecent = async () => {
+      setRecentLoading(true)
+      try {
+        const res = await fetch('/api/admin/audit/recent')
+        const json = await res.json().catch(() => ({}))
+        if (res.ok && json?.success && Array.isArray(json.data)) {
+          setRecentEvents(json.data)
+        } else {
+          setRecentEvents([])
+        }
+      } catch {
+        setRecentEvents([])
+      } finally {
+        setRecentLoading(false)
+      }
+    }
+    fetchRecent()
+  }, [])
 
   const fetchRequests = async () => {
     console.log('Fetching requests...')
@@ -302,6 +445,18 @@ function AdminPageContent() {
       }
     } catch (error) {
       console.error('Error fetching documents:', error)
+    }
+  }
+
+  const fetchPayments = async () => {
+    try {
+      const response = await fetch('/api/admin/data?type=payments')
+      const result = await response.json()
+      if (result.success) {
+        setPayments(result.data || [])
+      }
+    } catch (error) {
+      // ignore
     }
   }
 
@@ -416,13 +571,13 @@ function AdminPageContent() {
       })
 
       if (response.ok) {
-        alert('Синхронизация с Google Sheets завершена успешно!')
+        showToast('Синхронизация завершена', 'Google Sheets обновлены', 'success')
       } else {
-        alert('Ошибка синхронизации с Google Sheets')
+        showToast('Ошибка синхронизации', 'Не удалось обновить Google Sheets', 'error')
       }
     } catch (error) {
       console.error('Sync error:', error)
-      alert('Ошибка синхронизации')
+      showToast('Ошибка синхронизации', 'Сетевой сбой или внутренняя ошибка', 'error')
     } finally {
       setSyncing(false)
     }
@@ -452,7 +607,7 @@ function AdminPageContent() {
       console.log('Delete response:', responseData)
 
       if (response.ok) {
-        alert(`${type === 'request' ? 'Заявка' : 'Покупка'} удалена успешно!`)
+        showToast('Удалено', `${type === 'request' ? 'Заявка' : 'Покупка'} удалена`, 'success')
         // Обновляем данные
         if (type === 'request') {
           fetchRequests()
@@ -461,11 +616,11 @@ function AdminPageContent() {
         }
       } else {
         console.error('Delete failed:', responseData)
-        alert(`Ошибка удаления: ${responseData.error || 'Неизвестная ошибка'}`)
+        showToast('Ошибка удаления', responseData.error || 'Неизвестная ошибка', 'error')
       }
     } catch (error) {
       console.error('Delete error:', error)
-      alert('Ошибка удаления: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'))
+      showToast('Ошибка удаления', error instanceof Error ? error.message : 'Неизвестная ошибка', 'error')
     }
   }
 
@@ -493,7 +648,7 @@ function AdminPageContent() {
       console.log('Update response:', responseData)
 
       if (response.ok) {
-        alert(`${type === 'request' ? 'Заявка' : 'Покупка'} обновлена успешно!`)
+        showToast('Обновлено', `${type === 'request' ? 'Заявка' : 'Покупка'} обновлена`, 'success')
         // Обновляем данные
         if (type === 'request') {
           fetchRequests()
@@ -502,11 +657,11 @@ function AdminPageContent() {
         }
       } else {
         console.error('Update failed:', responseData)
-        alert(`Ошибка обновления: ${responseData.error || 'Неизвестная ошибка'}`)
+        showToast('Ошибка обновления', responseData.error || 'Неизвестная ошибка', 'error')
       }
     } catch (error) {
       console.error('Update error:', error)
-      alert('Ошибка обновления: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'))
+      showToast('Ошибка обновления', error instanceof Error ? error.message : 'Неизвестная ошибка', 'error')
     }
   }
 
@@ -714,6 +869,18 @@ function AdminPageContent() {
               </div>
             </button>
             <button
+              onClick={() => setActiveTab('payments')}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'payments'
+                ? 'bg-white text-gray-900'
+                : 'text-white hover:bg-white/10'
+                }`}
+            >
+              <div className="flex items-center justify-center">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Платежи ({payments.length})
+              </div>
+            </button>
+            <button
               onClick={() => setActiveTab('courses')}
               className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'courses'
                 ? 'bg-white text-gray-900'
@@ -818,6 +985,36 @@ function AdminPageContent() {
               )}
             </select>
           </div>
+
+          {/* Быстрые фильтры по статусу для Покупок */}
+          {activeTab === 'purchases' && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'all' ? 'bg-white text-gray-900 border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}`}
+              >
+                Все ({purchases.length})
+              </button>
+              <button
+                onClick={() => setStatusFilter('pending')}
+                className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'pending' ? 'bg-yellow-400 text-black border-yellow-400' : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/30'}`}
+              >
+                Ожидает оплаты ({purchasesPendingCount})
+              </button>
+              <button
+                onClick={() => setStatusFilter('completed')}
+                className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'completed' ? 'bg-green-400 text-black border-green-400' : 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30'}`}
+              >
+                Оплачено ({purchasesCompletedCount})
+              </button>
+              <button
+                onClick={() => setStatusFilter('cancelled')}
+                className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'cancelled' ? 'bg-red-400 text-black border-red-400' : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'}`}
+              >
+                Отменено ({purchasesCancelledCount})
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Stats */}
@@ -850,7 +1047,7 @@ function AdminPageContent() {
                 <p className="text-2xl font-bold text-white">
                   {activeTab === 'requests'
                     ? requests.filter(r => r.status === 'new').length
-                    : purchases.filter(p => p.status === 'pending').length
+                    : purchasesPendingCount
                   }
                 </p>
               </div>
@@ -867,7 +1064,7 @@ function AdminPageContent() {
                 <p className="text-2xl font-bold text-white">
                   {activeTab === 'requests'
                     ? requests.filter(r => r.status === 'in_progress').length
-                    : purchases.filter(p => p.status === 'completed').length
+                    : purchasesCompletedCount
                   }
                 </p>
               </div>
@@ -876,20 +1073,67 @@ function AdminPageContent() {
 
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
             <div className="flex items-center">
-              <CreditCard className="w-8 h-8 text-purple-400 mr-3" />
+              {activeTab === 'purchases' ? (
+                <AlertTriangle className="w-8 h-8 text-red-400 mr-3" />
+              ) : (
+                <CreditCard className="w-8 h-8 text-purple-400 mr-3" />
+              )}
               <div>
                 <p className="text-white/70 text-sm">
-                  {activeTab === 'requests' ? 'Завершенные' : 'Общая сумма'}
+                  {activeTab === 'requests' ? 'Завершенные' : 'Отмененные'}
                 </p>
                 <p className="text-2xl font-bold text-white">
                   {activeTab === 'requests'
                     ? requests.filter(r => r.status === 'completed').length
-                    : `${purchases.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0)} ₽`
+                    : purchasesCancelledCount
                   }
                 </p>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Charts */}
+        <ChartsBlock />
+
+        {/* Панель пакетных действий и последние события */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-1">
+            <h3 className="text-white font-semibold mb-3">Последние выдачи/отзывы</h3>
+            {recentLoading ? (
+              <p className="text-white/70 text-sm">Загрузка…</p>
+            ) : recentEvents.length === 0 ? (
+              <p className="text-white/50 text-sm">Нет событий</p>
+            ) : (
+              <ul className="space-y-2 max-h-48 overflow-auto pr-1">
+                {recentEvents.slice(0, 10).map((ev) => (
+                  <li key={ev.id} className="text-sm text-white/90 flex items-start gap-2">
+                    <span className={`mt-1 inline-block h-2 w-2 rounded-full ${ev.action?.toLowerCase().includes('revoke') ? 'bg-red-400' : 'bg-emerald-400'}`}></span>
+                    <div>
+                      <div className="">
+                        {ev.action || 'event'} {ev.target_table ? `• ${ev.target_table}` : ''}
+                      </div>
+                      <div className="text-white/50 text-xs">
+                        {ev.actor_email || ''} {ev.created_at ? `• ${new Date(ev.created_at).toLocaleString('ru-RU')}` : ''}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {activeTab === 'purchases' && selectedPurchaseIds.size > 0 && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-2">
+              <div className="flex items-center justify-between">
+                <div className="text-white">Выбрано записей: {selectedPurchaseIds.size}</div>
+                <div className="flex gap-2">
+                  <Button onClick={bulkGrant} className="bg-emerald-600 hover:bg-emerald-700 text-white">Выдать доступ</Button>
+                  <Button onClick={bulkRevoke} className="bg-red-600 hover:bg-red-700 text-white">Отозвать доступ</Button>
+                  <Button variant="outline" onClick={() => setSelectedPurchaseIds(new Set())} className="text-white border-white/30">Сбросить выбор</Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Table */}
@@ -910,6 +1154,11 @@ function AdminPageContent() {
               <table className="w-full">
                 <thead className="bg-white/20">
                   <tr>
+                    {activeTab === 'purchases' && (
+                      <th className="px-3 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                        <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} />
+                      </th>
+                    )}
                     {activeTab === 'users' ? (
                       <>
                         <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
@@ -939,6 +1188,15 @@ function AdminPageContent() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
                           Действия
                         </th>
+                      </>
+                    ) : activeTab === 'payments' ? (
+                      <>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Пользователь</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Документ</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Дата</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Статус</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Сумма</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Действия</th>
                       </>
                     ) : (
                       <>
@@ -1069,9 +1327,68 @@ function AdminPageContent() {
                         </div>
                       </td>
                     </tr>
+                  ) : activeTab === 'payments' ? (
+                    paginate(sortData(payments, sortField, sortDirection)).map((pmt: any) => (
+                      <tr key={pmt.id} className="hover:bg-white/5">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          {pmt.user_email || pmt.user_id}
+                          <div className="text-white/50 text-xs">ID: {pmt.id.slice(0, 8)}...</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{pmt.document_id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          {new Date(pmt.created_at).toLocaleDateString('ru-RU')}
+                          <div className="text-white/50 text-xs">{new Date(pmt.created_at).toLocaleTimeString('ru-RU')}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(pmt.payment_status)}`}>{pmt.payment_status}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
+                          {pmt.amount_paid || 0}
+                          <span className="ml-1">{pmt.currency || 'RUB'}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                          <div className="flex items-center space-x-2">
+                            {pmt.stripe_payment_intent_id && (
+                              <a
+                                href={`https://dashboard.stripe.com/search?query=${encodeURIComponent(pmt.stripe_payment_intent_id)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-blue-300 hover:underline"
+                              >
+                                Открыть в Stripe
+                              </a>
+                            )}
+                            <button
+                              className="text-white/80 hover:text-white underline"
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/admin/audit/purchase?id=${pmt.id}`)
+                                  const json = await res.json()
+                                  if (res.ok && json.success) {
+                                    const lines = (json.data as any[]).map(ev => `${new Date(ev.created_at).toLocaleString('ru-RU')} • ${ev.action}${ev.actor_email ? ' • ' + ev.actor_email : ''}`).join('\n')
+                                    alert(lines || 'Нет событий')
+                                  } else {
+                                    alert('Нет событий')
+                                  }
+                                } catch {
+                                  alert('Ошибка загрузки таймлайна')
+                                }
+                              }}
+                            >
+                              Таймлайн
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
-                    (activeTab === 'requests' ? filteredRequests : filteredPurchases).map((item) => (
+                    (activeTab === 'requests' ? visibleRows : activeTab === 'purchases' ? visibleRows : visibleRows).map((item: any) => (
                       <tr key={item.id} className="hover:bg-white/5">
+                        {activeTab === 'purchases' && (
+                          <td className="px-3 py-4 whitespace-nowrap">
+                            <input type="checkbox" checked={selectedPurchaseIds.has(item.id)} onChange={() => toggleSelectOne(item.id)} />
+                          </td>
+                        )}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <EditableCell
@@ -1263,6 +1580,42 @@ function AdminPageContent() {
                   )}
                 </tbody>
               </table>
+              {/* Пагинация */}
+              <div className="flex items-center justify-between px-4 py-3 bg-white/10 border-t border-white/10">
+                <div className="flex items-center gap-2 text-white/80 text-sm">
+                  <span>Показывать по</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="bg-transparent border border-white/30 rounded px-2 py-1"
+                  >
+                    {[10, 20, 50, 100].map(n => (<option key={n} value={n}>{n}</option>))}
+                  </select>
+                  <span>Всего: {totalRows}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" className="text-white border-white/30" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Назад</Button>
+                  <span className="text-white/80 text-sm">Стр. {page} из {totalPages}</span>
+                  <Button variant="outline" className="text-white border-white/30" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Вперёд</Button>
+                </div>
+              </div>
+              {activeTab === 'purchases' && (
+                <div className="bg-white/10">
+                  <table className="w-full">
+                    <tfoot>
+                      <tr>
+                        <td className="px-6 py-3 text-sm font-semibold text-white" colSpan={5}>
+                          Итого записей: {purchasesTotalCount}
+                        </td>
+                        <td className="px-6 py-3 text-sm font-semibold text-white">
+                          {purchasesTotalAmount} ₽
+                        </td>
+                        <td className="px-6 py-3" colSpan={2}></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1325,6 +1678,20 @@ function AdminPageContent() {
           if (activeTab === 'purchases') fetchPurchases()
         }}
       />
+
+      {/* Toasts */}
+      <Toast.Provider swipeDirection="right">
+        <Toast.Root
+          open={toastOpen}
+          onOpenChange={setToastOpen}
+          duration={3500}
+          className={`rounded-md shadow-lg px-4 py-3 border text-sm backdrop-blur-sm ${toastData?.variant === 'error' ? 'bg-red-500/20 border-red-500/30 text-red-100' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-100'}`}
+        >
+          {toastData?.title && <Toast.Title className="font-semibold">{toastData.title}</Toast.Title>}
+          {toastData?.description && <Toast.Description className="mt-0.5 text-white/80">{toastData.description}</Toast.Description>}
+        </Toast.Root>
+        <Toast.Viewport className="fixed bottom-4 right-4 z-[60] w-[360px] max-w-[calc(100%-2rem)] outline-none" />
+      </Toast.Provider>
     </div >
   )
 }

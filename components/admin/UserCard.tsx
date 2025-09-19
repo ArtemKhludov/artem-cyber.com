@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
     User,
     Phone,
@@ -484,6 +485,47 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                         </Button>
                                     </div>
 
+                                    {/* Экспорт CSV */}
+                                    <div>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                                try {
+                                                    const headers = ['ID', 'Курс', 'Выдан', 'Отозван', 'Источник', 'Причина', 'Комментарий']
+                                                    const rows = (userData.accesses || []).map((a) => {
+                                                        const meta = (a.metadata || {}) as Record<string, unknown>
+                                                        const reason = (meta.reason as string) || ''
+                                                        const notes = (meta.notes as string) || ''
+                                                        return [
+                                                            a.id,
+                                                            a.document_title || a.document_id,
+                                                            new Date(a.granted_at).toLocaleString('ru-RU'),
+                                                            a.revoked_at ? new Date(a.revoked_at).toLocaleString('ru-RU') : '',
+                                                            a.source || '',
+                                                            reason,
+                                                            (notes || '').replace(/\n|\r/g, ' ')
+                                                        ].join(',')
+                                                    })
+                                                    const csv = [headers.join(','), ...rows].join('\n')
+                                                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+                                                    const link = document.createElement('a')
+                                                    const url = URL.createObjectURL(blob)
+                                                    link.setAttribute('href', url)
+                                                    link.setAttribute('download', `access_${userData.user.id}_${new Date().toISOString().split('T')[0]}.csv`)
+                                                    link.style.visibility = 'hidden'
+                                                    document.body.appendChild(link)
+                                                    link.click()
+                                                    document.body.removeChild(link)
+                                                } catch (e) {
+                                                    // no-op
+                                                }
+                                            }}
+                                        >
+                                            Экспорт CSV
+                                        </Button>
+                                    </div>
+
                                     {userData.accesses.length === 0 ? (
                                         <div className="text-center py-8 text-gray-500">
                                             <ShieldOff className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -493,6 +535,9 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                         <div className="space-y-3">
                                             {userData.accesses.map((access) => {
                                                 const isActive = !access.revoked_at
+                                                const meta = (access.metadata || {}) as Record<string, unknown>
+                                                const reason = (meta.reason as string) || undefined
+                                                const notes = (meta.notes as string) || undefined
                                                 return (
                                                     <div key={access.id} className="border rounded-lg p-4 hover:bg-gray-50">
                                                         <div className="flex items-start justify-between">
@@ -513,12 +558,25 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                                             Отозван: {formatDate(access.revoked_at)}
                                                                         </p>
                                                                     )}
+                                                                    {(reason || notes) && (
+                                                                        <p className="text-xs text-gray-500 mt-1">
+                                                                            {reason ? `Причина: ${reason}` : ''}
+                                                                            {reason && notes ? ' • ' : ''}
+                                                                            {notes ? `Комментарий: ${notes}` : ''}
+                                                                        </p>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-col items-end space-y-2">
                                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
                                                                     {isActive ? 'Активен' : 'Отозван'}
                                                                 </span>
+                                                                <Link
+                                                                    href={`/courses/${access.document_id}`}
+                                                                    className="text-xs px-2 py-1 border rounded-md text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                                >
+                                                                    Открыть курс
+                                                                </Link>
                                                                 {isActive ? (
                                                                     <Button
                                                                         size="sm"
