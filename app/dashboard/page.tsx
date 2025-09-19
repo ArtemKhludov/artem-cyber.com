@@ -209,7 +209,7 @@ export default function DashboardPage() {
         const parsed = JSON.parse(raw) as Array<{ id: string; title: string; type: string; href?: string; ts: number }>
         setRecentlyViewed(parsed)
       }
-    } catch {}
+    } catch { }
   }, [])
 
   const loadUserData = async () => {
@@ -473,7 +473,7 @@ export default function DashboardPage() {
       const next = [item, ...prev.filter((x) => x.href !== item.href)].slice(0, 12)
       localStorage.setItem(key, JSON.stringify(next))
       setRecentlyViewed(next)
-    } catch {}
+    } catch { }
   }
 
   const handleSupportClick = (purchase?: Purchase) => {
@@ -493,17 +493,17 @@ export default function DashboardPage() {
     window.location.href = `mailto:support@energylogic.ai?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`
   }
 
-const UNKNOWN_STATUS_META = {
-  label: 'Статус неизвестен',
-  badgeClass: 'bg-gray-100 text-gray-800',
-  allowActions: false,
-  hint: 'Статус заказа не распознан. Обновите страницу или свяжитесь с поддержкой.',
-  tone: 'warning' as const
-}
+  const UNKNOWN_STATUS_META = {
+    label: 'Статус неизвестен',
+    badgeClass: 'bg-gray-100 text-gray-800',
+    allowActions: false,
+    hint: 'Статус заказа не распознан. Обновите страницу или свяжитесь с поддержкой.',
+    tone: 'warning' as const
+  }
 
-const getPurchaseStatusMeta = (status: string) => {
-  return PURCHASE_STATUS_META[status as PurchaseStatus] ?? UNKNOWN_STATUS_META
-}
+  const getPurchaseStatusMeta = (status: string) => {
+    return PURCHASE_STATUS_META[status as PurchaseStatus] ?? UNKNOWN_STATUS_META
+  }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -667,7 +667,7 @@ const getPurchaseStatusMeta = (status: string) => {
             <div className="rounded-lg border border-gray-200 bg-white p-4 mb-6">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-900">Недавно просмотренные</h3>
-                <Button size="sm" variant="ghost" onClick={() => { setRecentlyViewed([]); try { localStorage.removeItem('el_recently_viewed') } catch {} }}>Очистить</Button>
+                <Button size="sm" variant="ghost" onClick={() => { setRecentlyViewed([]); try { localStorage.removeItem('el_recently_viewed') } catch { } }}>Очистить</Button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {recentlyViewed.slice(0, 8).map((item) => (
@@ -770,7 +770,7 @@ const getPurchaseStatusMeta = (status: string) => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {isLoading && purchases.length === 0 ? (
+                        {isLoading && purchases.length === 0 && (
                           Array.from({ length: 3 }).map((_, index) => (
                             <TableRow key={`purchase-row-skeleton-${index}`} className="animate-pulse">
                               <TableCell colSpan={7}>
@@ -781,63 +781,69 @@ const getPurchaseStatusMeta = (status: string) => {
                               </TableCell>
                             </TableRow>
                           ))
-                        ) : filteredPurchases.length > 0 ? (
-                          filteredPurchases.map((purchase) => {
-                            const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
-                            const statusMeta = getPurchaseStatusMeta(effectiveStatus)
-                            const formattedDate = new Date(purchase.created_at).toLocaleDateString('ru-RU')
-                            const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
-                            const openHref = purchase.product_type === 'session'
-                              ? `/download/${purchase.id}`
-                              : purchase.document?.id
-                                ? `/courses/${purchase.document.id}/player`
-                                : undefined
+                        )}
 
-                            return (
-                              <TableRow key={`purchase-row-${purchase.id}`}>
-                                <TableCell className="font-medium text-gray-900">
-                                  <div className="flex flex-col">
-                                    <span>{purchase.product_name}</span>
-                                    <span className="text-xs text-gray-500">ID: {purchase.id}</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>{getProductTypeLabel(purchase.product_type)}</TableCell>
-                                <TableCell>
-                                  <Badge className={statusMeta.badgeClass}>{statusMeta.label}</Badge>
-                                </TableCell>
-                                <TableCell>{formattedDate}</TableCell>
-                                <TableCell>{purchase.price.toLocaleString('ru-RU')} ₽</TableCell>
-                                <TableCell>{formattedExpiresAt || '—'}</TableCell>
-                                <TableCell className="text-right">
-                                  <div className="flex justify-end gap-2">
-                                    {statusMeta.allowActions && openHref ? (
-                                      <Button size="sm" variant="outline" asChild>
-                                        <a
-                                          href={openHref}
-                                          target={purchase.product_type === 'session' ? '_blank' : undefined}
-                                          rel={purchase.product_type === 'session' ? 'noopener noreferrer' : undefined}
-                                          onClick={() => handleOpenClick(purchase)}
-                                        >
+                        {!isLoading && filteredPurchases.length > 0 ? (
+                          <>
+                            {filteredPurchases.map((purchase) => {
+                              const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
+                              const statusMeta = getPurchaseStatusMeta(effectiveStatus)
+                              const formattedDate = new Date(purchase.created_at).toLocaleDateString('ru-RU')
+                              const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
+                              const openHref = purchase.product_type === 'session'
+                                ? `/download/${purchase.id}`
+                                : purchase.document?.id
+                                  ? `/courses/${purchase.document.id}/player`
+                                  : undefined
+
+                              return (
+                                <TableRow key={`purchase-row-${purchase.id}`}>
+                                  <TableCell className="font-medium text-gray-900">
+                                    <div className="flex flex-col">
+                                      <span>{purchase.product_name}</span>
+                                      <span className="text-xs text-gray-500">ID: {purchase.id}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>{getProductTypeLabel(purchase.product_type)}</TableCell>
+                                  <TableCell>
+                                    <Badge className={statusMeta.badgeClass}>{statusMeta.label}</Badge>
+                                  </TableCell>
+                                  <TableCell>{formattedDate}</TableCell>
+                                  <TableCell>{purchase.price.toLocaleString('ru-RU')} ₽</TableCell>
+                                  <TableCell>{formattedExpiresAt || '—'}</TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex justify-end gap-2">
+                                      {statusMeta.allowActions && openHref ? (
+                                        <Button size="sm" variant="outline" asChild>
+                                          <a
+                                            href={openHref}
+                                            target={purchase.product_type === 'session' ? '_blank' : undefined}
+                                            rel={purchase.product_type === 'session' ? 'noopener noreferrer' : undefined}
+                                            onClick={() => handleOpenClick(purchase)}
+                                          >
+                                            Открыть
+                                          </a>
+                                        </Button>
+                                      ) : (
+                                        <Button size="sm" variant="outline" disabled title={statusMeta.hint}>
                                           Открыть
-                                        </a>
+                                        </Button>
+                                      )}
+                                      <Button size="sm" variant="ghost" type="button" onClick={() => handleDownloadReceipt(purchase)}>
+                                        Чек
                                       </Button>
-                                    ) : (
-                                      <Button size="sm" variant="outline" disabled title={statusMeta.hint}>
-                                        Открыть
+                                      <Button size="sm" variant="ghost" type="button" onClick={() => handleReportIssue(purchase)}>
+                                        Сообщить о проблеме
                                       </Button>
-                                    )}
-                                    <Button size="sm" variant="ghost" type="button" onClick={() => handleDownloadReceipt(purchase)}>
-                                      Чек
-                                    </Button>
-                                    <Button size="sm" variant="ghost" type="button" onClick={() => handleReportIssue(purchase)}>
-                                      Сообщить о проблеме
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            )
-                          })
-                        ) : (
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            })}
+                          </>
+                        ) : null}
+
+                        {!isLoading && filteredPurchases.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={7} className="py-6 text-center text-sm text-gray-500">
                               {purchases.length === 0
@@ -845,7 +851,7 @@ const getPurchaseStatusMeta = (status: string) => {
                                 : 'По выбранным фильтрам ничего не найдено.'}
                             </TableCell>
                           </TableRow>
-                        )}
+                        ) : null}
                       </TableBody>
                     </Table>
                   </div>
@@ -875,143 +881,144 @@ const getPurchaseStatusMeta = (status: string) => {
                     ))
                   ) : (
                     filteredPurchases.map((purchase) => {
-                    const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
-                    const statusMeta = getPurchaseStatusMeta(effectiveStatus)
-                    const HintIcon = statusMeta.tone === 'info' ? Info : AlertCircle
-                    const supportMailto = statusMeta.supportReason
-                      ? `mailto:support@energylogic.ai?subject=${encodeURIComponent(statusMeta.supportReason)}&body=${encodeURIComponent(
+                      const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
+                      const statusMeta = getPurchaseStatusMeta(effectiveStatus)
+                      const HintIcon = statusMeta.tone === 'info' ? Info : AlertCircle
+                      const supportMailto = statusMeta.supportReason
+                        ? `mailto:support@energylogic.ai?subject=${encodeURIComponent(statusMeta.supportReason)}&body=${encodeURIComponent(
                           `Покупка: ${purchase.product_name} (ID ${purchase.id}). Статус: ${statusMeta.label}.`
                         )}`
-                      : undefined
-                    const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
+                        : undefined
+                      const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
 
-                    return (
-                      <Card key={purchase.id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-xl">{purchase.product_name}</CardTitle>
-                          <CardDescription>
-                            {getProductTypeLabel(purchase.product_type)} • {new Date(purchase.created_at).toLocaleDateString('ru-RU')}
-                          </CardDescription>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-gray-900">{purchase.price.toLocaleString()} ₽</p>
-                          <Badge className={statusMeta.badgeClass} title={statusMeta.hint}>
-                            {statusMeta.label}
-                          </Badge>
-                          {formattedExpiresAt && (
-                            <p className="mt-1 text-xs text-gray-500">
-                              {effectiveStatus === 'expired' ? 'Истёк' : 'Доступ до'} {formattedExpiresAt}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {purchase.progress && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Прогресс</span>
-                            <span>{purchase.progress}%</span>
-                          </div>
-                          <Progress value={purchase.progress} className="h-2" />
-                        </div>
-                      )}
-                     <div className="flex gap-2 mt-4 flex-wrap">
-                        {statusMeta.allowActions ? (
-                          purchase.product_type === 'session' ? (
-                            <>
-                              {purchase.pdf_url && (
-                                <Button size="sm" variant="outline" asChild>
-                                  <a href={purchase.pdf_url} target="_blank" rel="noopener noreferrer">
-                                  <Download className="h-4 w-4 mr-2" />
-                                    Скачать отчёт
-                                  </a>
-                                </Button>
-                              )}
-                              {!purchase.pdf_url && (
-                                <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700" role="status">
-                                  <Clock className="h-4 w-4" />
-                                  <span>Ссылка для скачивания появится после обработки отчёта.</span>
-                                </div>
-                              )}
-                              <Button size="sm" variant="outline" asChild>
-                                <a href={`/download/${purchase.id}`} target="_blank" rel="noopener noreferrer">
-                                  <PlayCircle className="h-4 w-4 mr-2" />
-                                  Просмотр
-                                </a>
-                              </Button>
-                            </>
-                          ) : (
-                            <Button size="sm" variant="outline" asChild>
-                              <a href={`/courses/${purchase.document?.id}/player`}>
-                                <PlayCircle className="h-4 w-4 mr-2" />
-                                Открыть курс
-                              </a>
-                            </Button>
-                          )
-                        ) : (
-                          <div
-                            className={`flex w-full flex-col gap-2 rounded-md border px-3 py-2 text-sm ${STATUS_HINT_TONE_STYLES[statusMeta.tone]}`}
-                            role="status"
-                            aria-live="polite"
-                          >
-                            <div className="flex items-start gap-3">
-                              <Badge className={`${statusMeta.badgeClass} shrink-0`}>
-                                {statusMeta.label}
-                              </Badge>
-                              <div className="flex items-start gap-2">
-                                <HintIcon className="mt-0.5 h-4 w-4 shrink-0" />
-                                <span>{statusMeta.hint}</span>
+                      return (
+                        <Card key={purchase.id} className="hover:shadow-lg transition-shadow">
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <CardTitle className="text-xl">{purchase.product_name}</CardTitle>
+                                <CardDescription>
+                                  {getProductTypeLabel(purchase.product_type)} • {new Date(purchase.created_at).toLocaleDateString('ru-RU')}
+                                </CardDescription>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-2xl font-bold text-gray-900">{purchase.price.toLocaleString()} ₽</p>
+                                <Badge className={statusMeta.badgeClass} title={statusMeta.hint}>
+                                  {statusMeta.label}
+                                </Badge>
+                                {formattedExpiresAt && (
+                                  <p className="mt-1 text-xs text-gray-500">
+                                    {effectiveStatus === 'expired' ? 'Истёк' : 'Доступ до'} {formattedExpiresAt}
+                                  </p>
+                                )}
                               </div>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                              {statusMeta.allowRetry && (
-                                <Button size="sm" variant="outline" onClick={() => handleRetryAccess(purchase.id)}>
-                                  Повторить попытку
-                                </Button>
-                              )}
-                              {supportMailto && (
-                                <Button size="sm" variant="ghost" asChild>
-                                  <a href={supportMailto} onClick={() => handleSupportClick(purchase)}>
-                                    Связаться с поддержкой
-                                  </a>
-                                </Button>
-                              )}
-                              {!supportMailto && (
-                                <Button size="sm" variant="ghost" onClick={() => handleReportIssue(purchase)}>
-                                  Сообщить о проблеме
-                                </Button>
+                          </CardHeader>
+                          <CardContent>
+                            {purchase.progress && (
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                  <span>Прогресс</span>
+                                  <span>{purchase.progress}%</span>
+                                </div>
+                                <Progress value={purchase.progress} className="h-2" />
+                              </div>
+                            )}
+                            <div className="flex gap-2 mt-4 flex-wrap">
+                              {statusMeta.allowActions ? (
+                                purchase.product_type === 'session' ? (
+                                  <>
+                                    {purchase.pdf_url && (
+                                      <Button size="sm" variant="outline" asChild>
+                                        <a href={purchase.pdf_url} target="_blank" rel="noopener noreferrer">
+                                          <Download className="h-4 w-4 mr-2" />
+                                          Скачать отчёт
+                                        </a>
+                                      </Button>
+                                    )}
+                                    {!purchase.pdf_url && (
+                                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700" role="status">
+                                        <Clock className="h-4 w-4" />
+                                        <span>Ссылка для скачивания появится после обработки отчёта.</span>
+                                      </div>
+                                    )}
+                                    <Button size="sm" variant="outline" asChild>
+                                      <a href={`/download/${purchase.id}`} target="_blank" rel="noopener noreferrer">
+                                        <PlayCircle className="h-4 w-4 mr-2" />
+                                        Просмотр
+                                      </a>
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <Button size="sm" variant="outline" asChild>
+                                    <a href={`/courses/${purchase.document?.id}/player`}>
+                                      <PlayCircle className="h-4 w-4 mr-2" />
+                                      Открыть курс
+                                    </a>
+                                  </Button>
+                                )
+                              ) : (
+                                <div
+                                  className={`flex w-full flex-col gap-2 rounded-md border px-3 py-2 text-sm ${STATUS_HINT_TONE_STYLES[statusMeta.tone]}`}
+                                  role="status"
+                                  aria-live="polite"
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <Badge className={`${statusMeta.badgeClass} shrink-0`}>
+                                      {statusMeta.label}
+                                    </Badge>
+                                    <div className="flex items-start gap-2">
+                                      <HintIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                                      <span>{statusMeta.hint}</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {statusMeta.allowRetry && (
+                                      <Button size="sm" variant="outline" onClick={() => handleRetryAccess(purchase.id)}>
+                                        Повторить попытку
+                                      </Button>
+                                    )}
+                                    {supportMailto && (
+                                      <Button size="sm" variant="ghost" asChild>
+                                        <a href={supportMailto} onClick={() => handleSupportClick(purchase)}>
+                                          Связаться с поддержкой
+                                        </a>
+                                      </Button>
+                                    )}
+                                    {!supportMailto && (
+                                      <Button size="sm" variant="ghost" onClick={() => handleReportIssue(purchase)}>
+                                        Сообщить о проблеме
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
                               )}
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                    </Card>
-                    )
-                  })
+                          </CardContent>
+                        </Card>
+                      )
+                    })
+                  )}
+                </div>
+
+                {purchases.length === 0 && !errorMessage && (
+                  <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-600">
+                    <p className="text-lg font-semibold mb-2">У вас пока нет покупок</p>
+                    <p className="mb-4">Начните с выбора подходящего курса или свяжитесь с нами за рекомендациями.</p>
+                    <div className="flex justify-center gap-3">
+                      <Button asChild>
+                        <a href="/catalog">Купить доступ</a>
+                      </Button>
+                      <Button variant="outline" asChild>
+                        <a href="mailto:support@energylogic.ai">Связаться</a>
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {purchases.length === 0 && !errorMessage && (
-                <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-600">
-                  <p className="text-lg font-semibold mb-2">У вас пока нет покупок</p>
-                  <p className="mb-4">Начните с выбора подходящего курса или свяжитесь с нами за рекомендациями.</p>
-                  <div className="flex justify-center gap-3">
-                    <Button asChild>
-                      <a href="/catalog">Купить доступ</a>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <a href="mailto:support@energylogic.ai">Связаться</a>
-                    </Button>
-                  </div>
-                </div>
-              )}
             </TabsContent>
 
-            {/* Курсы */}
+
             <TabsContent value="courses" className="space-y-6">
               <div className="grid gap-6">
                 {courses.map((course) => (
