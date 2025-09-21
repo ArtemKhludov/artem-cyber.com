@@ -23,6 +23,9 @@ import {
 import Link from 'next/link'
 import type { Document, Workbook, CourseVideo, CourseAudio } from '@/types'
 import { initPostHog } from '@/lib/posthog'
+import { appendRecentActivity } from '@/lib/recent-activity'
+import ReportIssueDialog, { type IssueContext } from '@/components/dashboard/ReportIssueDialog'
+import SmartMaterialPreview, { type PreviewItem } from '@/components/courses/SmartMaterialPreview'
 
 interface MaterialLink {
     url: string
@@ -136,10 +139,83 @@ export default function CoursePlayer() {
     const [linkErrors, setLinkErrors] = useState<Record<string, string>>({})
     const [now, setNow] = useState(Date.now())
     const hasMaterialLinks = Object.keys(materialLinks).length > 0
+    const [issueDialogOpen, setIssueDialogOpen] = useState(false)
+    const [issueContext, setIssueContext] = useState<IssueContext | null>(null)
+    const [previewItem, setPreviewItem] = useState<PreviewItem | null>(null)
     const track = useCallback((event: string, props?: Record<string, unknown>) => {
         const ph = initPostHog()
         ph?.capture(event, props)
     }, [])
+
+    const logUserActivity = useCallback(async (payload: {
+        action: string
+        materialKey: string
+        materialId?: string | number
+        materialType?: string
+        materialTitle?: string
+        targetId?: string
+        metadata?: Record<string, unknown>
+    }) => {
+        try {
+            await fetch('/api/user/activity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    action: payload.action,
+                    targetId: payload.targetId ?? String(payload.materialId ?? ''),
+                    targetTable: 'course_materials',
+                    metadata: {
+                        courseId,
+                        courseTitle: course?.title,
+                        materialKey: payload.materialKey,
+                        materialId: payload.materialId,
+                        materialType: payload.materialType,
+                        materialTitle: payload.materialTitle,
+                        ...payload.metadata
+                    }
+                })
+            })
+        } catch (error) {
+            console.warn('Не удалось сохранить активность', error)
+        }
+    }, [course?.title, courseId])
+
+    const recordLocalActivity = useCallback((entry: {
+        materialKey: string
+        materialId?: string | number
+        materialType: string
+        materialTitle: string
+        action: 'view' | 'download'
+    }) => {
+        const occurredAt = new Date().toISOString()
+        const materialId = entry.materialId ? String(entry.materialId) : undefined
+        appendRecentActivity({
+            id: `${entry.materialKey}-${entry.action}-${occurredAt}`,
+            courseId,
+            courseTitle: course?.title,
+            materialKey: entry.materialKey,
+            materialId,
+            materialType: entry.materialType,
+            materialTitle: entry.materialTitle,
+            action: entry.action,
+            url: `/courses/${courseId}/player`,
+            occurredAt,
+            source: 'local'
+        })
+    }, [course?.title, courseId])
+
+    const openIssueDialog = useCallback((issue: IssueContext) => {
+        setIssueContext(issue)
+        setIssueDialogOpen(true)
+        track('course_issue_dialog_open', {
+            courseId,
+            materialId: issue.materialId,
+            materialType: issue.materialType
+        })
+    }, [courseId, track])
 
     useEffect(() => {
         if (!hasMaterialLinks) return
@@ -385,7 +461,16 @@ export default function CoursePlayer() {
         return getMaterialStatus(materialId, materialType) === 'completed'
     }
 
-    const handleDownload = async (materialKey: string, fileUrl: string, filename: string) => {
+    const handleDownload = async (
+        materialKey: string,
+        fileUrl: string,
+        filename: string,
+        options?: {
+            materialId?: string | number
+            materialType?: string
+            materialTitle?: string
+        }
+    ) => {
         if (!fileUrl) {
             console.warn('Попытка скачать материал без ссылки', materialKey)
             return
@@ -408,9 +493,214 @@ export default function CoursePlayer() {
             document.body.appendChild(linkElement)
             linkElement.click()
             document.body.removeChild(linkElement)
+            track('material_download_success', { courseId, materialKey })
+            recordLocalActivity({
+                materialKey,
+                materialId: options?.materialId,
+                materialType: options?.materialType ?? 'resource',
+                materialTitle: options?.materialTitle ?? filename,
+                action: 'download'
+            })
+            void logUserActivity({
+                action: 'course_material_download',
+                materialKey,
+                materialId: options?.materialId,
+                materialType: options?.materialType ?? 'resource',
+                materialTitle: options?.materialTitle ?? filename,
+                metadata: {
+                    filename,
+                    downloadUrl: targetUrl.includes('token=') ? 'signed' : 'direct'
+                }
+            })
         } catch (error) {
             console.error('Не удалось скачать материал', error)
             try { track('material_download_failed', { courseId, materialKey }) } catch { }
+        }
+    }
+
+    const handleOpenVideo = async (video: CourseVideo) => {
+        if (!video?.file_url) {
+            console.warn('Видео без file_url', video?.id)
+            return
+        }
+
+        const videoKey = getMaterialKey('video', video.id)
+
+        try {
+            track('material_video_play_click', { courseId, materialKey: videoKey })
+            let streamUrl = video.file_url
+            const normalizedPath = normalizeStoragePath(video.file_url)
+            let expiresAt: number | undefined
+
+            if (normalizedPath) {
+                const link = await ensureSignedLink({ key: videoKey, path: normalizedPath })
+                streamUrl = link.url
+                expiresAt = link.expiresAt
+            }
+
+            setActiveVideo(streamUrl)
+            void updateMaterialProgress(
+                video.id,
+                'video',
+                video.title,
+                'completed',
+                100,
+                1800
+            )
+            track('material_video_play_success', { courseId, materialKey: videoKey })
+            recordLocalActivity({
+                materialKey: videoKey,
+                materialId: video.id,
+                materialType: 'video',
+                materialTitle: video.title,
+                action: 'view'
+            })
+            setPreviewItem({
+                kind: 'video',
+                title: video.title,
+                subtitle: video.description || undefined,
+                url: streamUrl,
+                expiresAt,
+                description: video.description || undefined
+            })
+            void logUserActivity({
+                action: 'course_material_view',
+                materialKey: videoKey,
+                materialId: video.id,
+                materialType: 'video',
+                materialTitle: video.title,
+                metadata: {
+                    streamUrl: streamUrl.includes('token=') ? 'signed' : 'direct',
+                    expiresAt
+                }
+            })
+        } catch (error) {
+            console.error('Не удалось открыть видео', error)
+            try { track('material_video_play_failed', { courseId, materialKey: videoKey }) } catch { }
+        }
+    }
+
+    const handlePlayAudio = async (audioItem: CourseAudio) => {
+        if (!audioItem?.file_url) {
+            console.warn('Аудио без file_url', audioItem?.id)
+            return
+        }
+
+        const audioKey = getMaterialKey('audio', audioItem.id)
+
+        try {
+            track('material_audio_play_click', { courseId, materialKey: audioKey })
+            let streamUrl = audioItem.file_url
+            const normalizedPath = normalizeStoragePath(audioItem.file_url)
+            let expiresAt: number | undefined
+
+            if (normalizedPath) {
+                const link = await ensureSignedLink({ key: audioKey, path: normalizedPath })
+                streamUrl = link.url
+                expiresAt = link.expiresAt
+            }
+
+            setActiveAudio(streamUrl)
+            void updateMaterialProgress(
+                audioItem.id,
+                'audio',
+                audioItem.title,
+                'completed',
+                100,
+                1200
+            )
+            track('material_audio_play_success', { courseId, materialKey: audioKey })
+            recordLocalActivity({
+                materialKey: audioKey,
+                materialId: audioItem.id,
+                materialType: 'audio',
+                materialTitle: audioItem.title,
+                action: 'view'
+            })
+            setPreviewItem({
+                kind: 'audio',
+                title: audioItem.title,
+                subtitle: audioItem.description || undefined,
+                url: streamUrl,
+                expiresAt,
+                description: audioItem.description || undefined
+            })
+            void logUserActivity({
+                action: 'course_material_view',
+                materialKey: audioKey,
+                materialId: audioItem.id,
+                materialType: 'audio',
+                materialTitle: audioItem.title,
+                metadata: {
+                    streamUrl: streamUrl.includes('token=') ? 'signed' : 'direct',
+                    expiresAt
+                }
+            })
+        } catch (error) {
+            console.error('Не удалось воспроизвести аудио', error)
+            try { track('material_audio_play_failed', { courseId, materialKey: audioKey }) } catch { }
+        }
+    }
+
+    const handlePreviewPdf = async (params: {
+        materialKey: string
+        fileUrl?: string | null
+        title: string
+        subtitle?: string
+        materialId?: string | number
+        materialType: string
+        description?: string
+    }) => {
+        if (!params.fileUrl) {
+            console.warn('PDF без file_url', params.materialKey)
+            return
+        }
+
+        track('material_pdf_preview_click', { courseId, materialKey: params.materialKey })
+
+        let previewUrl = params.fileUrl
+        let expiresAt: number | undefined
+        const normalizedPath = normalizeStoragePath(params.fileUrl)
+
+        try {
+            if (normalizedPath) {
+                const link = await ensureSignedLink({ key: params.materialKey, path: normalizedPath })
+                previewUrl = link.url
+                expiresAt = link.expiresAt
+            }
+
+            setPreviewItem({
+                kind: 'pdf',
+                title: params.title,
+                subtitle: params.subtitle,
+                url: previewUrl,
+                expiresAt,
+                description: params.description
+            })
+            track('material_pdf_preview_success', { courseId, materialKey: params.materialKey })
+
+            recordLocalActivity({
+                materialKey: params.materialKey,
+                materialId: params.materialId,
+                materialType: params.materialType,
+                materialTitle: params.title,
+                action: 'view'
+            })
+
+            void logUserActivity({
+                action: 'course_material_view',
+                materialKey: params.materialKey,
+                materialId: params.materialId,
+                materialType: params.materialType,
+                materialTitle: params.title,
+                metadata: {
+                    previewUrl: previewUrl.includes('token=') ? 'signed' : 'direct',
+                    expiresAt
+                }
+            })
+        } catch (error) {
+            console.error('Не удалось открыть PDF предпросмотр', error)
+            track('material_pdf_preview_failed', { courseId, materialKey: params.materialKey })
         }
     }
 
@@ -512,12 +802,26 @@ export default function CoursePlayer() {
                                         <span className="text-gray-500">• Уровень {userPoints.current_level}</span>
                                     </div>
                                 )}
+                                <div className="mt-3 flex justify-end">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => openIssueDialog({
+                                            subject: `Проблема с курсом: ${course.title}`,
+                                            courseId,
+                                            courseTitle: course.title
+                                        })}
+                                    >
+                                        Сообщить о проблеме
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4 py-8">
+                <div className="container mx-auto px-4 py-8 space-y-6">
+                    <SmartMaterialPreview item={previewItem} onClose={() => setPreviewItem(null)} />
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Основной контент */}
                         <div className="lg:col-span-2 space-y-6">
@@ -536,7 +840,11 @@ export default function CoursePlayer() {
                                 <div className="flex gap-3">
                                     <Button
                                         onClick={() => {
-                                            void handleDownload(mainPdfKey, course.file_url, `${course.title}.pdf`)
+                                            void handleDownload(mainPdfKey, course.file_url, `${course.title}.pdf`, {
+                                                materialId: courseId,
+                                                materialType: 'main_pdf',
+                                                materialTitle: `${course.title} — Основной PDF`
+                                            })
                                         }}
                                         className="bg-blue-600 hover:bg-blue-700 text-white"
                                         disabled={linkLoading[mainPdfKey]}
@@ -552,6 +860,22 @@ export default function CoursePlayer() {
                                                 Скачать PDF
                                             </>
                                         )}
+                                    </Button>
+                                    <Button
+                                        onClick={() => {
+                                            void handlePreviewPdf({
+                                                materialKey: mainPdfKey,
+                                                fileUrl: course.file_url,
+                                                title: `${course.title} — Основной PDF`,
+                                                materialId: courseId,
+                                                materialType: 'main_pdf',
+                                                description: course.main_pdf_description || undefined
+                                            })
+                                        }}
+                                        size="sm"
+                                        variant="ghost"
+                                    >
+                                        Предпросмотр
                                     </Button>
                                     <Button
                                         onClick={() => updateMaterialProgress(
@@ -617,56 +941,92 @@ export default function CoursePlayer() {
                                                                 <p className="text-sm text-gray-600 mb-3">{workbook.description}</p>
                                                             )}
                                                         </div>
-                                                        <div className="flex gap-2">
-                                                            <Button
-                                                                onClick={() => {
-                                                                    void handleDownload(workbookKey, workbook.file_url, `${workbook.title}.pdf`)
-                                                                }}
-                                                                size="sm"
-                                                                className="bg-green-600 hover:bg-green-700 text-white"
-                                                                disabled={linkLoading[workbookKey]}
-                                                            >
-                                                                {linkLoading[workbookKey] ? (
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                                        Подготавливаем...
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                        <Download className="w-4 h-4 mr-1" />
-                                                                        Скачать
-                                                                    </>
-                                                                )}
-                                                            </Button>
-                                                            <Button
-                                                                onClick={() => updateMaterialProgress(
-                                                                    workbook.id,
-                                                                    'workbook',
-                                                                    workbook.title,
-                                                                    isMaterialCompleted(workbook.id, 'workbook') ? 'not_started' : 'completed',
-                                                                    100,
-                                                                    0
-                                                                )}
-                                                                size="sm"
-                                                                variant="outline"
-                                                                disabled={updatingProgress === `workbook_${workbook.id}`}
-                                                                className={isMaterialCompleted(workbook.id, 'workbook') ? 'bg-green-50 border-green-200 text-green-700' : ''}
-                                                            >
-                                                                {updatingProgress === `workbook_${workbook.id}` ? (
-                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                                                ) : isMaterialCompleted(workbook.id, 'workbook') ? (
-                                                                    <>
-                                                                        <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
-                                                                        Изучено
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <Zap className="w-4 h-4 mr-1" />
-                                                                        Изучено
-                                                                    </>
-                                                                )}
-                                                            </Button>
-                                                        </div>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            onClick={() => {
+                                                                void handleDownload(workbookKey, workbook.file_url, `${workbook.title}.pdf`, {
+                                                                    materialId: workbook.id,
+                                                                    materialType: 'workbook',
+                                                                    materialTitle: workbook.title
+                                                                })
+                                                            }}
+                                                            size="sm"
+                                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                                            disabled={linkLoading[workbookKey]}
+                                                        >
+                                                            {linkLoading[workbookKey] ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                                    Подготавливаем...
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <Download className="w-4 h-4 mr-1" />
+                                                                    Скачать
+                                                                </>
+                                                            )}
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => {
+                                                                void handlePreviewPdf({
+                                                                    materialKey: workbookKey,
+                                                                    fileUrl: workbook.file_url,
+                                                                    title: workbook.title,
+                                                                    subtitle: course.title,
+                                                                    materialId: workbook.id,
+                                                                    materialType: 'workbook',
+                                                                    description: workbook.description || undefined
+                                                                })
+                                                            }}
+                                                            size="sm"
+                                                            variant="ghost"
+                                                        >
+                                                            Предпросмотр
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => updateMaterialProgress(
+                                                                workbook.id,
+                                                                'workbook',
+                                                                workbook.title,
+                                                                isMaterialCompleted(workbook.id, 'workbook') ? 'not_started' : 'completed',
+                                                                100,
+                                                                0
+                                                            )}
+                                                            size="sm"
+                                                            variant="outline"
+                                                            disabled={updatingProgress === `workbook_${workbook.id}`}
+                                                            className={isMaterialCompleted(workbook.id, 'workbook') ? 'bg-green-50 border-green-200 text-green-700' : ''}
+                                                        >
+                                                            {updatingProgress === `workbook_${workbook.id}` ? (
+                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                            ) : isMaterialCompleted(workbook.id, 'workbook') ? (
+                                                                <>
+                                                                    <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                                                                    Изучено
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Zap className="w-4 h-4 mr-1" />
+                                                                    Изучено
+                                                                </>
+                                                            )}
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => openIssueDialog({
+                                                                subject: `Проблема с рабочей тетрадью: ${workbook.title}`,
+                                                                courseId,
+                                                                courseTitle: course.title,
+                                                                materialId: workbook.id,
+                                                                materialTitle: workbook.title,
+                                                                materialType: 'workbook',
+                                                                url: workbook.file_url || undefined
+                                                            })}
+                                                            size="sm"
+                                                            variant="ghost"
+                                                        >
+                                                            Сообщить о проблеме
+                                                        </Button>
+                                                    </div>
                                                         {renderLinkStatus(workbookKey)}
                                                     </div>
                                                 </div>
@@ -686,7 +1046,9 @@ export default function CoursePlayer() {
                                         </h2>
                                     </div>
                                     <div className="space-y-4">
-                                        {course.videos.map((video: CourseVideo) => (
+                                        {course.videos.map((video: CourseVideo) => {
+                                            const videoKey = getMaterialKey('video', video.id)
+                                            return (
                                             <div key={video.id} className="border border-gray-200 rounded-lg p-4">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex-1">
@@ -702,25 +1064,29 @@ export default function CoursePlayer() {
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <Button
-                                                            onClick={() => {
-                                                                setActiveVideo(video.file_url)
-                                                                updateMaterialProgress(
-                                                                    video.id,
-                                                                    'video',
-                                                                    video.title,
-                                                                    'completed',
-                                                                    100,
-                                                                    1800
-                                                                )
-                                                            }}
+                                                            onClick={() => { void handleOpenVideo(video) }}
                                                             size="sm"
                                                             className="bg-purple-600 hover:bg-purple-700 text-white"
+                                                            disabled={linkLoading[videoKey]}
                                                         >
-                                                            <Play className="w-4 h-4 mr-1" />
-                                                            Смотреть
+                                                            {linkLoading[videoKey] ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                                    Ожидайте...
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <Play className="w-4 h-4 mr-1" />
+                                                                    Смотреть
+                                                                </>
+                                                            )}
                                                         </Button>
                                                         <Button
-                                                            onClick={() => handleDownload(video.file_url, `${video.title}.mp4`)}
+                                                            onClick={() => handleDownload(videoKey, video.file_url, `${video.title}.mp4`, {
+                                                                materialId: video.id,
+                                                                materialType: 'video',
+                                                                materialTitle: video.title
+                                                            })}
                                                             size="sm"
                                                             variant="outline"
                                                         >
@@ -755,10 +1121,26 @@ export default function CoursePlayer() {
                                                                 </>
                                                             )}
                                                         </Button>
+                                                        <Button
+                                                            onClick={() => openIssueDialog({
+                                                                subject: `Проблема с видео: ${video.title}`,
+                                                                courseId,
+                                                                courseTitle: course.title,
+                                                                materialId: video.id,
+                                                                materialTitle: video.title,
+                                                                materialType: 'video',
+                                                                url: materialLinks[videoKey]?.url || video.file_url || undefined
+                                                            })}
+                                                            size="sm"
+                                                            variant="ghost"
+                                                        >
+                                                            Сообщить о проблеме
+                                                        </Button>
                                                     </div>
+                                                    {renderLinkStatus(videoKey)}
                                                 </div>
                                             </div>
-                                        ))}
+                                        )})}
                                     </div>
                                 </div>
                             )}
@@ -773,7 +1155,9 @@ export default function CoursePlayer() {
                                         </h2>
                                     </div>
                                     <div className="space-y-4">
-                                        {course.audio.map((audioItem: CourseAudio) => (
+                                        {course.audio.map((audioItem: CourseAudio) => {
+                                            const audioKey = getMaterialKey('audio', audioItem.id)
+                                            return (
                                             <div key={audioItem.id} className="border border-gray-200 rounded-lg p-4">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex-1">
@@ -789,25 +1173,29 @@ export default function CoursePlayer() {
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <Button
-                                                            onClick={() => {
-                                                                setActiveAudio(audioItem.file_url)
-                                                                updateMaterialProgress(
-                                                                    audioItem.id,
-                                                                    'audio',
-                                                                    audioItem.title,
-                                                                    'completed',
-                                                                    100,
-                                                                    1200
-                                                                )
-                                                            }}
+                                                            onClick={() => { void handlePlayAudio(audioItem) }}
                                                             size="sm"
                                                             className="bg-orange-600 hover:bg-orange-700 text-white"
+                                                            disabled={linkLoading[audioKey]}
                                                         >
-                                                            <Play className="w-4 h-4 mr-1" />
-                                                            Слушать
+                                                            {linkLoading[audioKey] ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                                    Ожидайте...
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <Play className="w-4 h-4 mr-1" />
+                                                                    Слушать
+                                                                </>
+                                                            )}
                                                         </Button>
                                                         <Button
-                                                            onClick={() => handleDownload(audioItem.file_url, `${audioItem.title}.mp3`)}
+                                                            onClick={() => handleDownload(audioKey, audioItem.file_url, `${audioItem.title}.mp3`, {
+                                                                materialId: audioItem.id,
+                                                                materialType: 'audio',
+                                                                materialTitle: audioItem.title
+                                                            })}
                                                             size="sm"
                                                             variant="outline"
                                                         >
@@ -842,10 +1230,26 @@ export default function CoursePlayer() {
                                                                 </>
                                                             )}
                                                         </Button>
+                                                        <Button
+                                                            onClick={() => openIssueDialog({
+                                                                subject: `Проблема с аудио: ${audioItem.title}`,
+                                                                courseId,
+                                                                courseTitle: course.title,
+                                                                materialId: audioItem.id,
+                                                                materialTitle: audioItem.title,
+                                                                materialType: 'audio',
+                                                                url: materialLinks[audioKey]?.url || audioItem.file_url || undefined
+                                                            })}
+                                                            size="sm"
+                                                            variant="ghost"
+                                                        >
+                                                            Сообщить о проблеме
+                                                        </Button>
                                                     </div>
+                                                    {renderLinkStatus(audioKey)}
                                                 </div>
                                             </div>
-                                        ))}
+                                        )})}
                                     </div>
                                 </div>
                             )}
@@ -1050,6 +1454,15 @@ export default function CoursePlayer() {
                     </div>
                 )}
             </div>
+            <ReportIssueDialog
+                open={issueDialogOpen}
+                onOpenChange={setIssueDialogOpen}
+                context={issueContext}
+                track={(event, payload) => track(event, payload)}
+                onSubmitted={() => {
+                    setTimeout(() => setIssueDialogOpen(false), 1200)
+                }}
+            />
         </PageLayout>
     )
 }

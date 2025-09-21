@@ -102,6 +102,30 @@ async function getPurchase(email, documentId) {
     return data || null
 }
 
+async function getAccessCount(userId, documentId) {
+    const { data, error } = await supabase
+        .from('user_course_access')
+        .select('id, revoked_at')
+        .eq('user_id', userId)
+        .eq('document_id', documentId)
+    if (error) throw new Error('Fetch access failed: ' + error.message)
+    return (data || []).filter((r) => r.revoked_at === null).length
+}
+
+async function runReconcile(adminToken, windowMinutes = 15) {
+    const res = await fetch(`${APP_URL}/api/admin/payments/reconcile`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({ windowMinutes })
+    })
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok || json.error) throw new Error('Reconcile failed: ' + (json.error || res.status))
+    return json
+}
+
 async function updatePurchaseStatusById(id, status) {
     const { data, error } = await supabase
         .from('purchases')
@@ -232,6 +256,17 @@ async function main() {
     }
     logOk('granted')
 
+    // 3b) Idempotent grant (should not duplicate access)
+    logStep('Grant access again (idempotency)')
+    try {
+        await grantAccess(adminToken, testEmail, doc.id)
+    } catch (e) {
+        // ignore non-200 as API may short-circuit; we only check DB state
+    }
+    const accessCount = await getAccessCount(testUser.id, doc.id)
+    if (accessCount > 1) throw new Error('Idempotency failed: multiple active access records')
+    logOk('no duplicates')
+
     // 4) Verify purchase status completed
     logStep('Verify purchase completed in DB')
     const purchase = await getPurchase(testEmail, doc.id)
@@ -265,6 +300,12 @@ async function main() {
         logFail(e.message)
         summary.push({ step: 'refund-access', ok: false, error: e.message })
     }
+
+    // 7) Reconcile job (idempotent)
+    logStep('Run reconcile twice (idempotent)')
+    const r1 = await runReconcile(adminToken)
+    const r2 = await runReconcile(adminToken)
+    logOk(`ok (${r1.checked}+${r2.checked})`)
 
     console.log('\nSummary:', summary)
 }

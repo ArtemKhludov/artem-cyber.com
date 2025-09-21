@@ -99,6 +99,27 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Не удалось создать ссылку' }, { status: 500 })
         }
 
+        // Write audit log (best-effort)
+        try {
+            await supabase.from('audit_logs').insert([
+                {
+                    actor_id: userId,
+                    actor_email: userEmail,
+                    action: 'signed_url_issued',
+                    target_table: 'storage.objects',
+                    target_id: path,
+                    metadata: {
+                        documentId,
+                        bucket,
+                        path,
+                        expiresIn
+                    },
+                } as any,
+            ])
+        } catch {
+            // ignore silently
+        }
+
         const response = NextResponse.json({
             success: true,
             url: data.signedUrl,

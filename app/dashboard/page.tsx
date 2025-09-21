@@ -1,9 +1,9 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import ErrorBoundary from '@/components/common/ErrorBoundary'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,7 @@ import {
   AlertCircle,
   BookOpen,
   Download,
+  FileText,
   Info,
   Star,
   Trophy,
@@ -30,6 +31,8 @@ import {
 } from 'lucide-react'
 import { SessionDevices } from '@/components/dashboard/SessionDevices'
 import { initPostHog } from '@/lib/posthog'
+import { appendRecentActivity, loadRecentActivity, mergeWithLocalActivity, type RecentActivityRecord } from '@/lib/recent-activity'
+import ReportIssueDialog, { type IssueContext } from '@/components/dashboard/ReportIssueDialog'
 
 type PurchaseStatus =
   | 'completed'
@@ -187,30 +190,122 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilterValue, setStatusFilterValue] = useState<'all' | PurchaseStatus>('all')
-  const [recentlyViewed, setRecentlyViewed] = useState<Array<{ id: string; title: string; type: string; href?: string; ts: number }>>([])
+  const [recentActivity, setRecentActivity] = useState<RecentActivityRecord[]>(() => loadRecentActivity())
+  const [recentActivityLoading, setRecentActivityLoading] = useState(false)
+  const [recentActivityError, setRecentActivityError] = useState<string | null>(null)
+  const [issueDialogOpen, setIssueDialogOpen] = useState(false)
+  const [issueContext, setIssueContext] = useState<IssueContext | null>(null)
 
   const track = (event: string, props?: Record<string, unknown>) => {
     const ph = initPostHog()
     ph?.capture(event, props)
   }
 
+  const pushLocalActivity = useCallback((entry: {
+    materialKey: string
+    materialId?: string | null
+    materialType: string
+    materialTitle: string
+    action: 'view' | 'download'
+    courseId?: string | null
+    courseTitle?: string | null
+    url?: string
+  }) => {
+    const occurredAt = new Date().toISOString()
+    const record: RecentActivityRecord = {
+      id: `${entry.materialKey}-${entry.action}-${Date.now()}`,
+      courseId: entry.courseId || '',
+      courseTitle: entry.courseTitle || null,
+      materialKey: entry.materialKey,
+      materialId: entry.materialId ?? null,
+      materialType: entry.materialType,
+      materialTitle: entry.materialTitle,
+      action: entry.action,
+      url: entry.url || '/dashboard',
+      occurredAt,
+      source: 'local'
+    }
+
+    appendRecentActivity(record)
+    setRecentActivity((prev) => mergeWithLocalActivity([record, ...prev]))
+  }, [])
+
+  const fetchRecentActivity = useCallback(async () => {
+    if (!user) {
+      setRecentActivity(loadRecentActivity())
+      return
+    }
+
+    setRecentActivityLoading(true)
+    setRecentActivityError(null)
+
+    try {
+      const response = await fetch('/api/user/activity?limit=25', {
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        const message = await response.text()
+        throw new Error(message || 'Не удалось загрузить историю')
+      }
+
+      const json = await response.json()
+      const serverRecords: RecentActivityRecord[] = Array.isArray(json.activity)
+        ? json.activity.map((item: any) => {
+          const metadata = item?.metadata || {}
+          const courseId = typeof metadata.courseId === 'string' && metadata.courseId
+            ? metadata.courseId
+            : ''
+          const materialKey = typeof metadata.materialKey === 'string' && metadata.materialKey
+            ? metadata.materialKey
+            : `${item.action}-${item.targetId ?? courseId}`
+          const materialType = typeof metadata.materialType === 'string' && metadata.materialType
+            ? metadata.materialType
+            : 'resource'
+          const materialTitle = typeof metadata.materialTitle === 'string' && metadata.materialTitle
+            ? metadata.materialTitle
+            : 'Материал'
+          const materialIdValue = metadata.materialId ?? item.targetId ?? null
+          const action: 'view' | 'download' = item.action?.includes('download') ? 'download' : 'view'
+
+          return {
+            id: item.id,
+            courseId: courseId || '',
+            courseTitle: typeof metadata.courseTitle === 'string' ? metadata.courseTitle : null,
+            materialKey,
+            materialId: materialIdValue ? String(materialIdValue) : null,
+            materialType,
+            materialTitle,
+            action,
+            url: courseId ? `/courses/${courseId}/player` : '/dashboard',
+            occurredAt: item.occurredAt ?? item.created_at ?? new Date().toISOString(),
+            source: 'server'
+          } satisfies RecentActivityRecord
+        })
+        : []
+
+      setRecentActivity(mergeWithLocalActivity(serverRecords))
+      track('dashboard_recent_refresh_success', { count: serverRecords.length })
+    } catch (error) {
+      console.warn('Недавно просмотренные: ошибка загрузки', error)
+      setRecentActivityError('Не удалось обновить историю активности')
+      setRecentActivity(loadRecentActivity())
+      track('dashboard_recent_refresh_failed')
+    } finally {
+      setRecentActivityLoading(false)
+    }
+  }, [track, user])
+
+  useEffect(() => {
+    if (!user) return
+    void fetchRecentActivity()
+  }, [user, fetchRecentActivity, retryCount])
+
   useEffect(() => {
     if (user) {
-      // Загружаем данные пользователя
       loadUserData()
     }
   }, [user])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      const raw = localStorage.getItem('el_recently_viewed')
-      if (raw) {
-        const parsed = JSON.parse(raw) as Array<{ id: string; title: string; type: string; href?: string; ts: number }>
-        setRecentlyViewed(parsed)
-      }
-    } catch { }
-  }, [])
 
   const loadUserData = async () => {
     try {
@@ -389,6 +484,31 @@ export default function DashboardPage() {
     track('dashboard_access_retry_click', { purchaseId })
   }
 
+  const handleRefreshRecentActivity = () => {
+    track('dashboard_recent_refresh')
+    void fetchRecentActivity()
+  }
+
+  const handleClearRecentActivity = () => {
+    track('dashboard_recent_clear')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('energylogic_recent_activity')
+    }
+    setRecentActivity([])
+  }
+
+  const handleOpenRecentItem = (item: RecentActivityRecord) => {
+    track('dashboard_recent_open', {
+      materialKey: item.materialKey,
+      action: item.action,
+      materialType: item.materialType
+    })
+
+    if (typeof window !== 'undefined') {
+      window.location.href = item.url
+    }
+  }
+
   const handleExportPurchases = () => {
     if (typeof window === 'undefined') return
     if (filteredPurchases.length === 0) {
@@ -432,6 +552,7 @@ export default function DashboardPage() {
     if (typeof window === 'undefined') return
 
     const receiptUrl = purchase.receipt_url || purchase.pdf_url
+    track('dashboard_receipt_click', { purchaseId: purchase.id, hasUrl: Boolean(receiptUrl) })
     if (receiptUrl) {
       window.open(receiptUrl, '_blank', 'noopener,noreferrer')
       return
@@ -458,22 +579,23 @@ export default function DashboardPage() {
   }
 
   const handleOpenClick = (purchase: Purchase) => {
-    // Track and persist Recently Viewed
     track('dashboard_open_click', { id: purchase.id, type: purchase.product_type })
-    try {
-      const key = 'el_recently_viewed'
-      const prev = JSON.parse(localStorage.getItem(key) || '[]') as any[]
-      const item = {
-        id: purchase.document?.id || purchase.id,
-        title: purchase.product_name,
-        type: purchase.product_type,
-        href: purchase.product_type === 'session' ? `/download/${purchase.id}` : purchase.document?.id ? `/courses/${purchase.document.id}/player` : undefined,
-        ts: Date.now()
-      }
-      const next = [item, ...prev.filter((x) => x.href !== item.href)].slice(0, 12)
-      localStorage.setItem(key, JSON.stringify(next))
-      setRecentlyViewed(next)
-    } catch { }
+    const url = purchase.product_type === 'session'
+      ? `/download/${purchase.id}`
+      : purchase.document?.id
+        ? `/courses/${purchase.document.id}/player`
+        : '/dashboard'
+
+    pushLocalActivity({
+      materialKey: purchase.document?.id ? `course_${purchase.document.id}` : `purchase_${purchase.id}`,
+      materialId: purchase.document?.id ?? purchase.id,
+      materialType: purchase.product_type,
+      materialTitle: purchase.product_name,
+      courseId: purchase.document?.id ?? null,
+      courseTitle: purchase.document?.title ?? purchase.product_name,
+      action: 'view',
+      url
+    })
   }
 
   const handleSupportClick = (purchase?: Purchase) => {
@@ -481,16 +603,26 @@ export default function DashboardPage() {
   }
 
   const handleReportIssue = (purchase: Purchase) => {
-    track('dashboard_report_issue_click', { id: purchase.id })
-    const subject = `Сообщение о проблеме: ${purchase.product_name}`
-    const bodyLines = [
-      `Покупка: ${purchase.product_name} (ID ${purchase.id})`,
-      `Статус: ${getPurchaseStatusMeta((purchase.access?.status ?? purchase.status) as PurchaseStatus).label}`,
-      `Дата: ${new Date(purchase.created_at).toLocaleDateString('ru-RU')}`,
-      '',
-      'Опишите проблему:'
-    ]
-    window.location.href = `mailto:support@energylogic.ai?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`
+    const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
+    const statusMeta = getPurchaseStatusMeta(effectiveStatus)
+    track('dashboard_report_issue_click', { id: purchase.id, status: effectiveStatus })
+    setIssueContext({
+      subject: `Проблема с покупкой: ${purchase.product_name}`,
+      purchaseId: purchase.id,
+      purchaseName: purchase.product_name,
+      purchaseStatus: effectiveStatus,
+      purchaseStatusLabel: statusMeta.label,
+      purchaseDate: new Date(purchase.created_at).toLocaleDateString('ru-RU'),
+      productType: getProductTypeLabel(purchase.product_type),
+      courseId: purchase.document?.id,
+      courseTitle: purchase.document?.title,
+      url: purchase.product_type === 'session'
+        ? `/download/${purchase.id}`
+        : purchase.document?.id
+          ? `/courses/${purchase.document.id}/player`
+          : '/dashboard'
+    })
+    setIssueDialogOpen(true)
   }
 
   const UNKNOWN_STATUS_META = {
@@ -526,6 +658,47 @@ export default function DashboardPage() {
       console.warn('Не удалось форматировать дату истечения доступа', isoString, error)
       return null
     }
+  }
+
+  const formatDateTime = (isoString: string) => {
+    try {
+      return new Intl.DateTimeFormat('ru-RU', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      }).format(new Date(isoString))
+    } catch (error) {
+      console.warn('Не удалось форматировать время активности', isoString, error)
+      return isoString
+    }
+  }
+
+  const getActivityIcon = (materialType: string, action: 'view' | 'download') => {
+    if (action === 'download') {
+      return <Download className="h-4 w-4 text-blue-500" />
+    }
+
+    switch (materialType) {
+      case 'video':
+        return <PlayCircle className="h-4 w-4 text-purple-500" />
+      case 'audio':
+        return <Volume2 className="h-4 w-4 text-orange-500" />
+      case 'workbook':
+      case 'main_pdf':
+      case 'pdf':
+        return <FileText className="h-4 w-4 text-green-600" />
+      default:
+        return <Info className="h-4 w-4 text-gray-500" />
+    }
+  }
+
+  const getActivityLabel = (action: 'view' | 'download') => {
+    return action === 'download' ? 'Скачивание' : 'Просмотр'
+  }
+
+  const getActivityBadgeClass = (action: 'view' | 'download') => {
+    return action === 'download'
+      ? 'bg-blue-100 text-blue-800'
+      : 'bg-emerald-100 text-emerald-800'
   }
 
   const statusFilterOptions = useMemo(() => {
@@ -589,590 +762,672 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-        <div className="container mx-auto px-4 py-8">
-          {/* Заголовок */}
-          <div className="mb-8">
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  Добро пожаловать, {user.name || user.email}!
-                </h1>
-                <p className="text-xl text-gray-600">
-                  Ваш личный кабинет для трансформации
-                </p>
-              </div>
-              <Button
-                onClick={logout}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Выйти
-              </Button>
-            </div>
-          </div>
-
-          {/* Статистика */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-600">Всего покупок</p>
-                    <p className="text-3xl font-bold text-blue-900">{stats.totalPurchases}</p>
-                  </div>
-                  <Trophy className="h-8 w-8 text-blue-600" />
+      <ErrorBoundary>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+          <div className="container mx-auto px-4 py-8">
+            {/* Заголовок */}
+            <div className="mb-8">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                    Добро пожаловать, {user.name || user.email}!
+                  </h1>
+                  <p className="text-xl text-gray-600">
+                    Ваш личный кабинет для трансформации
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-purple-600">Курсы</p>
-                    <p className="text-3xl font-bold text-purple-900">{stats.totalCourses}</p>
-                  </div>
-                  <BookOpen className="h-8 w-8 text-purple-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-green-600">Завершено</p>
-                    <p className="text-3xl font-bold text-green-900">{stats.completedCourses}</p>
-                  </div>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-orange-600">Потрачено</p>
-                    <p className="text-3xl font-bold text-orange-900">{stats.totalSpent.toLocaleString()} ₽</p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Недавно просмотренные */}
-          {recentlyViewed.length > 0 && (
-            <div className="rounded-lg border border-gray-200 bg-white p-4 mb-6">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-900">Недавно просмотренные</h3>
-                <Button size="sm" variant="ghost" onClick={() => { setRecentlyViewed([]); try { localStorage.removeItem('el_recently_viewed') } catch { } }}>Очистить</Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {recentlyViewed.slice(0, 8).map((item) => (
-                  <a key={`${item.id}-${item.ts}`} href={item.href} className="text-sm rounded border px-2 py-1 hover:bg-gray-50" onClick={() => track('dashboard_recent_click', { id: item.id, type: item.type })}>
-                    {item.title}
-                  </a>
-                ))}
+                <Button
+                  onClick={logout}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Выйти
+                </Button>
               </div>
             </div>
-          )}
 
-          {/* Основной контент */}
-          <Tabs defaultValue="purchases" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="purchases">Мои покупки</TabsTrigger>
-              <TabsTrigger value="courses">Курсы</TabsTrigger>
-              <TabsTrigger value="achievements">Достижения</TabsTrigger>
-              <TabsTrigger value="gifts">Подарки</TabsTrigger>
-            </TabsList>
-
-            {/* Мои покупки */}
-            <TabsContent value="purchases" className="space-y-6">
-              {errorMessage && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <p>{errorMessage}</p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={handleRetry}>
-                        Повторить попытку
-                      </Button>
-                      <Button size="sm" variant="ghost" asChild>
-                        <a href="mailto:support@energylogic.ai?subject=Проблема%20с%20доступом">
-                          Связаться с поддержкой
-                        </a>
-                      </Button>
+            {/* Статистика */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-blue-600">Всего покупок</p>
+                      <p className="text-3xl font-bold text-blue-900">{stats.totalPurchases}</p>
                     </div>
+                    <Trophy className="h-8 w-8 text-blue-600" />
                   </div>
-                </div>
-              )}
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                    <div className="flex w-full flex-col gap-3 md:flex-row md:items-end md:gap-4">
-                      <div className="w-full md:w-72">
-                        <label htmlFor="purchase-search" className="mb-1 block text-sm font-medium text-gray-600">
-                          Поиск
-                        </label>
-                        <Input
-                          id="purchase-search"
-                          placeholder="Название, курс или ID"
-                          value={searchTerm}
-                          onChange={(event) => setSearchTerm(event.target.value)}
-                        />
-                      </div>
-                      <div className="w-full md:w-56">
-                        <label htmlFor="purchase-status-filter" className="mb-1 block text-sm font-medium text-gray-600">
-                          Статус
-                        </label>
-                        <select
-                          id="purchase-status-filter"
-                          className="h-10 w-full rounded-md border border-input bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          value={statusFilterValue}
-                          onChange={(event) => setStatusFilterValue(event.target.value as 'all' | PurchaseStatus)}
-                        >
-                          {statusFilterOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-purple-600">Курсы</p>
+                      <p className="text-3xl font-bold text-purple-900">{stats.totalCourses}</p>
                     </div>
-                    <div className="flex flex-col gap-2 text-sm text-gray-600 md:items-end">
-                      <span>
-                        Отобрано {filteredPurchases.length} покупок · {filteredTotalFormatted}
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleExportPurchases}
-                        disabled={filteredPurchases.length === 0}
+                    <BookOpen className="h-8 w-8 text-purple-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-green-600">Завершено</p>
+                      <p className="text-3xl font-bold text-green-900">{stats.completedCourses}</p>
+                    </div>
+                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-orange-600">Потрачено</p>
+                      <p className="text-3xl font-bold text-orange-900">{stats.totalSpent.toLocaleString()} ₽</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-orange-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Недавно просмотренные */}
+            <Card className="mb-8 border border-gray-200 shadow-sm">
+              <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <CardTitle className="text-lg text-gray-900">Недавно просмотренные</CardTitle>
+                  <CardDescription>
+                    Последние просмотры и скачивания материалов
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRefreshRecentActivity}
+                    disabled={recentActivityLoading}
+                  >
+                    Обновить
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleClearRecentActivity}
+                    disabled={recentActivity.length === 0}
+                  >
+                    Очистить
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {recentActivityLoading && (
+                  <div className="space-y-2">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        key={`recent-skeleton-${index}`}
+                        className="h-14 w-full animate-pulse rounded-md bg-gray-100"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {!recentActivityLoading && recentActivityError && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                    {recentActivityError}
+                  </div>
+                )}
+
+                {!recentActivityLoading && !recentActivityError && recentActivity.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    Здесь появятся материалы, которые вы просматривали или скачивали.
+                  </p>
+                )}
+
+                {!recentActivityLoading && recentActivity.length > 0 && (
+                  <div className="divide-y divide-gray-100">
+                    {recentActivity.slice(0, 6).map((item) => (
+                      <div
+                        key={`${item.id}-${item.occurredAt}`}
+                        className="flex items-center justify-between gap-4 py-3"
                       >
-                        <Download className="mr-2 h-4 w-4" />
-                        Экспорт CSV
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50">
-                          <TableHead>Название</TableHead>
-                          <TableHead>Тип</TableHead>
-                          <TableHead>Статус</TableHead>
-                          <TableHead>Дата</TableHead>
-                          <TableHead>Сумма</TableHead>
-                          <TableHead>Доступ до</TableHead>
-                          <TableHead className="text-right">Действия</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {isLoading && purchases.length === 0 && (
-                          Array.from({ length: 3 }).map((_, index) => (
-                            <TableRow key={`purchase-row-skeleton-${index}`} className="animate-pulse">
-                              <TableCell colSpan={7}>
-                                <div className="flex flex-col gap-2">
-                                  <div className="h-4 w-2/3 rounded bg-gray-200" />
-                                  <div className="h-3 w-1/2 rounded bg-gray-100" />
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-
-                        {!isLoading && filteredPurchases.length > 0 ? (
-                          <>
-                            {filteredPurchases.map((purchase) => {
-                              const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
-                              const statusMeta = getPurchaseStatusMeta(effectiveStatus)
-                              const formattedDate = new Date(purchase.created_at).toLocaleDateString('ru-RU')
-                              const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
-                              const openHref = purchase.product_type === 'session'
-                                ? `/download/${purchase.id}`
-                                : purchase.document?.id
-                                  ? `/courses/${purchase.document.id}/player`
-                                  : undefined
-
-                              return (
-                                <TableRow key={`purchase-row-${purchase.id}`}>
-                                  <TableCell className="font-medium text-gray-900">
-                                    <div className="flex flex-col">
-                                      <span>{purchase.product_name}</span>
-                                      <span className="text-xs text-gray-500">ID: {purchase.id}</span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>{getProductTypeLabel(purchase.product_type)}</TableCell>
-                                  <TableCell>
-                                    <Badge className={statusMeta.badgeClass}>{statusMeta.label}</Badge>
-                                  </TableCell>
-                                  <TableCell>{formattedDate}</TableCell>
-                                  <TableCell>{purchase.price.toLocaleString('ru-RU')} ₽</TableCell>
-                                  <TableCell>{formattedExpiresAt || '—'}</TableCell>
-                                  <TableCell className="text-right">
-                                    <div className="flex justify-end gap-2">
-                                      {statusMeta.allowActions && openHref ? (
-                                        <Button size="sm" variant="outline" asChild>
-                                          <a
-                                            href={openHref}
-                                            target={purchase.product_type === 'session' ? '_blank' : undefined}
-                                            rel={purchase.product_type === 'session' ? 'noopener noreferrer' : undefined}
-                                            onClick={() => handleOpenClick(purchase)}
-                                          >
-                                            Открыть
-                                          </a>
-                                        </Button>
-                                      ) : (
-                                        <Button size="sm" variant="outline" disabled title={statusMeta.hint}>
-                                          Открыть
-                                        </Button>
-                                      )}
-                                      <Button size="sm" variant="ghost" type="button" onClick={() => handleDownloadReceipt(purchase)}>
-                                        Чек
-                                      </Button>
-                                      <Button size="sm" variant="ghost" type="button" onClick={() => handleReportIssue(purchase)}>
-                                        Сообщить о проблеме
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              )
-                            })}
-                          </>
-                        ) : null}
-
-                        {!isLoading && filteredPurchases.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={7} className="py-6 text-center text-sm text-gray-500">
-                              {purchases.length === 0
-                                ? 'Здесь появятся ваши покупки после оформления заказа.'
-                                : 'По выбранным фильтрам ничего не найдено.'}
-                            </TableCell>
-                          </TableRow>
-                        ) : null}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-
-                <div className="grid gap-6">
-                  {isLoading && purchases.length === 0 ? (
-                    Array.from({ length: 2 }).map((_, index) => (
-                      <Card key={`purchase-skeleton-${index}`} className="border border-dashed">
-                        <CardHeader>
-                          <div className="flex items-center justify-between animate-pulse">
-                            <div className="space-y-2">
-                              <div className="h-4 w-48 rounded bg-gray-200" />
-                              <div className="h-3 w-32 rounded bg-gray-100" />
-                            </div>
-                            <div className="space-y-2 text-right">
-                              <div className="h-5 w-20 rounded bg-gray-200 ml-auto" />
-                              <div className="h-5 w-16 rounded bg-gray-100 ml-auto" />
-                            </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
+                            {getActivityIcon(item.materialType, item.action)}
                           </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div className="h-2 w-full rounded bg-gray-100 animate-pulse" />
-                          <div className="h-8 w-32 rounded bg-gray-200 animate-pulse" />
-                        </CardContent>
-                      </Card>
-                    ))
-                  ) : (
-                    filteredPurchases.map((purchase) => {
-                      const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
-                      const statusMeta = getPurchaseStatusMeta(effectiveStatus)
-                      const HintIcon = statusMeta.tone === 'info' ? Info : AlertCircle
-                      const supportMailto = statusMeta.supportReason
-                        ? `mailto:support@energylogic.ai?subject=${encodeURIComponent(statusMeta.supportReason)}&body=${encodeURIComponent(
-                          `Покупка: ${purchase.product_name} (ID ${purchase.id}). Статус: ${statusMeta.label}.`
-                        )}`
-                        : undefined
-                      const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{item.materialTitle}</p>
+                            <p className="text-xs text-gray-500">
+                              {getActivityLabel(item.action)} • {formatDateTime(item.occurredAt)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge className={getActivityBadgeClass(item.action)}>
+                            {getActivityLabel(item.action)}
+                          </Badge>
+                          <Button size="sm" variant="ghost" onClick={() => handleOpenRecentItem(item)}>
+                            Открыть
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-                      return (
-                        <Card key={purchase.id} className="hover:shadow-lg transition-shadow">
-                          <CardHeader>
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <CardTitle className="text-xl">{purchase.product_name}</CardTitle>
-                                <CardDescription>
-                                  {getProductTypeLabel(purchase.product_type)} • {new Date(purchase.created_at).toLocaleDateString('ru-RU')}
-                                </CardDescription>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-2xl font-bold text-gray-900">{purchase.price.toLocaleString()} ₽</p>
-                                <Badge className={statusMeta.badgeClass} title={statusMeta.hint}>
-                                  {statusMeta.label}
-                                </Badge>
-                                {formattedExpiresAt && (
-                                  <p className="mt-1 text-xs text-gray-500">
-                                    {effectiveStatus === 'expired' ? 'Истёк' : 'Доступ до'} {formattedExpiresAt}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            {purchase.progress && (
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                  <span>Прогресс</span>
-                                  <span>{purchase.progress}%</span>
-                                </div>
-                                <Progress value={purchase.progress} className="h-2" />
-                              </div>
-                            )}
-                            <div className="flex gap-2 mt-4 flex-wrap">
-                              {statusMeta.allowActions ? (
-                                purchase.product_type === 'session' ? (
-                                  <>
-                                    {purchase.pdf_url && (
-                                      <Button size="sm" variant="outline" asChild>
-                                        <a href={purchase.pdf_url} target="_blank" rel="noopener noreferrer">
-                                          <Download className="h-4 w-4 mr-2" />
-                                          Скачать отчёт
-                                        </a>
-                                      </Button>
-                                    )}
-                                    {!purchase.pdf_url && (
-                                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700" role="status">
-                                        <Clock className="h-4 w-4" />
-                                        <span>Ссылка для скачивания появится после обработки отчёта.</span>
-                                      </div>
-                                    )}
-                                    <Button size="sm" variant="outline" asChild>
-                                      <a href={`/download/${purchase.id}`} target="_blank" rel="noopener noreferrer">
-                                        <PlayCircle className="h-4 w-4 mr-2" />
-                                        Просмотр
-                                      </a>
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <Button size="sm" variant="outline" asChild>
-                                    <a href={`/courses/${purchase.document?.id}/player`}>
-                                      <PlayCircle className="h-4 w-4 mr-2" />
-                                      Открыть курс
-                                    </a>
-                                  </Button>
-                                )
-                              ) : (
-                                <div
-                                  className={`flex w-full flex-col gap-2 rounded-md border px-3 py-2 text-sm ${STATUS_HINT_TONE_STYLES[statusMeta.tone]}`}
-                                  role="status"
-                                  aria-live="polite"
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <Badge className={`${statusMeta.badgeClass} shrink-0`}>
-                                      {statusMeta.label}
-                                    </Badge>
-                                    <div className="flex items-start gap-2">
-                                      <HintIcon className="mt-0.5 h-4 w-4 shrink-0" />
-                                      <span>{statusMeta.hint}</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-wrap gap-2">
-                                    {statusMeta.allowRetry && (
-                                      <Button size="sm" variant="outline" onClick={() => handleRetryAccess(purchase.id)}>
-                                        Повторить попытку
-                                      </Button>
-                                    )}
-                                    {supportMailto && (
-                                      <Button size="sm" variant="ghost" asChild>
-                                        <a href={supportMailto} onClick={() => handleSupportClick(purchase)}>
-                                          Связаться с поддержкой
-                                        </a>
-                                      </Button>
-                                    )}
-                                    {!supportMailto && (
-                                      <Button size="sm" variant="ghost" onClick={() => handleReportIssue(purchase)}>
-                                        Сообщить о проблеме
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })
-                  )}
-                </div>
+            {/* Основной контент */}
+            <Tabs defaultValue="purchases" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="purchases">Мои покупки</TabsTrigger>
+                <TabsTrigger value="courses">Курсы</TabsTrigger>
+                <TabsTrigger value="achievements">Достижения</TabsTrigger>
+                <TabsTrigger value="gifts">Подарки</TabsTrigger>
+              </TabsList>
 
-                {purchases.length === 0 && !errorMessage && (
-                  <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-600">
-                    <p className="text-lg font-semibold mb-2">У вас пока нет покупок</p>
-                    <p className="mb-4">Начните с выбора подходящего курса или свяжитесь с нами за рекомендациями.</p>
-                    <div className="flex justify-center gap-3">
-                      <Button asChild>
-                        <a href="/catalog">Купить доступ</a>
-                      </Button>
-                      <Button variant="outline" asChild>
-                        <a href="mailto:support@energylogic.ai">Связаться</a>
-                      </Button>
+              {/* Мои покупки */}
+              <TabsContent value="purchases" className="space-y-6">
+                {errorMessage && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <p>{errorMessage}</p>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={handleRetry}>
+                          Повторить попытку
+                        </Button>
+                        <Button size="sm" variant="ghost" asChild>
+                          <a href="mailto:support@energylogic.ai?subject=Проблема%20с%20доступом">
+                            Связаться с поддержкой
+                          </a>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
-              </div>
-            </TabsContent>
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                      <div className="flex w-full flex-col gap-3 md:flex-row md:items-end md:gap-4">
+                        <div className="w-full md:w-72">
+                          <label htmlFor="purchase-search" className="mb-1 block text-sm font-medium text-gray-600">
+                            Поиск
+                          </label>
+                          <Input
+                            id="purchase-search"
+                            placeholder="Название, курс или ID"
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                          />
+                        </div>
+                        <div className="w-full md:w-56">
+                          <label htmlFor="purchase-status-filter" className="mb-1 block text-sm font-medium text-gray-600">
+                            Статус
+                          </label>
+                          <select
+                            id="purchase-status-filter"
+                            className="h-10 w-full rounded-md border border-input bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={statusFilterValue}
+                            onChange={(event) => setStatusFilterValue(event.target.value as 'all' | PurchaseStatus)}
+                          >
+                            {statusFilterOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 text-sm text-gray-600 md:items-end">
+                        <span>
+                          Отобрано {filteredPurchases.length} покупок · {filteredTotalFormatted}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleExportPurchases}
+                          disabled={filteredPurchases.length === 0}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Экспорт CSV
+                        </Button>
+                      </div>
+                    </div>
 
+                    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gray-50">
+                            <TableHead>Название</TableHead>
+                            <TableHead>Тип</TableHead>
+                            <TableHead>Статус</TableHead>
+                            <TableHead>Дата</TableHead>
+                            <TableHead>Сумма</TableHead>
+                            <TableHead>Доступ до</TableHead>
+                            <TableHead className="text-right">Действия</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {isLoading && purchases.length === 0 && (
+                            Array.from({ length: 3 }).map((_, index) => (
+                              <TableRow key={`purchase-row-skeleton-${index}`} className="animate-pulse">
+                                <TableCell colSpan={7}>
+                                  <div className="flex flex-col gap-2">
+                                    <div className="h-4 w-2/3 rounded bg-gray-200" />
+                                    <div className="h-3 w-1/2 rounded bg-gray-100" />
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
 
-            <TabsContent value="courses" className="space-y-6">
-              <div className="grid gap-6">
-                {courses.map((course) => (
-                  <Card key={course.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-xl mb-2">{course.title}</CardTitle>
-                          <CardDescription className="mb-4">{course.description}</CardDescription>
+                          {!isLoading && filteredPurchases.length > 0 ? (
+                            <>
+                              {filteredPurchases.map((purchase) => {
+                                const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
+                                const statusMeta = getPurchaseStatusMeta(effectiveStatus)
+                                const formattedDate = new Date(purchase.created_at).toLocaleDateString('ru-RU')
+                                const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
+                                const openHref = purchase.product_type === 'session'
+                                  ? `/download/${purchase.id}`
+                                  : purchase.document?.id
+                                    ? `/courses/${purchase.document.id}/player`
+                                    : undefined
 
-                          {/* Информация о типе курса */}
-                          <div className="flex items-center gap-2 mb-3">
-                            <Badge className={course.course_type === 'mini_course' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
-                              {course.course_type === 'mini_course' ? 'Мини-курс' : 'Курс'}
-                            </Badge>
-                            {course.duration !== 'Не указано' && (
-                              <div className="flex items-center gap-1 text-sm text-gray-600">
-                                <Clock className="h-4 w-4" />
-                                {course.duration}
+                                return (
+                                  <TableRow key={`purchase-row-${purchase.id}`}>
+                                    <TableCell className="font-medium text-gray-900">
+                                      <div className="flex flex-col">
+                                        <span>{purchase.product_name}</span>
+                                        <span className="text-xs text-gray-500">ID: {purchase.id}</span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>{getProductTypeLabel(purchase.product_type)}</TableCell>
+                                    <TableCell>
+                                      <Badge className={statusMeta.badgeClass}>{statusMeta.label}</Badge>
+                                    </TableCell>
+                                    <TableCell>{formattedDate}</TableCell>
+                                    <TableCell>{purchase.price.toLocaleString('ru-RU')} ₽</TableCell>
+                                    <TableCell>{formattedExpiresAt || '—'}</TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex justify-end gap-2">
+                                        {statusMeta.allowActions && openHref ? (
+                                          <Button size="sm" variant="outline" asChild>
+                                            <a
+                                              href={openHref}
+                                              target={purchase.product_type === 'session' ? '_blank' : undefined}
+                                              rel={purchase.product_type === 'session' ? 'noopener noreferrer' : undefined}
+                                              onClick={() => handleOpenClick(purchase)}
+                                            >
+                                              Открыть
+                                            </a>
+                                          </Button>
+                                        ) : (
+                                          <Button size="sm" variant="outline" disabled title={statusMeta.hint}>
+                                            Открыть
+                                          </Button>
+                                        )}
+                                        <Button size="sm" variant="ghost" type="button" onClick={() => handleDownloadReceipt(purchase)}>
+                                          Чек
+                                        </Button>
+                                        <Button size="sm" variant="ghost" type="button" onClick={() => handleReportIssue(purchase)}>
+                                          Сообщить о проблеме
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              })}
+                            </>
+                          ) : null}
+
+                          {!isLoading && filteredPurchases.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="py-6 text-center text-sm text-gray-500">
+                                {purchases.length === 0
+                                  ? 'Здесь появятся ваши покупки после оформления заказа.'
+                                  : 'По выбранным фильтрам ничего не найдено.'}
+                              </TableCell>
+                            </TableRow>
+                          ) : null}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6">
+                    {isLoading && purchases.length === 0 ? (
+                      Array.from({ length: 2 }).map((_, index) => (
+                        <Card key={`purchase-skeleton-${index}`} className="border border-dashed">
+                          <CardHeader>
+                            <div className="flex items-center justify-between animate-pulse">
+                              <div className="space-y-2">
+                                <div className="h-4 w-48 rounded bg-gray-200" />
+                                <div className="h-3 w-32 rounded bg-gray-100" />
                               </div>
-                            )}
-                          </div>
-
-                          {/* Доступные материалы */}
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                            <div className="flex items-center gap-1">
-                              <BookOpen className="h-4 w-4" />
-                              Основной PDF
+                              <div className="space-y-2 text-right">
+                                <div className="h-5 w-20 rounded bg-gray-200 ml-auto" />
+                                <div className="h-5 w-16 rounded bg-gray-100 ml-auto" />
+                              </div>
                             </div>
-                            {course.has_workbook && (
-                              <div className="flex items-center gap-1">
-                                <BookOpen className="h-4 w-4 text-orange-500" />
-                                {course.workbook_count} тетрадей
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="h-2 w-full rounded bg-gray-100 animate-pulse" />
+                            <div className="h-8 w-32 rounded bg-gray-200 animate-pulse" />
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      filteredPurchases.map((purchase) => {
+                        const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
+                        const statusMeta = getPurchaseStatusMeta(effectiveStatus)
+                        const HintIcon = statusMeta.tone === 'info' ? Info : AlertCircle
+                        const supportMailto = statusMeta.supportReason
+                          ? `mailto:support@energylogic.ai?subject=${encodeURIComponent(statusMeta.supportReason)}&body=${encodeURIComponent(
+                            `Покупка: ${purchase.product_name} (ID ${purchase.id}). Статус: ${statusMeta.label}.`
+                          )}`
+                          : undefined
+                        const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
+
+                        return (
+                          <Card key={purchase.id} className="hover:shadow-lg transition-shadow">
+                            <CardHeader>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <CardTitle className="text-xl">{purchase.product_name}</CardTitle>
+                                  <CardDescription>
+                                    {getProductTypeLabel(purchase.product_type)} • {new Date(purchase.created_at).toLocaleDateString('ru-RU')}
+                                  </CardDescription>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-2xl font-bold text-gray-900">{purchase.price.toLocaleString()} ₽</p>
+                                  <Badge className={statusMeta.badgeClass} title={statusMeta.hint}>
+                                    {statusMeta.label}
+                                  </Badge>
+                                  {formattedExpiresAt && (
+                                    <p className="mt-1 text-xs text-gray-500">
+                                      {effectiveStatus === 'expired' ? 'Истёк' : 'Доступ до'} {formattedExpiresAt}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
-                            )}
-                            {course.has_videos && (
-                              <div className="flex items-center gap-1">
-                                <PlayCircle className="h-4 w-4 text-indigo-500" />
-                                {course.video_count} видео
+                            </CardHeader>
+                            <CardContent>
+                              {purchase.progress && (
+                                <div className="space-y-2">
+                                  <div className="flex justify-between text-sm">
+                                    <span>Прогресс</span>
+                                    <span>{purchase.progress}%</span>
+                                  </div>
+                                  <Progress value={purchase.progress} className="h-2" />
+                                </div>
+                              )}
+                              <div className="flex gap-2 mt-4 flex-wrap">
+                                {statusMeta.allowActions ? (
+                                  purchase.product_type === 'session' ? (
+                                    <>
+                                      {purchase.pdf_url && (
+                                        <Button size="sm" variant="outline" asChild>
+                                          <a href={purchase.pdf_url} target="_blank" rel="noopener noreferrer">
+                                            <Download className="h-4 w-4 mr-2" />
+                                            Скачать отчёт
+                                          </a>
+                                        </Button>
+                                      )}
+                                      {!purchase.pdf_url && (
+                                        <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700" role="status">
+                                          <Clock className="h-4 w-4" />
+                                          <span>Ссылка для скачивания появится после обработки отчёта.</span>
+                                        </div>
+                                      )}
+                                      <Button size="sm" variant="outline" asChild>
+                                        <a href={`/download/${purchase.id}`} target="_blank" rel="noopener noreferrer">
+                                          <PlayCircle className="h-4 w-4 mr-2" />
+                                          Просмотр
+                                        </a>
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <Button size="sm" variant="outline" asChild>
+                                      <a href={`/courses/${purchase.document?.id}/player`}>
+                                        <PlayCircle className="h-4 w-4 mr-2" />
+                                        Открыть курс
+                                      </a>
+                                    </Button>
+                                  )
+                                ) : (
+                                  <div
+                                    className={`flex w-full flex-col gap-2 rounded-md border px-3 py-2 text-sm ${STATUS_HINT_TONE_STYLES[statusMeta.tone]}`}
+                                    role="status"
+                                    aria-live="polite"
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <Badge className={`${statusMeta.badgeClass} shrink-0`}>
+                                        {statusMeta.label}
+                                      </Badge>
+                                      <div className="flex items-start gap-2">
+                                        <HintIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                                        <span>{statusMeta.hint}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                      {statusMeta.allowRetry && (
+                                        <Button size="sm" variant="outline" onClick={() => handleRetryAccess(purchase.id)}>
+                                          Повторить попытку
+                                        </Button>
+                                      )}
+                                      {supportMailto && (
+                                        <Button size="sm" variant="ghost" asChild>
+                                          <a href={supportMailto} onClick={() => handleSupportClick(purchase)}>
+                                            Связаться с поддержкой
+                                          </a>
+                                        </Button>
+                                      )}
+                                      {!supportMailto && (
+                                        <Button size="sm" variant="ghost" onClick={() => handleReportIssue(purchase)}>
+                                          Сообщить о проблеме
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                <Button size="sm" variant="ghost" type="button" onClick={() => handleReportIssue(purchase)}>
+                                  Сообщить о проблеме
+                                </Button>
                               </div>
-                            )}
-                            {course.has_audio && (
+                            </CardContent>
+                          </Card>
+                        )
+                      })
+                    )}
+                  </div>
+
+                  {purchases.length === 0 && !errorMessage && (
+                    <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-600">
+                      <p className="text-lg font-semibold mb-2">У вас пока нет покупок</p>
+                      <p className="mb-4">Начните с выбора подходящего курса или свяжитесь с нами за рекомендациями.</p>
+                      <div className="flex justify-center gap-3">
+                        <Button asChild>
+                          <a href="/catalog">Купить доступ</a>
+                        </Button>
+                        <Button variant="outline" asChild>
+                          <a href="mailto:support@energylogic.ai">Связаться</a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+
+              <TabsContent value="courses" className="space-y-6">
+                <div className="grid gap-6">
+                  {courses.map((course) => (
+                    <Card key={course.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-xl mb-2">{course.title}</CardTitle>
+                            <CardDescription className="mb-4">{course.description}</CardDescription>
+
+                            {/* Информация о типе курса */}
+                            <div className="flex items-center gap-2 mb-3">
+                              <Badge className={course.course_type === 'mini_course' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
+                                {course.course_type === 'mini_course' ? 'Мини-курс' : 'Курс'}
+                              </Badge>
+                              {course.duration !== 'Не указано' && (
+                                <div className="flex items-center gap-1 text-sm text-gray-600">
+                                  <Clock className="h-4 w-4" />
+                                  {course.duration}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Доступные материалы */}
+                            <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                               <div className="flex items-center gap-1">
-                                <Volume2 className="h-4 w-4 text-red-500" />
-                                Аудио
+                                <BookOpen className="h-4 w-4" />
+                                Основной PDF
                               </div>
-                            )}
+                              {course.has_workbook && (
+                                <div className="flex items-center gap-1">
+                                  <BookOpen className="h-4 w-4 text-orange-500" />
+                                  {course.workbook_count} тетрадей
+                                </div>
+                              )}
+                              {course.has_videos && (
+                                <div className="flex items-center gap-1">
+                                  <PlayCircle className="h-4 w-4 text-indigo-500" />
+                                  {course.video_count} видео
+                                </div>
+                              )}
+                              {course.has_audio && (
+                                <div className="flex items-center gap-1">
+                                  <Volume2 className="h-4 w-4 text-red-500" />
+                                  Аудио
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-gray-900">{course.progress}%</p>
+                            <p className="text-sm text-gray-600">Завершено</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-gray-900">{course.progress}%</p>
-                          <p className="text-sm text-gray-600">Завершено</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span>Прогресс курса</span>
+                            <span>{course.progress}%</span>
+                          </div>
+                          <Progress value={course.progress} className="h-2" />
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span>Прогресс курса</span>
-                          <span>{course.progress}%</span>
+                        <div className="flex gap-2">
+                          <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
+                            <a href={`/download/${course.id}`} target="_blank" rel="noopener noreferrer">
+                              <PlayCircle className="h-4 w-4 mr-2" />
+                              Открыть курс
+                            </a>
+                          </Button>
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={`/courses/${course.id}`} target="_blank" rel="noopener noreferrer">
+                              <BookOpen className="h-4 w-4 mr-2" />
+                              Просмотр
+                            </a>
+                          </Button>
                         </div>
-                        <Progress value={course.progress} className="h-2" />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
-                          <a href={`/download/${course.id}`} target="_blank" rel="noopener noreferrer">
-                            <PlayCircle className="h-4 w-4 mr-2" />
-                            Открыть курс
-                          </a>
-                        </Button>
-                        <Button size="sm" variant="outline" asChild>
-                          <a href={`/courses/${course.id}`} target="_blank" rel="noopener noreferrer">
-                            <BookOpen className="h-4 w-4 mr-2" />
-                            Просмотр
-                          </a>
-                        </Button>
-                      </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {/* Достижения */}
+              <TabsContent value="achievements" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+                    <CardContent className="p-6 text-center">
+                      <Award className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-yellow-900 mb-2">Первый шаг</h3>
+                      <p className="text-sm text-yellow-700">Завершили первую сессию</p>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            </TabsContent>
 
-            {/* Достижения */}
-            <TabsContent value="achievements" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-                  <CardContent className="p-6 text-center">
-                    <Award className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-yellow-900 mb-2">Первый шаг</h3>
-                    <p className="text-sm text-yellow-700">Завершили первую сессию</p>
-                  </CardContent>
-                </Card>
+                  <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                    <CardContent className="p-6 text-center">
+                      <Target className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-blue-900 mb-2">Целеустремленный</h3>
+                      <p className="text-sm text-blue-700">Завершили 3 курса</p>
+                    </CardContent>
+                  </Card>
 
-                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                  <CardContent className="p-6 text-center">
-                    <Target className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-blue-900 mb-2">Целеустремленный</h3>
-                    <p className="text-sm text-blue-700">Завершили 3 курса</p>
-                  </CardContent>
-                </Card>
+                  <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                    <CardContent className="p-6 text-center">
+                      <Star className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-purple-900 mb-2">Эксперт</h3>
+                      <p className="text-sm text-purple-700">Завершили все курсы</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
 
-                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                  <CardContent className="p-6 text-center">
-                    <Star className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-purple-900 mb-2">Эксперт</h3>
-                    <p className="text-sm text-purple-700">Завершили все курсы</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+              {/* Подарки */}
+              <TabsContent value="gifts" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                    <CardContent className="p-6 text-center">
+                      <Gift className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-green-900 mb-2">Бонусный PDF</h3>
+                      <p className="text-sm text-green-700 mb-4">Дополнительные материалы по трансформации</p>
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        Получить
+                      </Button>
+                    </CardContent>
+                  </Card>
 
-            {/* Подарки */}
-            <TabsContent value="gifts" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                  <CardContent className="p-6 text-center">
-                    <Gift className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-green-900 mb-2">Бонусный PDF</h3>
-                    <p className="text-sm text-green-700 mb-4">Дополнительные материалы по трансформации</p>
-                    <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                      Получить
-                    </Button>
-                  </CardContent>
-                </Card>
+                  <Card className="bg-gradient-to-br from-pink-50 to-pink-100 border-pink-200">
+                    <CardContent className="p-6 text-center">
+                      <Calendar className="h-12 w-12 text-pink-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-pink-900 mb-2">Персональная консультация</h3>
+                      <p className="text-sm text-pink-700 mb-4">30 минут с экспертом</p>
+                      <Button size="sm" className="bg-pink-600 hover:bg-pink-700">
+                        Записаться
+                      </Button>
+                    </CardContent>
+                  </Card>
 
-                <Card className="bg-gradient-to-br from-pink-50 to-pink-100 border-pink-200">
-                  <CardContent className="p-6 text-center">
-                    <Calendar className="h-12 w-12 text-pink-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-pink-900 mb-2">Персональная консультация</h3>
-                    <p className="text-sm text-pink-700 mb-4">30 минут с экспертом</p>
-                    <Button size="sm" className="bg-pink-600 hover:bg-pink-700">
-                      Записаться
-                    </Button>
-                  </CardContent>
-                </Card>
+                  <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
+                    <CardContent className="p-6 text-center">
+                      <Trophy className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
+                      <h3 className="font-semibold text-indigo-900 mb-2">Эксклюзивный доступ</h3>
+                      <p className="text-sm text-indigo-700 mb-4">К закрытому сообществу</p>
+                      <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
+                        Присоединиться
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            </Tabs>
 
-                <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
-                  <CardContent className="p-6 text-center">
-                    <Trophy className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
-                    <h3 className="font-semibold text-indigo-900 mb-2">Эксклюзивный доступ</h3>
-                    <p className="text-sm text-indigo-700 mb-4">К закрытому сообществу</p>
-                    <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
-                      Присоединиться
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <SessionDevices />
+            <SessionDevices />
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
+      <ReportIssueDialog
+        open={issueDialogOpen}
+        onOpenChange={setIssueDialogOpen}
+        context={issueContext}
+        track={track}
+        onSubmitted={() => {
+          setTimeout(() => setIssueDialogOpen(false), 1200)
+        }}
+      />
     </MainLayout>
   )
 }
