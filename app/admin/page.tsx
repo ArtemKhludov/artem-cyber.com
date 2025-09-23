@@ -43,6 +43,8 @@ import LogsViewer from '@/components/admin/LogsViewer'
 import RevokeAccessModal from '@/components/admin/RevokeAccessModal'
 import GrantAccessModal from '@/components/admin/GrantAccessModal'
 import { useAuth } from '@/contexts/AuthContext'
+import IssuesDashboard from '@/components/admin/IssuesDashboard'
+import IssuesQuickWidget from '@/components/admin/IssuesQuickWidget'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -86,7 +88,7 @@ interface Purchase {
 
 function AdminPageContent() {
   const { logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'payments' | 'users' | 'courses' | 'pricing' | 'logs'>('requests')
+  const [activeTab, setActiveTab] = useState<'requests' | 'purchases' | 'payments' | 'users' | 'courses' | 'pricing' | 'logs' | 'issues'>('requests')
   const [requests, setRequests] = useState<Request[]>([])
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [payments, setPayments] = useState<any[]>([])
@@ -323,9 +325,21 @@ function AdminPageContent() {
   )
 
   // Показатели и страницы (после инициализации всех filtered-списков)
-  const totalRows = activeTab === 'requests' ? filteredRequests.length : activeTab === 'purchases' ? filteredPurchases.length : filteredUsers.length
-  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize))
-  const visibleRows = activeTab === 'requests' ? paginate(filteredRequests) : activeTab === 'purchases' ? paginate(filteredPurchases) : paginate(filteredUsers)
+  const totalRows = activeTab === 'requests'
+    ? filteredRequests.length
+    : activeTab === 'purchases'
+      ? filteredPurchases.length
+      : activeTab === 'users'
+        ? filteredUsers.length
+        : 0
+  const totalPages = Math.max(1, Math.ceil(Math.max(totalRows, 1) / pageSize))
+  const visibleRows = activeTab === 'requests'
+    ? paginate(filteredRequests)
+    : activeTab === 'purchases'
+      ? paginate(filteredPurchases)
+      : activeTab === 'users'
+        ? paginate(filteredUsers)
+        : []
 
   useEffect(() => {
     // Загружаем данные при первой загрузке
@@ -826,35 +840,39 @@ function AdminPageContent() {
                 >
                   Сбросить фильтры
                 </Button>
-                <Button
-                  onClick={exportToCSV}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Экспорт CSV
-                </Button>
+                {activeTab !== 'issues' && (
+                  <Button
+                    onClick={exportToCSV}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Экспорт CSV
+                  </Button>
+                )}
                 <Button
                   onClick={saveView}
                   className="bg-white/20 hover:bg-white/30 text-white"
                 >
                   Сохранить вид
                 </Button>
-                <Button
-                  onClick={() => {
-                    console.log('Button clicked!')
-                    if (activeTab === 'requests') {
-                      console.log('Calling fetchRequests...')
-                      fetchRequests()
-                    } else {
-                      console.log('Calling fetchPurchases...')
-                      fetchPurchases()
-                    }
-                  }}
-                  className="bg-green-600 hover:bg-green-700 text-white mr-2"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Обновить {activeTab === 'requests' ? 'заявки' : 'покупки'}
-                </Button>
+                {activeTab !== 'issues' && (
+                  <Button
+                    onClick={() => {
+                      console.log('Button clicked!')
+                      if (activeTab === 'requests') {
+                        console.log('Calling fetchRequests...')
+                        fetchRequests()
+                      } else {
+                        console.log('Calling fetchPurchases...')
+                        fetchPurchases()
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white mr-2"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Обновить {activeTab === 'requests' ? 'заявки' : 'покупки'}
+                  </Button>
+                )}
                 <Button
                   onClick={runReconcile}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -867,17 +885,23 @@ function AdminPageContent() {
                 >
                   Логи
                 </Button>
-                <Button
-                  onClick={() => activeTab === 'requests' ? setShowAddRequestModal(true) : setShowAddPurchaseModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Добавить {activeTab === 'requests' ? 'заявку' : 'покупку'}
-                </Button>
+                {activeTab !== 'issues' && (
+                  <Button
+                    onClick={() => activeTab === 'requests' ? setShowAddRequestModal(true) : setShowAddPurchaseModal(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Добавить {activeTab === 'requests' ? 'заявку' : 'покупку'}
+                  </Button>
+                )}
               </div>
             </div>
-          </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <IssuesQuickWidget />
+      </div>
 
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -917,6 +941,18 @@ function AdminPageContent() {
                 <div className="flex items-center justify-center">
                   <Users className="w-4 h-4 mr-2" />
                   Пользователи ({users.length})
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('issues')}
+                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'issues'
+                  ? 'bg-white text-gray-900'
+                  : 'text-white hover:bg-white/10'
+                  }`}
+              >
+                <div className="flex items-center justify-center">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Обращения
                 </div>
               </button>
               <button
@@ -969,6 +1005,12 @@ function AdminPageContent() {
             </div>
           </div>
 
+          {activeTab === 'issues' ? (
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+              <IssuesDashboard />
+            </div>
+          ) : (
+            <>
           {/* Filters */}
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1683,6 +1725,8 @@ function AdminPageContent() {
               </div>
             )}
           </div>
+          </>
+          )}
         </div>
 
         {/* Add Request Modal */}

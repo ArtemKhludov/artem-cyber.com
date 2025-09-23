@@ -1,45 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { notifyPaymentTelegram } from '@/lib/notify'
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Функция для отправки уведомлений в Telegram
+// Уведомления в Payments-тему
 async function sendTelegramNotification(message: string) {
-    try {
-        const telegramResponse = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                chat_id: process.env.TELEGRAM_CHAT_ID,
-                text: message,
-                parse_mode: 'HTML'
-            })
-        })
-
-        if (!telegramResponse.ok) {
-            console.error('Telegram notification failed:', await telegramResponse.text())
-        }
-    } catch (telegramError) {
-        console.error('Telegram error:', telegramError)
-    }
+    await notifyPaymentTelegram(message)
 }
 
 // Создание покупки с автоматическим связыванием пользователя
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { 
-            name, 
-            phone, 
-            email, 
-            product_name, 
-            product_type, 
-            amount, 
+        const {
+            name,
+            phone,
+            email,
+            product_name,
+            product_type,
+            amount,
             currency = 'RUB',
             payment_method,
             status = 'pending',

@@ -922,12 +922,29 @@ export default function DashboardPage() {
             </Card>
 
             {/* Основной контент */}
-            <Tabs defaultValue="purchases" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="purchases">Мои покупки</TabsTrigger>
-                <TabsTrigger value="courses">Курсы</TabsTrigger>
-                <TabsTrigger value="achievements">Достижения</TabsTrigger>
-                <TabsTrigger value="gifts">Подарки</TabsTrigger>
+            <Tabs defaultValue="purchases" className="grid gap-6 md:grid-cols-[220px_1fr]">
+              <TabsList className="flex md:flex-col h-auto md:items-stretch md:gap-2 p-2 bg-transparent">
+                <TabsTrigger value="purchases" className="justify-start">
+                  <FileText className="h-4 w-4 mr-2" /> Мои покупки
+                </TabsTrigger>
+                <TabsTrigger value="courses" className="justify-start">
+                  <BookOpen className="h-4 w-4 mr-2" /> Курсы
+                </TabsTrigger>
+                <TabsTrigger value="achievements" className="justify-start">
+                  <Award className="h-4 w-4 mr-2" /> Достижения
+                </TabsTrigger>
+                <TabsTrigger value="gifts" className="justify-start">
+                  <Gift className="h-4 w-4 mr-2" /> Подарки
+                </TabsTrigger>
+                <TabsTrigger value="recent" className="justify-start">
+                  <Clock className="h-4 w-4 mr-2" /> Недавние
+                </TabsTrigger>
+                <TabsTrigger value="sessions" className="justify-start">
+                  <CheckCircle className="h-4 w-4 mr-2" /> Сессии
+                </TabsTrigger>
+                <TabsTrigger value="issues" className="justify-start">
+                  <AlertCircle className="h-4 w-4 mr-2" /> Обращения
+                </TabsTrigger>
               </TabsList>
 
               {/* Мои покупки */}

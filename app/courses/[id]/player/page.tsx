@@ -809,7 +809,9 @@ export default function CoursePlayer() {
                                         onClick={() => openIssueDialog({
                                             subject: `Проблема с курсом: ${course.title}`,
                                             courseId,
-                                            courseTitle: course.title
+                                            courseTitle: course.title,
+                                            issueType: 'content',
+                                            issueSeverity: 'normal'
                                         })}
                                     >
                                         Сообщить о проблеме
@@ -1019,7 +1021,9 @@ export default function CoursePlayer() {
                                                                 materialId: workbook.id,
                                                                 materialTitle: workbook.title,
                                                                 materialType: 'workbook',
-                                                                url: workbook.file_url || undefined
+                                                                url: workbook.file_url || undefined,
+                                                                issueType: 'content',
+                                                                issueSeverity: 'normal'
                                                             })}
                                                             size="sm"
                                                             variant="ghost"
@@ -1129,7 +1133,9 @@ export default function CoursePlayer() {
                                                                 materialId: video.id,
                                                                 materialTitle: video.title,
                                                                 materialType: 'video',
-                                                                url: materialLinks[videoKey]?.url || video.file_url || undefined
+                                                                url: materialLinks[videoKey]?.url || video.file_url || undefined,
+                                                                issueType: 'content',
+                                                                issueSeverity: 'normal'
                                                             })}
                                                             size="sm"
                                                             variant="ghost"
@@ -1238,7 +1244,9 @@ export default function CoursePlayer() {
                                                                 materialId: audioItem.id,
                                                                 materialTitle: audioItem.title,
                                                                 materialType: 'audio',
-                                                                url: materialLinks[audioKey]?.url || audioItem.file_url || undefined
+                                                                url: materialLinks[audioKey]?.url || audioItem.file_url || undefined,
+                                                                issueType: 'content',
+                                                                issueSeverity: 'normal'
                                                             })}
                                                             size="sm"
                                                             variant="ghost"

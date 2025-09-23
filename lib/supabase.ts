@@ -23,3 +23,67 @@ export const supabaseAdmin = {
     return admin.from(table)
   }
 }
+
+// Helper functions for getting user, document, and purchase info
+export async function getUserInfo(userId: string) {
+  try {
+    const supabase = getSupabaseAdmin()
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, email, name, phone')
+      .eq('id', userId)
+      .maybeSingle()
+
+    if (error) {
+      console.warn('getUserInfo error:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.warn('getUserInfo error:', error)
+    return null
+  }
+}
+
+export async function getDocumentInfo(documentId: string) {
+  try {
+    const supabase = getSupabaseAdmin()
+    const { data, error } = await supabase
+      .from('documents')
+      .select('id, title, description')
+      .eq('id', documentId)
+      .maybeSingle()
+
+    if (error) {
+      console.warn('getDocumentInfo error:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.warn('getDocumentInfo error:', error)
+    return null
+  }
+}
+
+export async function getPurchaseInfo(purchaseId: string) {
+  try {
+    const supabase = getSupabaseAdmin()
+    const { data, error } = await supabase
+      .from('purchases')
+      .select('id, product_name, amount_paid, currency, user_email')
+      .eq('id', purchaseId)
+      .maybeSingle()
+
+    if (error) {
+      console.warn('getPurchaseInfo error:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.warn('getPurchaseInfo error:', error)
+    return null
+  }
+}

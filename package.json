@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "payments:reconcile": "node scripts/payments-reconcile.js",
-    "e2e:payments-access": "node scripts/e2e-payments-access.js"
+    "e2e:payments-access": "node scripts/e2e-payments-access.js",
+    "grace-period:verify": "node scripts/grace-period-verification.js",
+    "grace-period:test": "node test-grace-period-system.js"
   },
   "dependencies": {
     "@daily-co/daily-js": "^0.82.0",

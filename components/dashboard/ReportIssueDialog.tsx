@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { useAuth } from '@/contexts/AuthContext'
 
 export type IssueContext = {
   subject: string
@@ -22,6 +22,8 @@ export type IssueContext = {
   materialType?: string
   url?: string
   extra?: Record<string, unknown>
+  issueType?: string
+  issueSeverity?: string
 }
 
 interface ReportIssueDialogProps {
@@ -35,6 +37,7 @@ interface ReportIssueDialogProps {
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error'
 
 export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, track }: ReportIssueDialogProps) {
+  const { user } = useAuth()
   const [subject, setSubject] = useState('')
   const [details, setDetails] = useState('')
   const [email, setEmail] = useState('')
@@ -49,45 +52,26 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
       if (context) {
         setSubject(context.subject)
       }
+      // Автоматически заполняем email из авторизованного пользователя
+      if (user?.email) {
+        setEmail(user.email)
+      }
     }
-  }, [open, context])
+  }, [open, context, user])
 
-  const summaryRows = useMemo(() => {
-    if (!context) return []
-    const rows: Array<{ label: string; value: string }> = []
-
-    if (context.purchaseName) {
-      rows.push({ label: 'Покупка', value: `${context.purchaseName}${context.productType ? ` (${context.productType})` : ''}` })
-    }
-    if (context.purchaseId) {
-      rows.push({ label: 'ID покупки', value: context.purchaseId })
-    }
-    if (context.purchaseStatusLabel) {
-      rows.push({ label: 'Статус', value: context.purchaseStatusLabel })
-    }
-    if (context.purchaseDate) {
-      rows.push({ label: 'Дата покупки', value: context.purchaseDate })
-    }
-    if (context.courseTitle) {
-      rows.push({ label: 'Курс', value: `${context.courseTitle}${context.courseId ? ` (${context.courseId})` : ''}` })
-    }
-    if (context.materialTitle) {
-      rows.push({ label: 'Материал', value: `${context.materialTitle}${context.materialType ? ` (${context.materialType})` : ''}` })
-    }
-    if (context.materialId) {
-      rows.push({ label: 'ID материала', value: context.materialId })
-    }
-    if (context.url) {
-      rows.push({ label: 'Ссылка', value: context.url })
-    }
-
-    return rows
-  }, [context])
 
   const handleSubmit = async () => {
     if (!context) return
     if (!details.trim()) {
       setErrorMessage('Опишите проблему, чтобы мы могли помочь.')
+      return
+    }
+    if (details.trim().length < 30) {
+      setErrorMessage('Описание должно содержать минимум 30 символов.')
+      return
+    }
+    if (!email.trim()) {
+      setErrorMessage('Укажите email для получения ответа.')
       return
     }
 
@@ -104,8 +88,15 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
         body: JSON.stringify({
           subject: subject || context.subject,
           description: details,
-          context,
-          contactEmail: email.trim() || undefined
+          issueType: 'technical',
+          severity: 'medium',
+          purchaseId: context.purchaseId,
+          documentId: context.courseId || context.materialId,
+          url: context.url,
+          context: {
+            ...context,
+            email: email.trim()
+          }
         })
       })
 
@@ -118,7 +109,9 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
       track?.('issue_report_submitted', {
         purchaseId: context.purchaseId,
         courseId: context.courseId,
-        materialId: context.materialId
+        materialId: context.materialId,
+        type: 'technical',
+        severity: 'medium'
       })
       onSubmitted?.()
     } catch (error) {
@@ -129,6 +122,8 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
         purchaseId: context.purchaseId,
         courseId: context.courseId,
         materialId: context.materialId,
+        type: 'technical',
+        severity: 'medium',
         error: error instanceof Error ? error.message : 'unknown'
       })
     }
@@ -146,7 +141,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Сообщить о проблеме</DialogTitle>
           <DialogDescription>
@@ -154,27 +149,6 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
           </DialogDescription>
         </DialogHeader>
 
-        {context && (
-          <div className="space-y-3 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm">
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">Контекст</Badge>
-              {context.purchaseStatusLabel && (
-                <Badge className="bg-blue-100 text-blue-700">{context.purchaseStatusLabel}</Badge>
-              )}
-              {context.materialType && (
-                <Badge className="bg-purple-100 text-purple-700">{context.materialType}</Badge>
-              )}
-            </div>
-            <dl className="grid grid-cols-1 gap-1 text-gray-700">
-              {summaryRows.map((row) => (
-                <div key={`${row.label}-${row.value}`} className="flex flex-col">
-                  <dt className="text-xs uppercase tracking-wide text-gray-500">{row.label}</dt>
-                  <dd>{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        )}
 
         <div className="space-y-4">
           <div className="space-y-1">
@@ -199,15 +173,18 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
             <p className="text-xs text-gray-500">Мы автоматически приложим технический контекст из карточки.</p>
           </div>
 
+
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700" htmlFor="issue-email">Контактный email (необязательно)</label>
+            <label className="text-sm font-medium text-gray-700" htmlFor="issue-email">Контактный email для ответа *</label>
             <Input
               id="issue-email"
               type="email"
               value={email}
               placeholder="name@example.com"
               onChange={(event) => setEmail(event.target.value)}
+              required
             />
+            <p className="text-xs text-gray-500">На этот email мы отправим ответ на ваше обращение</p>
           </div>
 
           {errorMessage && (

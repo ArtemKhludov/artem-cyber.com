@@ -227,11 +227,11 @@ type DbClient = SupabaseClient<Database>
    }
  }
 
- export async function ensureCourseAccessForUser(
-   supabase: DbClient,
-   userId: string,
-   documentId: string
- ) {
+export async function ensureCourseAccessForUser(
+  supabase: DbClient,
+  userId: string,
+  documentId: string
+) {
    const { data: existingAccess } = await supabase
      .from('user_course_access')
      .select('id, revoked_at')
@@ -244,22 +244,72 @@ type DbClient = SupabaseClient<Database>
      return existingAccess
    }
 
-   const { data: purchase } = await supabase
-     .from('purchases')
-     .select('id, payment_method')
-     .eq('user_id', userId)
-     .eq('document_id', documentId)
-     .eq('payment_status', 'completed')
-     .order('created_at', { ascending: false })
-     .maybeSingle()
+  const { data: userRow, error: userFetchError } = await supabase
+    .from('users')
+    .select('email')
+    .eq('id', userId)
+    .maybeSingle()
 
-   if (!purchase) {
-     return null
-   }
+  if (userFetchError) {
+    console.error('ensureCourseAccessForUser user fetch error', userFetchError)
+  }
 
-   const result = await grantCourseAccessFromPurchase(supabase, purchase, {
-     source: 'auto_sync',
-   })
+  const userEmail = userRow?.email?.toLowerCase() || null
 
-   return result?.[0] ?? null
- }
+  const { data: purchaseByUser, error: purchaseByUserError } = await supabase
+    .from('purchases')
+    .select('id, payment_method, user_id, user_email')
+    .eq('document_id', documentId)
+    .eq('payment_status', 'completed')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .maybeSingle()
+
+  if (purchaseByUserError) {
+    console.error('ensureCourseAccessForUser purchase (user) error', purchaseByUserError)
+  }
+
+  let purchase = purchaseByUser
+
+  if (!purchase && userEmail) {
+    const { data: purchaseByEmail, error: purchaseByEmailError } = await supabase
+      .from('purchases')
+      .select('id, payment_method, user_id, user_email')
+      .eq('document_id', documentId)
+      .eq('payment_status', 'completed')
+      .eq('user_email', userEmail)
+      .order('created_at', { ascending: false })
+      .maybeSingle()
+
+    if (purchaseByEmailError) {
+      console.error('ensureCourseAccessForUser purchase (email) error', purchaseByEmailError)
+    }
+
+    purchase = purchaseByEmail ?? null
+  }
+
+  if (!purchase) {
+    return null
+  }
+
+  if (!purchase.user_id) {
+    const { error: updateError } = await supabase
+      .from('purchases')
+      .update({
+        user_id: userId,
+        user_email: purchase.user_email || userEmail || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', purchase.id)
+
+    if (updateError) {
+      console.error('ensureCourseAccessForUser purchase update error', updateError)
+    }
+  }
+
+  const result = await grantCourseAccessFromPurchase(supabase, purchase, {
+    source: 'auto_sync',
+  })
+
+  return result?.[0] ?? null
+}

@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { getSupabaseAdmin } from '@/lib/supabase'
+import { notifyCallbackTelegram } from '@/lib/notify'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Валидация телефона (базовая проверка) - пропускаем для чата
-    if (product_type !== 'chat_message') {
+    if (product_type !== 'chat_message' && phone) {
       const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/
       if (!phoneRegex.test(phone)) {
         return NextResponse.json(
@@ -43,12 +39,13 @@ export async function POST(request: NextRequest) {
 
     // Сохранение заявки в базу данных
     // Триггер автоматически создаст или свяжет пользователя
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('callback_requests')
       .insert([
         {
           name: name.trim(),
-          phone: phone.trim(),
+          phone: phone?.trim() || 'Не указан',
           email: email?.trim() || null,
           preferred_time: preferred_time?.trim() || null,
           message: message?.trim() || null,
@@ -66,8 +63,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Database error:', error)
+      console.error('Error details:', JSON.stringify(error, null, 2))
       return NextResponse.json(
-        { error: 'Ошибка сохранения заявки' },
+        { error: 'Ошибка сохранения заявки', details: error.message },
         { status: 500 }
       )
     }
@@ -79,41 +77,19 @@ export async function POST(request: NextRequest) {
     //   console.error('Google Sheets sync error:', sheetsError)
     // }
 
-    // Отправка уведомления в Telegram
-    try {
-      const telegramMessage = `🆕 Новая заявка из CRM-системы:
-👤 Имя: ${name}
-📧 Email: ${email || 'Не указан'}
-📞 Телефон: ${phone}
-📦 Тип: ${product_type || 'callback'}
-🛍️ Товар/Услуга: ${product_name || 'Заказ звонка'}
-�� Заметки: ${notes || 'Нет'}
-🌐 Источник: ${source_page === '/' ? 'Главная страница' :
-          source_page === '/about' ? 'О проекте' :
-            source_page === '/contacts' ? 'Контакты' :
-              source_page === '/catalog' ? 'Каталог' :
-                source_page === '/book' ? 'Программы' :
-                  source_page === '/chat' ? 'Чат' :
-                    source_page || 'Не указан'}`
+    // Отправка уведомления в Telegram (в тему Callbacks)
+    const telegramMessage = `🆕 Новая заявка из CRM-системы:\n` +
+      `👤 Имя: ${name}\n` +
+      `📧 Email: ${email || 'Не указан'}\n` +
+      `📞 Телефон: ${phone}\n` +
+      `📦 Тип: ${product_type || 'callback'}\n` +
+      `🛍️ Товар/Услуга: ${product_name || 'Заказ звонка'}\n` +
+      `📝 Заметки: ${notes || 'Нет'}\n` +
+      `🌐 Источник: ${source_page || 'Не указан'}`
 
-      const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chat_id: process.env.TELEGRAM_CHAT_ID,
-          text: telegramMessage,
-          parse_mode: 'HTML'
-        })
-      })
-
-      if (!response.ok) {
-        console.error('Telegram notification failed:', await response.text())
-      }
-    } catch (telegramError) {
-      console.error('Telegram error:', telegramError)
-    }
+    notifyCallbackTelegram(telegramMessage).catch((e) =>
+      console.error('Telegram callback notify error:', e)
+    )
 
     return NextResponse.json({
       success: true,

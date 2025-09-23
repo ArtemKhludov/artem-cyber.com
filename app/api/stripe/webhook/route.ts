@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { notifyPaymentTelegram } from '@/lib/notify'
 import { syncCourseAccessByStatus } from '@/lib/course-access'
 
 // Ensure Node runtime for raw body access
@@ -72,37 +73,15 @@ export async function POST(request: NextRequest) {
           console.error('Error updating purchase_requests (completed):', requestsErr)
         }
 
-        // Telegram notification (optional)
+        // Telegram notification (Payments topic)
         const purchase = purchasesUpdated?.[0] || requestsUpdated?.[0]
         if (purchase) {
-          try {
-            const telegramMessage = `🛒 Новая покупка через Stripe:\n` +
-              `👤 Имя: ${purchase.name || ''}\n` +
-              `📧 Email: ${purchase.email || 'Не указан'}\n` +
-              `📞 Телефон: ${purchase.phone || ''}\n` +
-              `📦 Тип товара: ${purchase.product_type || ''}\n` +
-              `🛍️ Название: ${purchase.product_name || ''}\n` +
-              `💰 Сумма: ${(purchase.amount_paid ?? purchase.amount ?? '')} ${purchase.currency || ''}\n` +
-              `💳 Способ оплаты: ${purchase.payment_method || 'stripe'}\n` +
-              `📝 Статус: completed\n` +
-              `🌐 Источник: ${purchase.source || ''}\n` +
-              `💳 Stripe ID: ${sessionId}`
-
-            const telegramResponse = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: process.env.TELEGRAM_CHAT_ID,
-                text: telegramMessage,
-                parse_mode: 'HTML'
-              })
-            })
-            if (!telegramResponse.ok) {
-              console.error('Telegram notification failed:', await telegramResponse.text())
-            }
-          } catch (telegramError) {
-            console.error('Telegram error:', telegramError)
-          }
+          const telegramMessage = `✅ Stripe checkout.session.completed\n` +
+            `Email: ${purchase.user_email || purchase.email || '—'}\n` +
+            `Doc: ${purchase.document_id || '—'}\n` +
+            `Amount: ${(purchase.amount_paid ?? purchase.amount ?? '')} ${purchase.currency || ''}\n` +
+            `PI/Session: ${paymentIntentId || sessionId}`
+          notifyPaymentTelegram(telegramMessage).catch((e) => console.error('Telegram notify error:', e))
         }
 
         console.log('Payment completed:', sessionId)
@@ -164,6 +143,7 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('Payment session expired:', sessionId)
+        notifyPaymentTelegram(`⚠️ Stripe checkout.session.expired\nSession: ${sessionId}\nPI: ${paymentIntentId || '—'}`).catch(() => { })
 
         // Отзываем доступ, если платеж не завершился
         await syncCourseAccessByStatus(supabase, failedPurchases, 'failed', {
@@ -205,6 +185,7 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('PaymentIntent succeeded:', paymentIntentId)
+        notifyPaymentTelegram(`✅ Stripe payment_intent.succeeded\nPI: ${paymentIntentId}\nAmount: ${(pi.amount_received / 100).toFixed(2)} ${pi.currency.toUpperCase()}`).catch(() => { })
 
         await syncCourseAccessByStatus(supabase, purchasesCompleted, 'completed', {
           source: 'stripe',
@@ -246,6 +227,7 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('Payment failed:', paymentIntent.id)
+        notifyPaymentTelegram(`❌ Stripe payment_intent.payment_failed\nPI: ${paymentIntent.id}`).catch(() => { })
 
         await syncCourseAccessByStatus(supabase, failedPurchases, 'failed', {
           source: 'stripe',
@@ -283,6 +265,7 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('Charge refunded:', charge.id)
+        notifyPaymentTelegram(`↩️ Stripe charge.refunded\nCharge: ${charge.id}\nPI: ${paymentIntentId || '—'}`).catch(() => { })
 
         // При возврате блокируем доступ к курсу
         await syncCourseAccessByStatus(supabase, refundedPurchases, 'refunded', {

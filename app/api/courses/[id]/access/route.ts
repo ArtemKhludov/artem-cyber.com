@@ -67,7 +67,15 @@ export async function GET(
 
     if (!courseAccess || (courseAccess.expires_at && new Date(courseAccess.expires_at) <= now)) {
       // Если доступа нет — пробуем восстановить его из завершенных покупок
-      await ensureCourseAccessForUser(supabase, userId, id)
+      try {
+        await ensureCourseAccessForUser(supabase, userId, id)
+      } catch (ensureError) {
+        console.error('ensureCourseAccessForUser failed', {
+          userId,
+          documentId: id,
+          error: ensureError
+        })
+      }
 
       const refreshed = await supabase
         .from('user_course_access')
@@ -80,10 +88,35 @@ export async function GET(
       courseAccess = refreshed.data ?? null
 
       if (!courseAccess || (courseAccess.expires_at && new Date(courseAccess.expires_at) <= now)) {
-        return NextResponse.json(
-          { error: 'Курс не приобретен' },
-          { status: 403 }
-        )
+        let purchaseQuery = supabase
+          .from('purchases')
+          .select('id, created_at')
+          .eq('document_id', id)
+          .eq('payment_status', 'completed')
+
+        if (user.email) {
+          purchaseQuery = purchaseQuery.or(`user_id.eq.${userId},user_email.eq.${user.email.toLowerCase()}`)
+        } else {
+          purchaseQuery = purchaseQuery.eq('user_id', userId)
+        }
+
+        const { data: fallbackPurchase } = await purchaseQuery
+          .order('created_at', { ascending: false })
+          .maybeSingle()
+
+        if (fallbackPurchase) {
+          courseAccess = {
+            id: fallbackPurchase.id,
+            granted_at: fallbackPurchase.created_at,
+            expires_at: null,
+            revoked_at: null
+          }
+        } else {
+          return NextResponse.json(
+            { error: 'Курс не приобретен' },
+            { status: 403 }
+          )
+        }
       }
     }
 

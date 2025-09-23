@@ -88,6 +88,12 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
             throw new Error('access_denied')
         }
         const data = await res.json()
+        // TTL hint
+        const ttl = typeof data?.expiresIn === 'number' ? data.expiresIn : 120
+        const hint = document.getElementById(`ttl-hint-${document.id}`)
+        if (hint) {
+            hint.textContent = `Ссылка действует ~${ttl} сек`
+        }
         return data.url as string
     }
 
@@ -123,7 +129,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                         Доступно после покупки
                     </div>
                 )}
-                <div className="mt-2 text-xs text-gray-500">Ссылка действует около 2 минут. При истечении — запросите заново.</div>
+                <div id={`ttl-hint-${document.id}`} className="mt-2 text-xs text-gray-500">Ссылка действует около 2 минут. При истечении — запросите заново.</div>
                 {inlineError && (
                     <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
                         <Clock className="w-4 h-4 mt-0.5" />
