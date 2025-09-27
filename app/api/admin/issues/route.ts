@@ -52,7 +52,11 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('issue_reports')
-      .select('*, issue_replies(*)', { count: 'exact' })
+      .select(`
+        *,
+        issue_replies(*),
+        users!left(id, name, phone, telegram_username)
+      `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -89,19 +93,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Не удалось загрузить обращения' }, { status: 500 })
     }
 
+    // Обрабатываем данные пользователей
+    const processedData = data?.map(issue => ({
+      ...issue,
+      user_name: issue.users?.name || null,
+      user_phone: issue.users?.phone || null,
+      user_telegram_username: issue.users?.telegram_username || null,
+      users: undefined // Убираем объект users из ответа
+    })) || []
+
     const { data: statusRows } = await supabase
       .from('issue_reports')
       .select('status')
 
     const counters = { open: 0, in_progress: 0, waiting_user: 0, resolved: 0, closed: 0 }
-    ;(statusRows || []).forEach((row) => {
-      const key = row.status as keyof typeof counters
-      if (key in counters) counters[key] += 1
-    })
+      ; (statusRows || []).forEach((row) => {
+        const key = row.status as keyof typeof counters
+        if (key in counters) counters[key] += 1
+      })
 
     return NextResponse.json({
       success: true,
-      issues: data ?? [],
+      issues: processedData,
       total: count ?? 0,
       page,
       limit,

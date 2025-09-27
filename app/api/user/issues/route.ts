@@ -102,6 +102,12 @@ export async function POST(request: NextRequest) {
     const url = parseOptionalString(body?.url)
     const context = typeof body?.context === 'object' && body.context ? body.context : {}
 
+    // Извлекаем контактные данные из context
+    const userPhone = context?.phone || ''
+    const userTelegram = context?.telegram || ''
+    const wantTelegramNotifications = Boolean(context?.wantTelegramNotifications)
+    const wantEmailNotifications = Boolean(context?.wantEmailNotifications ?? true)
+
     if (description.length < 10) {
       return NextResponse.json({ error: 'Опишите проблему подробнее (минимум 10 символов).' }, { status: 400 })
     }
@@ -125,6 +131,20 @@ export async function POST(request: NextRequest) {
     const sanitizedContext = Object.fromEntries(
       Object.entries(context).filter(([_, value]) => value !== undefined)
     )
+
+    // Обновляем контактные данные пользователя
+    if (userPhone || userTelegram) {
+      const updateData: Record<string, any> = {}
+      if (userPhone) updateData.phone = userPhone
+      if (userTelegram) updateData.telegram_username = userTelegram
+      if (wantTelegramNotifications !== undefined) updateData.notify_telegram_enabled = wantTelegramNotifications
+      if (wantEmailNotifications !== undefined) updateData.notify_email_enabled = wantEmailNotifications
+
+      await supabase
+        .from('users')
+        .update(updateData)
+        .eq('id', validation.session.user_id)
+    }
 
     const insertPayload: Record<string, unknown> = {
       user_id: validation.session.user_id,

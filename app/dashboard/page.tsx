@@ -26,13 +26,21 @@ import {
   Gift,
   Award,
   Target,
-  TrendingUp,
   Volume2
 } from 'lucide-react'
 import { SessionDevices } from '@/components/dashboard/SessionDevices'
 import { initPostHog } from '@/lib/posthog'
-import { appendRecentActivity, loadRecentActivity, mergeWithLocalActivity, type RecentActivityRecord } from '@/lib/recent-activity'
+import {
+  appendRecentActivity,
+  clearRecentActivityStorage,
+  loadRecentActivity,
+  markActivitiesDismissed,
+  mergeWithLocalActivity,
+  type RecentActivityRecord
+} from '@/lib/recent-activity'
 import ReportIssueDialog, { type IssueContext } from '@/components/dashboard/ReportIssueDialog'
+import { TelegramLink } from '@/components/dashboard/TelegramLink'
+import { UserIssuesList } from '@/components/dashboard/UserIssuesList'
 
 type PurchaseStatus =
   | 'completed'
@@ -179,7 +187,7 @@ export default function DashboardPage() {
   const { user, logout } = useAuth()
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [courses, setCourses] = useState<Course[]>([])
-  const [stats, setStats] = useState({
+  const [, setStats] = useState({
     totalPurchases: 0,
     totalCourses: 0,
     completedCourses: 0,
@@ -195,11 +203,12 @@ export default function DashboardPage() {
   const [recentActivityError, setRecentActivityError] = useState<string | null>(null)
   const [issueDialogOpen, setIssueDialogOpen] = useState(false)
   const [issueContext, setIssueContext] = useState<IssueContext | null>(null)
+  const [menuOffset, setMenuOffset] = useState(96)
 
-  const track = (event: string, props?: Record<string, unknown>) => {
+  const track = useCallback((event: string, props?: Record<string, unknown>) => {
     const ph = initPostHog()
     ph?.capture(event, props)
-  }
+  }, [])
 
   const pushLocalActivity = useCallback((entry: {
     materialKey: string
@@ -491,9 +500,8 @@ export default function DashboardPage() {
 
   const handleClearRecentActivity = () => {
     track('dashboard_recent_clear')
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('energylogic_recent_activity')
-    }
+    markActivitiesDismissed(recentActivity.map((item) => item.id))
+    clearRecentActivityStorage()
     setRecentActivity([])
   }
 
@@ -600,6 +608,42 @@ export default function DashboardPage() {
 
   const handleSupportClick = (purchase?: Purchase) => {
     track('dashboard_support_click', purchase ? { purchaseId: purchase.id } : undefined)
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const headerElement = document.querySelector<HTMLElement>('header')
+    if (!headerElement) return
+
+    const measureOffset = () => {
+      const headerHeight = headerElement.getBoundingClientRect().height
+      const extraSpacing = 192
+      setMenuOffset(Math.max(headerHeight + 16 + extraSpacing, 200))
+    }
+
+    measureOffset()
+
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(measureOffset)
+      : null
+
+    if (resizeObserver) {
+      resizeObserver.observe(headerElement)
+    }
+
+    window.addEventListener('resize', measureOffset)
+
+    return () => {
+      window.removeEventListener('resize', measureOffset)
+      resizeObserver?.disconnect()
+    }
+  }, [])
+
+  const handleOpenIssuesTab = () => {
+    track('dashboard_issues_open')
+    setIssueContext(null)
+    setIssueDialogOpen(true)
   }
 
   const handleReportIssue = (purchase: Purchase) => {
@@ -765,186 +809,65 @@ export default function DashboardPage() {
       <ErrorBoundary>
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
           <div className="container mx-auto px-4 py-8">
-            {/* Заголовок */}
-            <div className="mb-8">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                    Добро пожаловать, {user.name || user.email}!
-                  </h1>
-                  <p className="text-xl text-gray-600">
-                    Ваш личный кабинет для трансформации
-                  </p>
-                </div>
+            {/* Основной контент */}
+            <Tabs
+              defaultValue="courses"
+              className="grid gap-6 md:grid-cols-[260px_minmax(0,1fr)] md:items-start"
+            >
+              <TabsList
+                className="flex gap-2 overflow-x-auto bg-transparent p-0 md:sticky md:self-start md:flex-col md:items-stretch md:gap-3 md:overflow-visible"
+                style={{ top: menuOffset, marginTop: menuOffset }}
+              >
+                <TabsTrigger
+                  value="courses"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <BookOpen className="h-4 w-4" /> Курсы
+                </TabsTrigger>
+                <TabsTrigger
+                  value="purchases"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <FileText className="h-4 w-4" /> Мои покупки
+                </TabsTrigger>
+                <TabsTrigger
+                  value="recent"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <Clock className="h-4 w-4" /> Недавние
+                </TabsTrigger>
+                <TabsTrigger
+                  value="sessions"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <CheckCircle className="h-4 w-4" /> Сессии
+                </TabsTrigger>
+                <TabsTrigger
+                  value="achievements"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <Award className="h-4 w-4" /> Достижения
+                </TabsTrigger>
+                <TabsTrigger
+                  value="gifts"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <Gift className="h-4 w-4" /> Подарки
+                </TabsTrigger>
+                <TabsTrigger
+                  value="issues"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <AlertCircle className="h-4 w-4" /> Обращения
+                </TabsTrigger>
                 <Button
+                  type="button"
                   onClick={logout}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  variant="destructive"
+                  className="w-full"
                 >
                   Выйти
                 </Button>
-              </div>
-            </div>
-
-            {/* Статистика */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-blue-600">Всего покупок</p>
-                      <p className="text-3xl font-bold text-blue-900">{stats.totalPurchases}</p>
-                    </div>
-                    <Trophy className="h-8 w-8 text-blue-600" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-purple-600">Курсы</p>
-                      <p className="text-3xl font-bold text-purple-900">{stats.totalCourses}</p>
-                    </div>
-                    <BookOpen className="h-8 w-8 text-purple-600" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-green-600">Завершено</p>
-                      <p className="text-3xl font-bold text-green-900">{stats.completedCourses}</p>
-                    </div>
-                    <CheckCircle className="h-8 w-8 text-green-600" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-orange-600">Потрачено</p>
-                      <p className="text-3xl font-bold text-orange-900">{stats.totalSpent.toLocaleString()} ₽</p>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-orange-600" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Недавно просмотренные */}
-            <Card className="mb-8 border border-gray-200 shadow-sm">
-              <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <CardTitle className="text-lg text-gray-900">Недавно просмотренные</CardTitle>
-                  <CardDescription>
-                    Последние просмотры и скачивания материалов
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleRefreshRecentActivity}
-                    disabled={recentActivityLoading}
-                  >
-                    Обновить
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={handleClearRecentActivity}
-                    disabled={recentActivity.length === 0}
-                  >
-                    Очистить
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {recentActivityLoading && (
-                  <div className="space-y-2">
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <div
-                        key={`recent-skeleton-${index}`}
-                        className="h-14 w-full animate-pulse rounded-md bg-gray-100"
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {!recentActivityLoading && recentActivityError && (
-                  <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
-                    {recentActivityError}
-                  </div>
-                )}
-
-                {!recentActivityLoading && !recentActivityError && recentActivity.length === 0 && (
-                  <p className="text-sm text-gray-500">
-                    Здесь появятся материалы, которые вы просматривали или скачивали.
-                  </p>
-                )}
-
-                {!recentActivityLoading && recentActivity.length > 0 && (
-                  <div className="divide-y divide-gray-100">
-                    {recentActivity.slice(0, 6).map((item) => (
-                      <div
-                        key={`${item.id}-${item.occurredAt}`}
-                        className="flex items-center justify-between gap-4 py-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
-                            {getActivityIcon(item.materialType, item.action)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{item.materialTitle}</p>
-                            <p className="text-xs text-gray-500">
-                              {getActivityLabel(item.action)} • {formatDateTime(item.occurredAt)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge className={getActivityBadgeClass(item.action)}>
-                            {getActivityLabel(item.action)}
-                          </Badge>
-                          <Button size="sm" variant="ghost" onClick={() => handleOpenRecentItem(item)}>
-                            Открыть
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Основной контент */}
-            <Tabs defaultValue="purchases" className="grid gap-6 md:grid-cols-[220px_1fr]">
-              <TabsList className="flex md:flex-col h-auto md:items-stretch md:gap-2 p-2 bg-transparent">
-                <TabsTrigger value="purchases" className="justify-start">
-                  <FileText className="h-4 w-4 mr-2" /> Мои покупки
-                </TabsTrigger>
-                <TabsTrigger value="courses" className="justify-start">
-                  <BookOpen className="h-4 w-4 mr-2" /> Курсы
-                </TabsTrigger>
-                <TabsTrigger value="achievements" className="justify-start">
-                  <Award className="h-4 w-4 mr-2" /> Достижения
-                </TabsTrigger>
-                <TabsTrigger value="gifts" className="justify-start">
-                  <Gift className="h-4 w-4 mr-2" /> Подарки
-                </TabsTrigger>
-                <TabsTrigger value="recent" className="justify-start">
-                  <Clock className="h-4 w-4 mr-2" /> Недавние
-                </TabsTrigger>
-                <TabsTrigger value="sessions" className="justify-start">
-                  <CheckCircle className="h-4 w-4 mr-2" /> Сессии
-                </TabsTrigger>
-                <TabsTrigger value="issues" className="justify-start">
-                  <AlertCircle className="h-4 w-4 mr-2" /> Обращения
-                </TabsTrigger>
               </TabsList>
 
               {/* Мои покупки */}
@@ -1281,6 +1204,100 @@ export default function DashboardPage() {
               </TabsContent>
 
 
+              <TabsContent value="recent" className="space-y-6">
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <CardTitle className="text-lg text-gray-900">Недавно просмотренные</CardTitle>
+                      <CardDescription>
+                        Последние просмотры и скачивания материалов
+                      </CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRefreshRecentActivity}
+                        disabled={recentActivityLoading}
+                      >
+                        Обновить
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleClearRecentActivity}
+                        disabled={recentActivity.length === 0}
+                      >
+                        Очистить
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {recentActivityLoading && (
+                      <div className="space-y-2">
+                        {Array.from({ length: 4 }).map((_, index) => (
+                          <div
+                            key={`recent-skeleton-${index}`}
+                            className="h-16 w-full animate-pulse rounded-md bg-gray-100"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {!recentActivityLoading && recentActivityError && (
+                      <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                        {recentActivityError}
+                      </div>
+                    )}
+
+                    {!recentActivityLoading && !recentActivityError && recentActivity.length === 0 && (
+                      <p className="text-sm text-gray-500">
+                        Здесь появятся материалы, которые вы просматривали или скачивали.
+                      </p>
+                    )}
+
+                    {!recentActivityLoading && !recentActivityError && recentActivity.length > 0 && (
+                      <div className="space-y-3">
+                        {recentActivity.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50">
+                                {getActivityIcon(item.materialType, item.action)}
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium text-gray-900">{item.materialTitle}</p>
+                                <p className="text-xs text-gray-500">
+                                  {getActivityLabel(item.action)} • {formatDateTime(item.occurredAt)}
+                                </p>
+                                {item.courseTitle && (
+                                  <p className="text-xs text-gray-500">Курс: {item.courseTitle}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <Badge className={getActivityBadgeClass(item.action)}>
+                                {getActivityLabel(item.action)}
+                              </Badge>
+                              <Button size="sm" variant="ghost" onClick={() => handleOpenRecentItem(item)}>
+                                Открыть
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="sessions" className="space-y-6">
+                <SessionDevices />
+              </TabsContent>
+
+
               <TabsContent value="courses" className="space-y-6">
                 <div className="grid gap-6">
                   {courses.map((course) => (
@@ -1430,9 +1447,30 @@ export default function DashboardPage() {
                   </Card>
                 </div>
               </TabsContent>
-            </Tabs>
 
-            <SessionDevices />
+              <TabsContent value="issues" className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <TelegramLink />
+                  <Card className="border border-gray-200 shadow-sm">
+                    <CardHeader>
+                      <CardTitle>Обращения</CardTitle>
+                      <CardDescription>
+                        Напишите нам, если столкнулись с проблемой или хотите задать вопрос.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm text-gray-600">
+                        Кнопка откроет форму обратной связи прямо здесь, в кабинете.
+                      </p>
+                      <Button size="sm" onClick={handleOpenIssuesTab}>
+                        Сообщить о проблеме
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+                <UserIssuesList />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </ErrorBoundary>

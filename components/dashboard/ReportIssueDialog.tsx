@@ -41,6 +41,10 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
   const [subject, setSubject] = useState('')
   const [details, setDetails] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [telegram, setTelegram] = useState('')
+  const [wantTelegramNotifications, setWantTelegramNotifications] = useState(false)
+  const [wantEmailNotifications, setWantEmailNotifications] = useState(true)
   const [state, setState] = useState<SubmitState>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -75,6 +79,11 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
       return
     }
 
+    if (wantTelegramNotifications && !telegram.trim()) {
+      setErrorMessage('Для получения уведомлений в Telegram укажите ваш Telegram username (без @).')
+      return
+    }
+
     setState('submitting')
     setErrorMessage(null)
 
@@ -95,7 +104,11 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
           url: context.url,
           context: {
             ...context,
-            email: email.trim()
+            email: email.trim(),
+            phone: phone.trim(),
+            telegram: telegram.trim(),
+            wantTelegramNotifications,
+            wantEmailNotifications
           }
         })
       })
@@ -135,6 +148,10 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
       setErrorMessage(null)
       setDetails('')
       setEmail('')
+      setPhone('')
+      setTelegram('')
+      setWantTelegramNotifications(false)
+      setWantEmailNotifications(true)
     }
     onOpenChange(nextOpen)
   }
@@ -185,6 +202,61 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
               required
             />
             <p className="text-xs text-gray-500">На этот email мы отправим ответ на ваше обращение</p>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700" htmlFor="issue-phone">Телефон (необязательно)</label>
+            <Input
+              id="issue-phone"
+              type="tel"
+              value={phone}
+              placeholder="+7 (999) 123-45-67"
+              onChange={(event) => setPhone(event.target.value)}
+            />
+            <p className="text-xs text-gray-500">Для экстренной связи, если другие способы недоступны</p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="want-email-notifications"
+                checked={wantEmailNotifications}
+                onChange={(event) => setWantEmailNotifications(event.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="want-email-notifications" className="text-sm font-medium text-gray-700">
+                Получать уведомления на email
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="want-telegram-notifications"
+                checked={wantTelegramNotifications}
+                onChange={(event) => setWantTelegramNotifications(event.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="want-telegram-notifications" className="text-sm font-medium text-gray-700">
+                Получать уведомления в Telegram
+              </label>
+            </div>
+
+            {wantTelegramNotifications && (
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700" htmlFor="issue-telegram">Telegram username *</label>
+                <Input
+                  id="issue-telegram"
+                  value={telegram}
+                  placeholder="username (без @)"
+                  onChange={(event) => setTelegram(event.target.value)}
+                />
+                <p className="text-xs text-gray-500">
+                  Укажите ваш Telegram username без @. Мы будем отправлять уведомления о статусе обращения и ответах.
+                </p>
+              </div>
+            )}
           </div>
 
           {errorMessage && (

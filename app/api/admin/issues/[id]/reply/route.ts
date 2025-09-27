@@ -6,7 +6,7 @@ import {
   getSessionErrorMessage
 } from '@/lib/session'
 import { posthog } from '@/lib/posthog'
-import { sendEmail } from '@/lib/notify'
+import { notifyUserOnReply } from '@/lib/notify'
 
 export const runtime = 'nodejs'
 
@@ -123,56 +123,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     const mergedIssue = fullIssue ?? updatedIssue
 
-    // Отправляем email пользователю с ответом
-    try {
-      const emailResult = await sendEmail({
-        to: issue.user_email,
-        subject: `Ответ на ваше обращение: ${issue.title}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Ответ на ваше обращение</h2>
-            <p>Здравствуйте!</p>
-            <p>Мы получили ваше обращение <strong>"${issue.title}"</strong> и готовы ответить.</p>
-            
-            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-              <h3 style="margin-top: 0;">Наш ответ:</h3>
-              <p style="white-space: pre-wrap;">${message}</p>
-            </div>
-            
-            <p>Статус обращения: <strong>${statusToApply === 'in_progress' ? 'В работе' : statusToApply}</strong></p>
-            
-            <p>Если у вас есть дополнительные вопросы, пожалуйста, ответьте на это письмо или создайте новое обращение в личном кабинете.</p>
-            
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-            <p style="color: #666; font-size: 12px;">
-              Это автоматическое сообщение. Пожалуйста, не отвечайте на него напрямую, если это не требуется.
-            </p>
-          </div>
-        `,
-        text: `
-Ответ на ваше обращение
-
-Здравствуйте!
-
-Мы получили ваше обращение "${issue.title}" и готовы ответить.
-
-Наш ответ:
-${message}
-
-Статус обращения: ${statusToApply === 'in_progress' ? 'В работе' : statusToApply}
-
-Если у вас есть дополнительные вопросы, пожалуйста, ответьте на это письмо или создайте новое обращение в личном кабинете.
-
----
-Это автоматическое сообщение.
-        `
-      })
-
-      if (!emailResult.ok) {
-        console.warn('Failed to send email notification:', emailResult.reason)
-      }
-    } catch (emailError) {
-      console.error('Email notification error:', emailError)
+    // Отправляем уведомления пользователю (Telegram + Email)
+    if (reply?.id) {
+      notifyUserOnReply(issueId, reply.id, validation.user.email, message)
+        .catch((error) => console.error('User notification error:', error))
     }
 
     return NextResponse.json({ success: true, reply, issue: mergedIssue })

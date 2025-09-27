@@ -30,7 +30,7 @@ export async function getUserInfo(userId: string) {
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('users')
-      .select('id, email, name, phone')
+      .select('id, email, name, phone, telegram_username, telegram_chat_id, notify_email_enabled, notify_telegram_enabled, notify_policy')
       .eq('id', userId)
       .maybeSingle()
 

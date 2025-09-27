@@ -24,6 +24,9 @@ export interface IssueRecord {
   id: string
   user_id: string
   user_email: string
+  user_name?: string | null
+  user_phone?: string | null
+  user_telegram_username?: string | null
   purchase_id: string | null
   document_id: string | null
   type: 'access' | 'payment' | 'content' | 'bug' | 'other'
@@ -299,8 +302,17 @@ export default function IssuesDashboard() {
                     <TableRow key={issue.id}>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium text-gray-900">{issue.user_email}</span>
-                          <span className="text-xs text-gray-500">{issue.id.slice(0, 8)}</span>
+                          <span className="font-medium text-gray-900">
+                            {issue.user_name || issue.user_email}
+                          </span>
+                          <span className="text-xs text-gray-500">{issue.user_email}</span>
+                          {issue.user_phone && (
+                            <span className="text-xs text-gray-500">📞 {issue.user_phone}</span>
+                          )}
+                          {issue.user_telegram_username && (
+                            <span className="text-xs text-gray-500">📱 @{issue.user_telegram_username}</span>
+                          )}
+                          <span className="text-xs text-gray-400">{issue.id.slice(0, 8)}</span>
                         </div>
                       </TableCell>
                       <TableCell className="max-w-xs truncate" title={issue.title}>{issue.title}</TableCell>
@@ -370,7 +382,7 @@ export default function IssuesDashboard() {
               <DialogHeader>
                 <DialogTitle>{selectedIssue.title}</DialogTitle>
                 <DialogDescription>
-                  Создано {new Date(selectedIssue.created_at).toLocaleString('ru-RU')} • {selectedIssue.user_email}
+                  Создано {new Date(selectedIssue.created_at).toLocaleString('ru-RU')} • {selectedIssue.user_name || selectedIssue.user_email}
                 </DialogDescription>
               </DialogHeader>
 
@@ -385,6 +397,36 @@ export default function IssuesDashboard() {
                     <Badge><User className="mr-1 h-3 w-3" /> {selectedIssue.assignee}</Badge>
                   )}
                 </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Информация о пользователе</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Имя:</span>
+                        <span>{selectedIssue.user_name || 'Не указано'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Email:</span>
+                        <span>{selectedIssue.user_email}</span>
+                      </div>
+                      {selectedIssue.user_phone && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Телефон:</span>
+                          <span>{selectedIssue.user_phone}</span>
+                        </div>
+                      )}
+                      {selectedIssue.user_telegram_username && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Telegram:</span>
+                          <span>@{selectedIssue.user_telegram_username}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
                 <Card>
                   <CardHeader>
