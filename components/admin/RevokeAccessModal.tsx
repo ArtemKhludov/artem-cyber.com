@@ -56,6 +56,25 @@ export default function RevokeAccessModal({
         }
     }, [isOpen, defaultEmail, defaultDocumentId, defaultUserId])
 
+    const reasonHint = useMemo(() => {
+        switch (reason) {
+            case 'refund':
+                return 'Возврат платежа: доступ будет отозван, причина зафиксируется в журнале.'
+            case 'chargeback':
+                return 'Чарджбэк банка: доступ будет отозван; возможны блокировки повторных продаж.'
+            case 'manual':
+                return 'Ручной отзыв без связи с оплатой: уточните детали в комментарии.'
+            default:
+                return ''
+        }
+    }, [reason])
+
+    const filteredDocuments = useMemo(() => {
+        const f = docFilter.trim().toLowerCase()
+        if (!f) return documents
+        return documents.filter((d) => (d.title || '').toLowerCase().includes(f))
+    }, [docFilter, documents])
+
     const fetchDocuments = async () => {
         try {
             const res = await fetch('/api/admin/data?type=documents')
@@ -110,25 +129,6 @@ export default function RevokeAccessModal({
             setLoading(false)
         }
     }
-
-    const reasonHint = useMemo(() => {
-        switch (reason) {
-            case 'refund':
-                return 'Возврат платежа: доступ будет отозван, причина зафиксируется в журнале.'
-            case 'chargeback':
-                return 'Чарджбэк банка: доступ будет отозван; возможны блокировки повторных продаж.'
-            case 'manual':
-                return 'Ручной отзыв без связи с оплатой: уточните детали в комментарии.'
-            default:
-                return ''
-        }
-    }, [reason])
-
-    const filteredDocuments = useMemo(() => {
-        const f = docFilter.trim().toLowerCase()
-        if (!f) return documents
-        return documents.filter((d) => (d.title || '').toLowerCase().includes(f))
-    }, [docFilter, documents])
 
     if (!isOpen) return null
 
