@@ -90,7 +90,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
         const data = await res.json()
         // TTL hint
         const ttl = typeof data?.expiresIn === 'number' ? data.expiresIn : 120
-        const hint = document.getElementById(`ttl-hint-${document.id}`)
+        const hint = window.document.getElementById(`ttl-hint-${document.id}`)
         if (hint) {
             hint.textContent = `Ссылка действует ~${ttl} сек`
         }

@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  SESSION_COOKIE_NAME,
-  validateSessionToken,
-  getSessionErrorMessage
-} from '@/lib/session'
+import { SESSION_COOKIE_NAME, validateSessionToken } from '@/lib/session'
 
 interface RequireAdminSuccess {
   validation: Awaited<ReturnType<typeof validateSessionToken>> & {
@@ -33,7 +29,7 @@ export async function requireAdmin(request: NextRequest): Promise<RequireAdminRe
   const validation = await validateSessionToken(sessionToken, { touch: false })
 
   if (!validation.session || !validation.user || validation.user.role !== 'admin') {
-    const response = NextResponse.json({ error: getSessionErrorMessage('forbidden') }, { status: 403 })
+    const response = NextResponse.json({ error: 'Недостаточно прав для доступа' }, { status: 403 })
     return { validation: null, response }
   }
 
