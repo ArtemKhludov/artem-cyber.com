@@ -192,9 +192,9 @@ export function TelegramLink() {
                         <div className="bg-gray-50 rounded-lg p-3">
                             <p className="text-xs text-gray-600">
                                 <strong>Как это работает:</strong><br />
-                                1. Нажмите "Подключить Telegram"<br />
+                                1. Нажмите &quot;Подключить Telegram&quot;<br />
                                 2. Откроется Telegram с ссылкой на бота<br />
-                                3. Нажмите "Start" в боте<br />
+                                3. Нажмите &quot;Start&quot; в боте<br />
                                 4. Готово! Вы будете получать уведомления
                             </p>
                         </div>

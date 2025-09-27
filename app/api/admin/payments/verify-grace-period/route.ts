@@ -20,7 +20,7 @@ async function requireAdmin(request: NextRequest) {
 
         return {
             success: true,
-            userId: validation.session.user_id,
+            userId: validation.session?.user_id || validation.user.id,
             userEmail: validation.user.email
         }
     } catch (error) {
@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
         user_course_access!inner(
           id,
           document_id,
-          is_grace_period
+          is_grace_period,
+          metadata
         )
       `)
             .eq('grace_period_verified', false)
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
                                     is_grace_period: false,
                                     grace_period_until: null,
                                     metadata: {
-                                        ...purchase.user_course_access[0]?.metadata,
+                                        ...(purchase.user_course_access[0]?.metadata || {}),
                                         verified_payment: true,
                                         verified_at: new Date().toISOString(),
                                         stripe_payment_intent_id: purchase.stripe_payment_intent_id

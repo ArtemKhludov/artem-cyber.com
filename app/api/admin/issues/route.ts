@@ -26,7 +26,7 @@ async function requireAdmin(request: NextRequest) {
   if (!validation.session || !validation.user || validation.user.role !== 'admin') {
     return {
       validation: null,
-      response: NextResponse.json({ error: getSessionErrorMessage('forbidden') }, { status: 403 })
+      response: NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
   }
   return { validation, response: null }

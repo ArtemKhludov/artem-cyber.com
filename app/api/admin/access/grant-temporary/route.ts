@@ -19,7 +19,7 @@ async function requireAdmin(request: NextRequest) {
 
         return {
             success: true,
-            userId: validation.session.user_id,
+            userId: validation.session?.user_id || validation.user.id,
             userEmail: validation.user.email
         }
     } catch (error) {

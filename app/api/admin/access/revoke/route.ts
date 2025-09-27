@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const rpcParams: Record<string, unknown> = {
       p_user_id: userId,
       p_document_id: documentId,
-      p_actor_id: validation.session.user_id,
+      p_actor_id: validation.session?.user_id || validation.user.id,
       p_actor_email: validation.user.email,
       p_source: 'admin_manual',
     }

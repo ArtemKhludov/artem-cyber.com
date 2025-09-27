@@ -23,17 +23,18 @@ async function requireAdmin(request: NextRequest) {
   if (!validation.session || !validation.user || validation.user.role !== 'admin') {
     return {
       validation: null,
-      response: NextResponse.json({ error: getSessionErrorMessage('forbidden') }, { status: 403 })
+      response: NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
   }
   return { validation, response: null }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { validation, response } = await requireAdmin(request)
   if (!validation) return response!
 
-  const issueId = params.id
+  const resolvedParams = await params
+  const issueId = resolvedParams.id
   if (!issueId) {
     return NextResponse.json({ error: 'Issue id required' }, { status: 400 })
   }
@@ -63,8 +64,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { data: replyData, error: replyError } = await supabase.rpc('issue_admin_add_reply', {
       p_issue_id: issueId,
       p_message: message,
-      p_author_id: validation.session.user_id,
-      p_author_email: validation.user.email,
+      p_author_id: validation.session?.user_id || validation.user?.id,
+      p_author_email: validation.user?.email,
       p_attachments: attachments
     })
 
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { data: updatedData, error: statusError } = await supabase.rpc('issue_admin_set_status', {
       p_issue_id: issueId,
       p_status: statusToApply,
-      p_assignee: assignee ?? validation.user.email,
+      p_assignee: assignee ?? validation.user?.email,
       p_first_reply: issue.first_reply_at ? null : new Date().toISOString()
     })
 
@@ -91,19 +92,19 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     await supabase.from('audit_logs').insert({
-      actor_id: validation.session.user_id,
-      actor_email: validation.user.email,
+      actor_id: validation.session?.user_id || validation.user?.id,
+      actor_email: validation.user?.email ?? null,
       action: 'issue_replied',
       target_table: 'issue_reports',
       target_id: issueId,
       metadata: {
         status: statusToApply,
-        assignee: assignee ?? validation.user.email
+        assignee: assignee ?? validation.user?.email ?? null
       }
     })
 
     posthog.capture({
-      distinctId: validation.session.user_id,
+      distinctId: validation.session?.user_id ?? validation.user?.id ?? 'unknown-admin',
       event: 'admin_issue_reply',
       properties: {
         issueId,
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const mergedIssue = fullIssue ?? updatedIssue
 
     // Отправляем уведомления пользователю (Telegram + Email)
-    if (reply?.id) {
+    if (reply?.id && validation.user?.email) {
       notifyUserOnReply(issueId, reply.id, validation.user.email, message)
         .catch((error) => console.error('User notification error:', error))
     }

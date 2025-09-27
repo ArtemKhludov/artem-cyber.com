@@ -111,8 +111,6 @@ export default function RevokeAccessModal({
         }
     }
 
-    if (!isOpen) return null
-
     const reasonHint = useMemo(() => {
         switch (reason) {
             case 'refund':
@@ -131,6 +129,8 @@ export default function RevokeAccessModal({
         if (!f) return documents
         return documents.filter((d) => (d.title || '').toLowerCase().includes(f))
     }, [docFilter, documents])
+
+    if (!isOpen) return null
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

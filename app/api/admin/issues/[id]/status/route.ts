@@ -24,17 +24,18 @@ async function requireAdmin(request: NextRequest) {
   if (!validation.session || !validation.user || validation.user.role !== 'admin') {
     return {
       validation: null,
-      response: NextResponse.json({ error: getSessionErrorMessage('forbidden') }, { status: 403 })
+      response: NextResponse.json({ error: 'Доступ запрещён' }, { status: 403 })
     }
   }
   return { validation, response: null }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { validation, response } = await requireAdmin(request)
   if (!validation) return response!
 
-  const issueId = params.id
+  const resolvedParams = await params
+  const issueId = resolvedParams.id
   if (!issueId) {
     return NextResponse.json({ error: 'Issue id required' }, { status: 400 })
   }
@@ -68,8 +69,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     await supabase.from('audit_logs').insert({
-      actor_id: validation.session.user_id,
-      actor_email: validation.user.email,
+      actor_id: validation.session?.user_id ?? validation.user?.id ?? null,
+      actor_email: validation.user?.email ?? null,
       action: 'issue_status_changed',
       target_table: 'issue_reports',
       target_id: issueId,
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     })
 
     posthog.capture({
-      distinctId: validation.session.user_id,
+      distinctId: validation.session?.user_id || validation.user?.id,
       event: 'admin_issue_status_changed',
       properties: {
         issueId,
