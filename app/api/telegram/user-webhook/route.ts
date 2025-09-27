@@ -23,6 +23,44 @@ interface TelegramUpdate {
     }
 }
 
+const STATUS_EMOJI_MAP = {
+    open: '🟡',
+    in_progress: '🔵',
+    waiting_user: '🟠',
+    resolved: '✅',
+    closed: '❌',
+} as const
+
+type IssueStatus = keyof typeof STATUS_EMOJI_MAP
+
+function isIssueStatus(status: unknown): status is IssueStatus {
+    return typeof status === 'string' && status in STATUS_EMOJI_MAP
+}
+
+function resolveStatusEmoji(status: unknown): string {
+    return isIssueStatus(status) ? STATUS_EMOJI_MAP[status] : '❓'
+}
+
+const PURCHASE_STATUS_EMOJI_MAP = {
+    completed: '✅',
+    active: '🟢',
+    in_progress: '🟡',
+    pending: '⏳',
+    expired: '⏰',
+    revoked: '❌',
+    failed: '💥',
+} as const
+
+type PurchaseStatus = keyof typeof PURCHASE_STATUS_EMOJI_MAP
+
+function isPurchaseStatus(status: unknown): status is PurchaseStatus {
+    return typeof status === 'string' && status in PURCHASE_STATUS_EMOJI_MAP
+}
+
+function resolvePurchaseStatusEmoji(status: unknown): string {
+    return isPurchaseStatus(status) ? PURCHASE_STATUS_EMOJI_MAP[status] : '❓'
+}
+
 async function sendTelegramMessage(botToken: string, chatId: string, text: string, replyMarkup?: any) {
     try {
         const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -229,13 +267,7 @@ export async function POST(request: NextRequest) {
             if (issues && issues.length > 0) {
                 statusMessage += `📝 <b>Последние обращения:</b>\n\n`
                 issues.forEach((issue, index) => {
-                    const statusEmoji = {
-                        'open': '🟡',
-                        'in_progress': '🔵',
-                        'waiting_user': '🟠',
-                        'resolved': '✅',
-                        'closed': '❌'
-                    }[issue.status] || '❓'
+                    const statusEmoji = resolveStatusEmoji(issue.status)
 
                     const replyCount = issue.issue_replies?.length || 0
                     statusMessage += `${index + 1}. ${statusEmoji} ${issue.title}\n` +
@@ -289,15 +321,7 @@ export async function POST(request: NextRequest) {
 
             let purchasesMessage = `🛒 <b>Мои покупки (последние 5):</b>\n\n`
             purchases.forEach((purchase, index) => {
-                const statusEmoji = {
-                    'completed': '✅',
-                    'active': '🟢',
-                    'in_progress': '🟡',
-                    'pending': '⏳',
-                    'expired': '⏰',
-                    'revoked': '❌',
-                    'failed': '💥'
-                }[purchase.status] || '❓'
+                const statusEmoji = resolvePurchaseStatusEmoji(purchase.status)
 
                 purchasesMessage += `${index + 1}. ${statusEmoji} ${purchase.product_name}\n` +
                     `   Цена: ${purchase.price} ${purchase.currency || 'RUB'}\n` +

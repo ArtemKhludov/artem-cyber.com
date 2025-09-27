@@ -4,6 +4,8 @@
   - Existing legacy notifications elsewhere (TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID) remain untouched.
 */
 
+import { getSupabaseAdmin } from '@/lib/supabase'
+
 type TelegramSendOptions = {
     botToken?: string
     chatId?: string
@@ -376,5 +378,4 @@ ${process.env.NEXT_PUBLIC_APP_URL}/dashboard
         console.error('notifyUserOnReply error:', error)
     }
 }
-
 

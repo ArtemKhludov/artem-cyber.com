@@ -15,7 +15,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react'
-import { loadRecentActivity, type RecentActivityRecord } from '@/lib/recent-activity'
+import { clearRecentActivityStorage, loadRecentActivity, type RecentActivityRecord } from '@/lib/recent-activity'
 
 interface RecentlyViewedProps {
   onReportIssue?: (context: any) => void
@@ -44,50 +44,79 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
     loadActivity()
   }, [loadActivity])
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'course':
-        return <BookOpen className="h-4 w-4" />
-      case 'document':
-        return <FileText className="h-4 w-4" />
-      case 'video':
-        return <PlayCircle className="h-4 w-4" />
-      case 'download':
-        return <Download className="h-4 w-4" />
-      default:
-        return <Eye className="h-4 w-4" />
+  const getActivityIcon = (activity: RecentActivityRecord) => {
+    if (activity.action === 'download') {
+      return <Download className="h-4 w-4" />
     }
+
+    const normalizedType = activity.materialType?.toLowerCase?.() ?? ''
+
+    if (normalizedType.includes('video')) {
+      return <PlayCircle className="h-4 w-4" />
+    }
+
+    if (normalizedType.includes('document') || normalizedType.includes('pdf')) {
+      return <FileText className="h-4 w-4" />
+    }
+
+    if (normalizedType.includes('course')) {
+      return <BookOpen className="h-4 w-4" />
+    }
+
+    return <Eye className="h-4 w-4" />
   }
 
-  const getActivityLabel = (type: string) => {
-    switch (type) {
-      case 'course':
-        return 'Курс'
-      case 'document':
-        return 'Документ'
-      case 'video':
-        return 'Видео'
-      case 'download':
-        return 'Скачивание'
-      default:
-        return 'Просмотр'
+  const getActivityLabel = (activity: RecentActivityRecord) => {
+    if (activity.action === 'download') {
+      return 'Скачивание'
     }
+
+    const normalizedType = activity.materialType?.toLowerCase?.() ?? ''
+
+    if (normalizedType.includes('video')) {
+      return 'Видео'
+    }
+
+    if (normalizedType.includes('document') || normalizedType.includes('pdf')) {
+      return 'Документ'
+    }
+
+    if (normalizedType.includes('course')) {
+      return 'Курс'
+    }
+
+    return 'Просмотр'
   }
 
-  const formatTimeAgo = (timestamp: number) => {
+  const formatTimeAgo = (occurredAt: string) => {
+    const timestamp = Date.parse(occurredAt)
+    if (Number.isNaN(timestamp)) {
+      return 'Недавно'
+    }
+
     const now = Date.now()
-    const diff = now - timestamp
+    const diff = Math.max(0, now - timestamp)
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
 
     if (minutes < 60) {
       return `${minutes} мин назад`
-    } else if (hours < 24) {
-      return `${hours} ч назад`
-    } else {
-      return `${days} дн назад`
     }
+
+    if (hours < 24) {
+      return `${hours} ч назад`
+    }
+
+    return `${days} дн назад`
+  }
+
+  const formatDate = (occurredAt: string) => {
+    const date = new Date(occurredAt)
+    if (Number.isNaN(date.getTime())) {
+      return '—'
+    }
+    return date.toLocaleDateString('ru-RU')
   }
 
   if (loading) {
@@ -168,39 +197,39 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {recentActivity.map((activity, index) => (
+          {recentActivity.map((activity) => (
             <div
-              key={`${activity.type}-${activity.id}-${activity.timestamp}`}
+              key={activity.id}
               className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
             >
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                {getActivityIcon(activity.type)}
+                {getActivityIcon(activity)}
               </div>
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-medium text-gray-900 truncate">
-                    {activity.title}
+                    {activity.materialTitle}
                   </h4>
                   <Badge variant="secondary" className="text-xs">
-                    {getActivityLabel(activity.type)}
+                    {getActivityLabel(activity)}
                   </Badge>
                 </div>
                 
-                {activity.description && (
+                {activity.courseTitle && (
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                    {activity.description}
+                    {activity.courseTitle}
                   </p>
                 )}
                 
                 <div className="flex items-center gap-4 text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {new Date(activity.timestamp).toLocaleDateString('ru-RU')}
+                    {formatDate(activity.occurredAt)}
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {formatTimeAgo(activity.timestamp)}
+                    {formatTimeAgo(activity.occurredAt)}
                   </div>
                 </div>
               </div>
@@ -224,8 +253,7 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
               variant="outline" 
               size="sm" 
               onClick={() => {
-                // Очистить историю
-                localStorage.removeItem('recent_activity')
+                clearRecentActivityStorage()
                 loadActivity()
               }}
               className="w-full"

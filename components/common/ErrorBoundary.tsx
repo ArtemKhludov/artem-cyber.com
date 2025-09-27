@@ -23,14 +23,15 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   }
 
   async componentDidCatch(error: Error, info: React.ErrorInfo) {
-    this.setState({ info: { componentStack: info.componentStack } })
+    const componentStack = info.componentStack ?? ''
+    this.setState({ info: { componentStack } })
     try {
       await fetch('/api/observability/error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           error: { message: error.message, name: error.name, stack: error.stack },
-          info: { componentStack: info.componentStack },
+          info: { componentStack },
           location: typeof window !== 'undefined' ? window.location.pathname : '',
         })
       })
@@ -59,5 +60,4 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     return this.props.children
   }
 }
-
 
