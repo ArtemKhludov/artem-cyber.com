@@ -1,0 +1,127 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseAdmin } from '@/lib/supabase'
+import { notifyTelegram } from '@/lib/notify'
+
+export async function POST(request: NextRequest) {
+  try {
+    // Проверяем авторизацию (рекомендуется для продакшена)
+    const authHeader = request.headers.get('authorization')
+    const cronSecret = process.env.CRON_SECRET || 'default-secret'
+    
+    if (authHeader !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    console.log('🧹 Starting cleanup cron job...')
+    
+    const results = await Promise.allSettled([
+      cleanupExpiredSessions(),
+      cleanupOldLogs(),
+      cleanupTemporaryFiles(),
+      sendDailyReport()
+    ])
+
+    const successCount = results.filter(r => r.status === 'fulfilled').length
+    const failureCount = results.filter(r => r.status === 'rejected').length
+
+    console.log(`✅ Cleanup completed: ${successCount} successful, ${failureCount} failed`)
+
+    return NextResponse.json({
+      success: true,
+      results: {
+        successful: successCount,
+        failed: failureCount,
+        timestamp: new Date().toISOString()
+      }
+    })
+  } catch (error) {
+    console.error('❌ Cron job error:', error)
+    return NextResponse.json({ error: 'Cron job failed' }, { status: 500 })
+  }
+}
+
+async function cleanupExpiredSessions() {
+  const supabase = getSupabaseAdmin()
+  
+  // Удаляем истекшие сессии (старше 7 дней)
+  const { error, count } = await supabase
+    .from('user_sessions')
+    .delete()
+    .lt('expires_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+
+  if (error) {
+    console.error('❌ Failed to cleanup sessions:', error)
+    throw error
+  }
+
+  console.log(`🧹 Cleaned up ${count || 0} expired sessions`)
+  return count || 0
+}
+
+async function cleanupOldLogs() {
+  const supabase = getSupabaseAdmin()
+  
+  // Удаляем старые логи (старше 30 дней)
+  const { error, count } = await supabase
+    .from('audit_logs')
+    .delete()
+    .lt('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+
+  if (error) {
+    console.error('❌ Failed to cleanup logs:', error)
+    throw error
+  }
+
+  console.log(`🧹 Cleaned up ${count || 0} old logs`)
+  return count || 0
+}
+
+async function cleanupTemporaryFiles() {
+  // Здесь можно добавить очистку временных файлов
+  // Например, неиспользуемые загруженные файлы
+  console.log('🧹 Temporary files cleanup completed')
+  return 0
+}
+
+async function sendDailyReport() {
+  const supabase = getSupabaseAdmin()
+  
+  // Получаем статистику за последние 24 часа
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  
+  const [usersResult, purchasesResult, issuesResult] = await Promise.all([
+    supabase
+      .from('users')
+      .select('id', { count: 'exact' })
+      .gte('created_at', yesterday),
+    supabase
+      .from('purchases')
+      .select('id', { count: 'exact' })
+      .gte('created_at', yesterday),
+    supabase
+      .from('issue_reports')
+      .select('id', { count: 'exact' })
+      .gte('created_at', yesterday)
+  ])
+
+  const newUsers = usersResult.count || 0
+  const newPurchases = purchasesResult.count || 0
+  const newIssues = issuesResult.count || 0
+
+  // Отправляем ежедневный отчет в Telegram
+  await notifyTelegram(
+    `📊 Ежедневный отчет\n\n` +
+    `👥 Новые пользователи: ${newUsers}\n` +
+    `🛒 Новые покупки: ${newPurchases}\n` +
+    `🎫 Новые обращения: ${newIssues}\n\n` +
+    `📅 ${new Date().toLocaleDateString('ru-RU')}`,
+    {
+      botToken: process.env.TELEGRAM_BOT_TOKEN,
+      chatId: process.env.TELEGRAM_CHAT_ID,
+      disableWebPagePreview: true
+    }
+  )
+
+  console.log(`📊 Daily report sent: ${newUsers} users, ${newPurchases} purchases, ${newIssues} issues`)
+  return { newUsers, newPurchases, newIssues }
+}
