@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
         // В реальном приложении здесь должна быть отправка email
         // Пока что просто логируем ссылку для разработки
-        const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`
+        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://energylogic-ai.com'}/auth/reset-password?token=${resetToken}`
         console.log('🔗 Ссылка для сброса пароля:', resetUrl)
 
         return NextResponse.json({

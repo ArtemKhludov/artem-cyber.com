@@ -4,7 +4,7 @@ import crypto from 'crypto'
 
 const CRYPTOMUS_API_KEY = process.env.CRYPTOMUS_API_KEY!
 const CRYPTOMUS_MERCHANT_ID = process.env.CRYPTOMUS_MERCHANT_ID!
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://energylogic-ai.com'
 
 // Функция для создания подписи Cryptomus
 function createCryptomusSignature(data: any): string {
