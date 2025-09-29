@@ -11,12 +11,24 @@ export function middleware(request: NextRequest) {
 
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
     const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route))
+    const isAuthRoute = pathname.startsWith('/auth/')
 
-    if (isProtectedRoute && !sessionToken && !isPublicRoute) {
+    // Если это публичная страница или страница авторизации - пропускаем
+    if (isPublicRoute || isAuthRoute) {
+        return NextResponse.next()
+    }
+
+    // Если это защищенная страница и нет токена - перенаправляем на логин
+    if (isProtectedRoute && !sessionToken) {
         const loginUrl = new URL('/auth/login', request.url)
         const currentPath = pathname + request.nextUrl.search
         loginUrl.searchParams.set('redirect', currentPath)
         return NextResponse.redirect(loginUrl)
+    }
+
+    // Если есть токен, но это страница логина - перенаправляем на главную
+    if (isAuthRoute && sessionToken && (pathname === '/auth/login' || pathname === '/auth/signup')) {
+        return NextResponse.redirect(new URL('/', request.url))
     }
 
     return NextResponse.next()
