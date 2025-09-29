@@ -198,14 +198,14 @@ export function PDFCarousel() {
             <button
               onClick={slideLeft}
               disabled={isTransitioning}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 disabled:opacity-50"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 disabled:opacity-50"
             >
               <ChevronLeft className="w-6 h-6 text-gray-800" />
             </button>
             <button
               onClick={slideRight}
               disabled={isTransitioning}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 disabled:opacity-50"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 disabled:opacity-50"
             >
               <ChevronRight className="w-6 h-6 text-gray-800" />
             </button>

@@ -1,0 +1,63 @@
+name: Health Check Monitor
+
+on:
+  schedule:
+    # Проверяем каждые 30 минут
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Ручной запуск
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check site availability
+      run: |
+        echo "🔍 Checking site health..."
+        
+        # Проверяем главную страницу
+        if curl -f -s -o /dev/null "https://energylogic-ai.com"; then
+          echo "✅ Main page: OK"
+        else
+          echo "❌ Main page: FAILED"
+          exit 1
+        fi
+        
+        # Проверяем API endpoints
+        if curl -f -s -o /dev/null "https://energylogic-ai.com/api/auth/me"; then
+          echo "✅ Auth API: OK"
+        else
+          echo "⚠️ Auth API: Not accessible (expected for unauthenticated)"
+        fi
+        
+        # Проверяем каталог
+        if curl -f -s -o /dev/null "https://energylogic-ai.com/catalog"; then
+          echo "✅ Catalog: OK"
+        else
+          echo "❌ Catalog: FAILED"
+          exit 1
+        fi
+        
+        echo "🎉 All health checks passed!"
+        
+    - name: Performance check
+      run: |
+        echo "⚡ Checking performance..."
+        
+        # Проверяем время загрузки
+        response_time=$(curl -o /dev/null -s -w '%{time_total}' "https://energylogic-ai.com")
+        echo "📊 Response time: ${response_time}s"
+        
+        if (( $(echo "$response_time < 3.0" | bc -l) )); then
+          echo "✅ Performance: Good"
+        else
+          echo "⚠️ Performance: Slow (${response_time}s)"
+        fi
+        
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "🚨 Health check failed!"
+        echo "Time: $(date)"
+        echo "Site: https://energylogic-ai.com"
+        # Здесь можно добавить уведомление в Telegram или Slack
