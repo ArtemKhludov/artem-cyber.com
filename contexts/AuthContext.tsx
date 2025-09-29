@@ -60,6 +60,15 @@ function getCurrentPath() {
 
 function redirectToLogin() {
   if (typeof window === 'undefined') return
+  
+  const publicPages = ['/', '/catalog', '/about', '/contacts', '/reviews', '/terms', '/privacy', '/disclaimer', '/refund']
+  const isPublicPage = publicPages.includes(window.location.pathname)
+  
+  // Не перенаправляем с публичных страниц
+  if (isPublicPage) {
+    return
+  }
+  
   const currentPath = getCurrentPath()
   const loginUrl = `/auth/login?redirect=${encodeURIComponent(currentPath)}`
 
@@ -138,8 +147,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.status === 401) {
         clearSessionCookie()
-        if (redirectOnFail) {
-          redirectToLogin()
+        // Не перенаправляем на логин при обновлении страницы
+        // Middleware уже обрабатывает это
+        if (redirectOnFail && typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+          // Перенаправляем только если это не публичная страница
+          const publicPages = ['/', '/catalog', '/about', '/contacts', '/reviews', '/terms', '/privacy', '/disclaimer', '/refund']
+          const isPublicPage = publicPages.includes(window.location.pathname)
+          if (!isPublicPage) {
+            redirectToLogin()
+          }
         }
       }
     } catch (error) {

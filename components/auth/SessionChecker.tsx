@@ -1,44 +1,21 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { useEffect, useRef } from 'react'
 
 export function SessionChecker() {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const pathname = usePathname()
-    const current = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+  const { user, loading, refreshSession } = useAuth()
+  const hasCheckedRef = useRef(false)
 
-    useEffect(() => {
-        const checkSession = async () => {
-            try {
-                const response = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
+  useEffect(() => {
+    // Проверяем сессию только один раз при загрузке
+    if (!loading && !user && !hasCheckedRef.current) {
+      hasCheckedRef.current = true
+      // Проверяем сессию без перенаправления
+      refreshSession()
+    }
+  }, [loading, user, refreshSession])
 
-                if (response.ok) {
-                    // Сессия валидна
-                    if (pathname === '/auth/login' && searchParams.get('check_session') === 'true') {
-                        router.push('/dashboard')
-                    }
-                    // На других страницах ничего не делаем
-                } else {
-                    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-                        const redirect = `/auth/login?redirect=${encodeURIComponent(current)}`
-                        router.push(redirect)
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка проверки сессии:', error)
-            }
-        }
-
-        // Проверяем сессию только если:
-        // 1. Есть параметр check_session на странице логина
-        // 2. Или мы на защищенной странице
-        if ((pathname === '/auth/login' && searchParams.get('check_session') === 'true') ||
-            pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-            checkSession()
-        }
-    }, [router, searchParams, pathname])
-
-    return null
+  // Этот компонент не рендерит ничего, только проверяет сессию
+  return null
 }
