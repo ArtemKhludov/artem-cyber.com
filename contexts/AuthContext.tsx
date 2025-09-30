@@ -167,8 +167,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    checkSession()
-  }, [checkSession])
+    // Проверяем сессию только один раз при монтировании
+    checkSession(false) // false = не перенаправлять на логин
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!user) {
