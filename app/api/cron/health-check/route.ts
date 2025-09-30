@@ -65,10 +65,15 @@ async function performHealthCheck() {
 
   try {
     // Проверяем доступность сайта
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+    
     const response = await fetch('https://energylogic-ai.com', {
       method: 'HEAD',
-      timeout: 10000
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
     
     if (!response.ok) {
       issues.push(`❌ Website: HTTP ${response.status}`)
@@ -81,10 +86,15 @@ async function performHealthCheck() {
 
   try {
     // Проверяем API endpoints
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    
     const apiResponse = await fetch('https://energylogic-ai.com/api/auth/me', {
       method: 'GET',
-      timeout: 5000
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
     
     if (apiResponse.status !== 401) { // 401 ожидается для неавторизованных
       issues.push(`❌ API: Unexpected status ${apiResponse.status}`)
