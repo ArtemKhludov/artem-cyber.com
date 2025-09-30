@@ -1,4 +1,4 @@
-name: Deploy to Production
+name: Code Quality Check
 
 on:
   push:
@@ -26,35 +26,8 @@ jobs:
     - name: Run type checking
       run: npx tsc --noEmit
       
-    - name: Check code quality
-      run: echo "✅ Type checking passed"
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        vercel-args: '--prod'
-        
-    - name: Notify deployment success
-      if: success()
+    - name: All checks passed
       run: |
-        echo "✅ Deployment successful!"
+        echo "✅ TypeScript check passed"
+        echo "🚀 Vercel will automatically deploy this build"
         echo "🌐 Site: https://energylogic-ai.com"
-        echo "📊 Vercel Dashboard: https://vercel.com/dashboard"
-        
-    - name: Notify deployment failure
-      if: failure()
-      run: |
-        echo "❌ Deployment failed!"
-        echo "Check the logs above for details"
