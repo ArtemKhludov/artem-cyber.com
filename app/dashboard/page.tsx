@@ -41,6 +41,7 @@ import {
 import ReportIssueDialog, { type IssueContext } from '@/components/dashboard/ReportIssueDialog'
 import { TelegramLink } from '@/components/dashboard/TelegramLink'
 import { UserIssuesList } from '@/components/dashboard/UserIssuesList'
+import { PhonePromptModal } from '@/components/auth/PhonePromptModal'
 
 type PurchaseStatus =
   | 'completed'
@@ -204,6 +205,8 @@ export default function DashboardPage() {
   const [issueDialogOpen, setIssueDialogOpen] = useState(false)
   const [issueContext, setIssueContext] = useState<IssueContext | null>(null)
   const [menuOffset, setMenuOffset] = useState(96)
+  const [showPhonePrompt, setShowPhonePrompt] = useState(false)
+  const [userPhone, setUserPhone] = useState<string | null>(null)
 
   const track = useCallback((event: string, props?: Record<string, unknown>) => {
     const ph = initPostHog()
@@ -313,8 +316,26 @@ export default function DashboardPage() {
   useEffect(() => {
     if (user) {
       loadUserData()
+      // Проверяем есть ли телефон у пользователя
+      checkPhoneNumber()
     }
   }, [user])
+
+  const checkPhoneNumber = async () => {
+    try {
+      const response = await fetch('/api/auth/me', { credentials: 'include' })
+      if (response.ok) {
+        const userData = await response.json()
+        setUserPhone(userData.phone || null)
+        // Показываем модалку только если телефона нет и это первый вход
+        if (!userData.phone && !localStorage.getItem('phone_prompt_dismissed')) {
+          setShowPhonePrompt(true)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check phone:', error)
+    }
+  }
 
   const loadUserData = async () => {
     try {
@@ -608,6 +629,34 @@ export default function DashboardPage() {
 
   const handleSupportClick = (purchase?: Purchase) => {
     track('dashboard_support_click', purchase ? { purchaseId: purchase.id } : undefined)
+  }
+
+  const handlePhoneSubmit = async (phone: string) => {
+    try {
+      const response = await fetch('/api/user/update-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        setUserPhone(phone)
+        setShowPhonePrompt(false)
+        localStorage.setItem('phone_prompt_dismissed', 'true')
+        track('phone_added', { source: 'first_login_prompt' })
+      } else {
+        console.error('Failed to update phone')
+      }
+    } catch (error) {
+      console.error('Error updating phone:', error)
+    }
+  }
+
+  const handlePhoneSkip = () => {
+    setShowPhonePrompt(false)
+    localStorage.setItem('phone_prompt_dismissed', 'true')
+    track('phone_prompt_skipped')
   }
 
   useEffect(() => {
@@ -1482,6 +1531,11 @@ export default function DashboardPage() {
         onSubmitted={() => {
           setTimeout(() => setIssueDialogOpen(false), 1200)
         }}
+      />
+      <PhonePromptModal
+        isOpen={showPhonePrompt}
+        onSubmit={handlePhoneSubmit}
+        onSkip={handlePhoneSkip}
       />
     </MainLayout>
   )

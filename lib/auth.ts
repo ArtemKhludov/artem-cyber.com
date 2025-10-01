@@ -35,3 +35,38 @@ export async function requireAdmin(request: NextRequest): Promise<RequireAdminRe
 
   return { validation: validation as RequireAdminSuccess['validation'], response: null }
 }
+
+interface RequireUserSuccess {
+  validation: Awaited<ReturnType<typeof validateSessionToken>> & {
+    session: NonNullable<Awaited<ReturnType<typeof validateSessionToken>>['session']>
+    user: NonNullable<Awaited<ReturnType<typeof validateSessionToken>>['user']>
+  }
+  response: null
+}
+
+interface RequireUserFailure {
+  validation: null
+  response: NextResponse
+}
+
+export type RequireUserResult = RequireUserSuccess | RequireUserFailure
+
+export async function requireUser(request: NextRequest): Promise<RequireUserResult> {
+  const authHeader = request.headers.get('authorization')
+  let sessionToken = authHeader?.startsWith('Bearer ')
+    ? authHeader.slice('Bearer '.length)
+    : undefined
+
+  if (!sessionToken) {
+    sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value
+  }
+
+  const validation = await validateSessionToken(sessionToken, { touch: false })
+
+  if (!validation.session || !validation.user) {
+    const response = NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 })
+    return { validation: null, response }
+  }
+
+  return { validation: validation as RequireUserSuccess['validation'], response: null }
+}
