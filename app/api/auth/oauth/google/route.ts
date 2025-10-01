@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         const email = payload.email
         const name = payload.name ?? payload.email
         const picture = payload.picture ?? null
-        const emailVerified = payload.email_verified === true || payload.email_verified === 'true'
+        const emailVerified = Boolean(payload.email_verified)
 
         const supabase = getSupabaseAdmin()
 
