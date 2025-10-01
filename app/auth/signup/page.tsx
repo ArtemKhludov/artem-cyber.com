@@ -149,7 +149,8 @@ function SignupForm() {
       const data = await request.json()
 
       if (request.ok) {
-        router.push('/dashboard')
+        // Перезагружаем страницу чтобы AuthContext обновился
+        window.location.href = '/dashboard'
       } else {
         setError(data.error || 'Ошибка авторизации через Google')
       }
