@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,26 @@ import { PageLayout } from '@/components/layout/PageLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import ExistingAccountModal from '@/components/auth/ExistingAccountModal'
 import ResetPasswordModal from '@/components/auth/ResetPasswordModal'
+import Script from 'next/script'
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        oauth2: {
+          initCodeClient: (options: {
+            client_id: string
+            scope: string
+            redirect_uri: string
+            ux_mode?: 'popup' | 'redirect'
+            prompt?: 'none' | 'consent'
+            callback: (response: { code?: string; error?: string; error_description?: string }) => void
+          }) => { requestCode: () => void }
+        }
+      }
+    }
+  }
+}
 
 function SignupForm() {
   const [formData, setFormData] = useState({
@@ -25,6 +45,7 @@ function SignupForm() {
   const [showExistingAccountModal, setShowExistingAccountModal] = useState(false)
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false)
   const [existingUserData, setExistingUserData] = useState({ email: '', name: '' })
+  const googleCodeClientRef = useRef<{ requestCode: () => void } | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
@@ -101,38 +122,90 @@ function SignupForm() {
     setLoading(false)
   }
 
-  const handleGoogleAuth = async () => {
-    setLoading(true)
-    setError('')
+  const handleGoogleCallback = useCallback(async (response: { code?: string; error?: string; error_description?: string }) => {
+    if (response.error) {
+      console.error('Google OAuth error:', response.error, response.error_description)
+      setError('Не удалось выполнить авторизацию через Google')
+      setLoading(false)
+      return
+    }
+
+    if (!response.code) {
+      setError('Google не вернул код авторизации')
+      setLoading(false)
+      return
+    }
 
     try {
-      // Имитируем Google OAuth для тестирования
-      // В реальном приложении здесь будет интеграция с Google OAuth SDK
-      const response = await fetch('/api/auth/oauth/google', {
+      const request = await fetch('/api/auth/oauth/google', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          access_token: 'test_google_token',
-          email: 'test-google-ui@example.com',
-          name: 'Google User',
-          picture: 'https://example.com/google-avatar.jpg'
-        }),
+        body: JSON.stringify({ code: response.code }),
+        credentials: 'include'
       })
 
-      const data = await response.json()
+      const data = await request.json()
 
-      if (response.ok) {
-        // Успешная авторизация через Google - перенаправляем в личный кабинет
+      if (request.ok) {
         router.push('/dashboard')
       } else {
         setError(data.error || 'Ошибка авторизации через Google')
       }
     } catch (error) {
-      setError('Ошибка авторизации через Google')
+      console.error('Google OAuth request failed:', error)
+      setError('Ошибка сети при авторизации через Google')
     } finally {
       setLoading(false)
+    }
+  }, [router])
+
+  const initializeGoogleClient = useCallback(() => {
+    if (googleCodeClientRef.current || !window.google) {
+      return
+    }
+
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId) {
+      console.warn('NEXT_PUBLIC_GOOGLE_CLIENT_ID is not defined')
+      return
+    }
+
+    googleCodeClientRef.current = window.google.accounts.oauth2.initCodeClient({
+      client_id: clientId,
+      scope: 'openid email profile',
+      redirect_uri: 'postmessage',
+      ux_mode: 'popup',
+      callback: handleGoogleCallback
+    })
+  }, [handleGoogleCallback])
+
+  useEffect(() => {
+    initializeGoogleClient()
+  }, [initializeGoogleClient])
+
+  const handleGoogleAuth = () => {
+    if (!googleCodeClientRef.current) {
+      if (!window.google) {
+        setError('Скрипт Google не загрузился. Попробуйте позже.')
+      } else {
+        initializeGoogleClient()
+        if (!googleCodeClientRef.current) {
+          setError('Не удалось инициализировать Google OAuth')
+        }
+      }
+      return
+    }
+
+    setError('')
+    setLoading(true)
+    try {
+      googleCodeClientRef.current.requestCode()
+    } catch (error) {
+      console.error('Google requestCode failed:', error)
+      setLoading(false)
+      setError('Не удалось открыть окно Google')
     }
   }
 
@@ -161,6 +234,11 @@ function SignupForm() {
 
   return (
     <PageLayout>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={initializeGoogleClient}
+      />
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">

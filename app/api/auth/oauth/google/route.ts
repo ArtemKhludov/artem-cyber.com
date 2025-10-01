@@ -8,6 +8,7 @@ import {
     revokeSessionToken
 } from '@/lib/session'
 import { getClientIp, getUserAgent, verifyRequestOrigin } from '@/lib/security'
+import { google } from 'googleapis'
 
 export async function POST(request: NextRequest) {
     try {
@@ -20,11 +21,62 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
         }
 
-        const { access_token, email, name, picture, remember = true } = await request.json()
+        const { code, remember = true } = await request.json()
 
-        if (!access_token || !email || !name) {
-            return NextResponse.json({ error: 'Недостаточно данных для авторизации' }, { status: 400 })
+        if (!code) {
+            return NextResponse.json({ error: 'Код авторизации не получен' }, { status: 400 })
         }
+
+        const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID
+        const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
+
+        if (!clientId || !clientSecret) {
+            console.error('Google OAuth env vars missing')
+            return NextResponse.json({ error: 'Google OAuth не настроен' }, { status: 500 })
+        }
+
+        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                code,
+                client_id: clientId,
+                client_secret: clientSecret,
+                redirect_uri: 'postmessage',
+                grant_type: 'authorization_code'
+            })
+        })
+
+        if (!tokenResponse.ok) {
+            const errorText = await tokenResponse.text()
+            console.error('Google token exchange failed:', tokenResponse.status, errorText)
+            return NextResponse.json({ error: 'Не удалось подтвердить авторизацию Google' }, { status: 401 })
+        }
+
+        const tokenJson = await tokenResponse.json() as { id_token?: string; access_token?: string }
+        const idToken = tokenJson.id_token
+
+        if (!idToken) {
+            console.error('Google token exchange returned no id_token')
+            return NextResponse.json({ error: 'Не удалось получить токен Google' }, { status: 401 })
+        }
+
+        const oauthClient = new google.auth.OAuth2(clientId)
+        const ticket = await oauthClient.verifyIdToken({
+            idToken,
+            audience: clientId
+        })
+
+        const payload = ticket.getPayload()
+
+        if (!payload?.email) {
+            return NextResponse.json({ error: 'Google не передал email пользователя' }, { status: 400 })
+        }
+
+        const email = payload.email
+        const name = payload.name ?? payload.email
+        const picture = payload.picture ?? null
+        const emailVerified = payload.email_verified === true || payload.email_verified === 'true'
 
         const supabase = getSupabaseAdmin()
 
@@ -44,7 +96,8 @@ export async function POST(request: NextRequest) {
                 .update({
                     name: name,
                     avatar_url: picture,
-                    updated_at: new Date().toISOString()
+                    updated_at: new Date().toISOString(),
+                    email_verified: emailVerified
                 })
                 .eq('id', existingUser.id)
                 .select()
@@ -67,7 +120,7 @@ export async function POST(request: NextRequest) {
                     role: 'user',
                     oauth_provider: 'google',
                     oauth_id: email, // Используем email как OAuth ID
-                    email_verified: true, // Google OAuth пользователи считаются верифицированными
+                    email_verified: emailVerified,
                     phone: null,
                     password_hash: 'oauth_user' // Заглушка для OAuth пользователей
                 })
