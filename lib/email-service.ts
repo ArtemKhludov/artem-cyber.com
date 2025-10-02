@@ -28,6 +28,49 @@ class EmailService {
     };
   }
 
+  // Универсальный метод для отправки email
+  async sendEmail(params: {
+    to: string;
+    subject: string;
+    html: string;
+    text?: string;
+  }): Promise<boolean> {
+    try {
+      if (!this.config.apiKey) {
+        console.log('📧 Email service not configured (RESEND_API_KEY not set)');
+        return false;
+      }
+
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `${this.config.fromName} <${this.config.fromEmail}>`,
+          to: params.to,
+          subject: params.subject,
+          html: params.html,
+          text: params.text || params.html.replace(/<[^>]*>/g, '')
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('❌ Email sending failed:', response.status, errorData);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log('✅ Email sent successfully:', result.id);
+      return true;
+    } catch (error) {
+      console.error('❌ Email sending error:', error);
+      return false;
+    }
+  }
+
   // Отправка приветственного письма новому пользователю
   async sendWelcomeEmail(userData: UserWelcomeData): Promise<boolean> {
     try {
@@ -175,6 +218,9 @@ class EmailService {
 
 // Экспортируем singleton instance
 export const emailService = new EmailService();
+
+// Экспортируем функцию sendEmail для совместимости
+export const sendEmail = emailService.sendEmail.bind(emailService);
 
 // Экспортируем типы для использования в других модулях
 export type { UserWelcomeData, CallbackReplyData, CallbackStatusData };

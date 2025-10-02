@@ -69,35 +69,39 @@ export async function GET(request: NextRequest) {
         switch (notification.notification_type) {
           case 'welcome_email':
             if (notification.users && notification.callback_requests) {
-              const emailContent = emailTemplates.welcome(
-                notification.users.name,
-                notification.users.email,
-                notification.users.temp_password
-              )
+              const emailContent = emailTemplates.getWelcomeEmailTemplate({
+                name: notification.users.name,
+                email: notification.users.email,
+                tempPassword: notification.users.temp_password,
+                loginUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/auth/login`
+              })
               const result = await sendEmail({
                 to: notification.users.email,
                 subject: emailContent.subject,
                 html: emailContent.html,
                 text: emailContent.text
               })
-              emailSent = result.success
+              emailSent = result
             }
             break
 
           case 'new_reply':
             if (notification.callback_requests) {
-              const emailContent = emailTemplates.newReply(
-                notification.callback_requests.name,
-                notification.callback_request_id,
-                notification.metadata?.reply_message || ''
-              )
+               const emailContent = emailTemplates.getCallbackReplyEmailTemplate({
+                 name: notification.callback_requests.name,
+                 email: notification.callback_requests.email,
+                 adminName: 'Администратор',
+                 message: notification.metadata?.reply_message || '',
+                 callbackId: notification.callback_request_id,
+                 dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/dashboard`
+               })
               const result = await sendEmail({
                 to: notification.callback_requests.email,
                 subject: emailContent.subject,
                 html: emailContent.html,
                 text: emailContent.text
               })
-              emailSent = result.success
+              emailSent = result
             }
             break
 

@@ -145,14 +145,14 @@ export async function GET(request: NextRequest) {
         const { sessionToken, expiresAt } = await createSession(userId, request)
 
         // Set session cookie
-        const cookieStore = cookies()
-        const { maxAge } = getSessionDurations(true)
+        const cookieStore = await cookies()
+        const durations = getSessionDurations(true)
         
         cookieStore.set(SESSION_COOKIE_NAME, sessionToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge,
+            maxAge: Math.floor(durations.absoluteMs / 1000),
             path: '/'
         })
 
@@ -170,8 +170,8 @@ async function createSession(userId: string, request: NextRequest) {
     const supabase = getSupabaseAdmin()
     const ip = getClientIp(request)
     const userAgent = getUserAgent(request)
-    const { maxAge } = getSessionDurations(true)
-    const expiresAt = new Date(Date.now() + maxAge * 1000)
+    const durations = getSessionDurations(true)
+    const expiresAt = new Date(Date.now() + durations.absoluteMs)
 
     const { data: session, error } = await supabase
         .from('user_sessions')

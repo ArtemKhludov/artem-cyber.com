@@ -13,11 +13,8 @@ export async function GET(
 
     // Проверяем права пользователя
     const validation = await requireUser(request)
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 401 }
-      )
+    if (validation.response) {
+      return validation.response
     }
 
     const supabase = getSupabaseAdmin()
@@ -27,7 +24,7 @@ export async function GET(
       .from('callback_requests')
       .select('id, user_id')
       .eq('id', id)
-      .eq('user_id', validation.user.id)
+      .eq('user_id', validation.validation.user.id)
       .single()
 
     if (callbackError || !callback) {
@@ -62,7 +59,7 @@ export async function GET(
     // Помечаем ответы как прочитанные
     if (replies && replies.length > 0) {
       const unreadReplies = replies.filter(reply => 
-        reply.is_from_admin && !reply.read_by?.includes(validation.user.id)
+        reply.is_from_admin && !reply.read_by?.includes(validation.validation.user.id)
       )
 
       if (unreadReplies.length > 0) {
@@ -70,7 +67,7 @@ export async function GET(
           await supabase
             .from('callback_replies')
             .update({
-              read_by: [...(reply.read_by || []), validation.user.id]
+              read_by: [...(reply.read_by || []), validation.validation.user.id]
             })
             .eq('id', reply.id)
         }
@@ -103,11 +100,8 @@ export async function POST(
 
     // Проверяем права пользователя
     const validation = await requireUser(request)
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 401 }
-      )
+    if (validation.response) {
+      return validation.response
     }
 
     if (!message || !message.trim()) {
@@ -124,7 +118,7 @@ export async function POST(
       .from('callback_requests')
       .select('id, user_id, status')
       .eq('id', id)
-      .eq('user_id', validation.user.id)
+      .eq('user_id', validation.validation.user.id)
       .single()
 
     if (callbackError || !callback) {
@@ -140,7 +134,7 @@ export async function POST(
       .insert([
         {
           callback_request_id: id,
-          user_id: validation.user.id,
+          user_id: validation.validation.user.id,
           message: message.trim(),
           is_from_admin: false
         }
@@ -171,12 +165,12 @@ export async function POST(
       .insert([
         {
           callback_request_id: id,
-          user_id: validation.user.id,
+          user_id: validation.validation.user.id,
           notification_type: 'user_reply',
           channel: 'telegram',
           status: 'pending',
           metadata: {
-            user_name: validation.user.name,
+            user_name: validation.validation.user.name,
             message: message.trim(),
             reply_id: reply.id
           }
