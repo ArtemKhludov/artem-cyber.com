@@ -9,6 +9,11 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
     const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value
 
+    // Пропускаем все API routes
+    if (pathname.startsWith('/api/')) {
+        return NextResponse.next()
+    }
+
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
     const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route))
     const isAuthRoute = pathname.startsWith('/auth/')

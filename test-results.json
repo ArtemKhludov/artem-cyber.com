@@ -1,0 +1,64 @@
+{
+  "timestamp": "2025-10-02T18:16:45.488Z",
+  "config": {
+    "baseUrl": "http://localhost:3000",
+    "adminEmail": "admin@energylogic-ai.com",
+    "testUserEmail": "test@example.com",
+    "testUserPhone": "+1234567890"
+  },
+  "results": {
+    "passed": 7,
+    "failed": 4,
+    "total": 11,
+    "tests": [
+      {
+        "name": "Доступность API",
+        "status": "PASSED"
+      },
+      {
+        "name": "Telegram интеграция",
+        "status": "PASSED"
+      },
+      {
+        "name": "Подключение к базе данных",
+        "status": "PASSED"
+      },
+      {
+        "name": "Статические страницы",
+        "status": "PASSED"
+      },
+      {
+        "name": "Админ панель",
+        "status": "PASSED"
+      },
+      {
+        "name": "Личный кабинет",
+        "status": "PASSED"
+      },
+      {
+        "name": "Создание заявки",
+        "status": "FAILED",
+        "error": "Ошибка создания заявки. Статус: 500, Ответ: {\"error\":\"Ошибка сохранения заявки\",\"details\":\"insert or update on table \\\"callback_requests\\\" violates foreign key constraint \\\"callback_requests_user_id_fkey\\\"\"}"
+      },
+      {
+        "name": "Создание расширенной заявки",
+        "status": "FAILED",
+        "error": "Ошибка создания расширенной заявки. Статус: 500"
+      },
+      {
+        "name": "Получение заявок",
+        "status": "PASSED"
+      },
+      {
+        "name": "Регистрация пользователя",
+        "status": "FAILED",
+        "error": "Ошибка регистрации пользователя. Статус: 400, Ответ: {\"error\":\"Пользователь с таким email уже существует\"}"
+      },
+      {
+        "name": "Аутентификация пользователя",
+        "status": "FAILED",
+        "error": "Ошибка аутентификации. Статус: 403, Ответ: {\"error\":\"Недопустимый источник запроса\"}"
+      }
+    ]
+  }
+}

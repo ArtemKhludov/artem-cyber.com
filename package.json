@@ -10,7 +10,12 @@
     "payments:reconcile": "node scripts/payments-reconcile.js",
     "e2e:payments-access": "node scripts/e2e-payments-access.js",
     "grace-period:verify": "node scripts/grace-period-verification.js",
-    "grace-period:test": "node test-grace-period-system.js"
+    "grace-period:test": "node test-grace-period-system.js",
+    "test": "node scripts/run-all-tests.js",
+    "test:system": "node scripts/test-system.js",
+    "test:database": "node scripts/test-database.js",
+    "test:ui": "node scripts/test-ui.js",
+    "test:callback": "node scripts/test-callback-flow.js"
   },
   "dependencies": {
     "@daily-co/daily-js": "^0.82.0",
@@ -24,6 +29,7 @@
     "@stripe/stripe-js": "^7.8.0",
     "@supabase/supabase-js": "^2.55.0",
     "@types/bcryptjs": "^2.4.6",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -39,6 +45,7 @@
     "react-dom": "19.1.0",
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.62.0",
+    "resend": "^6.1.2",
     "stripe": "^18.4.0",
     "swiper": "^11.2.10",
     "tailwind-merge": "^3.3.1",

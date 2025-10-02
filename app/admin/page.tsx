@@ -33,6 +33,7 @@ import AddRequestModal from '@/components/admin/AddRequestModal'
 import AddPurchaseModal from '@/components/admin/AddPurchaseModal'
 import EditableCell from '@/components/admin/EditableCell'
 import UserCard from '@/components/admin/UserCard'
+import { UserProfileModal } from '@/components/admin/UserProfileModal'
 import { EnhancedUsersList } from '@/components/admin/EnhancedUsersList'
 import ChartsBlock from '@/components/admin/ChartsBlock'
 import ErrorBoundary from '@/components/common/ErrorBoundary'
@@ -103,6 +104,8 @@ function AdminPageContent() {
   const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false)
   const [showUserCard, setShowUserCard] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [showUserProfileModal, setShowUserProfileModal] = useState(false)
+  const [selectedUserProfileId, setSelectedUserProfileId] = useState<string | null>(null)
   const [documents, setDocuments] = useState<any[]>([])
   const [showGrantAccess, setShowGrantAccess] = useState(false)
   const [grantDefaults, setGrantDefaults] = useState<{ email?: string; userId?: string; documentId?: string }>({})
@@ -482,6 +485,16 @@ function AdminPageContent() {
   const closeUserCard = () => {
     setShowUserCard(false)
     setSelectedUserId(null)
+  }
+
+  const openUserProfile = (userId: string) => {
+    setSelectedUserProfileId(userId)
+    setShowUserProfileModal(true)
+  }
+
+  const closeUserProfile = () => {
+    setShowUserProfileModal(false)
+    setSelectedUserProfileId(null)
   }
 
   const fetchDocuments = async () => {
@@ -896,12 +909,12 @@ function AdminPageContent() {
                 )}
               </div>
             </div>
+          </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <IssuesQuickWidget />
-      </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <IssuesQuickWidget />
+        </div>
 
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -1011,721 +1024,721 @@ function AdminPageContent() {
             </div>
           ) : (
             <>
-          {/* Filters */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder={`Поиск по ${activeTab === 'requests' ? 'заявкам' : activeTab === 'purchases' ? 'покупкам' : 'пользователям'}...`}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              {/* Filters */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Search */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      placeholder={`Поиск по ${activeTab === 'requests' ? 'заявкам' : activeTab === 'purchases' ? 'покупкам' : 'пользователям'}...`}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
 
-                <AddPurchaseModal
-                  isOpen={showAddPurchaseModal}
-                  onClose={() => setShowAddPurchaseModal(false)}
-                  onSuccess={() => {
-                    console.log('Purchase added, refreshing...')
-                    setShowAddPurchaseModal(false)
-                    if (activeTab === 'purchases') {
-                      fetchPurchases()
-                    }
-                  }}
-                />
-              </div>
+                    <AddPurchaseModal
+                      isOpen={showAddPurchaseModal}
+                      onClose={() => setShowAddPurchaseModal(false)}
+                      onSuccess={() => {
+                        console.log('Purchase added, refreshing...')
+                        setShowAddPurchaseModal(false)
+                        if (activeTab === 'purchases') {
+                          fetchPurchases()
+                        }
+                      }}
+                    />
+                  </div>
 
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">Все статусы</option>
-                <option value="new">Новые</option>
-                <option value="completed">Завершенные</option>
-                <option value="cancelled">Отмененные</option>
+                  {/* Status Filter */}
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Все статусы</option>
+                    <option value="new">Новые</option>
+                    <option value="completed">Завершенные</option>
+                    <option value="cancelled">Отмененные</option>
+                    {activeTab === 'purchases' && (
+                      <>
+                        <option value="pending">Ожидает оплаты</option>
+                      </>
+                    )}
+                  </select>
+
+                  {/* Date Filter */}
+                  <select
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Все даты</option>
+                    <option value="today">Сегодня</option>
+                    <option value="week">За неделю</option>
+                    <option value="month">За месяц</option>
+                  </select>
+
+                  {/* Type Filter */}
+                  <select
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Все типы</option>
+                    {activeTab === 'requests' ? (
+                      <>
+                        <option value="callback">Звонки</option>
+                        <option value="pdf">PDF файлы</option>
+                        <option value="program">Программы</option>
+                        <option value="consultation">Консультации</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="pdf">PDF файлы</option>
+                        <option value="program">Программы</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                {/* Быстрые фильтры по статусу для Покупок */}
                 {activeTab === 'purchases' && (
-                  <>
-                    <option value="pending">Ожидает оплаты</option>
-                  </>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <button
+                      onClick={() => setStatusFilter('all')}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'all' ? 'bg-white text-gray-900 border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}`}
+                    >
+                      Все ({purchases.length})
+                    </button>
+                    <button
+                      onClick={() => setStatusFilter('pending')}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'pending' ? 'bg-yellow-400 text-black border-yellow-400' : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/30'}`}
+                    >
+                      Ожидает оплаты ({purchasesPendingCount})
+                    </button>
+                    <button
+                      onClick={() => setStatusFilter('completed')}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'completed' ? 'bg-green-400 text-black border-green-400' : 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30'}`}
+                    >
+                      Оплачено ({purchasesCompletedCount})
+                    </button>
+                    <button
+                      onClick={() => setStatusFilter('cancelled')}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'cancelled' ? 'bg-red-400 text-black border-red-400' : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'}`}
+                    >
+                      Отменено ({purchasesCancelledCount})
+                    </button>
+                  </div>
                 )}
-              </select>
-
-              {/* Date Filter */}
-              <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">Все даты</option>
-                <option value="today">Сегодня</option>
-                <option value="week">За неделю</option>
-                <option value="month">За месяц</option>
-              </select>
-
-              {/* Type Filter */}
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">Все типы</option>
-                {activeTab === 'requests' ? (
-                  <>
-                    <option value="callback">Звонки</option>
-                    <option value="pdf">PDF файлы</option>
-                    <option value="program">Программы</option>
-                    <option value="consultation">Консультации</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="pdf">PDF файлы</option>
-                    <option value="program">Программы</option>
-                  </>
-                )}
-              </select>
-            </div>
-
-            {/* Быстрые фильтры по статусу для Покупок */}
-            {activeTab === 'purchases' && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                <button
-                  onClick={() => setStatusFilter('all')}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'all' ? 'bg-white text-gray-900 border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}`}
-                >
-                  Все ({purchases.length})
-                </button>
-                <button
-                  onClick={() => setStatusFilter('pending')}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'pending' ? 'bg-yellow-400 text-black border-yellow-400' : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/30'}`}
-                >
-                  Ожидает оплаты ({purchasesPendingCount})
-                </button>
-                <button
-                  onClick={() => setStatusFilter('completed')}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'completed' ? 'bg-green-400 text-black border-green-400' : 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30'}`}
-                >
-                  Оплачено ({purchasesCompletedCount})
-                </button>
-                <button
-                  onClick={() => setStatusFilter('cancelled')}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'cancelled' ? 'bg-red-400 text-black border-red-400' : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'}`}
-                >
-                  Отменено ({purchasesCancelledCount})
-                </button>
               </div>
-            )}
-          </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <div className="flex items-center">
-                {activeTab === 'requests' ? (
-                  <Phone className="w-8 h-8 text-blue-400 mr-3" />
-                ) : activeTab === 'purchases' ? (
-                  <ShoppingCart className="w-8 h-8 text-green-400 mr-3" />
-                ) : (
-                  <Users className="w-8 h-8 text-purple-400 mr-3" />
-                )}
-                <div>
-                  <p className="text-white/70 text-sm">
-                    {activeTab === 'requests' ? 'Всего заявок' : activeTab === 'purchases' ? 'Всего покупок' : 'Всего пользователей'}
-                  </p>
-                  <p className="text-2xl font-bold text-white">
-                    {activeTab === 'requests' ? requests.length : activeTab === 'purchases' ? purchases.length : users.length}
-                  </p>
+              {/* Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex items-center">
+                    {activeTab === 'requests' ? (
+                      <Phone className="w-8 h-8 text-blue-400 mr-3" />
+                    ) : activeTab === 'purchases' ? (
+                      <ShoppingCart className="w-8 h-8 text-green-400 mr-3" />
+                    ) : (
+                      <Users className="w-8 h-8 text-purple-400 mr-3" />
+                    )}
+                    <div>
+                      <p className="text-white/70 text-sm">
+                        {activeTab === 'requests' ? 'Всего заявок' : activeTab === 'purchases' ? 'Всего покупок' : 'Всего пользователей'}
+                      </p>
+                      <p className="text-2xl font-bold text-white">
+                        {activeTab === 'requests' ? requests.length : activeTab === 'purchases' ? purchases.length : users.length}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <div className="flex items-center">
-                <Clock className="w-8 h-8 text-yellow-400 mr-3" />
-                <div>
-                  <p className="text-white/70 text-sm">Новые</p>
-                  <p className="text-2xl font-bold text-white">
-                    {activeTab === 'requests'
-                      ? requests.filter(r => r.status === 'new').length
-                      : purchasesPendingCount
-                    }
-                  </p>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex items-center">
+                    <Clock className="w-8 h-8 text-yellow-400 mr-3" />
+                    <div>
+                      <p className="text-white/70 text-sm">Новые</p>
+                      <p className="text-2xl font-bold text-white">
+                        {activeTab === 'requests'
+                          ? requests.filter(r => r.status === 'new').length
+                          : purchasesPendingCount
+                        }
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <div className="flex items-center">
-                <User className="w-8 h-8 text-green-400 mr-3" />
-                <div>
-                  <p className="text-white/70 text-sm">
-                    {activeTab === 'requests' ? 'В работе' : 'Завершенные'}
-                  </p>
-                  <p className="text-2xl font-bold text-white">
-                    {activeTab === 'requests'
-                      ? requests.filter(r => r.status === 'in_progress').length
-                      : purchasesCompletedCount
-                    }
-                  </p>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex items-center">
+                    <User className="w-8 h-8 text-green-400 mr-3" />
+                    <div>
+                      <p className="text-white/70 text-sm">
+                        {activeTab === 'requests' ? 'В работе' : 'Завершенные'}
+                      </p>
+                      <p className="text-2xl font-bold text-white">
+                        {activeTab === 'requests'
+                          ? requests.filter(r => r.status === 'in_progress').length
+                          : purchasesCompletedCount
+                        }
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <div className="flex items-center">
-                {activeTab === 'purchases' ? (
-                  <AlertTriangle className="w-8 h-8 text-red-400 mr-3" />
-                ) : (
-                  <CreditCard className="w-8 h-8 text-purple-400 mr-3" />
-                )}
-                <div>
-                  <p className="text-white/70 text-sm">
-                    {activeTab === 'requests' ? 'Завершенные' : 'Отмененные'}
-                  </p>
-                  <p className="text-2xl font-bold text-white">
-                    {activeTab === 'requests'
-                      ? requests.filter(r => r.status === 'completed').length
-                      : purchasesCancelledCount
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Charts */}
-          <ChartsBlock />
-
-          {/* Панель пакетных действий и последние события */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-1">
-              <h3 className="text-white font-semibold mb-3">Последние выдачи/отзывы</h3>
-              {recentLoading ? (
-                <p className="text-white/70 text-sm">Загрузка…</p>
-              ) : recentEvents.length === 0 ? (
-                <p className="text-white/50 text-sm">Нет событий</p>
-              ) : (
-                <ul className="space-y-2 max-h-48 overflow-auto pr-1">
-                  {recentEvents.slice(0, 10).map((ev) => (
-                    <li key={ev.id} className="text-sm text-white/90 flex items-start gap-2">
-                      <span className={`mt-1 inline-block h-2 w-2 rounded-full ${ev.action?.toLowerCase().includes('revoke') ? 'bg-red-400' : 'bg-emerald-400'}`}></span>
-                      <div>
-                        <div className="">
-                          {ev.action || 'event'} {ev.target_table ? `• ${ev.target_table}` : ''}
-                        </div>
-                        <div className="text-white/50 text-xs">
-                          {ev.actor_email || ''} {ev.created_at ? `• ${new Date(ev.created_at).toLocaleString('ru-RU')}` : ''}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            {activeTab === 'purchases' && selectedPurchaseIds.size > 0 && (
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-2">
-                <div className="flex items-center justify-between">
-                  <div className="text-white">Выбрано записей: {selectedPurchaseIds.size}</div>
-                  <div className="flex gap-2">
-                    <Button onClick={bulkGrant} className="bg-emerald-600 hover:bg-emerald-700 text-white">Выдать доступ</Button>
-                    <Button onClick={bulkRevoke} className="bg-red-600 hover:bg-red-700 text-white">Отозвать доступ</Button>
-                    <Button variant="outline" onClick={() => setSelectedPurchaseIds(new Set())} className="text-white border-white/30">Сбросить выбор</Button>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex items-center">
+                    {activeTab === 'purchases' ? (
+                      <AlertTriangle className="w-8 h-8 text-red-400 mr-3" />
+                    ) : (
+                      <CreditCard className="w-8 h-8 text-purple-400 mr-3" />
+                    )}
+                    <div>
+                      <p className="text-white/70 text-sm">
+                        {activeTab === 'requests' ? 'Завершенные' : 'Отмененные'}
+                      </p>
+                      <p className="text-2xl font-bold text-white">
+                        {activeTab === 'requests'
+                          ? requests.filter(r => r.status === 'completed').length
+                          : purchasesCancelledCount
+                        }
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Table */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
-            {activeTab === 'courses' ? (
-              <CoursesManagement />
-            ) : activeTab === 'pricing' ? (
-              <PricingManagement />
-            ) : activeTab === 'logs' ? (
-              <LogsViewer />
-            ) : loading ? (
-              <div className="p-8 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-                <p className="text-white/70 mt-2">
-                  Загрузка {activeTab === 'requests' ? 'заявок' : activeTab === 'purchases' ? 'покупок' : 'пользователей'}...
-                </p>
+              {/* Charts */}
+              <ChartsBlock />
+
+              {/* Панель пакетных действий и последние события */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-1">
+                  <h3 className="text-white font-semibold mb-3">Последние выдачи/отзывы</h3>
+                  {recentLoading ? (
+                    <p className="text-white/70 text-sm">Загрузка…</p>
+                  ) : recentEvents.length === 0 ? (
+                    <p className="text-white/50 text-sm">Нет событий</p>
+                  ) : (
+                    <ul className="space-y-2 max-h-48 overflow-auto pr-1">
+                      {recentEvents.slice(0, 10).map((ev) => (
+                        <li key={ev.id} className="text-sm text-white/90 flex items-start gap-2">
+                          <span className={`mt-1 inline-block h-2 w-2 rounded-full ${ev.action?.toLowerCase().includes('revoke') ? 'bg-red-400' : 'bg-emerald-400'}`}></span>
+                          <div>
+                            <div className="">
+                              {ev.action || 'event'} {ev.target_table ? `• ${ev.target_table}` : ''}
+                            </div>
+                            <div className="text-white/50 text-xs">
+                              {ev.actor_email || ''} {ev.created_at ? `• ${new Date(ev.created_at).toLocaleString('ru-RU')}` : ''}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                {activeTab === 'purchases' && selectedPurchaseIds.size > 0 && (
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-white">Выбрано записей: {selectedPurchaseIds.size}</div>
+                      <div className="flex gap-2">
+                        <Button onClick={bulkGrant} className="bg-emerald-600 hover:bg-emerald-700 text-white">Выдать доступ</Button>
+                        <Button onClick={bulkRevoke} className="bg-red-600 hover:bg-red-700 text-white">Отозвать доступ</Button>
+                        <Button variant="outline" onClick={() => setSelectedPurchaseIds(new Set())} className="text-white border-white/30">Сбросить выбор</Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-white/20">
-                    <tr>
-                      {activeTab === 'purchases' && (
-                        <th className="px-3 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                          <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} />
-                        </th>
-                      )}
-                      {activeTab === 'users' ? (
-                        <>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Пользователь
+
+              {/* Table */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
+                {activeTab === 'courses' ? (
+                  <CoursesManagement />
+                ) : activeTab === 'pricing' ? (
+                  <PricingManagement />
+                ) : activeTab === 'logs' ? (
+                  <LogsViewer />
+                ) : loading ? (
+                  <div className="p-8 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+                    <p className="text-white/70 mt-2">
+                      Загрузка {activeTab === 'requests' ? 'заявок' : activeTab === 'purchases' ? 'покупок' : 'пользователей'}...
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-white/20">
+                        <tr>
+                          {activeTab === 'purchases' && (
+                            <th className="px-3 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                              <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} />
+                            </th>
+                          )}
+                          {activeTab === 'users' ? (
+                            <>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Пользователь
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Email
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Телефон
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Заявки
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Покупки
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Потрачено
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Регистрация
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Последняя активность
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Действия
+                              </th>
+                            </>
+                          ) : activeTab === 'payments' ? (
+                            <>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Пользователь</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Документ</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Дата</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Статус</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Сумма</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Действия</th>
+                            </>
+                          ) : (
+                            <>
+                              <th
+                                className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                                onClick={() => handleSort('name')}
+                              >
+                                <div className="flex items-center">
+                                  Клиент
+                                  {getSortIcon('name')}
+                                </div>
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                                Контакты
+                              </th>
+                            </>
+                          )}
+                          {activeTab === 'requests' && (
+                            <th
+                              className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                              onClick={() => handleSort('product_name')}
+                            >
+                              <div className="flex items-center">
+                                Товар/Услуга
+                                {getSortIcon('product_name')}
+                              </div>
+                            </th>
+                          )}
+                          {activeTab === 'requests' && (
+                            <th
+                              className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                              onClick={() => handleSort('source_page')}
+                            >
+                              <div className="flex items-center">
+                                Источник
+                                {getSortIcon('source_page')}
+                              </div>
+                            </th>
+                          )}
+                          {activeTab === 'purchases' && (
+                            <th
+                              className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                              onClick={() => handleSort('product_name')}
+                            >
+                              <div className="flex items-center">
+                                Товар
+                                {getSortIcon('product_name')}
+                              </div>
+                            </th>
+                          )}
+                          <th
+                            className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                            onClick={() => handleSort('created_at')}
+                          >
+                            <div className="flex items-center">
+                              Дата
+                              {getSortIcon('created_at')}
+                            </div>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Email
+                          <th
+                            className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                            onClick={() => handleSort('status')}
+                          >
+                            <div className="flex items-center">
+                              Статус
+                              {getSortIcon('status')}
+                            </div>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Телефон
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Заявки
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Покупки
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Потрачено
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Регистрация
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Последняя активность
+                          {activeTab === 'requests' && (
+                            <th
+                              className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                              onClick={() => handleSort('priority')}
+                            >
+                              <div className="flex items-center">
+                                Приоритет
+                                {getSortIcon('priority')}
+                              </div>
+                            </th>
+                          )}
+                          {activeTab === 'purchases' && (
+                            <th
+                              className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                              onClick={() => handleSort('amount')}
+                            >
+                              <div className="flex items-center">
+                                Сумма
+                                {getSortIcon('amount')}
+                              </div>
+                            </th>
+                          )}
+                          <th
+                            className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
+                            onClick={() => handleSort('source')}
+                          >
+                            <div className="flex items-center">
+                              Источник
+                              {getSortIcon('source')}
+                            </div>
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
                             Действия
                           </th>
-                        </>
-                      ) : activeTab === 'payments' ? (
-                        <>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Пользователь</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Документ</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Дата</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Статус</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Сумма</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Действия</th>
-                        </>
-                      ) : (
-                        <>
-                          <th
-                            className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                            onClick={() => handleSort('name')}
-                          >
-                            <div className="flex items-center">
-                              Клиент
-                              {getSortIcon('name')}
-                            </div>
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Контакты
-                          </th>
-                        </>
-                      )}
-                      {activeTab === 'requests' && (
-                        <th
-                          className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                          onClick={() => handleSort('product_name')}
-                        >
-                          <div className="flex items-center">
-                            Товар/Услуга
-                            {getSortIcon('product_name')}
-                          </div>
-                        </th>
-                      )}
-                      {activeTab === 'requests' && (
-                        <th
-                          className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                          onClick={() => handleSort('source_page')}
-                        >
-                          <div className="flex items-center">
-                            Источник
-                            {getSortIcon('source_page')}
-                          </div>
-                        </th>
-                      )}
-                      {activeTab === 'purchases' && (
-                        <th
-                          className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                          onClick={() => handleSort('product_name')}
-                        >
-                          <div className="flex items-center">
-                            Товар
-                            {getSortIcon('product_name')}
-                          </div>
-                        </th>
-                      )}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                        onClick={() => handleSort('created_at')}
-                      >
-                        <div className="flex items-center">
-                          Дата
-                          {getSortIcon('created_at')}
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                        onClick={() => handleSort('status')}
-                      >
-                        <div className="flex items-center">
-                          Статус
-                          {getSortIcon('status')}
-                        </div>
-                      </th>
-                      {activeTab === 'requests' && (
-                        <th
-                          className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                          onClick={() => handleSort('priority')}
-                        >
-                          <div className="flex items-center">
-                            Приоритет
-                            {getSortIcon('priority')}
-                          </div>
-                        </th>
-                      )}
-                      {activeTab === 'purchases' && (
-                        <th
-                          className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                          onClick={() => handleSort('amount')}
-                        >
-                          <div className="flex items-center">
-                            Сумма
-                            {getSortIcon('amount')}
-                          </div>
-                        </th>
-                      )}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider cursor-pointer hover:bg-white/30 transition-colors"
-                        onClick={() => handleSort('source')}
-                      >
-                        <div className="flex items-center">
-                          Источник
-                          {getSortIcon('source')}
-                        </div>
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                        Действия
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
-                    {activeTab === 'users' ? (
-                      <tr>
-                        <td colSpan={9} className="px-6 py-4">
-                          <div className="bg-white rounded-lg p-4">
-                            <EnhancedUsersList
-                              onUserSelect={(user) => openUserCard(user.id)}
-                              onUserEdit={(user) => openUserCard(user.id)}
-                              onUserDelete={async (userId) => {
-                                if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-                                  try {
-                                    const response = await fetch(`/api/users/${userId}`, {
-                                      method: 'DELETE'
-                                    })
-                                    if (response.ok) {
-                                      fetchUsers()
-                                    }
-                                  } catch (error) {
-                                    console.error('Error deleting user:', error)
-                                  }
-                                }
-                              }}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    ) : activeTab === 'payments' ? (
-                      paginate(sortData(payments, sortField, sortDirection)).map((pmt: any) => (
-                        <tr key={pmt.id} className="hover:bg-white/5">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                            {pmt.user_email || pmt.user_id}
-                            <div className="text-white/50 text-xs">ID: {pmt.id.slice(0, 8)}...</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{pmt.document_id}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                            {new Date(pmt.created_at).toLocaleDateString('ru-RU')}
-                            <div className="text-white/50 text-xs">{new Date(pmt.created_at).toLocaleTimeString('ru-RU')}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(pmt.payment_status)}`}>{pmt.payment_status}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
-                            {pmt.amount_paid || 0}
-                            <span className="ml-1">{pmt.currency || 'RUB'}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                            <div className="flex items-center space-x-2">
-                              {pmt.stripe_payment_intent_id && (
-                                <a
-                                  href={`https://dashboard.stripe.com/search?query=${encodeURIComponent(pmt.stripe_payment_intent_id)}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-blue-300 hover:underline"
-                                >
-                                  Открыть в Stripe
-                                </a>
-                              )}
-                              <button
-                                className="text-white/80 hover:text-white underline"
-                                onClick={async () => {
-                                  try {
-                                    const res = await fetch(`/api/admin/audit/purchase?id=${pmt.id}`)
-                                    const json = await res.json()
-                                    if (res.ok && json.success) {
-                                      const lines = (json.data as any[]).map(ev => `${new Date(ev.created_at).toLocaleString('ru-RU')} • ${ev.action}${ev.actor_email ? ' • ' + ev.actor_email : ''}`).join('\n')
-                                      alert(lines || 'Нет событий')
-                                    } else {
-                                      alert('Нет событий')
-                                    }
-                                  } catch {
-                                    alert('Ошибка загрузки таймлайна')
-                                  }
-                                }}
-                              >
-                                Таймлайн
-                              </button>
-                            </div>
-                          </td>
                         </tr>
-                      ))
-                    ) : (
-                      (activeTab === 'requests' ? visibleRows : activeTab === 'purchases' ? visibleRows : visibleRows).map((item: any) => (
-                        <tr key={item.id} className="hover:bg-white/5">
-                          {activeTab === 'purchases' && (
-                            <td className="px-3 py-4 whitespace-nowrap">
-                              <input type="checkbox" checked={selectedPurchaseIds.has(item.id)} onChange={() => toggleSelectOne(item.id)} />
-                            </td>
-                          )}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <EditableCell
-                                value={item.name}
-                                onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { name: newValue })}
-                                className="text-sm font-medium text-white"
-                              />
-                              <div className="text-sm text-white/70">
-                                ID: {item.id.slice(0, 8)}...
+                      </thead>
+                      <tbody className="divide-y divide-white/10">
+                        {activeTab === 'users' ? (
+                          <tr>
+                            <td colSpan={9} className="px-6 py-4">
+                              <div className="bg-white rounded-lg p-4">
+                                <EnhancedUsersList
+                                  onUserSelect={(user) => openUserCard(user.id)}
+                                  onUserEdit={(user) => openUserCard(user.id)}
+                                  onUserDelete={async (userId) => {
+                                    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                                      try {
+                                        const response = await fetch(`/api/users/${userId}`, {
+                                          method: 'DELETE'
+                                        })
+                                        if (response.ok) {
+                                          fetchUsers()
+                                        }
+                                      } catch (error) {
+                                        console.error('Error deleting user:', error)
+                                      }
+                                    }
+                                  }}
+                                />
                               </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-white">
-                              {item.email && (
-                                <div className="flex items-center mb-1">
-                                  <Mail className="w-3 h-3 mr-1 text-white/50" />
-                                  <EditableCell
-                                    value={item.email}
-                                    onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { email: newValue })}
-                                    className="text-white"
-                                  />
-                                </div>
-                              )}
-                              {item.phone && (
-                                <div className="flex items-center">
-                                  <Phone className="w-3 h-3 mr-1 text-white/50" />
-                                  <EditableCell
-                                    value={item.phone}
-                                    onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { phone: newValue })}
-                                    className="text-white"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          {activeTab === 'requests' && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                              {item.product_name || 'Не указан'}
                             </td>
-                          )}
-                          {activeTab === 'requests' && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                              <div className="flex items-center">
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                  {item.source_page === '/' ? 'Главная' :
-                                    item.source_page === '/about' ? 'О проекте' :
-                                      item.source_page === '/contacts' ? 'Контакты' :
-                                        item.source_page === '/catalog' ? 'Каталог' :
-                                          item.source_page === '/book' ? 'Программы' :
-                                            item.source_page || 'Не указан'}
+                          </tr>
+                        ) : activeTab === 'payments' ? (
+                          paginate(sortData(payments, sortField, sortDirection)).map((pmt: any) => (
+                            <tr key={pmt.id} className="hover:bg-white/5">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                {pmt.user_email || pmt.user_id}
+                                <div className="text-white/50 text-xs">ID: {pmt.id.slice(0, 8)}...</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{pmt.document_id}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                {new Date(pmt.created_at).toLocaleDateString('ru-RU')}
+                                <div className="text-white/50 text-xs">{new Date(pmt.created_at).toLocaleTimeString('ru-RU')}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(pmt.payment_status)}`}>{pmt.payment_status}</span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
+                                {pmt.amount_paid || 0}
+                                <span className="ml-1">{pmt.currency || 'RUB'}</span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                <div className="flex items-center space-x-2">
+                                  {pmt.stripe_payment_intent_id && (
+                                    <a
+                                      href={`https://dashboard.stripe.com/search?query=${encodeURIComponent(pmt.stripe_payment_intent_id)}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-blue-300 hover:underline"
+                                    >
+                                      Открыть в Stripe
+                                    </a>
+                                  )}
+                                  <button
+                                    className="text-white/80 hover:text-white underline"
+                                    onClick={async () => {
+                                      try {
+                                        const res = await fetch(`/api/admin/audit/purchase?id=${pmt.id}`)
+                                        const json = await res.json()
+                                        if (res.ok && json.success) {
+                                          const lines = (json.data as any[]).map(ev => `${new Date(ev.created_at).toLocaleString('ru-RU')} • ${ev.action}${ev.actor_email ? ' • ' + ev.actor_email : ''}`).join('\n')
+                                          alert(lines || 'Нет событий')
+                                        } else {
+                                          alert('Нет событий')
+                                        }
+                                      } catch {
+                                        alert('Ошибка загрузки таймлайна')
+                                      }
+                                    }}
+                                  >
+                                    Таймлайн
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          (activeTab === 'requests' ? visibleRows : activeTab === 'purchases' ? visibleRows : visibleRows).map((item: any) => (
+                            <tr key={item.id} className="hover:bg-white/5">
+                              {activeTab === 'purchases' && (
+                                <td className="px-3 py-4 whitespace-nowrap">
+                                  <input type="checkbox" checked={selectedPurchaseIds.has(item.id)} onChange={() => toggleSelectOne(item.id)} />
+                                </td>
+                              )}
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <EditableCell
+                                    value={item.name}
+                                    onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { name: newValue })}
+                                    className="text-sm font-medium text-white"
+                                  />
+                                  <div className="text-sm text-white/70">
+                                    ID: {item.id.slice(0, 8)}...
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-white">
+                                  {item.email && (
+                                    <div className="flex items-center mb-1">
+                                      <Mail className="w-3 h-3 mr-1 text-white/50" />
+                                      <EditableCell
+                                        value={item.email}
+                                        onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { email: newValue })}
+                                        className="text-white"
+                                      />
+                                    </div>
+                                  )}
+                                  {item.phone && (
+                                    <div className="flex items-center">
+                                      <Phone className="w-3 h-3 mr-1 text-white/50" />
+                                      <EditableCell
+                                        value={item.phone}
+                                        onSave={(newValue) => updateItem(item.id, activeTab === 'requests' ? 'request' : 'purchase', { phone: newValue })}
+                                        className="text-white"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              {activeTab === 'requests' && (
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                  {item.product_name || 'Не указан'}
+                                </td>
+                              )}
+                              {activeTab === 'requests' && (
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                  <div className="flex items-center">
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                      {item.source_page === '/' ? 'Главная' :
+                                        item.source_page === '/about' ? 'О проекте' :
+                                          item.source_page === '/contacts' ? 'Контакты' :
+                                            item.source_page === '/catalog' ? 'Каталог' :
+                                              item.source_page === '/book' ? 'Программы' :
+                                                item.source_page || 'Не указан'}
+                                    </span>
+                                  </div>
+                                </td>
+                              )}
+                              {activeTab === 'purchases' && (
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                  <div className="flex items-center">
+                                    {item.product_type === 'pdf' ? (
+                                      <FileText className="w-4 h-4 mr-2 text-blue-400" />
+                                    ) : (
+                                      <Package className="w-4 h-4 mr-2 text-green-400" />
+                                    )}
+                                    {item.product_name}
+                                  </div>
+                                </td>
+                              )}
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                {new Date(item.created_at).toLocaleDateString('ru-RU')}
+                                <br />
+                                <span className="text-white/50">
+                                  {new Date(item.created_at).toLocaleTimeString('ru-RU')}
                                 </span>
-                              </div>
-                            </td>
-                          )}
-                          {activeTab === 'purchases' && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                              <div className="flex items-center">
-                                {item.product_type === 'pdf' ? (
-                                  <FileText className="w-4 h-4 mr-2 text-blue-400" />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {activeTab === 'requests' ? (
+                                  <select
+                                    value={item.status}
+                                    onChange={(e) => updateRequestStatus(item.id, e.target.value)}
+                                    className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)} border-0 focus:ring-2 focus:ring-blue-500`}
+                                  >
+                                    <option value="new">Новый</option>
+                                    <option value="completed">Завершен</option>
+                                    <option value="cancelled">Отменен</option>
+                                  </select>
                                 ) : (
-                                  <Package className="w-4 h-4 mr-2 text-green-400" />
+                                  <EditableCell
+                                    value={item.status}
+                                    type="select"
+                                    options={[
+                                      { value: 'pending', label: 'Ожидает оплаты' },
+                                      { value: 'completed', label: 'Оплачено' },
+                                      { value: 'cancelled', label: 'Отменено' }
+                                    ]}
+                                    onSave={(newValue) => updateItem(item.id, 'purchase', { status: newValue })}
+                                    className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}
+                                  />
                                 )}
-                                {item.product_name}
-                              </div>
-                            </td>
-                          )}
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                            {new Date(item.created_at).toLocaleDateString('ru-RU')}
-                            <br />
-                            <span className="text-white/50">
-                              {new Date(item.created_at).toLocaleTimeString('ru-RU')}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {activeTab === 'requests' ? (
-                              <select
-                                value={item.status}
-                                onChange={(e) => updateRequestStatus(item.id, e.target.value)}
-                                className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)} border-0 focus:ring-2 focus:ring-blue-500`}
-                              >
-                                <option value="new">Новый</option>
-                                <option value="completed">Завершен</option>
-                                <option value="cancelled">Отменен</option>
-                              </select>
-                            ) : (
-                              <EditableCell
-                                value={item.status}
-                                type="select"
-                                options={[
-                                  { value: 'pending', label: 'Ожидает оплаты' },
-                                  { value: 'completed', label: 'Оплачено' },
-                                  { value: 'cancelled', label: 'Отменено' }
-                                ]}
-                                onSave={(newValue) => updateItem(item.id, 'purchase', { status: newValue })}
-                                className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}
-                              />
-                            )}
-                          </td>
-                          {activeTab === 'requests' && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <EditableCell
-                                value={item.priority || 'medium'}
-                                type="select"
-                                options={[
-                                  { value: 'urgent', label: 'Срочно' },
-                                  { value: 'high', label: 'Высокий' },
-                                  { value: 'medium', label: 'Средний' },
-                                  { value: 'low', label: 'Низкий' }
-                                ]}
-                                onSave={(newValue) => updateItem(item.id, 'request', { priority: newValue })}
-                                className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'medium')}`}
-                              />
-                            </td>
-                          )}
-                          {activeTab === 'purchases' && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
-                              <EditableCell
-                                value={'amount' in item ? item.amount : 0}
-                                type="number"
-                                onSave={(newValue) => updateItem(item.id, 'purchase', { amount: newValue })}
-                                className="text-white font-medium"
-                              />
-                              <span className="ml-1">₽</span>
-                            </td>
-                          )}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center text-sm text-white">
-                              {getSourceIcon(item.source || 'other')}
-                              <span className="ml-1">
-                                {item.source === 'website' && 'Сайт'}
-                                {item.source === 'phone' && 'Телефон'}
-                                {item.source === 'chat' && 'Чат'}
-                                {item.source === 'manual' && 'Ручной ввод'}
-                                {item.source === 'other' && 'Другое'}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <Button
-                                size="sm"
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                                onClick={() => {
-                                  // Просмотр - можно добавить модальное окно
-                                  alert(`Просмотр ${activeTab === 'requests' ? 'заявки' : 'покупки'} ID: ${item.id}`)
-                                }}
-                              >
-                                <Edit className="w-4 h-4 mr-1" />
-                                Просмотр
-                              </Button>
-                              {activeTab === 'purchases' && (
-                                <Button
-                                  size="sm"
-                                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                  onClick={() => {
-                                    setGrantDefaults({ email: item.email, userId: item.user_id, documentId: item.product_id })
-                                    setShowGrantAccess(true)
-                                  }}
-                                >
-                                  Выдать доступ
-                                </Button>
+                              </td>
+                              {activeTab === 'requests' && (
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <EditableCell
+                                    value={item.priority || 'medium'}
+                                    type="select"
+                                    options={[
+                                      { value: 'urgent', label: 'Срочно' },
+                                      { value: 'high', label: 'Высокий' },
+                                      { value: 'medium', label: 'Средний' },
+                                      { value: 'low', label: 'Низкий' }
+                                    ]}
+                                    onSave={(newValue) => updateItem(item.id, 'request', { priority: newValue })}
+                                    className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'medium')}`}
+                                  />
+                                </td>
                               )}
                               {activeTab === 'purchases' && (
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  className="bg-red-600 hover:bg-red-700 text-white"
-                                  onClick={() => {
-                                    setRevokeDefaults({ email: item.email, userId: item.user_id, documentId: item.product_id })
-                                    setShowRevokeAccess(true)
-                                  }}
-                                >
-                                  Отозвать доступ
-                                </Button>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">
+                                  <EditableCell
+                                    value={'amount' in item ? item.amount : 0}
+                                    type="number"
+                                    onSave={(newValue) => updateItem(item.id, 'purchase', { amount: newValue })}
+                                    className="text-white font-medium"
+                                  />
+                                  <span className="ml-1">₽</span>
+                                </td>
                               )}
-                              <Button
-                                size="sm"
-                                className="bg-red-600 hover:bg-red-700 text-white"
-                                onClick={() => deleteItem(item.id, activeTab === 'requests' ? 'request' : 'purchase')}
-                              >
-                                <Trash2 className="w-4 h-4 mr-1" />
-                                Удалить
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-                {/* Пагинация */}
-                <div className="flex items-center justify-between px-4 py-3 bg-white/10 border-t border-white/10">
-                  <div className="flex items-center gap-2 text-white/80 text-sm">
-                    <span>Показывать по</span>
-                    <select
-                      value={pageSize}
-                      onChange={(e) => setPageSize(Number(e.target.value))}
-                      className="bg-transparent border border-white/30 rounded px-2 py-1"
-                    >
-                      {[10, 20, 50, 100].map(n => (<option key={n} value={n}>{n}</option>))}
-                    </select>
-                    <span>Всего: {totalRows}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" className="text-white border-white/30" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Назад</Button>
-                    <span className="text-white/80 text-sm">Стр. {page} из {totalPages}</span>
-                    <Button variant="outline" className="text-white border-white/30" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Вперёд</Button>
-                  </div>
-                </div>
-                {activeTab === 'purchases' && (
-                  <div className="bg-white/10">
-                    <table className="w-full">
-                      <tfoot>
-                        <tr>
-                          <td className="px-6 py-3 text-sm font-semibold text-white" colSpan={5}>
-                            Итого записей: {purchasesTotalCount}
-                          </td>
-                          <td className="px-6 py-3 text-sm font-semibold text-white">
-                            {purchasesTotalAmount} ₽
-                          </td>
-                          <td className="px-6 py-3" colSpan={2}></td>
-                        </tr>
-                      </tfoot>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center text-sm text-white">
+                                  {getSourceIcon(item.source || 'other')}
+                                  <span className="ml-1">
+                                    {item.source === 'website' && 'Сайт'}
+                                    {item.source === 'phone' && 'Телефон'}
+                                    {item.source === 'chat' && 'Чат'}
+                                    {item.source === 'manual' && 'Ручной ввод'}
+                                    {item.source === 'other' && 'Другое'}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    onClick={() => {
+                                      // Просмотр - можно добавить модальное окно
+                                      alert(`Просмотр ${activeTab === 'requests' ? 'заявки' : 'покупки'} ID: ${item.id}`)
+                                    }}
+                                  >
+                                    <Edit className="w-4 h-4 mr-1" />
+                                    Просмотр
+                                  </Button>
+                                  {activeTab === 'purchases' && (
+                                    <Button
+                                      size="sm"
+                                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                      onClick={() => {
+                                        setGrantDefaults({ email: item.email, userId: item.user_id, documentId: item.product_id })
+                                        setShowGrantAccess(true)
+                                      }}
+                                    >
+                                      Выдать доступ
+                                    </Button>
+                                  )}
+                                  {activeTab === 'purchases' && (
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="bg-red-600 hover:bg-red-700 text-white"
+                                      onClick={() => {
+                                        setRevokeDefaults({ email: item.email, userId: item.user_id, documentId: item.product_id })
+                                        setShowRevokeAccess(true)
+                                      }}
+                                    >
+                                      Отозвать доступ
+                                    </Button>
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                    onClick={() => deleteItem(item.id, activeTab === 'requests' ? 'request' : 'purchase')}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-1" />
+                                    Удалить
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
                     </table>
+                    {/* Пагинация */}
+                    <div className="flex items-center justify-between px-4 py-3 bg-white/10 border-t border-white/10">
+                      <div className="flex items-center gap-2 text-white/80 text-sm">
+                        <span>Показывать по</span>
+                        <select
+                          value={pageSize}
+                          onChange={(e) => setPageSize(Number(e.target.value))}
+                          className="bg-transparent border border-white/30 rounded px-2 py-1"
+                        >
+                          {[10, 20, 50, 100].map(n => (<option key={n} value={n}>{n}</option>))}
+                        </select>
+                        <span>Всего: {totalRows}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" className="text-white border-white/30" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Назад</Button>
+                        <span className="text-white/80 text-sm">Стр. {page} из {totalPages}</span>
+                        <Button variant="outline" className="text-white border-white/30" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Вперёд</Button>
+                      </div>
+                    </div>
+                    {activeTab === 'purchases' && (
+                      <div className="bg-white/10">
+                        <table className="w-full">
+                          <tfoot>
+                            <tr>
+                              <td className="px-6 py-3 text-sm font-semibold text-white" colSpan={5}>
+                                Итого записей: {purchasesTotalCount}
+                              </td>
+                              <td className="px-6 py-3 text-sm font-semibold text-white">
+                                {purchasesTotalAmount} ₽
+                              </td>
+                              <td className="px-6 py-3" colSpan={2}></td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
-          </>
+            </>
           )}
         </div>
 
@@ -1786,6 +1799,15 @@ function AdminPageContent() {
             if (activeTab === 'purchases') fetchPurchases()
           }}
         />
+
+        {/* User Profile Modal */}
+        {showUserProfileModal && selectedUserProfileId && (
+          <UserProfileModal
+            isOpen={showUserProfileModal}
+            onClose={closeUserProfile}
+            userId={selectedUserProfileId}
+          />
+        )}
 
         {/* Toasts */}
         <Toast.Provider swipeDirection="right">
