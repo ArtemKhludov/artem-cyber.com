@@ -15,11 +15,8 @@ export async function POST(
 
     // Проверяем права администратора
     const validation = await requireAdmin(request)
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 401 }
-      )
+    if (validation.response) {
+      return validation.response
     }
 
     if (!message || !message.trim()) {
@@ -59,7 +56,7 @@ export async function POST(
       .insert([
         {
           callback_request_id: id,
-          admin_id: validation.user.id,
+          admin_id: validation.validation.user.id,
           message: message.trim(),
           is_from_admin: true
         }
@@ -87,7 +84,7 @@ export async function POST(
             channel: 'email',
             status: 'pending',
             metadata: {
-              admin_name: admin_name || validation.user.name || 'Администратор',
+              admin_name: admin_name || validation.validation.user.name || 'Администратор',
               message: message.trim(),
               reply_id: reply.id
             }
@@ -107,7 +104,7 @@ export async function POST(
             channel: 'telegram',
             status: 'pending',
             metadata: {
-              admin_name: admin_name || validation.user.name || 'Администратор',
+              admin_name: admin_name || validation.validation.user.name || 'Администратор',
               message: message.trim(),
               reply_id: reply.id
             }
@@ -168,11 +165,8 @@ export async function GET(
 
     // Проверяем права администратора
     const validation = await requireAdmin(request)
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 401 }
-      )
+    if (validation.response) {
+      return validation.response
     }
 
     const supabase = getSupabaseAdmin()

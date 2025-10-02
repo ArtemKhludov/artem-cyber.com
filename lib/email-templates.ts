@@ -298,3 +298,11 @@ export function getCallbackStatusEmailTemplate(data: CallbackStatusData): EmailT
   
   return { subject, html, text };
 }
+
+
+// Экспортируем объект с шаблонами для совместимости
+export const emailTemplates = {
+  getWelcomeEmailTemplate,
+  getCallbackReplyEmailTemplate,
+  getCallbackStatusEmailTemplate
+};

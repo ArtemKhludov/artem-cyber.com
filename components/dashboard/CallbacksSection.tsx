@@ -14,7 +14,8 @@ import {
   AlertCircle,
   Plus,
   Eye,
-  EyeOff
+  EyeOff,
+  X
 } from 'lucide-react'
 import * as Toast from '@radix-ui/react-toast'
 
