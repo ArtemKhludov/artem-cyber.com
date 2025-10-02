@@ -51,6 +51,22 @@ function SignupForm() {
   const redirect = searchParams.get('redirect') || '/'
   const { register, user } = useAuth()
 
+  // Заполняем форму данными из URL (если есть)
+  useEffect(() => {
+    const email = searchParams.get('email')
+    const name = searchParams.get('name')
+    const phone = searchParams.get('phone')
+
+    if (email || name || phone) {
+      setFormData(prev => ({
+        ...prev,
+        email: email || prev.email,
+        name: name || prev.name,
+        phone: phone || prev.phone
+      }))
+    }
+  }, [searchParams])
+
   // Если пользователь уже авторизован, перенаправляем
   useEffect(() => {
     if (user) {
@@ -123,44 +139,10 @@ function SignupForm() {
   }
 
   const handleGoogleCallback = useCallback(async (response: { code?: string; error?: string; error_description?: string }) => {
-    if (response.error) {
-      console.error('Google OAuth error:', response.error, response.error_description)
-      setError('Не удалось выполнить авторизацию через Google')
-      setLoading(false)
-      return
-    }
-
-    if (!response.code) {
-      setError('Google не вернул код авторизации')
-      setLoading(false)
-      return
-    }
-
-    try {
-      const request = await fetch('/api/auth/oauth/google', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ code: response.code }),
-        credentials: 'include'
-      })
-
-      const data = await request.json()
-
-      if (request.ok) {
-        // Перезагружаем страницу чтобы AuthContext обновился
-        window.location.href = '/dashboard'
-      } else {
-        setError(data.error || 'Ошибка авторизации через Google')
-      }
-    } catch (error) {
-      console.error('Google OAuth request failed:', error)
-      setError('Ошибка сети при авторизации через Google')
-    } finally {
-      setLoading(false)
-    }
-  }, [router])
+    // При redirect flow callback не вызывается, пользователь перенаправляется на callback endpoint
+    // Этот callback оставляем для совместимости, но он не будет использоваться
+    console.log('Google callback (not used in redirect flow):', response)
+  }, [])
 
   const initializeGoogleClient = useCallback(() => {
     if (googleCodeClientRef.current || !window.google) {
@@ -176,8 +158,8 @@ function SignupForm() {
     googleCodeClientRef.current = window.google.accounts.oauth2.initCodeClient({
       client_id: clientId,
       scope: 'openid email profile',
-      redirect_uri: 'postmessage',
-      ux_mode: 'popup',
+      redirect_uri: 'http://localhost:3001/api/auth/oauth/google/callback',
+      ux_mode: 'redirect',
       callback: handleGoogleCallback
     })
   }, [handleGoogleCallback])

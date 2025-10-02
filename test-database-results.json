@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-10-02T19:23:36.979Z",
+  "config": {
+    "supabaseUrl": "https://mcexzjzowwanxawbiizd.supabase.co",
+    "supabaseServiceKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZXh6anpvd3dhbnhhd2JpaXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNzg4MjQsImV4cCI6MjA3MDk1NDgyNH0.-sAXcSK2crzmBULuPxRSfI9fNde9aQZxNvag2qkmZUs"
+  },
+  "results": {
+    "passed": 3,
+    "failed": 5,
+    "total": 8,
+    "tests": [
+      {
+        "name": "Подключение к базе данных",
+        "status": "PASSED"
+      },
+      {
+        "name": "Существование таблиц",
+        "status": "PASSED"
+      },
+      {
+        "name": "Триггер создания пользователя",
+        "status": "FAILED",
+        "error": "Ошибка создания заявки: new row violates row-level security policy for table \"users\""
+      },
+      {
+        "name": "Триггер создания обращения",
+        "status": "FAILED",
+        "error": "Ошибка создания пользователя: new row violates row-level security policy for table \"users\""
+      },
+      {
+        "name": "Функции базы данных",
+        "status": "FAILED",
+        "error": "Функция increment_contact_attempts не работает: Could not find the function public.increment_contact_attempts(callback_id) in the schema cache"
+      },
+      {
+        "name": "Индексы",
+        "status": "PASSED"
+      },
+      {
+        "name": "Ограничения",
+        "status": "FAILED",
+        "error": "Ошибка создания первого пользователя: new row violates row-level security policy for table \"users\""
+      },
+      {
+        "name": "RLS политики",
+        "status": "FAILED",
+        "error": "supabaseKey is required."
+      }
+    ]
+  }
+}

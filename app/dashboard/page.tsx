@@ -26,7 +26,8 @@ import {
   Gift,
   Award,
   Target,
-  Volume2
+  Volume2,
+  MessageSquare
 } from 'lucide-react'
 import { SessionDevices } from '@/components/dashboard/SessionDevices'
 import { initPostHog } from '@/lib/posthog'
@@ -41,7 +42,10 @@ import {
 import ReportIssueDialog, { type IssueContext } from '@/components/dashboard/ReportIssueDialog'
 import { TelegramLink } from '@/components/dashboard/TelegramLink'
 import { UserIssuesList } from '@/components/dashboard/UserIssuesList'
+import { UserCallbacksWithReplies } from '@/components/dashboard/UserCallbacksWithReplies'
+import { CallbacksSection } from '@/components/dashboard/CallbacksSection'
 import { PhonePromptModal } from '@/components/auth/PhonePromptModal'
+import { EmptyCoursesAnimation } from '@/components/dashboard/EmptyCoursesAnimation'
 
 type PurchaseStatus =
   | 'completed'
@@ -892,6 +896,12 @@ export default function DashboardPage() {
                   <CheckCircle className="h-4 w-4" /> Сессии
                 </TabsTrigger>
                 <TabsTrigger
+                  value="callbacks"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <MessageSquare className="h-4 w-4" /> Обращения
+                </TabsTrigger>
+                <TabsTrigger
                   value="achievements"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
@@ -908,6 +918,12 @@ export default function DashboardPage() {
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
                   <AlertCircle className="h-4 w-4" /> Обращения
+                </TabsTrigger>
+                <TabsTrigger
+                  value="callbacks"
+                  className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                >
+                  <MessageSquare className="h-4 w-4" /> Заявки
                 </TabsTrigger>
                 <Button
                   type="button"
@@ -1346,88 +1362,96 @@ export default function DashboardPage() {
                 <SessionDevices />
               </TabsContent>
 
+              <TabsContent value="callbacks" className="space-y-6">
+                <CallbacksSection />
+              </TabsContent>
+
 
               <TabsContent value="courses" className="space-y-6">
-                <div className="grid gap-6">
-                  {courses.map((course) => (
-                    <Card key={course.id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <CardTitle className="text-xl mb-2">{course.title}</CardTitle>
-                            <CardDescription className="mb-4">{course.description}</CardDescription>
+                {courses.length > 0 ? (
+                  <div className="grid gap-6">
+                    {courses.map((course) => (
+                      <Card key={course.id} className="hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="text-xl mb-2">{course.title}</CardTitle>
+                              <CardDescription className="mb-4">{course.description}</CardDescription>
 
-                            {/* Информация о типе курса */}
-                            <div className="flex items-center gap-2 mb-3">
-                              <Badge className={course.course_type === 'mini_course' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
-                                {course.course_type === 'mini_course' ? 'Мини-курс' : 'Курс'}
-                              </Badge>
-                              {course.duration !== 'Не указано' && (
-                                <div className="flex items-center gap-1 text-sm text-gray-600">
-                                  <Clock className="h-4 w-4" />
-                                  {course.duration}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Доступные материалы */}
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                              <div className="flex items-center gap-1">
-                                <BookOpen className="h-4 w-4" />
-                                Основной PDF
+                              {/* Информация о типе курса */}
+                              <div className="flex items-center gap-2 mb-3">
+                                <Badge className={course.course_type === 'mini_course' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
+                                  {course.course_type === 'mini_course' ? 'Мини-курс' : 'Курс'}
+                                </Badge>
+                                {course.duration !== 'Не указано' && (
+                                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                                    <Clock className="h-4 w-4" />
+                                    {course.duration}
+                                  </div>
+                                )}
                               </div>
-                              {course.has_workbook && (
+
+                              {/* Доступные материалы */}
+                              <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                                 <div className="flex items-center gap-1">
-                                  <BookOpen className="h-4 w-4 text-orange-500" />
-                                  {course.workbook_count} тетрадей
+                                  <BookOpen className="h-4 w-4" />
+                                  Основной PDF
                                 </div>
-                              )}
-                              {course.has_videos && (
-                                <div className="flex items-center gap-1">
-                                  <PlayCircle className="h-4 w-4 text-indigo-500" />
-                                  {course.video_count} видео
-                                </div>
-                              )}
-                              {course.has_audio && (
-                                <div className="flex items-center gap-1">
-                                  <Volume2 className="h-4 w-4 text-red-500" />
-                                  Аудио
-                                </div>
-                              )}
+                                {course.has_workbook && (
+                                  <div className="flex items-center gap-1">
+                                    <BookOpen className="h-4 w-4 text-orange-500" />
+                                    {course.workbook_count} тетрадей
+                                  </div>
+                                )}
+                                {course.has_videos && (
+                                  <div className="flex items-center gap-1">
+                                    <PlayCircle className="h-4 w-4 text-indigo-500" />
+                                    {course.video_count} видео
+                                  </div>
+                                )}
+                                {course.has_audio && (
+                                  <div className="flex items-center gap-1">
+                                    <Volume2 className="h-4 w-4 text-red-500" />
+                                    Аудио
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-2xl font-bold text-gray-900">{course.progress}%</p>
+                              <p className="text-sm text-gray-600">Завершено</p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-gray-900">{course.progress}%</p>
-                            <p className="text-sm text-gray-600">Завершено</p>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2 mb-4">
+                            <div className="flex justify-between text-sm">
+                              <span>Прогресс курса</span>
+                              <span>{course.progress}%</span>
+                            </div>
+                            <Progress value={course.progress} className="h-2" />
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2 mb-4">
-                          <div className="flex justify-between text-sm">
-                            <span>Прогресс курса</span>
-                            <span>{course.progress}%</span>
+                          <div className="flex gap-2">
+                            <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
+                              <a href={`/download/${course.id}`} target="_blank" rel="noopener noreferrer">
+                                <PlayCircle className="h-4 w-4 mr-2" />
+                                Открыть курс
+                              </a>
+                            </Button>
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={`/courses/${course.id}`} target="_blank" rel="noopener noreferrer">
+                                <BookOpen className="h-4 w-4 mr-2" />
+                                Просмотр
+                              </a>
+                            </Button>
                           </div>
-                          <Progress value={course.progress} className="h-2" />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
-                            <a href={`/download/${course.id}`} target="_blank" rel="noopener noreferrer">
-                              <PlayCircle className="h-4 w-4 mr-2" />
-                              Открыть курс
-                            </a>
-                          </Button>
-                          <Button size="sm" variant="outline" asChild>
-                            <a href={`/courses/${course.id}`} target="_blank" rel="noopener noreferrer">
-                              <BookOpen className="h-4 w-4 mr-2" />
-                              Просмотр
-                            </a>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyCoursesAnimation />
+                )}
               </TabsContent>
 
               {/* Достижения */}
@@ -1518,6 +1542,10 @@ export default function DashboardPage() {
                   </Card>
                 </div>
                 <UserIssuesList />
+              </TabsContent>
+
+              <TabsContent value="callbacks" className="space-y-6">
+                <UserCallbacksWithReplies userId={user.id} />
               </TabsContent>
             </Tabs>
           </div>

@@ -8,12 +8,13 @@ import {
     validateSessionToken
 } from '@/lib/session'
 import { verifyRequestOrigin } from '@/lib/security'
+import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
     try {
         const cookieStore = await cookies()
         const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
-        const validation = await validateSessionToken(sessionToken)
+        const validation = await validateSessionToken(sessionToken, { supabase: getSupabaseAdmin() })
 
         if (!validation.session || !validation.user) {
             const response = NextResponse.json({
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
 
         const cookieStore = await cookies()
         const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
-        const validation = await validateSessionToken(sessionToken)
+        const validation = await validateSessionToken(sessionToken, { supabase: getSupabaseAdmin() })
 
         if (!validation.session || !validation.user) {
             const response = NextResponse.json({ success: false, error: getSessionErrorMessage(validation.reason) }, { status: 401 })

@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
 
         const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID
         const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
+        const redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI || 'http://localhost:3001/api/auth/oauth/google/callback'
 
         if (!clientId || !clientSecret) {
             console.error('Google OAuth env vars missing')
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
                 code,
                 client_id: clientId,
                 client_secret: clientSecret,
-                redirect_uri: 'postmessage',
+                redirect_uri: redirectUri,
                 grant_type: 'authorization_code'
             })
         })

@@ -38,8 +38,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Сохранение заявки в базу данных
-    // Триггер автоматически создаст или свяжет пользователя
     const supabase = getSupabaseAdmin()
+
+    // Сначала проверяем, существует ли пользователь
+    let existingUserId = null
+    if (email) {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email.trim())
+        .single()
+
+      if (existingUser) {
+        existingUserId = existingUser.id
+        console.log(`Найден существующий пользователь: ${existingUserId}`)
+      }
+    }
+
+    // Создаем заявку с привязкой к существующему пользователю или без неё
     const { data, error } = await supabase
       .from('callback_requests')
       .insert([
@@ -55,7 +71,9 @@ export async function POST(request: NextRequest) {
           notes: notes || null,
           source: 'website',
           status: 'new',
-          priority: 'medium'
+          user_id: existingUserId, // Привязываем к существующему пользователю если найден
+          auto_created_user: false, // Не создаем нового пользователя
+          user_credentials_sent: false
         }
       ])
       .select()
@@ -69,13 +87,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
-
-    // Синхронизация с Google Sheets (отключена для тестирования)
-    // try {
-    //   await addToSheets('request', data)
-    // } catch (sheetsError) {
-    //   console.error('Google Sheets sync error:', sheetsError)
-    // }
 
     // Отправка уведомления в Telegram (в тему Callbacks)
     const telegramMessage = `🆕 Новая заявка из CRM-системы:\n` +
@@ -91,10 +102,53 @@ export async function POST(request: NextRequest) {
       console.error('Telegram callback notify error:', e)
     )
 
+    // Создаем уведомление для администратора о новой заявке
+    if (data.id) {
+      try {
+        await supabase
+          .from('callback_notifications')
+          .insert([
+            {
+              callback_request_id: data.id,
+              user_id: data.user_id,
+              notification_type: 'new_callback_request',
+              channel: 'telegram',
+              status: 'pending',
+              metadata: {
+                user_name: data.name,
+                user_email: data.email,
+                user_phone: data.phone,
+                product_type: data.product_type,
+                message: data.message
+              }
+            }
+          ])
+      } catch (error) {
+        console.error('Error creating admin notification:', error)
+        // Не прерываем выполнение, если не удалось создать уведомление
+      }
+    }
+
+    // Определяем, нужно ли пользователю зарегистрироваться
+    // Проверяем по результату создания заявки, а не по исходной проверке
+    const needsRegistration = !data.user_id && !!email
+
+    console.log('Callback API Debug:', {
+      data: data,
+      user_id: data.user_id,
+      email: email,
+      needsRegistration: needsRegistration,
+      userExists: !!data.user_id
+    })
+
     return NextResponse.json({
       success: true,
-      message: 'Заявка успешно отправлена',
-      data: data
+      message: needsRegistration ? 'Заявка отправлена. Для отслеживания статуса необходимо зарегистрироваться.' : 'Заявка успешно отправлена',
+      data: {
+        ...data,
+        needs_registration: needsRegistration,
+        user_exists: !!data.user_id
+      }
     })
 
   } catch (error) {

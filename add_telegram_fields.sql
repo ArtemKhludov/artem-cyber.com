@@ -4,7 +4,8 @@ ADD COLUMN IF NOT EXISTS telegram_username VARCHAR(255),
 ADD COLUMN IF NOT EXISTS telegram_chat_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS notify_email_enabled BOOLEAN DEFAULT true,
 ADD COLUMN IF NOT EXISTS notify_telegram_enabled BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS notify_policy JSONB DEFAULT '{}';
+ADD COLUMN IF NOT EXISTS notify_policy JSONB DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS created_from_callback BOOLEAN DEFAULT false;
 
 -- Добавляем индексы для быстрого поиска
 CREATE INDEX IF NOT EXISTS idx_users_telegram_chat_id ON users(telegram_chat_id);

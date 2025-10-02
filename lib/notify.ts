@@ -212,6 +212,35 @@ export async function sendEmail(options: EmailOptions) {
     }
 }
 
+export async function notifyUserEmail({
+    to,
+    subject,
+    html,
+    text
+}: {
+    to: string
+    subject: string
+    html: string
+    text: string
+}): Promise<void> {
+    try {
+        const result = await sendEmail({
+            to,
+            subject,
+            html,
+            text
+        })
+
+        if (!result.ok) {
+            console.error('Email sending failed:', result.reason)
+        } else {
+            console.log('Email sent successfully')
+        }
+    } catch (error) {
+        console.error('Email notification error:', error)
+    }
+}
+
 // Функция для отправки уведомлений пользователям в Telegram
 export async function notifyUserTelegram(userId: string, message: string, issueId?: string): Promise<{ ok: boolean; error?: string }> {
     try {
