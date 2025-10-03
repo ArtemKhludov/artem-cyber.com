@@ -209,27 +209,30 @@ function LoginForm() {
   }, [initializeGoogleClient])
 
   const handleGoogleAuth = () => {
-    if (!googleCodeClientRef.current) {
-      if (!window.google) {
-        setError('Скрипт Google не загрузился. Попробуйте позже.')
-      } else {
-        initializeGoogleClient()
-        if (!googleCodeClientRef.current) {
-          setError('Не удалось инициализировать Google OAuth')
-        }
-      }
+    // Используем redirect flow вместо popup для продакшна
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId) {
+      setError('Google OAuth не настроен')
       return
     }
-
-    setError('')
-    setLoading(true)
-    try {
-      googleCodeClientRef.current.requestCode()
-    } catch (error) {
-      console.error('Google requestCode failed:', error)
-      setLoading(false)
-      setError('Не удалось открыть окно Google')
-    }
+    
+    const redirectUri = encodeURIComponent('https://www.energylogic-ai.com/api/auth/oauth/google/callback')
+    const scope = encodeURIComponent('openid email profile')
+    const state = encodeURIComponent(JSON.stringify({ 
+      source: 'login',
+      redirect: searchParams.get('redirect') || '/dashboard'
+    }))
+    
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${clientId}&` +
+      `redirect_uri=${redirectUri}&` +
+      `scope=${scope}&` +
+      `response_type=code&` +
+      `state=${state}&` +
+      `access_type=offline&` +
+      `prompt=consent`
+    
+    window.location.href = googleAuthUrl
   }
 
   return (

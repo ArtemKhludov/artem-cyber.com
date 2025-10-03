@@ -108,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const lastActivityRef = useRef<number>(Date.now())
   const lastPingRef = useRef<number>(0)
   const pingInFlightRef = useRef(false)
+  const checkInFlightRef = useRef(false)
 
   const recordActivity = useCallback(() => {
     lastActivityRef.current = Date.now()
@@ -131,6 +132,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const checkSession = useCallback(async (redirectOnFail = true) => {
+    if (checkInFlightRef.current) {
+      return
+    }
+
+    checkInFlightRef.current = true
     try {
       const response = await fetch('/api/auth/me', {
         credentials: 'include',
@@ -163,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null)
     } finally {
       setLoading(false)
+      checkInFlightRef.current = false
     }
   }, [])
 
@@ -194,7 +201,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const timeSinceActivity = now - lastActivityRef.current
       const timeSincePing = now - lastPingRef.current
 
-      if (timeSinceActivity < IDLE_TIMEOUT && timeSincePing >= ACTIVITY_PING_INTERVAL) {
+      // Проверяем, что пользователь все еще авторизован
+      if (user && timeSinceActivity < IDLE_TIMEOUT && timeSincePing >= ACTIVITY_PING_INTERVAL) {
         void pingSession()
       }
     }, 60 * 1000)
