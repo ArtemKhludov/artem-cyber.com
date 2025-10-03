@@ -145,10 +145,12 @@ export function AboutSection({ onCallRequest }: AboutSectionProps) {
                     // YouTube embed или заглушка видео
                     <iframe
                       className="w-full h-full"
-                      src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0"
+                      src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1&showinfo=0&enablejsapi=0"
                       title="EnergyLogic - Как это работает"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
+                      loading="lazy"
+                      sandbox="allow-scripts allow-same-origin allow-presentation"
                     />
                   )}
                 </div>
