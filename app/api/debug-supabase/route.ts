@@ -44,10 +44,37 @@ export async function GET(request: NextRequest) {
         
         console.log('✅ User_sessions table accessible')
         
-        // Тест 3: Проверяем создание тестовой сессии
-        console.log('📡 Test 3: Creating test session...')
+        // Тест 3: Создаем тестового пользователя
+        console.log('📡 Test 3: Creating test user...')
+        const testUserId = crypto.randomUUID()
+        const testEmail = `debug-test-${Date.now()}@example.com`
+        
+        const { data: userCreate, error: userCreateError } = await supabase
+            .from('users')
+            .insert({
+                id: testUserId,
+                email: testEmail,
+                name: 'Debug Test User',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            })
+            .select()
+            .single()
+        
+        if (userCreateError) {
+            console.error('❌ User creation error:', userCreateError)
+            return NextResponse.json({ 
+                error: 'User creation failed',
+                details: userCreateError.message,
+                code: userCreateError.code
+            }, { status: 500 })
+        }
+        
+        console.log('✅ Test user created')
+        
+        // Тест 4: Проверяем создание тестовой сессии
+        console.log('📡 Test 4: Creating test session...')
         const testSessionToken = crypto.randomUUID()
-        const testUserId = '00000000-0000-0000-0000-000000000000'
         
         const { data: sessionCreate, error: sessionCreateError } = await supabase
             .from('user_sessions')
@@ -76,8 +103,8 @@ export async function GET(request: NextRequest) {
         
         console.log('✅ Session creation successful')
         
-        // Тест 4: Читаем созданную сессию
-        console.log('📡 Test 4: Reading created session...')
+        // Тест 5: Читаем созданную сессию
+        console.log('📡 Test 5: Reading created session...')
         const { data: sessionRead, error: sessionReadError } = await supabase
             .from('user_sessions')
             .select('*')
@@ -95,8 +122,8 @@ export async function GET(request: NextRequest) {
         
         console.log('✅ Session read successful')
         
-        // Тест 5: Удаляем тестовую сессию
-        console.log('📡 Test 5: Cleaning up test session...')
+        // Тест 6: Удаляем тестовую сессию
+        console.log('📡 Test 6: Cleaning up test session...')
         const { error: sessionDeleteError } = await supabase
             .from('user_sessions')
             .delete()
@@ -113,15 +140,35 @@ export async function GET(request: NextRequest) {
         
         console.log('✅ Session cleanup successful')
         
+        // Тест 7: Удаляем тестового пользователя
+        console.log('📡 Test 7: Cleaning up test user...')
+        const { error: userDeleteError } = await supabase
+            .from('users')
+            .delete()
+            .eq('id', testUserId)
+        
+        if (userDeleteError) {
+            console.error('❌ User delete error:', userDeleteError)
+            return NextResponse.json({ 
+                error: 'User delete failed',
+                details: userDeleteError.message,
+                code: userDeleteError.code
+            }, { status: 500 })
+        }
+        
+        console.log('✅ User cleanup successful')
+        
         return NextResponse.json({
             success: true,
             message: 'All Supabase tests passed',
             tests: {
                 users_table: '✅ Accessible',
-                user_sessions_table: '✅ Accessible', 
+                user_sessions_table: '✅ Accessible',
+                user_create: '✅ Successful',
                 session_create: '✅ Successful',
                 session_read: '✅ Successful',
-                session_delete: '✅ Successful'
+                session_delete: '✅ Successful',
+                user_delete: '✅ Successful'
             },
             environment: {
                 node_env: process.env.NODE_ENV,
