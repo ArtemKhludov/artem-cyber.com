@@ -189,12 +189,17 @@ export async function GET(request: NextRequest) {
         const cookieStore = await cookies()
         const durations = getSessionDurations(true)
         
+        const isProduction = process.env.NODE_ENV === 'production' || 
+                            process.env.VERCEL === '1' || 
+                            request.url.includes('energylogic-ai.com')
+        
         const cookieOptions = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: isProduction,
             sameSite: 'lax' as const,
             maxAge: Math.floor(durations.absoluteMs / 1000),
-            path: '/'
+            path: '/',
+            domain: isProduction ? '.energylogic-ai.com' : undefined
         }
         
         console.log(`🍪 Устанавливаем cookie: ${SESSION_COOKIE_NAME}=${sessionToken}`)
@@ -212,8 +217,18 @@ export async function GET(request: NextRequest) {
         
         console.log(`🔄 Перенаправляем на: ${redirectUrl}`)
         console.log(`🔄 State data:`, stateData)
+        console.log(`🔄 Cookie установлен: ${SESSION_COOKIE_NAME}=${sessionToken}`)
+        console.log(`🔄 Cookie options:`, cookieOptions)
         
-        return NextResponse.redirect(new URL(redirectUrl, request.url))
+        // Создаем response с редиректом
+        const response = NextResponse.redirect(new URL(redirectUrl, request.url))
+        
+        // Устанавливаем cookie в response
+        response.cookies.set(SESSION_COOKIE_NAME, sessionToken, cookieOptions)
+        
+        console.log(`✅ Google OAuth callback завершен успешно`)
+        
+        return response
 
     } catch (error) {
         console.error('Google OAuth callback error:', error)
