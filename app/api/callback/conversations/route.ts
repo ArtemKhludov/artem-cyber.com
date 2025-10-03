@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
         const callbackRequestId = searchParams.get('callback_request_id')
-        
+
         if (!callbackRequestId) {
             return NextResponse.json(
                 { error: 'ID обращения обязателен' },
@@ -142,11 +142,11 @@ export async function POST(request: NextRequest) {
         const notificationData = {
             callback_request_id,
             user_id: isAdmin ? callbackRequest.user_id : null,
-            notification_type: isAdmin ? 'admin_reply' : 'user_message',
+            notification_type: isAdmin ? 'new_reply' : 'user_message',
             channel: 'email',
             status: 'pending',
             metadata: {
-                message: message.trim(),
+                reply_message: message.trim(),
                 sender_name: user.name,
                 sender_type: isAdmin ? 'admin' : 'user'
             }
