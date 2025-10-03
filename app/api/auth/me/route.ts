@@ -14,9 +14,20 @@ export async function GET(request: NextRequest) {
     try {
         const cookieStore = await cookies()
         const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
+        
+        console.log(`🔍 /api/auth/me - Session token: ${sessionToken ? 'Present' : 'Missing'}`)
+        
         const validation = await validateSessionToken(sessionToken, { supabase: getSupabaseAdmin() })
+        
+        console.log(`🔍 /api/auth/me - Validation result:`, {
+            hasSession: !!validation.session,
+            hasUser: !!validation.user,
+            reason: validation.reason
+        })
 
         if (!validation.session || !validation.user) {
+            console.log(`❌ /api/auth/me - Session validation failed: ${validation.reason}`)
+            
             const response = NextResponse.json({
                 error: getSessionErrorMessage(validation.reason)
             }, { status: 401 })
@@ -27,6 +38,8 @@ export async function GET(request: NextRequest) {
 
             return response
         }
+        
+        console.log(`✅ /api/auth/me - Session valid for user: ${validation.user.email}`)
 
         const response = NextResponse.json({
             ...validation.user,

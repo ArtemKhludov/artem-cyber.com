@@ -98,6 +98,8 @@ export async function GET(request: NextRequest) {
         let userId: string
 
         if (existingUser) {
+            console.log(`✅ Пользователь уже существует: ${existingUser.email}`)
+            
             // Update existing user with Google ID
             const { data: updatedUser, error: updateError } = await supabase
                 .from('users')
@@ -116,7 +118,10 @@ export async function GET(request: NextRequest) {
             }
 
             userId = updatedUser.id
+            console.log(`✅ Пользователь обновлен, ID: ${userId}`)
         } else {
+            console.log(`🆕 Создаем нового пользователя: ${email}`)
+            
             // Create new user
             const userName = stateData?.name || name || email.split('@')[0]
             const userPhone = stateData?.phone || null
@@ -142,22 +147,60 @@ export async function GET(request: NextRequest) {
             }
 
             userId = newUser.id
+            
+            // Отправляем уведомление в Telegram о новой регистрации
+            try {
+                const telegramMessage = `🆕 Новый пользователь зарегистрирован через Google OAuth:
+👤 Имя: ${newUser.name}
+📧 Email: ${newUser.email}
+📞 Телефон: ${newUser.phone || 'Не указан'}
+🔐 Тип регистрации: Google OAuth
+✅ Email верифицирован: Да
+📅 Дата: ${new Date().toLocaleString('ru-RU')}`
+
+                const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: process.env.TELEGRAM_CHAT_ID,
+                        text: telegramMessage,
+                        parse_mode: 'HTML'
+                    })
+                })
+
+                if (!response.ok) {
+                    console.error('Telegram notification failed:', await response.text())
+                } else {
+                    console.log('✅ Telegram уведомление отправлено')
+                }
+            } catch (telegramError) {
+                console.error('Telegram error:', telegramError)
+            }
         }
 
         // Create session
+        console.log(`🔐 Создаем сессию для пользователя ID: ${userId}`)
         const { sessionToken, expiresAt } = await createSession(userId, request)
+        console.log(`✅ Сессия создана: ${sessionToken}`)
 
         // Set session cookie
         const cookieStore = await cookies()
         const durations = getSessionDurations(true)
         
-        cookieStore.set(SESSION_COOKIE_NAME, sessionToken, {
+        const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: 'lax' as const,
             maxAge: Math.floor(durations.absoluteMs / 1000),
             path: '/'
-        })
+        }
+        
+        console.log(`🍪 Устанавливаем cookie: ${SESSION_COOKIE_NAME}=${sessionToken}`)
+        console.log(`🍪 Cookie options:`, cookieOptions)
+        
+        cookieStore.set(SESSION_COOKIE_NAME, sessionToken, cookieOptions)
 
         // Redirect based on source and redirect parameter
         let redirectUrl = '/dashboard'
@@ -166,6 +209,10 @@ export async function GET(request: NextRequest) {
         } else if (stateData?.source === 'modal') {
             redirectUrl = '/dashboard'
         }
+        
+        console.log(`🔄 Перенаправляем на: ${redirectUrl}`)
+        console.log(`🔄 State data:`, stateData)
+        
         return NextResponse.redirect(new URL(redirectUrl, request.url))
 
     } catch (error) {
@@ -180,25 +227,30 @@ async function createSession(userId: string, request: NextRequest) {
     const userAgent = getUserAgent(request)
     const durations = getSessionDurations(true)
     const expiresAt = new Date(Date.now() + durations.absoluteMs)
+    const sessionToken = crypto.randomUUID()
 
     const { data: session, error } = await supabase
         .from('user_sessions')
         .insert({
             user_id: userId,
+            session_token: sessionToken,
+            expires_at: expiresAt.toISOString(),
+            last_activity: new Date().toISOString(),
             ip_address: ip,
             user_agent: userAgent,
-            expires_at: expiresAt.toISOString(),
-            created_at: new Date().toISOString()
+            remember_me: true,
+            csrf_secret: crypto.randomUUID()
         })
         .select()
         .single()
 
     if (error) {
+        console.error('Session creation error:', error)
         throw new Error(`Session creation failed: ${error.message}`)
     }
 
     return {
-        sessionToken: session.id,
+        sessionToken,
         expiresAt
     }
 }
