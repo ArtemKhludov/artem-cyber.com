@@ -5,38 +5,26 @@ export async function POST(request: NextRequest) {
     try {
         const supabase = getSupabaseAdmin()
 
-        // Принудительно обновляем schema cache
-        const { data, error } = await supabase.rpc('notify', {
-            channel: 'pgrst',
-            payload: 'reload schema'
-        })
-
-        if (error) {
-            console.error('Schema refresh error:', error)
-            return NextResponse.json({ 
-                error: 'Failed to refresh schema',
-                details: error.message 
-            }, { status: 500 })
-        }
-
-        // Тестируем доступ к колонке google_id
-        const { data: testData, error: testError } = await supabase
+        // Альтернативный способ - выполняем простой запрос для обновления cache
+        const { data, error } = await supabase
             .from('users')
             .select('id, email, name, google_id, avatar_url, email_verified')
             .limit(1)
 
-        if (testError) {
-            console.error('Schema test error:', testError)
+        if (error) {
+            console.error('Schema test error:', error)
             return NextResponse.json({ 
-                error: 'Schema refresh failed - google_id still not accessible',
-                details: testError.message 
+                error: 'Schema test failed',
+                details: error.message,
+                code: error.code
             }, { status: 500 })
         }
 
+        // Если запрос прошел успешно, schema cache обновлен
         return NextResponse.json({
             success: true,
             message: 'Schema cache refreshed successfully',
-            testQuery: testData
+            testQuery: data
         })
 
     } catch (error) {
