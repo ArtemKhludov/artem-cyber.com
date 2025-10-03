@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Код авторизации не получен' }, { status: 400 })
         }
 
-        const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
         const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
         const redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI || 
           (process.env.NODE_ENV === 'development' 
