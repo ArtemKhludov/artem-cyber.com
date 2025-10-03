@@ -166,8 +166,11 @@ export async function validateSessionToken(
   } = options
 
   if (!sessionToken) {
+    console.log('🔍 validateSessionToken: No session token provided')
     return { reason: 'missing' }
   }
+
+  console.log(`🔍 validateSessionToken: Looking for session token: ${sessionToken}`)
 
   const supabase = getSupabaseClient(providedSupabase)
 
@@ -180,9 +183,17 @@ export async function validateSessionToken(
     .eq('session_token', sessionToken)
     .maybeSingle()
 
-  if (error || !sessionRaw) {
+  if (error) {
+    console.log(`❌ validateSessionToken: Database error:`, error)
     return { reason: 'not_found' }
   }
+
+  if (!sessionRaw) {
+    console.log(`❌ validateSessionToken: Session not found in database`)
+    return { reason: 'not_found' }
+  }
+
+  console.log(`✅ validateSessionToken: Session found for user: ${(sessionRaw.users as any)?.email || 'unknown'}`)
 
   const session = {
     ...sessionRaw,
