@@ -142,3 +142,4 @@ npm run dev
 **Последнее обновление**: Январь 2025  
 **Статус**: ✅ Готов к продакшену
 <!-- Trigger deployment Tue Sep 30 12:13:00 PDT 2025 -->
+# Test deployment
