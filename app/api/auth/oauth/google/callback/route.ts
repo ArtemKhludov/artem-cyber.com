@@ -63,6 +63,12 @@ export async function GET(request: NextRequest) {
         if (!tokenResponse.ok) {
             const errorText = await tokenResponse.text()
             console.error('Google token exchange failed:', tokenResponse.status, errorText)
+            console.error('Request details:', {
+                client_id: clientId,
+                redirect_uri: redirectUri,
+                grant_type: 'authorization_code',
+                code: code?.substring(0, 20) + '...'
+            })
             return NextResponse.redirect(new URL('/auth/login?error=token_exchange_failed', request.url))
         }
 
