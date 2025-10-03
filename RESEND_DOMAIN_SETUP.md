@@ -109,7 +109,7 @@ TTL: Automatic
 После верификации домена обновите переменные окружения:
 
 ```env
-NOTIFY_SENDER_EMAIL=noreply@energylogic-ai.com
+NOTIFY_SENDER_EMAIL=no-reply@energylogic-ai.com
 ```
 
 ### Тестирование отправки

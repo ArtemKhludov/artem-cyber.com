@@ -97,7 +97,7 @@ export const config = {
   
   // Email
   email: {
-    fromEmail: process.env.NOTIFY_SENDER_EMAIL || 'noreply@energylogic-ai.com',
+    fromEmail: process.env.NOTIFY_SENDER_EMAIL || 'no-reply@energylogic-ai.com',
     fromName: process.env.NOTIFY_SENDER_NAME || 'EnergyLogic AI'
   }
 }

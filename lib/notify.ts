@@ -188,7 +188,7 @@ type EmailOptions = {
 
 export async function sendEmail(options: EmailOptions) {
     const apiKey = process.env.RESEND_API_KEY
-    const sender = options.from || process.env.NOTIFY_SENDER_EMAIL || 'no-reply@example.com'
+    const sender = options.from || process.env.NOTIFY_SENDER_EMAIL || 'no-reply@energylogic-ai.com'
     if (!apiKey) return { ok: false, reason: 'no_email_env' }
     try {
         const res = await fetch('https://api.resend.com/emails', {
