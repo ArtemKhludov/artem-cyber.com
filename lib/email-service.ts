@@ -22,7 +22,7 @@ class EmailService {
   constructor() {
     this.config = {
       apiKey: process.env.RESEND_API_KEY || '',
-      fromEmail: process.env.NOTIFY_SENDER_EMAIL || 'noreply@energylogic.com',
+      fromEmail: process.env.NOTIFY_SENDER_EMAIL || 'no-reply@energylogic-ai.com',
       fromName: 'EnergyLogic',
       baseUrl: process.env.NEXT_PUBLIC_APP_URL ||
         process.env.NEXT_PUBLIC_SITE_URL ||
