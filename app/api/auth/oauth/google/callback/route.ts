@@ -156,8 +156,13 @@ export async function GET(request: NextRequest) {
             path: '/'
         })
 
-        // Redirect based on source
-        const redirectUrl = stateData?.source === 'modal' ? '/dashboard' : '/dashboard'
+        // Redirect based on source and redirect parameter
+        let redirectUrl = '/dashboard'
+        if (stateData?.redirect) {
+            redirectUrl = stateData.redirect
+        } else if (stateData?.source === 'modal') {
+            redirectUrl = '/dashboard'
+        }
         return NextResponse.redirect(new URL(redirectUrl, request.url))
 
     } catch (error) {
