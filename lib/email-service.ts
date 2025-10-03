@@ -1,8 +1,8 @@
 // Сервис для отправки email уведомлений через Resend
 
-import { 
-  getWelcomeEmailTemplate, 
-  getCallbackReplyEmailTemplate, 
+import {
+  getWelcomeEmailTemplate,
+  getCallbackReplyEmailTemplate,
   getCallbackStatusEmailTemplate,
   type UserWelcomeData,
   type CallbackReplyData,
@@ -24,7 +24,11 @@ class EmailService {
       apiKey: process.env.RESEND_API_KEY || '',
       fromEmail: process.env.NOTIFY_SENDER_EMAIL || 'noreply@energylogic.com',
       fromName: 'EnergyLogic',
-      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      baseUrl: process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        (process.env.NODE_ENV === 'development'
+          ? 'http://localhost:3000'
+          : 'https://www.energylogic-ai.com')
     };
   }
 
