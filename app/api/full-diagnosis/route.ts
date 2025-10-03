@@ -20,7 +20,9 @@ export async function GET(request: NextRequest) {
         },
         tests: {} as any,
         errors: [] as string[],
-        warnings: [] as string[]
+        warnings: [] as string[],
+        summary: {} as any,
+        recommendations: [] as string[]
     }
 
     try {
