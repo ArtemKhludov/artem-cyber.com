@@ -80,12 +80,12 @@ export async function POST(
           {
             callback_request_id: id,
             user_id: callback.user_id,
-            notification_type: 'callback_reply',
+            notification_type: 'new_reply',
             channel: 'email',
             status: 'pending',
             metadata: {
               admin_name: admin_name || validation.validation.user.name || 'Администратор',
-              message: message.trim(),
+              reply_message: message.trim(),
               reply_id: reply.id
             }
           }
@@ -100,12 +100,12 @@ export async function POST(
           {
             callback_request_id: id,
             user_id: callback.user_id,
-            notification_type: 'callback_reply',
+            notification_type: 'new_reply',
             channel: 'telegram',
             status: 'pending',
             metadata: {
               admin_name: admin_name || validation.validation.user.name || 'Администратор',
-              message: message.trim(),
+              reply_message: message.trim(),
               reply_id: reply.id
             }
           }
@@ -115,7 +115,7 @@ export async function POST(
     // Обновляем статус заявки на "отвечено"
     await supabase
       .from('callback_requests')
-      .update({ 
+      .update({
         status: 'replied',
         last_contacted_at: new Date().toISOString()
       })

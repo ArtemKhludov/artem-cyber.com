@@ -215,18 +215,18 @@ function LoginForm() {
       setError('Google OAuth не настроен')
       return
     }
-    
+
     const redirectUri = encodeURIComponent(
-      process.env.NODE_ENV === 'development' 
+      process.env.NODE_ENV === 'development'
         ? 'http://localhost:3000/api/auth/oauth/google/callback'
         : 'https://www.energylogic-ai.com/api/auth/oauth/google/callback'
     )
     const scope = encodeURIComponent('openid email profile')
-    const state = encodeURIComponent(JSON.stringify({ 
+    const state = encodeURIComponent(JSON.stringify({
       source: 'login',
       redirect: searchParams.get('redirect') || '/dashboard'
     }))
-    
+
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${clientId}&` +
       `redirect_uri=${redirectUri}&` +
@@ -235,7 +235,7 @@ function LoginForm() {
       `state=${state}&` +
       `access_type=offline&` +
       `prompt=consent`
-    
+
     window.location.href = googleAuthUrl
   }
 
@@ -368,9 +368,9 @@ function LoginForm() {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link href="/auth/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                   Забыли пароль?
-                </a>
+                </Link>
               </div>
             </div>
 

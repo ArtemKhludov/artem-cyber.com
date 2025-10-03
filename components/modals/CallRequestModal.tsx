@@ -56,25 +56,26 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Ошибка отправки заявки')
+        // Проверяем, требуется ли регистрация
+        if (result.needs_registration) {
+          // Показываем форму регистрации в модальном окне
+          setRegistrationData(prev => ({
+            ...prev,
+            name: formData.name
+          }))
+          setShowRegistration(true)
+          return
+        } else {
+          throw new Error(result.message || result.error || 'Ошибка отправки заявки')
+        }
       }
 
       setIsSubmitted(true)
 
-      // Проверяем, нужно ли пользователю зарегистрироваться
-      if (result.data?.needs_registration) {
-        // Показываем форму регистрации в модальном окне
-        setRegistrationData(prev => ({
-          ...prev,
-          name: formData.name
-        }))
-        setShowRegistration(true)
-      } else {
-        // Показываем анимацию загрузки через 2 секунды
-        setTimeout(() => {
-          setShowRedirect(true)
-        }, 2000)
-      }
+      // Показываем анимацию загрузки через 2 секунды
+      setTimeout(() => {
+        setShowRedirect(true)
+      }, 2000)
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка')
@@ -176,7 +177,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
     }
 
     const redirectUri = encodeURIComponent(
-      process.env.NODE_ENV === 'development' 
+      process.env.NODE_ENV === 'development'
         ? 'http://localhost:3000/api/auth/oauth/google/callback'
         : 'https://www.energylogic-ai.com/api/auth/oauth/google/callback'
     )
@@ -542,7 +543,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
 
                 <div className="space-y-2">
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
-                    Email (необязательно)
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <div className="relative group">
                     <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
@@ -552,6 +553,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
+                      required
                       className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 bg-white hover:bg-gray-50"
                       placeholder="your@email.com"
                     />

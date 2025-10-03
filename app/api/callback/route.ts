@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { notifyCallbackTelegram } from '@/lib/notify'
+import { sendEmail } from '@/lib/email-service'
+import { getCallbackConfirmationEmailTemplate } from '@/lib/email-templates'
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,9 +10,9 @@ export async function POST(request: NextRequest) {
     const { name, phone, email, preferred_time, message, source_page, product_type, product_name, notes } = body
 
     // Валидация обязательных полей
-    if (!name || (!phone && product_type !== 'chat_message')) {
+    if (!name || (!phone && product_type !== 'chat_message') || !email) {
       return NextResponse.json(
-        { error: 'Имя и телефон обязательны' },
+        { error: 'Имя, телефон и email обязательны' },
         { status: 400 }
       )
     }
@@ -129,25 +131,93 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Определяем, нужно ли пользователю зарегистрироваться
-    // Проверяем по результату создания заявки, а не по исходной проверке
-    const needsRegistration = !data.user_id && !!email
+    // ОБЯЗАТЕЛЬНАЯ РЕГИСТРАЦИЯ: Если пользователь не найден, возвращаем ошибку
+    if (!data.user_id && email) {
+      console.log('Callback API: User not found, registration required')
+      return NextResponse.json({
+        success: false,
+        needs_registration: true,
+        message: 'Для создания заявки необходимо зарегистрироваться. У вас уже есть аккаунт? Войдите в систему.',
+        data: {
+          email: email,
+          name: name,
+          phone: phone,
+          message: message,
+          preferred_time: preferred_time,
+          source_page: source_page,
+          product_type: product_type,
+          product_name: product_name,
+          notes: notes
+        }
+      }, { status: 400 })
+    }
+
+    // Если пользователь не предоставил email, тоже требуем регистрацию
+    if (!email) {
+      return NextResponse.json({
+        success: false,
+        needs_registration: true,
+        message: 'Для создания заявки необходимо указать email и зарегистрироваться. Это позволит вам отслеживать статус заявки и общаться со специалистами.',
+        data: {
+          name: name,
+          phone: phone,
+          message: message,
+          preferred_time: preferred_time,
+          source_page: source_page,
+          product_type: product_type,
+          product_name: product_name,
+          notes: notes
+        }
+      }, { status: 400 })
+    }
+
+    // Отправляем письмо подтверждения заявки
+    if (data.user_id && email) {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ||
+          process.env.NEXT_PUBLIC_APP_URL ||
+          (process.env.NODE_ENV === 'development'
+            ? 'http://localhost:3000'
+            : 'https://www.energylogic-ai.com')
+
+        const emailContent = getCallbackConfirmationEmailTemplate({
+          name: data.name,
+          email: data.email,
+          callbackId: data.id,
+          message: data.message || '',
+          phone: data.phone,
+          preferredTime: data.preferred_time || '',
+          dashboardUrl: `${baseUrl}/dashboard`,
+          loginUrl: `${baseUrl}/auth/login`
+        })
+
+        await sendEmail({
+          to: data.email,
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text
+        })
+
+        console.log(`Callback confirmation email sent to ${data.email}`)
+      } catch (emailError) {
+        console.error('Error sending callback confirmation email:', emailError)
+        // Не прерываем выполнение, если не удалось отправить email
+      }
+    }
 
     console.log('Callback API Debug:', {
       data: data,
       user_id: data.user_id,
       email: email,
-      needsRegistration: needsRegistration,
       userExists: !!data.user_id
     })
 
     return NextResponse.json({
       success: true,
-      message: needsRegistration ? 'Заявка отправлена. Для отслеживания статуса необходимо зарегистрироваться.' : 'Заявка успешно отправлена',
+      message: 'Заявка успешно отправлена и добавлена в ваш личный кабинет',
       data: {
         ...data,
-        needs_registration: needsRegistration,
-        user_exists: !!data.user_id
+        user_exists: true
       }
     })
 

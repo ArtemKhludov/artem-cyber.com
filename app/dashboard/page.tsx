@@ -46,6 +46,7 @@ import { UserCallbacksWithReplies } from '@/components/dashboard/UserCallbacksWi
 import { CallbacksSection } from '@/components/dashboard/CallbacksSection'
 import { PhonePromptModal } from '@/components/auth/PhonePromptModal'
 import { EmptyCoursesAnimation } from '@/components/dashboard/EmptyCoursesAnimation'
+import { TelegramConnectPrompt } from '@/components/dashboard/TelegramConnectPrompt'
 
 type PurchaseStatus =
   | 'completed'
@@ -211,6 +212,7 @@ export default function DashboardPage() {
   const [menuOffset, setMenuOffset] = useState(96)
   const [showPhonePrompt, setShowPhonePrompt] = useState(false)
   const [userPhone, setUserPhone] = useState<string | null>(null)
+  const [showTelegramPrompt, setShowTelegramPrompt] = useState(false)
 
   const track = useCallback((event: string, props?: Record<string, unknown>) => {
     const ph = initPostHog()
@@ -334,6 +336,14 @@ export default function DashboardPage() {
         // Показываем модалку только если телефона нет и это первый вход
         if (!userData.phone && !localStorage.getItem('phone_prompt_dismissed')) {
           setShowPhonePrompt(true)
+        }
+
+        // Показываем Telegram prompt если пользователь не подключил Telegram
+        if (!userData.telegram_username && !localStorage.getItem('telegram_prompt_dismissed')) {
+          // Показываем с задержкой после загрузки страницы
+          setTimeout(() => {
+            setShowTelegramPrompt(true)
+          }, 2000)
         }
       }
     } catch (error) {
@@ -1564,6 +1574,14 @@ export default function DashboardPage() {
         isOpen={showPhonePrompt}
         onSubmit={handlePhoneSubmit}
         onSkip={handlePhoneSkip}
+      />
+      <TelegramConnectPrompt
+        isOpen={showTelegramPrompt}
+        onClose={() => setShowTelegramPrompt(false)}
+        onConnect={() => {
+          // Логика подключения Telegram
+          setShowTelegramPrompt(false)
+        }}
       />
     </MainLayout>
   )

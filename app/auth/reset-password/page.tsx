@@ -2,28 +2,53 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Key, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, Lock, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react'
 
 function ResetPasswordContent() {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const token = searchParams.get('token')
-
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+    const [isValidating, setIsValidating] = useState(true)
+    const [isSuccess, setIsSuccess] = useState(false)
+    const [error, setError] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState('')
-    const [isSuccess, setIsSuccess] = useState(false)
+    const [token, setToken] = useState('')
+    const router = useRouter()
+    const searchParams = useSearchParams()
 
     useEffect(() => {
-        if (!token) {
-            router.push('/auth/login')
+        const tokenParam = searchParams.get('token')
+        if (!tokenParam) {
+            setError('Токен восстановления не найден')
+            setIsValidating(false)
+            return
         }
-    }, [token, router])
+
+        setToken(tokenParam)
+        validateToken(tokenParam)
+    }, [searchParams])
+
+    const validateToken = async (token: string) => {
+        try {
+            const response = await fetch(`/api/auth/reset-password?token=${token}`)
+            const data = await response.json()
+
+            if (!response.ok) {
+                setError(data.error || 'Недействительный токен')
+            }
+        } catch (error) {
+            setError('Ошибка при проверке токена')
+        } finally {
+            setIsValidating(false)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -42,7 +67,7 @@ function ResetPasswordContent() {
         setIsLoading(true)
 
         try {
-            const response = await fetch('/api/auth/set-new-password', {
+            const response = await fetch('/api/auth/reset-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -54,177 +79,229 @@ function ResetPasswordContent() {
 
             if (response.ok) {
                 setIsSuccess(true)
-                setTimeout(() => {
-                    router.push('/auth/login')
-                }, 3000)
             } else {
-                setError(data.error || 'Ошибка установки пароля')
+                setError(data.error || 'Произошла ошибка')
             }
         } catch (error) {
-            setError('Ошибка сети. Попробуйте позже.')
+            setError('Произошла ошибка при сбросе пароля')
         } finally {
             setIsLoading(false)
         }
     }
 
-    if (!token) {
-        return null
+    if (isValidating) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+                <Card className="w-full max-w-md">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center justify-center space-x-2">
+                            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                            <span className="text-gray-600">🤖 ИИ проверяет токен...</span>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
     }
 
     if (isSuccess) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-                <Card className="w-full max-w-md bg-white rounded-xl shadow-2xl border-0 overflow-hidden">
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white">
-                        <div className="flex items-center space-x-3">
-                            <div className="bg-white/20 p-2 rounded-lg">
-                                <CheckCircle size={24} />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold">Пароль изменен!</h1>
-                                <p className="text-white/90 text-sm">Вы успешно установили новый пароль</p>
-                            </div>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                            <CheckCircle className="h-6 w-6 text-green-600" />
                         </div>
-                    </div>
+                        <CardTitle className="text-2xl font-bold text-gray-900">
+                            🎉 Пароль успешно изменен!
+                        </CardTitle>
+                        <CardDescription className="text-gray-600">
+                            ИИ обновил ваши данные безопасности
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Alert>
+                            <CheckCircle className="h-4 w-4" />
+                            <AlertDescription>
+                                Ваш пароль был успешно изменен. Все активные сессии были завершены
+                                для обеспечения безопасности.
+                            </AlertDescription>
+                        </Alert>
 
-                    <div className="p-6 text-center space-y-4">
-                        <div className="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
-                            <CheckCircle size={32} className="text-green-600" />
-                        </div>
-
-                        <div className="space-y-2">
-                            <h2 className="text-lg font-semibold text-gray-900">
-                                Отлично!
-                            </h2>
-                            <p className="text-gray-700">
-                                Ваш пароль успешно изменен. Теперь вы можете войти в систему с новым паролем.
+                        <div className="space-y-3">
+                            <p className="text-sm text-gray-600">
+                                💡 <strong>Интересный факт:</strong> Наш ИИ автоматически отозвал
+                                все ваши активные сессии для максимальной безопасности!
                             </p>
-                        </div>
 
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <p className="text-blue-800 text-sm">
-                                Через несколько секунд вы будете перенаправлены на страницу входа...
-                            </p>
+                            <Button asChild className="w-full">
+                                <Link href="/auth/login">
+                                    🚀 Войти с новым паролем
+                                </Link>
+                            </Button>
                         </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
 
-                        <Button
-                            onClick={() => router.push('/auth/login')}
-                            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                        >
-                            Войти в систему
-                        </Button>
-                    </div>
+    if (error && !token) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-rose-100 p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="text-center">
+                        <CardTitle className="text-2xl font-bold text-gray-900">
+                            ❌ Ошибка
+                        </CardTitle>
+                        <CardDescription className="text-gray-600">
+                            Не удалось загрузить страницу восстановления
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+
+                        <div className="flex flex-col space-y-2">
+                            <Button asChild>
+                                <Link href="/auth/forgot-password">
+                                    Запросить новую ссылку
+                                </Link>
+                            </Button>
+
+                            <Button asChild variant="outline">
+                                <Link href="/auth/login">
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Вернуться к входу
+                                </Link>
+                            </Button>
+                        </div>
+                    </CardContent>
                 </Card>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            <Card className="w-full max-w-md bg-white rounded-xl shadow-2xl border-0 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
-                    <div className="flex items-center space-x-3">
-                        <div className="bg-white/20 p-2 rounded-lg">
-                            <Key size={24} />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold">Новый пароль</h1>
-                            <p className="text-white/90 text-sm">Установите новый пароль для вашего аккаунта</p>
-                        </div>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                        <Lock className="h-6 w-6 text-blue-600" />
                     </div>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    {/* Password */}
-                    <div className="space-y-2">
-                        <label htmlFor="password" className="text-sm font-medium text-gray-700">
-                            Новый пароль
-                        </label>
-                        <div className="relative">
-                            <input
-                                id="password"
-                                type={showPassword ? 'text' : 'password'}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
-                                placeholder="Введите новый пароль"
-                                required
-                                minLength={6}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </button>
+                    <CardTitle className="text-2xl font-bold text-gray-900">
+                        🔐 Новый пароль
+                    </CardTitle>
+                    <CardDescription className="text-gray-600">
+                        Введите новый пароль для вашего аккаунта
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Новый пароль</Label>
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="Минимум 6 символов"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    disabled={isLoading}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Confirm Password */}
-                    <div className="space-y-2">
-                        <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                            Подтвердите пароль
-                        </label>
-                        <div className="relative">
-                            <input
-                                id="confirmPassword"
-                                type={showConfirmPassword ? 'text' : 'password'}
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
-                                placeholder="Подтвердите новый пароль"
-                                required
-                                minLength={6}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </button>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
+                            <div className="relative">
+                                <Input
+                                    id="confirmPassword"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    placeholder="Повторите пароль"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    disabled={isLoading}
+                                >
+                                    {showConfirmPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Error */}
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
-                            <AlertCircle size={16} className="text-red-600 flex-shrink-0" />
-                            <p className="text-red-700 text-sm">{error}</p>
-                        </div>
-                    )}
-
-                    {/* Submit Button */}
-                    <Button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
-                    >
-                        {isLoading ? (
-                            <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                Устанавливаем пароль...
-                            </>
-                        ) : (
-                            <>
-                                <Key size={18} className="mr-2" />
-                                Установить пароль
-                            </>
+                        {error && (
+                            <Alert variant="destructive">
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
                         )}
-                    </Button>
 
-                    {/* Back to Login */}
-                    <div className="text-center">
-                        <button
-                            type="button"
-                            onClick={() => router.push('/auth/login')}
-                            className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
-                        >
-                            Вернуться к входу
-                        </button>
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ИИ обновляет пароль...
+                                </>
+                            ) : (
+                                '🚀 Установить новый пароль'
+                            )}
+                        </Button>
+                    </form>
+
+                    <div className="mt-6 space-y-3">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                    Или
+                                </span>
+                            </div>
+                        </div>
+
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/auth/login">
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Вернуться к входу
+                            </Link>
+                        </Button>
                     </div>
-                </form>
+
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                            💡 <strong>Совет:</strong> Используйте надежный пароль с буквами,
+                            цифрами и специальными символами для максимальной безопасности.
+                        </p>
+                    </div>
+                </CardContent>
             </Card>
         </div>
     )
@@ -233,10 +310,10 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-                <div className="text-center">
-                    <Key className="w-8 h-8 mx-auto mb-4 text-blue-600" />
-                    <p className="text-gray-600">Загрузка...</p>
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Загрузка...</span>
                 </div>
             </div>
         }>
