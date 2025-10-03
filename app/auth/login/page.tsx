@@ -216,7 +216,11 @@ function LoginForm() {
       return
     }
     
-    const redirectUri = encodeURIComponent('https://www.energylogic-ai.com/api/auth/oauth/google/callback')
+    const redirectUri = encodeURIComponent(
+      process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:3000/api/auth/oauth/google/callback'
+        : 'https://www.energylogic-ai.com/api/auth/oauth/google/callback'
+    )
     const scope = encodeURIComponent('openid email profile')
     const state = encodeURIComponent(JSON.stringify({ 
       source: 'login',

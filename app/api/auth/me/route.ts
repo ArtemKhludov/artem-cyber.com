@@ -7,7 +7,7 @@ import {
     getSessionErrorMessage,
     validateSessionToken
 } from '@/lib/session'
-import { verifyRequestOrigin } from '@/lib/security'
+import { verifyRequestOriginSmart } from '@/lib/security'
 import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
@@ -58,13 +58,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
+        // Умная проверка origin для session ping
         try {
-            verifyRequestOrigin(request)
+            verifyRequestOriginSmart(request, {
+                allowSessionPing: true,
+                allowSameDomain: true
+            })
         } catch (error) {
-            if (error instanceof Error) {
-                return NextResponse.json({ error: error.message }, { status: 403 })
-            }
-            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+            console.error('Origin verification failed for session ping:', error)
+            return NextResponse.json({ error: 'Недопустимый источник запроса' }, { status: 403 })
         }
 
         const cookieStore = await cookies()

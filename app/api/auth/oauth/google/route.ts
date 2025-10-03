@@ -7,18 +7,20 @@ import {
     getSessionDurations,
     revokeSessionToken
 } from '@/lib/session'
-import { getClientIp, getUserAgent, verifyRequestOrigin } from '@/lib/security'
+import { getClientIp, getUserAgent, verifyRequestOriginSmart } from '@/lib/security'
 import { google } from 'googleapis'
 
 export async function POST(request: NextRequest) {
     try {
+        // Умная проверка origin для OAuth запросов
         try {
-            verifyRequestOrigin(request)
+            verifyRequestOriginSmart(request, {
+                allowOAuth: true,
+                allowSameDomain: true
+            })
         } catch (error) {
-            if (error instanceof Error) {
-                return NextResponse.json({ error: error.message }, { status: 403 })
-            }
-            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+            console.error('Origin verification failed for OAuth request:', error)
+            return NextResponse.json({ error: 'Недопустимый источник запроса' }, { status: 403 })
         }
 
         const { code, remember = true } = await request.json()
@@ -29,7 +31,10 @@ export async function POST(request: NextRequest) {
 
         const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID
         const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
-        const redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI || 'http://localhost:3001/api/auth/oauth/google/callback'
+        const redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI || 
+          (process.env.NODE_ENV === 'development' 
+            ? 'http://localhost:3000/api/auth/oauth/google/callback'
+            : 'https://www.energylogic-ai.com/api/auth/oauth/google/callback')
 
         if (!clientId || !clientSecret) {
             console.error('Google OAuth env vars missing')

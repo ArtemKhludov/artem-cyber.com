@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabaseAdmin()
-    
+
     // Получаем все pending уведомления
     const { data: notifications, error } = await supabase
       .from('callback_notifications')
@@ -73,7 +73,11 @@ export async function GET(request: NextRequest) {
                 name: notification.users.name,
                 email: notification.users.email,
                 tempPassword: notification.users.temp_password,
-                loginUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/auth/login`
+                loginUrl: `${process.env.NEXT_PUBLIC_SITE_URL ||
+                  process.env.NEXT_PUBLIC_APP_URL ||
+                  (process.env.NODE_ENV === 'development'
+                    ? 'http://localhost:3000'
+                    : 'https://www.energylogic-ai.com')}/auth/login`
               })
               const result = await sendEmail({
                 to: notification.users.email,
@@ -87,14 +91,18 @@ export async function GET(request: NextRequest) {
 
           case 'new_reply':
             if (notification.callback_requests) {
-               const emailContent = emailTemplates.getCallbackReplyEmailTemplate({
-                 name: notification.callback_requests.name,
-                 email: notification.callback_requests.email,
-                 adminName: 'Администратор',
-                 message: notification.metadata?.reply_message || '',
-                 callbackId: notification.callback_request_id,
-                 dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/dashboard`
-               })
+              const emailContent = emailTemplates.getCallbackReplyEmailTemplate({
+                name: notification.callback_requests.name,
+                email: notification.callback_requests.email,
+                adminName: 'Администратор',
+                message: notification.metadata?.reply_message || '',
+                callbackId: notification.callback_request_id,
+                dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL ||
+                  process.env.NEXT_PUBLIC_APP_URL ||
+                  (process.env.NODE_ENV === 'development'
+                    ? 'http://localhost:3000'
+                    : 'https://www.energylogic-ai.com')}/dashboard`
+              })
               const result = await sendEmail({
                 to: notification.callback_requests.email,
                 subject: emailContent.subject,
@@ -132,7 +140,7 @@ export async function GET(request: NextRequest) {
 
       } catch (error) {
         console.error(`Error processing notification ${notification.id}:`, error)
-        
+
         // Помечаем как failed
         await supabase
           .from('callback_notifications')

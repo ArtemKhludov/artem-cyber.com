@@ -158,7 +158,9 @@ function SignupForm() {
     googleCodeClientRef.current = window.google.accounts.oauth2.initCodeClient({
       client_id: clientId,
       scope: 'openid email profile',
-      redirect_uri: 'http://localhost:3001/api/auth/oauth/google/callback',
+      redirect_uri: process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:3000/api/auth/oauth/google/callback'
+        : 'https://www.energylogic-ai.com/api/auth/oauth/google/callback',
       ux_mode: 'redirect',
       callback: handleGoogleCallback
     })
@@ -169,27 +171,37 @@ function SignupForm() {
   }, [initializeGoogleClient])
 
   const handleGoogleAuth = () => {
-    if (!googleCodeClientRef.current) {
-      if (!window.google) {
-        setError('Скрипт Google не загрузился. Попробуйте позже.')
-      } else {
-        initializeGoogleClient()
-        if (!googleCodeClientRef.current) {
-          setError('Не удалось инициализировать Google OAuth')
-        }
-      }
+    // Используем redirect flow вместо popup для продакшна
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId) {
+      setError('Google OAuth не настроен')
       return
     }
 
-    setError('')
-    setLoading(true)
-    try {
-      googleCodeClientRef.current.requestCode()
-    } catch (error) {
-      console.error('Google requestCode failed:', error)
-      setLoading(false)
-      setError('Не удалось открыть окно Google')
-    }
+    const redirectUri = encodeURIComponent(
+      process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:3000/api/auth/oauth/google/callback'
+        : 'https://www.energylogic-ai.com/api/auth/oauth/google/callback'
+    )
+    const scope = encodeURIComponent('openid email profile')
+    const state = encodeURIComponent(JSON.stringify({
+      source: 'signup',
+      redirect: '/dashboard',
+      email: formData.email,
+      name: formData.name,
+      phone: formData.phone
+    }))
+
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${clientId}&` +
+      `redirect_uri=${redirectUri}&` +
+      `scope=${scope}&` +
+      `response_type=code&` +
+      `state=${state}&` +
+      `access_type=offline&` +
+      `prompt=consent`
+
+    window.location.href = googleAuthUrl
   }
 
 

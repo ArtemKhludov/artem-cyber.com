@@ -174,16 +174,20 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
       setError('Google OAuth не настроен')
       return
     }
-    
-    const redirectUri = encodeURIComponent('http://localhost:3001/api/auth/oauth/google/callback')
+
+    const redirectUri = encodeURIComponent(
+      process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:3000/api/auth/oauth/google/callback'
+        : 'https://www.energylogic-ai.com/api/auth/oauth/google/callback'
+    )
     const scope = encodeURIComponent('openid email profile')
-    const state = encodeURIComponent(JSON.stringify({ 
+    const state = encodeURIComponent(JSON.stringify({
       source: 'modal',
       email: formData.email,
       name: formData.name,
       phone: formData.phone
     }))
-    
+
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${clientId}&` +
       `redirect_uri=${redirectUri}&` +
@@ -192,7 +196,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
       `state=${state}&` +
       `access_type=offline&` +
       `prompt=consent`
-    
+
     window.location.href = googleAuthUrl
   }
 

@@ -6,6 +6,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   process.env.APP_URL,
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
   process.env.NODE_ENV !== 'production' ? 'http://localhost:3000' : undefined,
+  process.env.NODE_ENV !== 'production' ? 'http://localhost:3001' : undefined,
 ].filter(Boolean) as string[]
 
 const ORIGIN_CACHE = new Set<string>()
@@ -67,6 +68,86 @@ export function verifyRequestOrigin(request: NextRequest) {
       return
     } catch {
       throw new CsrfError()
+    }
+  }
+
+  // без origin/referer считаем запрос подозрительным
+  throw new CsrfError()
+}
+
+// Умная проверка origin для специальных случаев
+export function verifyRequestOriginSmart(request: NextRequest, options: {
+  allowOAuth?: boolean
+  allowSessionPing?: boolean
+  allowSameDomain?: boolean
+} = {}) {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
+    return
+  }
+
+  const originHeader = request.headers.get('origin')
+  const refererHeader = request.headers.get('referer')
+  const allowedOrigins = getAllowedOrigins()
+  const currentHost = request.headers.get('host')
+
+  // Проверяем origin
+  if (originHeader) {
+    const origin = normalizeOrigin(originHeader)
+
+    // Разрешаем OAuth запросы от Google
+    if (options.allowOAuth && origin === 'https://accounts.google.com') {
+      return
+    }
+
+    // Разрешаем запросы от того же домена
+    if (options.allowSameDomain && currentHost) {
+      const currentOrigin = `https://${currentHost}`
+      if (origin === currentOrigin) {
+        return
+      }
+    }
+
+    // Стандартная проверка
+    if (!allowedOrigins.includes(origin)) {
+      throw new CsrfError()
+    }
+    return
+  }
+
+  // Проверяем referer
+  if (refererHeader) {
+    try {
+      const refererOrigin = new URL(refererHeader).origin
+
+      // Разрешаем OAuth запросы от Google
+      if (options.allowOAuth && refererOrigin === 'https://accounts.google.com') {
+        return
+      }
+
+      // Разрешаем запросы от того же домена
+      if (options.allowSameDomain && currentHost) {
+        const currentOrigin = `https://${currentHost}`
+        if (refererOrigin === currentOrigin) {
+          return
+        }
+      }
+
+      // Стандартная проверка
+      if (!allowedOrigins.includes(refererOrigin)) {
+        throw new CsrfError()
+      }
+      return
+    } catch {
+      throw new CsrfError()
+    }
+  }
+
+  // Для session ping без origin/referer - разрешаем если это запрос от того же домена
+  if (options.allowSessionPing && currentHost) {
+    const userAgent = request.headers.get('user-agent')
+    // Проверяем, что это не подозрительный запрос
+    if (userAgent && !userAgent.includes('bot') && !userAgent.includes('crawler')) {
+      return
     }
   }
 
