@@ -34,30 +34,30 @@ export default function Home() {
         <SessionChecker />
       </Suspense>
       <div className="relative">
-        {/* Основной контент */}
+        {/* Main content */}
         <main>
-          {/* Hero блок */}
+          {/* Hero block */}
           <Hero />
 
-          {/* О проекте */}
+          {/* About project */}
           <AboutSection onCallRequest={handleCallRequest} />
 
-          {/* Карусель программ */}
+          {/* Programs carousel */}
           <ProductCarousel onCallRequest={handleCallRequest} />
 
-          {/* PDF файлы */}
+          {/* PDF files */}
           <PDFCarousel />
 
-          {/* Преимущества */}
+          {/* Advantages */}
           <Advantages />
 
-          {/* Отзывы */}
+          {/* Reviews */}
           <Reviews />
 
-          {/* Форма обратной связи */}
+          {/* Contact form */}
           <ContactForm />
 
-          {/* Юридическая информация */}
+          {/* Legal information */}
           <Legal />
         </main>
 

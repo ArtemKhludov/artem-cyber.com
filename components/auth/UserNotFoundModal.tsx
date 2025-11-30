@@ -39,8 +39,8 @@ export default function UserNotFoundModal({
                             <AlertCircle size={24} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold">Пользователь не найден</h2>
-                            <p className="text-white/90 text-sm">Аккаунт с такими данными не существует</p>
+                            <h2 className="text-xl font-bold">User Not Found</h2>
+                            <p className="text-white/90 text-sm">Account with this data does not exist</p>
                         </div>
                     </div>
                 </div>
@@ -54,7 +54,7 @@ export default function UserNotFoundModal({
                                 <Mail size={16} className="text-orange-600" />
                             </div>
                             <div>
-                                <p className="font-medium text-gray-900">Введенный email</p>
+                                <p className="font-medium text-gray-900">Entered Email</p>
                                 <p className="text-sm text-gray-600">{email}</p>
                             </div>
                         </div>
@@ -63,8 +63,8 @@ export default function UserNotFoundModal({
                     {/* Message */}
                     <div className="text-center space-y-3">
                         <p className="text-gray-700 leading-relaxed">
-                            Пользователь с указанным email не зарегистрирован в системе.
-                            Возможно, вы ошиблись в написании или хотите создать новый аккаунт?
+                            A user with the specified email is not registered in the system.
+                            Perhaps you made a typo or want to create a new account?
                         </p>
                     </div>
 
@@ -75,7 +75,7 @@ export default function UserNotFoundModal({
                             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                         >
                             <UserPlus size={18} className="mr-2" />
-                            Создать новый аккаунт
+                            Create New Account
                         </Button>
 
                         <Button
@@ -84,14 +84,14 @@ export default function UserNotFoundModal({
                             className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3 rounded-lg font-medium transition-all duration-200"
                         >
                             <Mail size={18} className="mr-2" />
-                            Попробовать сбросить пароль
+                            Try Reset Password
                         </Button>
                     </div>
 
                     {/* Help Text */}
                     <div className="text-center">
                         <p className="text-xs text-gray-500">
-                            Если вы уверены, что аккаунт существует, попробуйте сбросить пароль
+                            If you're sure the account exists, try resetting the password
                         </p>
                     </div>
                 </div>

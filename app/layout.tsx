@@ -11,9 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "EnergyLogic - Энергетическая диагностика",
-  description: "ИИ, который знает, кто ты. Психоанализ без масок. 20 минут → PDF-отчёт. 21 день → новое «Я»",
-  keywords: ["энергетика", "диагностика", "психоанализ", "ИИ", "трансформация личности", "консультация"],
+  title: "EnergyLogic - Energy Diagnostics & Personal Transformation",
+  description: "AI that knows who you are. Psychoanalysis without masks. 20 minutes → PDF report. 21 days → new 'You'",
+  keywords: ["energy", "diagnostics", "psychoanalysis", "AI", "personal transformation", "consultation", "self-discovery"],
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <SupabaseProvider>
           <PostHogProvider>

@@ -26,7 +26,7 @@ function ResetPasswordContent() {
     useEffect(() => {
         const tokenParam = searchParams.get('token')
         if (!tokenParam) {
-            setError('Токен восстановления не найден')
+            setError('Recovery token not found')
             setIsValidating(false)
             return
         }
@@ -41,10 +41,10 @@ function ResetPasswordContent() {
             const data = await response.json()
 
             if (!response.ok) {
-                setError(data.error || 'Недействительный токен')
+                setError(data.error || 'Invalid token')
             }
         } catch (error) {
-            setError('Ошибка при проверке токена')
+            setError('Error validating token')
         } finally {
             setIsValidating(false)
         }
@@ -55,12 +55,12 @@ function ResetPasswordContent() {
         setError('')
 
         if (password !== confirmPassword) {
-            setError('Пароли не совпадают')
+            setError('Passwords do not match')
             return
         }
 
         if (password.length < 6) {
-            setError('Пароль должен содержать минимум 6 символов')
+            setError('Password must contain at least 6 characters')
             return
         }
 
@@ -80,10 +80,10 @@ function ResetPasswordContent() {
             if (response.ok) {
                 setIsSuccess(true)
             } else {
-                setError(data.error || 'Произошла ошибка')
+                setError(data.error || 'An error occurred')
             }
         } catch (error) {
-            setError('Произошла ошибка при сбросе пароля')
+            setError('An error occurred while resetting password')
         } finally {
             setIsLoading(false)
         }
@@ -96,7 +96,7 @@ function ResetPasswordContent() {
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-center space-x-2">
                             <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                            <span className="text-gray-600">🤖 ИИ проверяет токен...</span>
+                            <span className="text-gray-600">🤖 AI validating token...</span>
                         </div>
                     </CardContent>
                 </Card>
@@ -113,30 +113,30 @@ function ResetPasswordContent() {
                             <CheckCircle className="h-6 w-6 text-green-600" />
                         </div>
                         <CardTitle className="text-2xl font-bold text-gray-900">
-                            🎉 Пароль успешно изменен!
+                            🎉 Password Successfully Changed!
                         </CardTitle>
                         <CardDescription className="text-gray-600">
-                            ИИ обновил ваши данные безопасности
+                            AI updated your security data
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Alert>
                             <CheckCircle className="h-4 w-4" />
                             <AlertDescription>
-                                Ваш пароль был успешно изменен. Все активные сессии были завершены
-                                для обеспечения безопасности.
+                                Your password has been successfully changed. All active sessions have been terminated
+                                for security purposes.
                             </AlertDescription>
                         </Alert>
 
                         <div className="space-y-3">
                             <p className="text-sm text-gray-600">
-                                💡 <strong>Интересный факт:</strong> Наш ИИ автоматически отозвал
-                                все ваши активные сессии для максимальной безопасности!
+                                💡 <strong>Interesting Fact:</strong> Our AI automatically revoked
+                                all your active sessions for maximum security!
                             </p>
 
                             <Button asChild className="w-full">
                                 <Link href="/auth/login">
-                                    🚀 Войти с новым паролем
+                                    🚀 Sign in with New Password
                                 </Link>
                             </Button>
                         </div>
@@ -152,10 +152,10 @@ function ResetPasswordContent() {
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center">
                         <CardTitle className="text-2xl font-bold text-gray-900">
-                            ❌ Ошибка
+                            ❌ Error
                         </CardTitle>
                         <CardDescription className="text-gray-600">
-                            Не удалось загрузить страницу восстановления
+                            Failed to load recovery page
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -166,14 +166,14 @@ function ResetPasswordContent() {
                         <div className="flex flex-col space-y-2">
                             <Button asChild>
                                 <Link href="/auth/forgot-password">
-                                    Запросить новую ссылку
+                                    Request New Link
                                 </Link>
                             </Button>
 
                             <Button asChild variant="outline">
                                 <Link href="/auth/login">
                                     <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Вернуться к входу
+                                    Back to Sign In
                                 </Link>
                             </Button>
                         </div>
@@ -191,21 +191,21 @@ function ResetPasswordContent() {
                         <Lock className="h-6 w-6 text-blue-600" />
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">
-                        🔐 Новый пароль
+                        🔐 New Password
                     </CardTitle>
                     <CardDescription className="text-gray-600">
-                        Введите новый пароль для вашего аккаунта
+                        Enter a new password for your account
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="password">Новый пароль</Label>
+                            <Label htmlFor="password">New Password</Label>
                             <div className="relative">
                                 <Input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="Минимум 6 символов"
+                                    placeholder="Minimum 6 characters"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -229,12 +229,12 @@ function ResetPasswordContent() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
+                            <Label htmlFor="confirmPassword">Confirm Password</Label>
                             <div className="relative">
                                 <Input
                                     id="confirmPassword"
                                     type={showConfirmPassword ? 'text' : 'password'}
-                                    placeholder="Повторите пароль"
+                                    placeholder="Repeat password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
@@ -267,10 +267,10 @@ function ResetPasswordContent() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ИИ обновляет пароль...
+                                    AI updating password...
                                 </>
                             ) : (
-                                '🚀 Установить новый пароль'
+                                '🚀 Set New Password'
                             )}
                         </Button>
                     </form>
@@ -282,7 +282,7 @@ function ResetPasswordContent() {
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
                                 <span className="bg-background px-2 text-muted-foreground">
-                                    Или
+                                    Or
                                 </span>
                             </div>
                         </div>
@@ -290,15 +290,15 @@ function ResetPasswordContent() {
                         <Button asChild variant="outline" className="w-full">
                             <Link href="/auth/login">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Вернуться к входу
+                                Back to Sign In
                             </Link>
                         </Button>
                     </div>
 
                     <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                         <p className="text-sm text-blue-800">
-                            💡 <strong>Совет:</strong> Используйте надежный пароль с буквами,
-                            цифрами и специальными символами для максимальной безопасности.
+                            💡 <strong>Tip:</strong> Use a strong password with letters,
+                            numbers, and special characters for maximum security.
                         </p>
                     </div>
                 </CardContent>
@@ -313,7 +313,7 @@ export default function ResetPasswordPage() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="flex items-center space-x-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Загрузка...</span>
+                    <span>Loading...</span>
                 </div>
             </div>
         }>

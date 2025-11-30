@@ -12,7 +12,7 @@ export function Hero() {
   useEffect(() => {
     setIsVisible(true)
 
-    // Генерируем позиции звезд
+    // Generate star positions
     const stars = [...Array(50)].map(() => ({
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
@@ -21,7 +21,7 @@ export function Hero() {
     }))
     setStarPositions(stars)
 
-    // Генерируем позиции частиц
+    // Generate particle positions
     const particles = [...Array(20)].map(() => ({
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
@@ -40,9 +40,9 @@ export function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Энергетический фон */}
+      {/* Energy background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
-        {/* Звездный эффект */}
+        {/* Star effect */}
         <div className="absolute inset-0">
           {starPositions.map((star, i) => (
             <div
@@ -58,22 +58,22 @@ export function Hero() {
           ))}
         </div>
 
-        {/* Энергетические волны */}
+        {/* Energy waves */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
 
-        {/* Градиентный оверлей */}
+        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-black/20"></div>
       </div>
 
-      {/* Контент */}
+      {/* Content */}
       <div className="relative z-10 text-center text-white px-4">
         <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
-          {/* Иконка */}
+          {/* Icon */}
           <div className="flex justify-center mb-6">
             <div className="relative">
               <Sparkles className="w-16 h-16 text-blue-400 animate-pulse" />
@@ -81,32 +81,32 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Заголовок */}
+          {/* Title */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              ИИ, который знает,
+              AI that knows
             </span>
             <span className="block text-white mt-2">
-              кто ты
+              who you are
             </span>
           </h1>
 
-          {/* Подзаголовок */}
+          {/* Subtitle */}
           <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-4xl mx-auto leading-relaxed">
-            Психоанализ. Без масок. <br />
-            <span className="text-blue-300 font-semibold">20 минут → PDF-отчёт</span>
+            Psychoanalysis. Without masks. <br />
+            <span className="text-blue-300 font-semibold">20 minutes → PDF report</span>
             <span className="text-gray-300 mx-4">•</span>
-            <span className="text-purple-300 font-semibold">21 день → новое „Я&ldquo;</span>
+            <span className="text-purple-300 font-semibold">21 days → new "You"</span>
           </p>
 
-          {/* Кнопки */}
+          {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               size="lg"
               onClick={() => window.location.href = '/book?product=deep'}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              Выбрать трансформацию
+              Choose Transformation
               <ChevronDown className="ml-2 w-5 h-5" />
             </Button>
 
@@ -116,29 +116,29 @@ export function Hero() {
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               <FileText className="mr-2 w-5 h-5" />
-              Курсы от ИИ
+              AI Courses
             </Button>
           </div>
 
-          {/* Дополнительная информация */}
+          {/* Additional information */}
           <div className="mt-12 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 text-sm text-blue-200">
             <div className="flex items-center">
               <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-              Безопасно и конфиденциально
+              Secure and confidential
             </div>
             <div className="flex items-center">
               <div className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
-              Более 10,000 сессий проведено
+              Over 10,000 sessions completed
             </div>
             <div className="flex items-center">
               <div className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></div>
-              Результат гарантирован
+              Results guaranteed
             </div>
           </div>
         </div>
       </div>
 
-      {/* Анимированная стрелка вниз */}
+      {/* Animated down arrow */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <ChevronDown className="w-8 h-8 text-white/60" />
       </div>

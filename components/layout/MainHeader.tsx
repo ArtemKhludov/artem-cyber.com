@@ -13,11 +13,11 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigation = [
-    { name: 'О проекте', href: '/about' },
-    { name: 'Программы', href: '/book' },
-    { name: 'Курсы', href: '/catalog' },
-    { name: 'Отзывы', href: '/reviews' },
-    { name: 'Контакты', href: '/contacts' },
+    { name: 'About', href: '/about' },
+    { name: 'Programs', href: '/book' },
+    { name: 'Courses', href: '/catalog' },
+    { name: 'Reviews', href: '/reviews' },
+    { name: 'Contact', href: '/contacts' },
   ]
 
   const handleCallRequest = () => {
@@ -25,12 +25,12 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
       onCallRequest()
     } else {
       // Fallback behavior
-      alert('Заказ звонка будет доступен в ближайшее время')
+      alert('Call request will be available soon')
     }
   }
 
 
-  // Единый стиль для всех страниц
+  // Unified style for all pages
   const headerClasses = 'bg-white/95 backdrop-blur-md shadow-lg border-b sticky top-0 z-50'
   const logoClasses = 'text-2xl font-bold text-gray-900'
   const navLinkClasses = (baseClasses: string) => `${baseClasses} text-gray-700`
@@ -70,7 +70,7 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
               className={buttonClasses}
             >
               <Phone className="w-4 h-4 mr-2" />
-              Заказать звонок
+              Request a Call
             </Button>
 
             {/* Personal Cabinet Button */}
@@ -79,7 +79,7 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
               asChild
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-200"
             >
-              <Link href="/auth/login">Личный кабинет</Link>
+              <Link href="/auth/login">Dashboard</Link>
             </Button>
           </div>
 
@@ -124,7 +124,7 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Phone className="w-4 h-4 mr-2" />
-                  Заказать звонок
+                  Request a Call
                 </Button>
 
                 <Button
@@ -132,7 +132,7 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Link href="/auth/login">Личный кабинет</Link>
+                  <Link href="/auth/login">Dashboard</Link>
                 </Button>
               </div>
             </div>

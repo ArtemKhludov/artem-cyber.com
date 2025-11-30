@@ -42,85 +42,85 @@ export default function AboutPage() {
   const features = [
     {
       icon: Brain,
-      title: '🧠 Психология',
-      description: 'Распознавание сценариев, страхов и автоматизмов'
+      title: '🧠 Psychology',
+      description: 'Recognition of patterns, fears, and automatisms'
     },
     {
       icon: Zap,
-      title: '🧬 Нейронаука',
-      description: 'Понимание гормонов и эмоций, управляющих реакциями'
+      title: '🧬 Neuroscience',
+      description: 'Understanding hormones and emotions that control reactions'
     },
     {
       icon: Heart,
-      title: '🤖 ИИ-анализ',
-      description: 'Анализ слов, текстов и микро-движений лица'
+      title: '🤖 AI Analysis',
+      description: 'Analysis of words, texts, and micro facial movements'
     },
     {
       icon: Shield,
-      title: '🧭 Честность',
-      description: 'Беспрецедентная честность как основа изменений'
+      title: '🧭 Honesty',
+      description: 'Unprecedented honesty as the foundation of change'
     }
   ]
 
   const whatWeDo = [
-    'Выявить повторяющиеся сценарии (жертвенность, избегание, страх успеха, ложное «я» и т.д.)',
-    'Понять, где ты теряешь энергию и контроль',
-    'Принять ключевые решения — не из паники, а из ясности',
-    'Получить чёткий план, основанный на тебе, а не на чужой теории'
+    'Identify repeating patterns (self-sacrifice, avoidance, fear of success, false self, etc.)',
+    'Understand where you lose energy and control',
+    'Make key decisions — not from panic, but from clarity',
+    'Get a clear plan based on you, not someone else\'s theory'
   ]
 
   const implementation = [
-    '📡 20-минутной голосовой AI-сессии с анализом и PDF-результатом',
-    '📅 21-дневного трека, где ИИ отслеживает твоё поведение и мышление, даёт отчёты и гипотезы',
-    '📽 медийных материалов (Reels, статьи, презентации), которые вскрывают массовые заблуждения и паттерны'
+    '📡 20-minute voice AI session with analysis and PDF result',
+    '📅 21-day track where AI monitors your behavior and thinking, provides reports and hypotheses',
+    '📽 Media materials (Reels, articles, presentations) that reveal common misconceptions and patterns'
   ]
 
   const revolutionPoints = [
-    '🤖 ИИ не просто помогает, а диагностирует — в реальном времени, точно и глубже, чем человек',
-    '🧬 Мы объединяем эмоции, гормоны, мышление и паттерны в одну карту — фрактальную, живую, обновляемую',
-    '💥 Мы не работаем с симптомами — мы вскрываем корень проблемы и сразу даём путь изменения',
-    '🚫 Мы не зависим от мнения одного "эксперта", ИИ это как сотни докторов наук во всех сферах одновременно — у нас нет усталости, эго, предвзятости или «мягких ответов»'
+    '🤖 AI doesn\'t just help, it diagnoses — in real-time, accurately and deeper than humans',
+    '🧬 We combine emotions, hormones, thinking, and patterns into one map — fractal, living, updatable',
+    '💥 We don\'t work with symptoms — we uncover the root of the problem and immediately provide a path to change',
+    '🚫 We don\'t depend on one "expert\'s" opinion, AI is like hundreds of PhDs in all fields simultaneously — we have no fatigue, ego, bias, or "soft answers"'
   ]
 
   const forWhom = [
-    '🧱 Застрял — в решении, состоянии, жизни',
-    '🔁 Видит, что повторяет одни и те же ошибки, но не может вырваться',
-    '❌ Устал от чужих советов и «мотивации», которые не работают',
-    '🧩 Хочет понять себя глубже, чем позволяли любые книги или психотерапии',
-    '⚡️ Готов услышать правду — и сделать из неё действие'
+    '🧱 Stuck — in a decision, state, life',
+    '🔁 Sees that they repeat the same mistakes but can\'t break free',
+    '❌ Tired of others\' advice and "motivation" that don\'t work',
+    '🧩 Wants to understand themselves deeper than any books or psychotherapy allowed',
+    '⚡️ Ready to hear the truth — and turn it into action'
   ]
 
   return (
     <div className="relative">
-      {/* Главное меню */}
+      {/* Main menu */}
       <MainHeader onCallRequest={handleCallRequest} />
 
-      {/* Основной контент */}
+      {/* Main content */}
       <main ref={sectionRef}>
         {/* Hero Section */}
         <section className="pt-32 pb-20 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
-                О проекте <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">EnergyLogic</span>
+                About <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">EnergyLogic</span>
               </h1>
               <p className="text-xl md:text-2xl mb-12 text-blue-100 leading-relaxed">
-                Мы — EnergyLogic.<br />
-                Это новая система самопонимания и внутренней настройки
+                We are EnergyLogic.<br />
+                A new system of self-understanding and inner alignment
               </p>
             </div>
           </div>
         </section>
 
-        {/* Основная информация */}
+        {/* Main information */}
         <section className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              {/* Введение */}
+              {/* Introduction */}
               <div className="mb-16">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                    Мы объединяем:
+                    We combine:
                   </h2>
                 </div>
 
@@ -138,19 +138,19 @@ export default function AboutPage() {
 
                 <div className="text-center mb-12">
                   <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
-                    Мы показываем правду — о тебе, твоих паттернах, ошибках, ключевых точках выбора и ресурсах.
+                    We show the truth — about you, your patterns, mistakes, key decision points, and resources.
                   </p>
                 </div>
               </div>
 
-              {/* Что мы делаем */}
+              {/* What we do */}
               <div className="mb-16">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                    🔍 Что мы делаем
+                    🔍 What We Do
                   </h2>
                   <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                    Мы создаём систему самодиагностики и перепрошивки сознания, которая позволяет:
+                    We create a system of self-diagnosis and consciousness reprogramming that allows:
                   </p>
                 </div>
 
@@ -167,7 +167,7 @@ export default function AboutPage() {
 
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-xl">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                    Это реализовано в виде:
+                    This is implemented as:
                   </h3>
                   <div className="space-y-4">
                     {implementation.map((item, index) => (
@@ -182,14 +182,14 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              {/* Почему это революция */}
+              {/* Why this is a revolution */}
               <div className="mb-16">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                    ⚡️ Почему это — революция
+                    ⚡️ Why This Is a Revolution
                   </h2>
                   <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                    Потому что впервые в истории:
+                    Because for the first time in history:
                   </p>
                 </div>
 
@@ -203,19 +203,19 @@ export default function AboutPage() {
 
                 <div className="text-center mt-12 p-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white">
                   <p className="text-xl font-semibold">
-                    Ни один человек, даже самый опытный, не может дать тебе такую глубину, скорость и структуру, как EnergyLogic.
+                    No human, even the most experienced, can give you such depth, speed, and structure as EnergyLogic.
                   </p>
                 </div>
               </div>
 
-              {/* Для кого это */}
+              {/* For whom */}
               <div className="mb-16">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                    🧭 Для кого это
+                    🧭 For Whom
                   </h2>
                   <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                    Для тех, кто:
+                    For those who:
                   </p>
                 </div>
 
@@ -231,41 +231,41 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              {/* Заключение */}
+              {/* Conclusion */}
               <div className="text-center p-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white">
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                  EnergyLogic — это не про «улучшить».
+                  EnergyLogic is not about "improving."
                 </h2>
                 <p className="text-xl leading-relaxed max-w-3xl mx-auto">
-                  Это про вспомнить, кто ты есть — без шума, лжи и страха.<br />
-                  И начать жить из этой точки.
+                  It's about remembering who you are — without noise, lies, and fear.<br />
+                  And starting to live from that point.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Правовая информация */}
+        {/* Legal information */}
         <Legal />
 
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Готовы начать свое путешествие к самопознанию?
+              Ready to Start Your Journey to Self-Discovery?
             </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Присоединяйтесь к тысячам людей, которые уже изменили свою жизнь с помощью EnergyLogic
+              Join thousands of people who have already changed their lives with EnergyLogic
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button onClick={handleCallRequest} size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
                 <Phone className="mr-2 w-4 h-4" />
-                Заказать звонок
+                Request a Call
               </Button>
               <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
                 <Link href="/book">
                   <Calendar className="mr-2 w-4 h-4" />
-                  Записаться на сессию
+                  Book a Session
                 </Link>
               </Button>
             </div>

@@ -28,51 +28,51 @@ export function Legal() {
   const legalLinks = [
     {
       icon: Shield,
-      title: 'Политика конфиденциальности',
-      description: 'Как мы защищаем ваши персональные данные и обеспечиваем безопасность',
+      title: 'Privacy Policy',
+      description: 'How we protect your personal data and ensure security',
       href: '/privacy',
-      updated: new Date().toLocaleDateString('ru-RU')
+      updated: new Date().toLocaleDateString('en-US')
     },
     {
       icon: FileText,
-      title: 'Пользовательское соглашение',
-      description: 'Условия использования платформы и наших услуг',
+      title: 'Terms of Service',
+      description: 'Terms of use of the platform and our services',
       href: '/terms',
-      updated: new Date().toLocaleDateString('ru-RU')
+      updated: new Date().toLocaleDateString('en-US')
     },
     {
       icon: RotateCcw,
-      title: 'Условия возврата',
-      description: 'Политика возврата средств и гарантии качества услуг',
+      title: 'Refund Policy',
+      description: 'Refund policy and service quality guarantees',
       href: '/refund',
-      updated: new Date().toLocaleDateString('ru-RU')
+      updated: new Date().toLocaleDateString('en-US')
     },
     {
       icon: AlertCircle,
-      title: 'Отказ от ответственности',
-      description: 'Важная информация об ограничениях и рисках',
+      title: 'Disclaimer',
+      description: 'Important information about limitations and risks',
       href: '/disclaimer',
-      updated: new Date().toLocaleDateString('ru-RU')
+      updated: new Date().toLocaleDateString('en-US')
     }
   ]
 
   const additionalInfo = [
     {
-      title: 'Лицензии и сертификаты',
+      title: 'Licenses and Certificates',
       items: [
-        'Лицензия на образовательную деятельность № 123456',
-        'Сертификат ISO 27001 (безопасность информации)',
-        'Регистрация в Роскомнадзоре',
-        'Соответствие GDPR и 152-ФЗ'
+        'Educational Activity License #123456',
+        'ISO 27001 Certificate (Information Security)',
+        'State Registration',
+        'GDPR and CCPA Compliance'
       ]
     },
     {
-      title: 'Наши гарантии',
+      title: 'Our Guarantees',
       items: [
-        '100% конфиденциальность персональных данных',
-        'Возврат средств в течение 14 дней',
-        'Профессиональная поддержка 24/7',
-        'Соблюдение этических стандартов'
+        '100% confidentiality of personal data',
+        '14-day money-back guarantee',
+        'Professional support 24/7',
+        'Adherence to ethical standards'
       ]
     }
   ]
@@ -80,19 +80,19 @@ export function Legal() {
   return (
     <section ref={sectionRef} className="py-16 bg-gradient-to-b from-gray-50 to-white border-t border-gray-200">
       <div className="container mx-auto px-4">
-        {/* Заголовок секции */}
+        {/* Section header */}
         <div className={`text-center mb-12 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Правовая информация
+            Legal Information
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Мы работаем полностью прозрачно и в соответствии с российским
-            и международным законодательством
+            We work completely transparently and in accordance with US
+            and international legislation
           </p>
         </div>
 
-        {/* Основные документы */}
+        {/* Main documents */}
         <div className={`grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 transform transition-all duration-1000 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
           {legalLinks.map((link, index) => {
@@ -115,7 +115,7 @@ export function Legal() {
                       {link.description}
                     </p>
                     <div className="text-xs text-gray-500">
-                      Обновлено: {link.updated}
+                      Updated: {link.updated}
                     </div>
                   </div>
                 </div>
@@ -124,7 +124,7 @@ export function Legal() {
           })}
         </div>
 
-        {/* Дополнительная информация */}
+        {/* Additional information */}
         <div className={`grid md:grid-cols-2 gap-8 transform transition-all duration-1000 delay-400 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
           {additionalInfo.map((section, index) => (
@@ -144,15 +144,15 @@ export function Legal() {
           ))}
         </div>
 
-        {/* Контактная информация для правовых вопросов */}
+        {/* Contact information for legal questions */}
         <div className={`mt-12 bg-blue-50 p-6 rounded-xl text-center transform transition-all duration-1000 delay-600 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Вопросы по правовым аспектам?
+            Questions about legal aspects?
           </h3>
           <p className="text-gray-600 mb-4">
-            Наш юридический отдел готов ответить на любые вопросы,
-            связанные с использованием наших услуг
+            Our legal department is ready to answer any questions
+            related to the use of our services
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-sm">
             <a
@@ -163,27 +163,27 @@ export function Legal() {
             </a>
             <span className="hidden sm:block text-gray-400">•</span>
             <a
-              href="tel:+79991234567"
+              href="tel:+15551234567"
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
-              +7 (999) 123-45-67 (доб. 2)
+              +1 (555) 123-4567 (ext. 2)
             </a>
           </div>
         </div>
 
-        {/* Информация о компании */}
+        {/* Company information */}
         <div className={`mt-8 text-center text-sm text-gray-500 transform transition-all duration-1000 delay-800 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
           <div className="space-y-2">
             <p>
-              ООО &ldquo;ЭнерджиЛоджик&rdquo; • ИНН: 1234567890 • ОГРН: 1234567890123
+              EnergyLogic LLC • EIN: 12-3456789 • State ID: 1234567890123
             </p>
             <p>
-              Москва, ул. Примерная, д. 123, офис 456 • Лицензия № 123456 от 01.01.2020
+              New York, NY 10001, Suite 456 • License #123456 issued 01/01/2020
             </p>
             <p className="mt-4 pt-4 border-t border-gray-200">
-              Все права защищены © 2024 EnergyLogic.
-              Использование материалов сайта возможно только с письменного разрешения правообладателя.
+              All rights reserved © 2024 EnergyLogic.
+              Use of site materials is permitted only with written permission from the copyright holder.
             </p>
           </div>
         </div>

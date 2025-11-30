@@ -106,62 +106,62 @@ const PURCHASE_STATUS_META: Record<PurchaseStatus, {
   supportReason?: string
 }> = {
   completed: {
-    label: 'Завершено',
+    label: 'Completed',
     badgeClass: 'bg-green-100 text-green-800',
     allowActions: true,
-    hint: 'Доступ к материалам открыт.',
+    hint: 'Access to materials is open.',
     tone: 'info'
   },
   active: {
-    label: 'Активно',
+    label: 'Active',
     badgeClass: 'bg-emerald-100 text-emerald-800',
     allowActions: true,
-    hint: 'У вас активный доступ к материалам.',
+    hint: 'You have active access to materials.',
     tone: 'info'
   },
   in_progress: {
-    label: 'В обработке',
+    label: 'Processing',
     badgeClass: 'bg-blue-100 text-blue-800',
     allowActions: false,
-    hint: 'Платёж обрабатывается. Обновите страницу через пару минут — доступ появится автоматически.',
+    hint: 'Payment is being processed. Refresh the page in a few minutes — access will appear automatically.',
     tone: 'info',
     allowRetry: true,
-    supportReason: 'Платёж завис в статусе «В обработке»'
+    supportReason: 'Payment stuck in "Processing" status'
   },
   pending: {
-    label: 'Ожидание оплаты',
+    label: 'Payment Pending',
     badgeClass: 'bg-yellow-100 text-yellow-800',
     allowActions: false,
-    hint: 'Оплата ещё не завершена. Завершите платёж, чтобы открыть материалы.',
+    hint: 'Payment has not been completed. Complete the payment to unlock materials.',
     tone: 'warning',
     allowRetry: true,
-    supportReason: 'Оплата отображается как «Ожидание», но доступ не открылся'
+    supportReason: 'Payment shows as "Pending" but access did not open'
   },
   expired: {
-    label: 'Доступ истёк',
+    label: 'Access Expired',
     badgeClass: 'bg-orange-100 text-orange-800',
     allowActions: false,
-    hint: 'Срок доступа закончился. Оформите продление или напишите в поддержку, если нужен дополнительный доступ.',
+    hint: 'Access period has ended. Renew your access or contact support if you need additional access.',
     tone: 'warning',
     allowRetry: true,
-    supportReason: 'Просьба продлить или восстановить доступ к материалам'
+    supportReason: 'Request to extend or restore access to materials'
   },
   revoked: {
-    label: 'Доступ отозван',
+    label: 'Access Revoked',
     badgeClass: 'bg-red-100 text-red-800',
     allowActions: false,
-    hint: 'Доступ был отозван. Свяжитесь с поддержкой, если это неожиданно.',
+    hint: 'Access has been revoked. Contact support if this is unexpected.',
     tone: 'danger',
-    supportReason: 'Доступ к материалам был отозван'
+    supportReason: 'Access to materials was revoked'
   },
   failed: {
-    label: 'Ошибка оплаты',
+    label: 'Payment Failed',
     badgeClass: 'bg-rose-100 text-rose-800',
     allowActions: false,
-    hint: 'Оплата не прошла. Проверьте данные карты и попробуйте снова. Если проблема сохраняется, напишите в поддержку.',
+    hint: 'Payment failed. Check your card details and try again. If the problem persists, contact support.',
     tone: 'danger',
     allowRetry: true,
-    supportReason: 'Оплата не проходит, нужна помощь'
+    supportReason: 'Payment not going through, need help'
   }
 }
 
@@ -264,7 +264,7 @@ export default function DashboardPage() {
 
       if (!response.ok) {
         const message = await response.text()
-        throw new Error(message || 'Не удалось загрузить историю')
+        throw new Error(message || 'Failed to load history')
       }
 
       const json = await response.json()
@@ -282,7 +282,7 @@ export default function DashboardPage() {
             : 'resource'
           const materialTitle = typeof metadata.materialTitle === 'string' && metadata.materialTitle
             ? metadata.materialTitle
-            : 'Материал'
+            : 'Material'
           const materialIdValue = metadata.materialId ?? item.targetId ?? null
           const action: 'view' | 'download' = item.action?.includes('download') ? 'download' : 'view'
 
@@ -305,8 +305,8 @@ export default function DashboardPage() {
       setRecentActivity(mergeWithLocalActivity(serverRecords))
       track('dashboard_recent_refresh_success', { count: serverRecords.length })
     } catch (error) {
-      console.warn('Недавно просмотренные: ошибка загрузки', error)
-      setRecentActivityError('Не удалось обновить историю активности')
+      console.warn('Recently viewed: loading error', error)
+      setRecentActivityError('Failed to update activity history')
       setRecentActivity(loadRecentActivity())
       track('dashboard_recent_refresh_failed')
     } finally {
@@ -322,7 +322,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (user) {
       loadUserData()
-      // Проверяем есть ли телефон у пользователя
+      // Check if user has a phone number
       checkPhoneNumber()
     }
   }, [user])
@@ -333,14 +333,14 @@ export default function DashboardPage() {
       if (response.ok) {
         const userData = await response.json()
         setUserPhone(userData.phone || null)
-        // Показываем модалку только если телефона нет и это первый вход
+        // Show modal only if phone is missing and this is first login
         if (!userData.phone && !localStorage.getItem('phone_prompt_dismissed')) {
           setShowPhonePrompt(true)
         }
 
-        // Показываем Telegram prompt если пользователь не подключил Telegram
+        // Show Telegram prompt if user hasn't connected Telegram
         if (!userData.telegram_username && !localStorage.getItem('telegram_prompt_dismissed')) {
-          // Показываем с задержкой после загрузки страницы
+          // Show with delay after page load
           setTimeout(() => {
             setShowTelegramPrompt(true)
           }, 2000)
@@ -363,11 +363,11 @@ export default function DashboardPage() {
         const data = await response.json()
         setPurchases(data.purchases)
 
-        // Преобразуем курсы из покупок
+        // Transform courses from purchases
         const courseData = data.courses.map((purchase: any) => ({
           id: purchase.id,
           title: purchase.document?.title || purchase.product_name,
-          description: purchase.document?.description || 'Купленный курс',
+          description: purchase.document?.description || 'Purchased course',
           progress: purchase.progress || 0,
           total_lessons: purchase.document?.course_type === 'mini_course' ?
             (purchase.document?.workbook_count || 0) + (purchase.document?.video_count || 0) + 1 : 1,
@@ -376,7 +376,7 @@ export default function DashboardPage() {
               (purchase.document?.workbook_count || 0) + (purchase.document?.video_count || 0) + 1 : 1)),
           thumbnail: purchase.document?.cover_url || '/api/placeholder/300/200',
           duration: purchase.document?.course_duration_minutes ?
-            `${Math.floor(purchase.document.course_duration_minutes / 60)}ч ${purchase.document.course_duration_minutes % 60}м` : 'Не указано',
+            `${Math.floor(purchase.document.course_duration_minutes / 60)}h ${purchase.document.course_duration_minutes % 60}m` : 'Not specified',
           difficulty: 'beginner' as const,
           course_type: purchase.document?.course_type || 'pdf',
           has_workbook: purchase.document?.has_workbook || false,
@@ -389,12 +389,12 @@ export default function DashboardPage() {
         setCourses(courseData)
         setStats(data.stats)
       } else {
-        setErrorMessage('Не удалось загрузить покупки. Попробуйте ещё раз чуть позже.')
-        // Если API недоступен, используем моковые данные
+        setErrorMessage('Failed to load purchases. Please try again later.')
+        // If API is unavailable, use mock data
         setPurchases([
           {
             id: '1',
-            product_name: 'Mini-сессия',
+            product_name: 'Mini Session',
             product_type: 'session',
             price: 4999,
             status: 'completed',
@@ -406,7 +406,7 @@ export default function DashboardPage() {
           },
           {
             id: '2',
-            product_name: 'Глубокий день',
+            product_name: 'Deep Day',
             product_type: 'session',
             price: 24999,
             status: 'in_progress',
@@ -417,7 +417,7 @@ export default function DashboardPage() {
           },
           {
             id: '3',
-            product_name: 'Продвинутые техники работы с подсознанием',
+            product_name: 'Advanced Subconscious Techniques',
             product_type: 'pdf',
             price: 14990,
             status: 'active',
@@ -432,8 +432,8 @@ export default function DashboardPage() {
             receipt_url: 'https://example.com/course-receipt.pdf',
             document: {
               id: 'doc-3',
-              title: 'Продвинутые техники работы с подсознанием',
-              description: 'Глубокие методы проработки внутренних блоков',
+              title: 'Advanced Subconscious Techniques',
+              description: 'Deep methods for working through internal blocks',
               cover_url: '/api/placeholder/300/200',
               course_type: 'pdf',
               has_workbook: false,
@@ -449,13 +449,13 @@ export default function DashboardPage() {
         setCourses([
           {
             id: '1',
-            title: 'Основы трансформации личности',
-            description: 'Изучите базовые принципы изменения мышления и поведения',
+            title: 'Personal Transformation Fundamentals',
+            description: 'Learn the basic principles of changing thinking and behavior',
             progress: 75,
             total_lessons: 12,
             completed_lessons: 9,
             thumbnail: '/api/placeholder/300/200',
-            duration: '2 часа',
+            duration: '2 hours',
             difficulty: 'beginner',
             course_type: 'mini_course',
             has_workbook: true,
@@ -466,13 +466,13 @@ export default function DashboardPage() {
           },
           {
             id: '2',
-            title: 'Продвинутые техники работы с подсознанием',
-            description: 'Глубокие методы проработки внутренних блоков',
+            title: 'Advanced Subconscious Techniques',
+            description: 'Deep methods for working through internal blocks',
             progress: 30,
             total_lessons: 8,
             completed_lessons: 2,
             thumbnail: '/api/placeholder/300/200',
-            duration: '3 часа',
+            duration: '3 hours',
             difficulty: 'advanced',
             course_type: 'pdf',
             has_workbook: false,
@@ -483,13 +483,13 @@ export default function DashboardPage() {
           },
           {
             id: '3',
-            title: 'Продвинутые техники работы с подсознанием',
-            description: 'Доступ активен до конца года',
+            title: 'Advanced Subconscious Techniques',
+            description: 'Access active until end of year',
             progress: 80,
             total_lessons: 10,
             completed_lessons: 8,
             thumbnail: '/api/placeholder/300/200',
-            duration: '1 час 30 минут',
+            duration: '1 hour 30 minutes',
             difficulty: 'intermediate',
             course_type: 'pdf',
             has_workbook: false,
@@ -508,8 +508,8 @@ export default function DashboardPage() {
         })
       }
     } catch (error) {
-      console.error('Ошибка загрузки данных:', error)
-      setErrorMessage('Произошла ошибка при загрузке данных. Проверьте подключение и попробуйте снова.')
+      console.error('Error loading data:', error)
+      setErrorMessage('An error occurred while loading data. Check your connection and try again.')
     } finally {
       setIsLoading(false)
     }
@@ -522,7 +522,7 @@ export default function DashboardPage() {
   }
 
   const handleRetryAccess = (purchaseId: string) => {
-    console.info('Повторный запрос доступа для покупки', purchaseId)
+    console.info('Retry access request for purchase', purchaseId)
     setRetryCount((prev) => prev + 1)
     void loadUserData()
     track('dashboard_access_retry_click', { purchaseId })
@@ -555,15 +555,15 @@ export default function DashboardPage() {
   const handleExportPurchases = () => {
     if (typeof window === 'undefined') return
     if (filteredPurchases.length === 0) {
-      console.info('Нет покупок для экспорта')
+      console.info('No purchases to export')
       return
     }
 
-    const header = ['ID', 'Название', 'Тип', 'Статус', 'Дата', 'Сумма']
+    const header = ['ID', 'Name', 'Type', 'Status', 'Date', 'Amount']
     const rows = filteredPurchases.map((purchase) => {
       const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
       const statusLabel = getPurchaseStatusMeta(effectiveStatus).label
-      const purchaseDate = new Date(purchase.created_at).toLocaleDateString('ru-RU')
+      const purchaseDate = new Date(purchase.created_at).toLocaleDateString('en-US')
 
       return [
         purchase.id,
@@ -601,11 +601,11 @@ export default function DashboardPage() {
       return
     }
 
-    const subject = `Запрос чека по покупке ${purchase.product_name}`
+    const subject = `Receipt request for purchase ${purchase.product_name}`
     const bodyLines = [
-      `Здравствуйте! Прошу отправить чек по покупке ${purchase.product_name} (ID ${purchase.id}) от ${new Date(purchase.created_at).toLocaleDateString('ru-RU')}.`,
+      `Hello! Please send a receipt for purchase ${purchase.product_name} (ID ${purchase.id}) from ${new Date(purchase.created_at).toLocaleDateString('en-US')}.`,
       '',
-      `Данные для идентификации: статус ${getPurchaseStatusMeta((purchase.access?.status ?? purchase.status) as PurchaseStatus).label}.`
+      `Identification data: status ${getPurchaseStatusMeta((purchase.access?.status ?? purchase.status) as PurchaseStatus).label}.`
     ]
     const body = bodyLines.join('\n')
 
@@ -614,9 +614,9 @@ export default function DashboardPage() {
 
   const getProductTypeLabel = (type: string) => {
     switch (type) {
-      case 'mini_course': return 'Мини-курс'
-      case 'pdf': return 'Курс'
-      case 'session': return 'Энергетическая диагностика'
+      case 'mini_course': return 'Mini Course'
+      case 'pdf': return 'Course'
+      case 'session': return 'Energy Diagnostics'
       default: return type
     }
   }
@@ -714,12 +714,12 @@ export default function DashboardPage() {
     const statusMeta = getPurchaseStatusMeta(effectiveStatus)
     track('dashboard_report_issue_click', { id: purchase.id, status: effectiveStatus })
     setIssueContext({
-      subject: `Проблема с покупкой: ${purchase.product_name}`,
+      subject: `Issue with purchase: ${purchase.product_name}`,
       purchaseId: purchase.id,
       purchaseName: purchase.product_name,
       purchaseStatus: effectiveStatus,
       purchaseStatusLabel: statusMeta.label,
-      purchaseDate: new Date(purchase.created_at).toLocaleDateString('ru-RU'),
+      purchaseDate: new Date(purchase.created_at).toLocaleDateString('en-US'),
       productType: getProductTypeLabel(purchase.product_type),
       courseId: purchase.document?.id,
       courseTitle: purchase.document?.title,
@@ -733,10 +733,10 @@ export default function DashboardPage() {
   }
 
   const UNKNOWN_STATUS_META = {
-    label: 'Статус неизвестен',
+    label: 'Unknown Status',
     badgeClass: 'bg-gray-100 text-gray-800',
     allowActions: false,
-    hint: 'Статус заказа не распознан. Обновите страницу или свяжитесь с поддержкой.',
+    hint: 'Order status not recognized. Refresh the page or contact support.',
     tone: 'warning' as const
   }
 
@@ -756,25 +756,25 @@ export default function DashboardPage() {
   const formatDate = (isoString?: string | null) => {
     if (!isoString) return null
     try {
-      return new Date(isoString).toLocaleDateString('ru-RU', {
-        day: '2-digit',
+      return new Date(isoString).toLocaleDateString('en-US', {
+        day: 'numeric',
         month: 'long',
         year: 'numeric'
       })
     } catch (error) {
-      console.warn('Не удалось форматировать дату истечения доступа', isoString, error)
+      console.warn('Failed to format access expiration date', isoString, error)
       return null
     }
   }
 
   const formatDateTime = (isoString: string) => {
     try {
-      return new Intl.DateTimeFormat('ru-RU', {
+      return new Intl.DateTimeFormat('en-US', {
         dateStyle: 'short',
         timeStyle: 'short'
       }).format(new Date(isoString))
     } catch (error) {
-      console.warn('Не удалось форматировать время активности', isoString, error)
+      console.warn('Failed to format activity time', isoString, error)
       return isoString
     }
   }
@@ -799,7 +799,7 @@ export default function DashboardPage() {
   }
 
   const getActivityLabel = (action: 'view' | 'download') => {
-    return action === 'download' ? 'Скачивание' : 'Просмотр'
+    return action === 'download' ? 'Download' : 'View'
   }
 
   const getActivityBadgeClass = (action: 'view' | 'download') => {
@@ -810,7 +810,7 @@ export default function DashboardPage() {
 
   const statusFilterOptions = useMemo(() => {
     return [
-      { value: 'all' as const, label: 'Все статусы' },
+      { value: 'all' as const, label: 'All Statuses' },
       ...Object.entries(PURCHASE_STATUS_META).map(([value, meta]) => ({
         value: value as PurchaseStatus,
         label: meta.label
@@ -849,14 +849,14 @@ export default function DashboardPage() {
   }, [filteredPurchases])
 
   const filteredTotalFormatted = useMemo(() => {
-    return new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'RUB',
+      currency: 'USD',
       maximumFractionDigits: 0
     }).format(filteredTotal)
   }, [filteredTotal])
 
-  // Если пользователь не загружен, показываем загрузку
+  // If user is not loaded, show loading
   if (!user) {
     return (
       <MainLayout>
@@ -872,7 +872,7 @@ export default function DashboardPage() {
       <ErrorBoundary>
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
           <div className="container mx-auto px-4 py-8">
-            {/* Основной контент */}
+            {/* Main content */}
             <Tabs
               defaultValue="courses"
               className="grid gap-6 md:grid-cols-[260px_minmax(0,1fr)] md:items-start"
@@ -885,55 +885,55 @@ export default function DashboardPage() {
                   value="courses"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <BookOpen className="h-4 w-4" /> Курсы
+                  <BookOpen className="h-4 w-4" /> Courses
                 </TabsTrigger>
                 <TabsTrigger
                   value="purchases"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <FileText className="h-4 w-4" /> Мои покупки
+                  <FileText className="h-4 w-4" /> My Purchases
                 </TabsTrigger>
                 <TabsTrigger
                   value="recent"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <Clock className="h-4 w-4" /> Недавние
+                  <Clock className="h-4 w-4" /> Recent
                 </TabsTrigger>
                 <TabsTrigger
                   value="sessions"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <CheckCircle className="h-4 w-4" /> Сессии
+                  <CheckCircle className="h-4 w-4" /> Sessions
                 </TabsTrigger>
                 <TabsTrigger
                   value="callbacks"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <MessageSquare className="h-4 w-4" /> Обращения
+                  <MessageSquare className="h-4 w-4" /> Inquiries
                 </TabsTrigger>
                 <TabsTrigger
                   value="achievements"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <Award className="h-4 w-4" /> Достижения
+                  <Award className="h-4 w-4" /> Achievements
                 </TabsTrigger>
                 <TabsTrigger
                   value="gifts"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <Gift className="h-4 w-4" /> Подарки
+                  <Gift className="h-4 w-4" /> Gifts
                 </TabsTrigger>
                 <TabsTrigger
                   value="issues"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <AlertCircle className="h-4 w-4" /> Обращения
+                  <AlertCircle className="h-4 w-4" /> Support
                 </TabsTrigger>
                 <TabsTrigger
                   value="callbacks"
                   className="w-full justify-start gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                 >
-                  <MessageSquare className="h-4 w-4" /> Заявки
+                  <MessageSquare className="h-4 w-4" /> Requests
                 </TabsTrigger>
                 <Button
                   type="button"
@@ -941,11 +941,11 @@ export default function DashboardPage() {
                   variant="destructive"
                   className="w-full"
                 >
-                  Выйти
+                  Logout
                 </Button>
               </TabsList>
 
-              {/* Мои покупки */}
+              {/* My purchases */}
               <TabsContent value="purchases" className="space-y-6">
                 {errorMessage && (
                   <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -953,11 +953,11 @@ export default function DashboardPage() {
                       <p>{errorMessage}</p>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" onClick={handleRetry}>
-                          Повторить попытку
+                          Retry
                         </Button>
                         <Button size="sm" variant="ghost" asChild>
-                          <a href="mailto:support@energylogic.ai?subject=Проблема%20с%20доступом">
-                            Связаться с поддержкой
+                          <a href="mailto:support@energylogic.ai?subject=Access%20Issue">
+                            Contact Support
                           </a>
                         </Button>
                       </div>
@@ -970,18 +970,18 @@ export default function DashboardPage() {
                       <div className="flex w-full flex-col gap-3 md:flex-row md:items-end md:gap-4">
                         <div className="w-full md:w-72">
                           <label htmlFor="purchase-search" className="mb-1 block text-sm font-medium text-gray-600">
-                            Поиск
+                            Search
                           </label>
                           <Input
                             id="purchase-search"
-                            placeholder="Название, курс или ID"
+                            placeholder="Name, course, or ID"
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
                           />
                         </div>
                         <div className="w-full md:w-56">
                           <label htmlFor="purchase-status-filter" className="mb-1 block text-sm font-medium text-gray-600">
-                            Статус
+                            Status
                           </label>
                           <select
                             id="purchase-status-filter"
@@ -999,7 +999,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex flex-col gap-2 text-sm text-gray-600 md:items-end">
                         <span>
-                          Отобрано {filteredPurchases.length} покупок · {filteredTotalFormatted}
+                          Showing {filteredPurchases.length} purchases · {filteredTotalFormatted}
                         </span>
                         <Button
                           size="sm"
@@ -1008,7 +1008,7 @@ export default function DashboardPage() {
                           disabled={filteredPurchases.length === 0}
                         >
                           <Download className="mr-2 h-4 w-4" />
-                          Экспорт CSV
+                          Export CSV
                         </Button>
                       </div>
                     </div>
@@ -1017,13 +1017,13 @@ export default function DashboardPage() {
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-gray-50">
-                            <TableHead>Название</TableHead>
-                            <TableHead>Тип</TableHead>
-                            <TableHead>Статус</TableHead>
-                            <TableHead>Дата</TableHead>
-                            <TableHead>Сумма</TableHead>
-                            <TableHead>Доступ до</TableHead>
-                            <TableHead className="text-right">Действия</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Access Until</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1045,7 +1045,7 @@ export default function DashboardPage() {
                               {filteredPurchases.map((purchase) => {
                                 const effectiveStatus = (purchase.access?.status ?? purchase.status) as PurchaseStatus
                                 const statusMeta = getPurchaseStatusMeta(effectiveStatus)
-                                const formattedDate = new Date(purchase.created_at).toLocaleDateString('ru-RU')
+                                const formattedDate = new Date(purchase.created_at).toLocaleDateString('en-US')
                                 const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
                                 const openHref = purchase.product_type === 'session'
                                   ? `/download/${purchase.id}`
@@ -1066,7 +1066,7 @@ export default function DashboardPage() {
                                       <Badge className={statusMeta.badgeClass}>{statusMeta.label}</Badge>
                                     </TableCell>
                                     <TableCell>{formattedDate}</TableCell>
-                                    <TableCell>{purchase.price.toLocaleString('ru-RU')} ₽</TableCell>
+                                    <TableCell>${purchase.price.toLocaleString('en-US')}</TableCell>
                                     <TableCell>{formattedExpiresAt || '—'}</TableCell>
                                     <TableCell className="text-right">
                                       <div className="flex justify-end gap-2">
@@ -1078,19 +1078,19 @@ export default function DashboardPage() {
                                               rel={purchase.product_type === 'session' ? 'noopener noreferrer' : undefined}
                                               onClick={() => handleOpenClick(purchase)}
                                             >
-                                              Открыть
+                                              Open
                                             </a>
                                           </Button>
                                         ) : (
                                           <Button size="sm" variant="outline" disabled title={statusMeta.hint}>
-                                            Открыть
+                                            Open
                                           </Button>
                                         )}
                                         <Button size="sm" variant="ghost" type="button" onClick={() => handleDownloadReceipt(purchase)}>
-                                          Чек
+                                          Receipt
                                         </Button>
                                         <Button size="sm" variant="ghost" type="button" onClick={() => handleReportIssue(purchase)}>
-                                          Сообщить о проблеме
+                                          Report Issue
                                         </Button>
                                       </div>
                                     </TableCell>
@@ -1104,8 +1104,8 @@ export default function DashboardPage() {
                             <TableRow>
                               <TableCell colSpan={7} className="py-6 text-center text-sm text-gray-500">
                                 {purchases.length === 0
-                                  ? 'Здесь появятся ваши покупки после оформления заказа.'
-                                  : 'По выбранным фильтрам ничего не найдено.'}
+                                  ? 'Your purchases will appear here after placing an order.'
+                                  : 'No results found for the selected filters.'}
                               </TableCell>
                             </TableRow>
                           ) : null}
@@ -1143,7 +1143,7 @@ export default function DashboardPage() {
                         const HintIcon = statusMeta.tone === 'info' ? Info : AlertCircle
                         const supportMailto = statusMeta.supportReason
                           ? `mailto:support@energylogic.ai?subject=${encodeURIComponent(statusMeta.supportReason)}&body=${encodeURIComponent(
-                            `Покупка: ${purchase.product_name} (ID ${purchase.id}). Статус: ${statusMeta.label}.`
+                            `Purchase: ${purchase.product_name} (ID ${purchase.id}). Status: ${statusMeta.label}.`
                           )}`
                           : undefined
                         const formattedExpiresAt = purchase.access?.expires_at ? formatDate(purchase.access.expires_at) : null
@@ -1155,17 +1155,17 @@ export default function DashboardPage() {
                                 <div>
                                   <CardTitle className="text-xl">{purchase.product_name}</CardTitle>
                                   <CardDescription>
-                                    {getProductTypeLabel(purchase.product_type)} • {new Date(purchase.created_at).toLocaleDateString('ru-RU')}
+                                    {getProductTypeLabel(purchase.product_type)} • {new Date(purchase.created_at).toLocaleDateString('en-US')}
                                   </CardDescription>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-2xl font-bold text-gray-900">{purchase.price.toLocaleString()} ₽</p>
+                                  <p className="text-2xl font-bold text-gray-900">${purchase.price.toLocaleString()}</p>
                                   <Badge className={statusMeta.badgeClass} title={statusMeta.hint}>
                                     {statusMeta.label}
                                   </Badge>
                                   {formattedExpiresAt && (
                                     <p className="mt-1 text-xs text-gray-500">
-                                      {effectiveStatus === 'expired' ? 'Истёк' : 'Доступ до'} {formattedExpiresAt}
+                                      {effectiveStatus === 'expired' ? 'Expired' : 'Access until'} {formattedExpiresAt}
                                     </p>
                                   )}
                                 </div>
@@ -1175,7 +1175,7 @@ export default function DashboardPage() {
                               {purchase.progress && (
                                 <div className="space-y-2">
                                   <div className="flex justify-between text-sm">
-                                    <span>Прогресс</span>
+                                    <span>Progress</span>
                                     <span>{purchase.progress}%</span>
                                   </div>
                                   <Progress value={purchase.progress} className="h-2" />
@@ -1189,20 +1189,20 @@ export default function DashboardPage() {
                                         <Button size="sm" variant="outline" asChild>
                                           <a href={purchase.pdf_url} target="_blank" rel="noopener noreferrer">
                                             <Download className="h-4 w-4 mr-2" />
-                                            Скачать отчёт
+                                            Download Report
                                           </a>
                                         </Button>
                                       )}
                                       {!purchase.pdf_url && (
                                         <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700" role="status">
                                           <Clock className="h-4 w-4" />
-                                          <span>Ссылка для скачивания появится после обработки отчёта.</span>
+                                          <span>Download link will appear after report processing.</span>
                                         </div>
                                       )}
                                       <Button size="sm" variant="outline" asChild>
                                         <a href={`/download/${purchase.id}`} target="_blank" rel="noopener noreferrer">
                                           <PlayCircle className="h-4 w-4 mr-2" />
-                                          Просмотр
+                                          View
                                         </a>
                                       </Button>
                                     </>
@@ -1210,7 +1210,7 @@ export default function DashboardPage() {
                                     <Button size="sm" variant="outline" asChild>
                                       <a href={`/courses/${purchase.document?.id}/player`}>
                                         <PlayCircle className="h-4 w-4 mr-2" />
-                                        Открыть курс
+                                        Open Course
                                       </a>
                                     </Button>
                                   )
@@ -1232,26 +1232,26 @@ export default function DashboardPage() {
                                     <div className="flex flex-wrap gap-2">
                                       {statusMeta.allowRetry && (
                                         <Button size="sm" variant="outline" onClick={() => handleRetryAccess(purchase.id)}>
-                                          Повторить попытку
+                                          Retry
                                         </Button>
                                       )}
                                       {supportMailto && (
                                         <Button size="sm" variant="ghost" asChild>
                                           <a href={supportMailto} onClick={() => handleSupportClick(purchase)}>
-                                            Связаться с поддержкой
+                                            Contact Support
                                           </a>
                                         </Button>
                                       )}
                                       {!supportMailto && (
                                         <Button size="sm" variant="ghost" onClick={() => handleReportIssue(purchase)}>
-                                          Сообщить о проблеме
+                                          Report Issue
                                         </Button>
                                       )}
                                     </div>
                                   </div>
                                 )}
                                 <Button size="sm" variant="ghost" type="button" onClick={() => handleReportIssue(purchase)}>
-                                  Сообщить о проблеме
+                                  Report Issue
                                 </Button>
                               </div>
                             </CardContent>
@@ -1263,14 +1263,14 @@ export default function DashboardPage() {
 
                   {purchases.length === 0 && !errorMessage && (
                     <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-600">
-                      <p className="text-lg font-semibold mb-2">У вас пока нет покупок</p>
-                      <p className="mb-4">Начните с выбора подходящего курса или свяжитесь с нами за рекомендациями.</p>
+                      <p className="text-lg font-semibold mb-2">You don't have any purchases yet</p>
+                      <p className="mb-4">Start by choosing a suitable course or contact us for recommendations.</p>
                       <div className="flex justify-center gap-3">
                         <Button asChild>
-                          <a href="/catalog">Купить доступ</a>
+                          <a href="/catalog">Buy Access</a>
                         </Button>
                         <Button variant="outline" asChild>
-                          <a href="mailto:support@energylogic.ai">Связаться</a>
+                          <a href="mailto:support@energylogic.ai">Contact</a>
                         </Button>
                       </div>
                     </div>
@@ -1283,9 +1283,9 @@ export default function DashboardPage() {
                 <Card className="border border-gray-200 shadow-sm">
                   <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                      <CardTitle className="text-lg text-gray-900">Недавно просмотренные</CardTitle>
+                      <CardTitle className="text-lg text-gray-900">Recently Viewed</CardTitle>
                       <CardDescription>
-                        Последние просмотры и скачивания материалов
+                        Recent views and downloads of materials
                       </CardDescription>
                     </div>
                     <div className="flex gap-2">
@@ -1295,7 +1295,7 @@ export default function DashboardPage() {
                         onClick={handleRefreshRecentActivity}
                         disabled={recentActivityLoading}
                       >
-                        Обновить
+                        Refresh
                       </Button>
                       <Button
                         size="sm"
@@ -1303,7 +1303,7 @@ export default function DashboardPage() {
                         onClick={handleClearRecentActivity}
                         disabled={recentActivity.length === 0}
                       >
-                        Очистить
+                        Clear
                       </Button>
                     </div>
                   </CardHeader>
@@ -1327,7 +1327,7 @@ export default function DashboardPage() {
 
                     {!recentActivityLoading && !recentActivityError && recentActivity.length === 0 && (
                       <p className="text-sm text-gray-500">
-                        Здесь появятся материалы, которые вы просматривали или скачивали.
+                        Materials you've viewed or downloaded will appear here.
                       </p>
                     )}
 
@@ -1348,7 +1348,7 @@ export default function DashboardPage() {
                                   {getActivityLabel(item.action)} • {formatDateTime(item.occurredAt)}
                                 </p>
                                 {item.courseTitle && (
-                                  <p className="text-xs text-gray-500">Курс: {item.courseTitle}</p>
+                                  <p className="text-xs text-gray-500">Course: {item.courseTitle}</p>
                                 )}
                               </div>
                             </div>
@@ -1357,7 +1357,7 @@ export default function DashboardPage() {
                                 {getActivityLabel(item.action)}
                               </Badge>
                               <Button size="sm" variant="ghost" onClick={() => handleOpenRecentItem(item)}>
-                                Открыть
+                                Open
                               </Button>
                             </div>
                           </div>
@@ -1388,12 +1388,12 @@ export default function DashboardPage() {
                               <CardTitle className="text-xl mb-2">{course.title}</CardTitle>
                               <CardDescription className="mb-4">{course.description}</CardDescription>
 
-                              {/* Информация о типе курса */}
+                              {/* Course type information */}
                               <div className="flex items-center gap-2 mb-3">
                                 <Badge className={course.course_type === 'mini_course' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
-                                  {course.course_type === 'mini_course' ? 'Мини-курс' : 'Курс'}
+                                  {course.course_type === 'mini_course' ? 'Mini Course' : 'Course'}
                                 </Badge>
-                                {course.duration !== 'Не указано' && (
+                                {course.duration !== 'Not specified' && (
                                   <div className="flex items-center gap-1 text-sm text-gray-600">
                                     <Clock className="h-4 w-4" />
                                     {course.duration}
@@ -1401,42 +1401,42 @@ export default function DashboardPage() {
                                 )}
                               </div>
 
-                              {/* Доступные материалы */}
+                              {/* Available materials */}
                               <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                                 <div className="flex items-center gap-1">
                                   <BookOpen className="h-4 w-4" />
-                                  Основной PDF
+                                  Main PDF
                                 </div>
                                 {course.has_workbook && (
                                   <div className="flex items-center gap-1">
                                     <BookOpen className="h-4 w-4 text-orange-500" />
-                                    {course.workbook_count} тетрадей
+                                    {course.workbook_count} workbooks
                                   </div>
                                 )}
                                 {course.has_videos && (
                                   <div className="flex items-center gap-1">
                                     <PlayCircle className="h-4 w-4 text-indigo-500" />
-                                    {course.video_count} видео
+                                    {course.video_count} videos
                                   </div>
                                 )}
                                 {course.has_audio && (
                                   <div className="flex items-center gap-1">
                                     <Volume2 className="h-4 w-4 text-red-500" />
-                                    Аудио
+                                    Audio
                                   </div>
                                 )}
                               </div>
                             </div>
                             <div className="text-right">
                               <p className="text-2xl font-bold text-gray-900">{course.progress}%</p>
-                              <p className="text-sm text-gray-600">Завершено</p>
+                              <p className="text-sm text-gray-600">Completed</p>
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-2 mb-4">
                             <div className="flex justify-between text-sm">
-                              <span>Прогресс курса</span>
+                              <span>Course Progress</span>
                               <span>{course.progress}%</span>
                             </div>
                             <Progress value={course.progress} className="h-2" />
@@ -1445,13 +1445,13 @@ export default function DashboardPage() {
                             <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
                               <a href={`/download/${course.id}`} target="_blank" rel="noopener noreferrer">
                                 <PlayCircle className="h-4 w-4 mr-2" />
-                                Открыть курс
+                                Open Course
                               </a>
                             </Button>
                             <Button size="sm" variant="outline" asChild>
                               <a href={`/courses/${course.id}`} target="_blank" rel="noopener noreferrer">
                                 <BookOpen className="h-4 w-4 mr-2" />
-                                Просмотр
+                                View
                               </a>
                             </Button>
                           </div>
@@ -1464,45 +1464,45 @@ export default function DashboardPage() {
                 )}
               </TabsContent>
 
-              {/* Достижения */}
+              {/* Achievements */}
               <TabsContent value="achievements" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
                     <CardContent className="p-6 text-center">
                       <Award className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
-                      <h3 className="font-semibold text-yellow-900 mb-2">Первый шаг</h3>
-                      <p className="text-sm text-yellow-700">Завершили первую сессию</p>
+                      <h3 className="font-semibold text-yellow-900 mb-2">First Step</h3>
+                      <p className="text-sm text-yellow-700">Completed first session</p>
                     </CardContent>
                   </Card>
 
                   <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
                     <CardContent className="p-6 text-center">
                       <Target className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-                      <h3 className="font-semibold text-blue-900 mb-2">Целеустремленный</h3>
-                      <p className="text-sm text-blue-700">Завершили 3 курса</p>
+                      <h3 className="font-semibold text-blue-900 mb-2">Determined</h3>
+                      <p className="text-sm text-blue-700">Completed 3 courses</p>
                     </CardContent>
                   </Card>
 
                   <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
                     <CardContent className="p-6 text-center">
                       <Star className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-                      <h3 className="font-semibold text-purple-900 mb-2">Эксперт</h3>
-                      <p className="text-sm text-purple-700">Завершили все курсы</p>
+                      <h3 className="font-semibold text-purple-900 mb-2">Expert</h3>
+                      <p className="text-sm text-purple-700">Completed all courses</p>
                     </CardContent>
                   </Card>
                 </div>
               </TabsContent>
 
-              {/* Подарки */}
+              {/* Gifts */}
               <TabsContent value="gifts" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
                     <CardContent className="p-6 text-center">
                       <Gift className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                      <h3 className="font-semibold text-green-900 mb-2">Бонусный PDF</h3>
-                      <p className="text-sm text-green-700 mb-4">Дополнительные материалы по трансформации</p>
+                      <h3 className="font-semibold text-green-900 mb-2">Bonus PDF</h3>
+                      <p className="text-sm text-green-700 mb-4">Additional transformation materials</p>
                       <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                        Получить
+                        Get
                       </Button>
                     </CardContent>
                   </Card>
@@ -1510,10 +1510,10 @@ export default function DashboardPage() {
                   <Card className="bg-gradient-to-br from-pink-50 to-pink-100 border-pink-200">
                     <CardContent className="p-6 text-center">
                       <Calendar className="h-12 w-12 text-pink-600 mx-auto mb-4" />
-                      <h3 className="font-semibold text-pink-900 mb-2">Персональная консультация</h3>
-                      <p className="text-sm text-pink-700 mb-4">30 минут с экспертом</p>
+                      <h3 className="font-semibold text-pink-900 mb-2">Personal Consultation</h3>
+                      <p className="text-sm text-pink-700 mb-4">30 minutes with an expert</p>
                       <Button size="sm" className="bg-pink-600 hover:bg-pink-700">
-                        Записаться
+                        Book
                       </Button>
                     </CardContent>
                   </Card>
@@ -1521,10 +1521,10 @@ export default function DashboardPage() {
                   <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
                     <CardContent className="p-6 text-center">
                       <Trophy className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
-                      <h3 className="font-semibold text-indigo-900 mb-2">Эксклюзивный доступ</h3>
-                      <p className="text-sm text-indigo-700 mb-4">К закрытому сообществу</p>
+                      <h3 className="font-semibold text-indigo-900 mb-2">Exclusive Access</h3>
+                      <p className="text-sm text-indigo-700 mb-4">To a closed community</p>
                       <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
-                        Присоединиться
+                        Join
                       </Button>
                     </CardContent>
                   </Card>
@@ -1536,17 +1536,17 @@ export default function DashboardPage() {
                   <TelegramLink />
                   <Card className="border border-gray-200 shadow-sm">
                     <CardHeader>
-                      <CardTitle>Обращения</CardTitle>
+                      <CardTitle>Support</CardTitle>
                       <CardDescription>
-                        Напишите нам, если столкнулись с проблемой или хотите задать вопрос.
+                        Contact us if you've encountered a problem or have a question.
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm text-gray-600">
-                        Кнопка откроет форму обратной связи прямо здесь, в кабинете.
+                        The button will open a feedback form right here in your dashboard.
                       </p>
                       <Button size="sm" onClick={handleOpenIssuesTab}>
-                        Сообщить о проблеме
+                        Report Issue
                       </Button>
                     </CardContent>
                   </Card>
@@ -1579,7 +1579,7 @@ export default function DashboardPage() {
         isOpen={showTelegramPrompt}
         onClose={() => setShowTelegramPrompt(false)}
         onConnect={() => {
-          // Логика подключения Telegram
+          // Telegram connection logic
           setShowTelegramPrompt(false)
         }}
       />

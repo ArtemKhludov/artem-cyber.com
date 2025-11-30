@@ -51,7 +51,7 @@ function SignupForm() {
   const redirect = searchParams.get('redirect') || '/'
   const { register, user } = useAuth()
 
-  // Заполняем форму данными из URL (если есть)
+  // Fill form with data from URL (if available)
   useEffect(() => {
     const email = searchParams.get('email')
     const name = searchParams.get('name')
@@ -67,7 +67,7 @@ function SignupForm() {
     }
   }, [searchParams])
 
-  // Если пользователь уже авторизован, перенаправляем
+  // If user is already authenticated, redirect
   useEffect(() => {
     if (user) {
       router.push(redirect)
@@ -79,23 +79,23 @@ function SignupForm() {
     setLoading(true)
     setError('')
 
-    // Валидация
+    // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError('Пароли не совпадают')
+      setError('Passwords do not match')
       setLoading(false)
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Пароль должен содержать минимум 6 символов')
+      setError('Password must contain at least 6 characters')
       setLoading(false)
       return
     }
 
-    // Валидация email
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      setError('Неверный формат email')
+      setError('Invalid email format')
       setLoading(false)
       return
     }
@@ -107,7 +107,7 @@ function SignupForm() {
     )
 
     if (result.success) {
-      // После успешной регистрации отправляем email для верификации
+      // After successful registration, send verification email
       try {
         await fetch('/api/auth/verify-email', {
           method: 'POST',
@@ -122,16 +122,16 @@ function SignupForm() {
 
       router.push('/auth/login')
     } else {
-      // Проверяем, является ли ошибка связанной с существующим аккаунтом
-      if (result.error?.includes('уже существует') || result.error?.includes('duplicate')) {
-        // Показываем модальное окно с существующим аккаунтом
+      // Check if error is related to existing account
+      if (result.error?.includes('already exists') || result.error?.includes('duplicate') || result.error?.includes('уже существует')) {
+        // Show modal with existing account
         setExistingUserData({
           email: formData.email,
           name: formData.name
         })
         setShowExistingAccountModal(true)
       } else {
-        setError(result.error || 'Ошибка регистрации')
+        setError(result.error || 'Registration error')
       }
     }
 
@@ -139,8 +139,8 @@ function SignupForm() {
   }
 
   const handleGoogleCallback = useCallback(async (response: { code?: string; error?: string; error_description?: string }) => {
-    // При redirect flow callback не вызывается, пользователь перенаправляется на callback endpoint
-    // Этот callback оставляем для совместимости, но он не будет использоваться
+    // In redirect flow callback is not called, user is redirected to callback endpoint
+    // This callback is kept for compatibility but won't be used
     console.log('Google callback (not used in redirect flow):', response)
   }, [])
 
@@ -171,10 +171,10 @@ function SignupForm() {
   }, [initializeGoogleClient])
 
   const handleGoogleAuth = () => {
-    // Используем redirect flow вместо popup для продакшна
+    // Use redirect flow instead of popup for production
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
     if (!clientId) {
-      setError('Google OAuth не настроен')
+      setError('Google OAuth is not configured')
       return
     }
 
@@ -238,17 +238,17 @@ function SignupForm() {
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
-              Создать аккаунт
+              Create Account
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              Или{' '}
+              Or{' '}
               <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-                войдите в существующий аккаунт
+                sign in to existing account
               </Link>
             </p>
           </div>
 
-          {/* OAuth кнопки */}
+          {/* OAuth buttons */}
           <div className="mt-8 space-y-3">
             <Button
               type="button"
@@ -262,7 +262,7 @@ function SignupForm() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              <span>Продолжить с Google</span>
+              <span>Continue with Google</span>
             </Button>
 
           </div>
@@ -272,7 +272,7 @@ function SignupForm() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">или</span>
+              <span className="px-2 bg-white text-gray-500">or</span>
             </div>
           </div>
 
@@ -287,7 +287,7 @@ function SignupForm() {
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Имя
+                  Name
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -301,7 +301,7 @@ function SignupForm() {
                     value={formData.name}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Введите ваше имя"
+                    placeholder="Enter your name"
                   />
                 </div>
               </div>
@@ -323,14 +323,14 @@ function SignupForm() {
                     value={formData.email}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Введите ваш email"
+                    placeholder="Enter your email"
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                  Телефон (необязательно)
+                  Phone (optional)
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -343,14 +343,14 @@ function SignupForm() {
                     value={formData.phone}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="+7 (999) 123-45-67"
+                    placeholder="+1 (555) 123-4567"
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Пароль
+                  Password
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -365,7 +365,7 @@ function SignupForm() {
                     value={formData.password}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Введите пароль"
+                    placeholder="Enter password"
                   />
                   <button
                     type="button"
@@ -383,7 +383,7 @@ function SignupForm() {
 
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Подтвердите пароль
+                  Confirm Password
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -398,7 +398,7 @@ function SignupForm() {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Подтвердите пароль"
+                    placeholder="Confirm password"
                   />
                   <button
                     type="button"
@@ -424,38 +424,38 @@ function SignupForm() {
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Создаем аккаунт...
+                    Creating account...
                   </div>
                 ) : (
-                  'Создать аккаунт'
+                  'Create Account'
                 )}
               </Button>
             </div>
 
             <p className="text-xs text-gray-500 text-center mt-4">
-              Нажимая кнопку, вы соглашаетесь с{' '}
+              By clicking the button, you agree to our{' '}
               <Link href="/privacy" className="text-blue-600 hover:underline font-medium">
-                политикой конфиденциальности
+                Privacy Policy
               </Link>
-              {' '}и{' '}
+              {' '}and{' '}
               <Link href="/terms" className="text-blue-600 hover:underline font-medium">
-                пользовательским соглашением
+                Terms of Service
               </Link>
             </p>
           </form>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Уже есть аккаунт?{' '}
+              Already have an account?{' '}
               <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-                Войти
+                Sign in
               </Link>
             </p>
           </div>
         </div>
       </div>
 
-      {/* Модальные окна */}
+      {/* Modals */}
       <ExistingAccountModal
         isOpen={showExistingAccountModal}
         onClose={handleCloseModals}
@@ -480,7 +480,7 @@ function SignupForm() {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={<div>Загрузка...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <SignupForm />
     </Suspense>
   )

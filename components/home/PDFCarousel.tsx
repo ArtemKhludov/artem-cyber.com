@@ -18,22 +18,22 @@ export function PDFCarousel() {
   const carouselRef = useRef<HTMLDivElement>(null)
   const sectionRef = useRef<HTMLElement>(null)
 
-  const cardWidth = 400; // Ширина одной карточки + gap
+  const cardWidth = 400; // Width of one card + gap
 
-  // Создаем бесконечный массив с тройным дублированием
+  // Create infinite array with triple duplication
   const infiniteDocuments = documents.length > 0 ? [
-    ...documents, // Набор 1
-    ...documents, // Набор 2  
-    ...documents  // Набор 3
+    ...documents, // Set 1
+    ...documents, // Set 2  
+    ...documents  // Set 3
   ] : [];
 
-  const startIndex = documents.length; // Начинаем с середины (набор 2)
+  const startIndex = documents.length; // Start from middle (set 2)
 
-  // Функция перемещения к слайду
+  // Function to move to slide
   const moveToSlide = (index: number, withTransition = true) => {
     if (!carouselRef.current || isTransitioning) return;
 
-    console.log(`Перемещаемся к слайду ${index}, переход: ${withTransition}`);
+    console.log(`Moving to slide ${index}, transition: ${withTransition}`);
 
     setIsTransitioning(withTransition);
     carouselRef.current.style.transition = withTransition ? 'transform 0.5s ease-in-out' : 'none';
@@ -48,25 +48,25 @@ export function PDFCarousel() {
     }
   };
 
-  // Проверка на зацикливание
+  // Check for looping
   const checkForLoop = (index: number) => {
     if (!carouselRef.current || documents.length === 0) return;
 
-    // Если дошли до последнего набора - перепрыгиваем в начало среднего набора
+    // If reached last set - jump to start of middle set
     if (index >= documents.length * 2) {
       const newIndex = index - documents.length;
-      console.log(`Зацикливание в конце: ${index} -> ${newIndex}`);
+      console.log(`Looping at end: ${index} -> ${newIndex}`);
       moveToSlide(newIndex, false);
     }
-    // Если дошли до первого набора - перепрыгиваем в конец среднего набора  
+    // If reached first set - jump to end of middle set  
     else if (index < documents.length) {
       const newIndex = index + documents.length;
-      console.log(`Зацикливание в начале: ${index} -> ${newIndex}`);
+      console.log(`Looping at start: ${index} -> ${newIndex}`);
       moveToSlide(newIndex, false);
     }
   };
 
-  // Управление каруселью
+  // Carousel control
   const slideLeft = () => {
     if (isTransitioning) return;
     console.log("slideLeft clicked!");
@@ -79,7 +79,7 @@ export function PDFCarousel() {
     moveToSlide(currentIndex + 1);
   };
 
-  // Загрузка документов
+  // Load documents
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
@@ -91,14 +91,14 @@ export function PDFCarousel() {
 
         if (error) {
           console.error('Error fetching documents:', error)
-          setError('Ошибка загрузки документов')
+          setError('Error loading documents')
           return
         }
 
         setDocuments(data || [])
       } catch (err) {
         console.error('Unexpected error:', err)
-        setError('Неожиданная ошибка')
+        setError('Unexpected error')
       } finally {
         setLoading(false)
       }
@@ -107,17 +107,17 @@ export function PDFCarousel() {
     fetchDocuments()
   }, [])
 
-  // Установка начальной позиции после загрузки документов
+  // Set initial position after documents load
   useEffect(() => {
     if (documents.length > 0 && carouselRef.current) {
-      console.log(`Устанавливаем начальную позицию: ${startIndex}`);
+      console.log(`Setting initial position: ${startIndex}`);
       carouselRef.current.style.transform = `translateX(-${startIndex * cardWidth}px)`;
       setCurrentIndex(startIndex);
     }
 
   }, [documents, startIndex]);
 
-  // Intersection Observer для анимации появления
+  // Intersection Observer for appearance animation
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -157,7 +157,7 @@ export function PDFCarousel() {
     return (
       <section ref={sectionRef} className="py-32 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-white text-lg">{error || 'Документы не найдены'}</p>
+          <p className="text-white text-lg">{error || 'No documents found'}</p>
         </div>
       </section>
     )
@@ -169,7 +169,7 @@ export function PDFCarousel() {
       ref={sectionRef}
       className="py-32 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden"
     >
-      {/* Фоновые эффекты */}
+      {/* Background effects */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
         <div className="absolute top-40 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
@@ -177,24 +177,24 @@ export function PDFCarousel() {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* Заголовок секции */}
+        {/* Section header */}
         <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Курсы</span>
+          <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Courses</span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mt-2 mb-6">
-            Курсы для
+            Courses for
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              {" "}самостоятельной работы
+              {" "}self-study
             </span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Практические материалы, которые помогут вам развиваться в удобном темпе
+            Practical materials to help you grow at your own pace
           </p>
         </div>
 
-        {/* ИСТИННО БЕСКОНЕЧНАЯ КАРУСЕЛЬ */}
+        {/* TRULY INFINITE CAROUSEL */}
         <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="relative overflow-hidden group">
-            {/* Стрелки управления */}
+            {/* Control arrows */}
             <button
               onClick={slideLeft}
               disabled={isTransitioning}
@@ -237,7 +237,7 @@ export function PDFCarousel() {
           </div>
         </div>
 
-        {/* Кнопка просмотра всех материалов */}
+        {/* View all materials button */}
         <div className={`text-center mt-12 transition-all duration-1000 delay-600 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <Button
             asChild
@@ -245,7 +245,7 @@ export function PDFCarousel() {
           >
             <Link href="/catalog">
               <Eye className="w-5 h-5 mr-2" />
-              Посмотреть все материалы
+              View All Materials
             </Link>
           </Button>
         </div>
