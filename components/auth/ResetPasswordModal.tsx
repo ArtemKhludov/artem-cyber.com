@@ -40,10 +40,10 @@ export default function ResetPasswordModal({
             if (response.ok) {
                 setIsSent(true)
             } else {
-                setError(data.error || 'Ошибка отправки письма')
+                setError(data.error || 'Error sending email')
             }
         } catch (error) {
-            setError('Ошибка сети. Попробуйте позже.')
+            setError('Network error. Please try again later.')
         } finally {
             setIsLoading(false)
         }
@@ -76,10 +76,10 @@ export default function ResetPasswordModal({
                         </div>
                         <div>
                             <h2 className="text-xl font-bold">
-                                {isSent ? 'Письмо отправлено' : 'Сброс пароля'}
+                                {isSent ? 'Email Sent' : 'Reset Password'}
                             </h2>
                             <p className="text-white/90 text-sm">
-                                {isSent ? 'Проверьте вашу почту' : 'Восстановление доступа к аккаунту'}
+                                {isSent ? 'Check your email' : 'Recover account access'}
                             </p>
                         </div>
                     </div>
@@ -96,7 +96,7 @@ export default function ResetPasswordModal({
                                         <Mail size={16} className="text-green-600" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-gray-900">Email для восстановления</p>
+                                        <p className="font-medium text-gray-900">Recovery Email</p>
                                         <p className="text-sm text-gray-600">{email}</p>
                                     </div>
                                 </div>
@@ -105,8 +105,8 @@ export default function ResetPasswordModal({
                             {/* Message */}
                             <div className="text-center space-y-3">
                                 <p className="text-gray-700 leading-relaxed">
-                                    Мы отправим ссылку для сброса пароля на указанный email.
-                                    Ссылка будет действительна в течение 1 часа.
+                                    We will send a password reset link to the specified email.
+                                    The link will be valid for 1 hour.
                                 </p>
                             </div>
 
@@ -127,12 +127,12 @@ export default function ResetPasswordModal({
                                     {isLoading ? (
                                         <>
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                            Отправляем...
+                                            Sending...
                                         </>
                                     ) : (
                                         <>
                                             <Mail size={18} className="mr-2" />
-                                            Отправить ссылку
+                                            Send Link
                                         </>
                                     )}
                                 </Button>
@@ -148,22 +148,22 @@ export default function ResetPasswordModal({
 
                                 <div className="space-y-2">
                                     <h3 className="text-lg font-semibold text-gray-900">
-                                        Письмо отправлено!
+                                        Email Sent!
                                     </h3>
                                     <p className="text-gray-700 leading-relaxed">
-                                        Мы отправили ссылку для сброса пароля на <strong>{email}</strong>
+                                        We sent a password reset link to <strong>{email}</strong>
                                     </p>
                                 </div>
 
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                     <p className="text-blue-800 text-sm">
-                                        <strong>Что делать дальше:</strong>
+                                        <strong>What to do next:</strong>
                                     </p>
                                     <ul className="text-blue-700 text-sm mt-2 space-y-1 text-left">
-                                        <li>• Проверьте папку &laquo;Входящие&raquo;</li>
-                                        <li>• Если письма нет, проверьте &laquo;Спам&raquo;</li>
-                                        <li>• Перейдите по ссылке в письме</li>
-                                        <li>• Создайте новый пароль</li>
+                                        <li>• Check your Inbox folder</li>
+                                        <li>• If no email, check Spam folder</li>
+                                        <li>• Click the link in the email</li>
+                                        <li>• Create a new password</li>
                                     </ul>
                                 </div>
                             </div>
@@ -174,7 +174,7 @@ export default function ResetPasswordModal({
                                     onClick={onClose}
                                     className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                                 >
-                                    Понятно
+                                    Got it
                                 </Button>
                             </div>
                         </>

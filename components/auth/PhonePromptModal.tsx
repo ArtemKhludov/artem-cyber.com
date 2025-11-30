@@ -19,14 +19,14 @@ export function PhonePromptModal({ isOpen, onSubmit, onSkip }: PhonePromptModalP
     e.preventDefault()
     
     if (!phone.trim()) {
-      setError('Введите номер телефона')
+      setError('Please enter a phone number')
       return
     }
 
-    // Простая валидация телефона
+    // Simple phone validation
     const phoneRegex = /^[+]?[\d\s()-]{10,}$/
     if (!phoneRegex.test(phone)) {
-      setError('Введите корректный номер телефона')
+      setError('Please enter a valid phone number')
       return
     }
 
@@ -45,7 +45,7 @@ export function PhonePromptModal({ isOpen, onSubmit, onSkip }: PhonePromptModalP
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-900">Добавьте номер телефона</h3>
+          <h3 className="text-xl font-bold text-gray-900">Add Phone Number</h3>
           <button
             onClick={handleSkip}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -55,8 +55,8 @@ export function PhonePromptModal({ isOpen, onSubmit, onSkip }: PhonePromptModalP
         </div>
 
         <p className="text-sm text-gray-600 mb-6">
-          Укажите ваш номер телефона для экстренной связи и дополнительной безопасности аккаунта.
-          Вы можете пропустить этот шаг и добавить номер позже в настройках.
+          Provide your phone number for emergency contact and additional account security.
+          You can skip this step and add a number later in settings.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -68,7 +68,7 @@ export function PhonePromptModal({ isOpen, onSubmit, onSkip }: PhonePromptModalP
 
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-              Номер телефона
+              Phone Number
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -83,7 +83,7 @@ export function PhonePromptModal({ isOpen, onSubmit, onSkip }: PhonePromptModalP
                   setError('')
                 }}
                 className="pl-10"
-                placeholder="+7 (999) 123-45-67"
+                placeholder="+1 (555) 123-4567"
                 autoFocus
               />
             </div>
@@ -94,7 +94,7 @@ export function PhonePromptModal({ isOpen, onSubmit, onSkip }: PhonePromptModalP
               type="submit"
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Сохранить
+              Save
             </Button>
             <Button
               type="button"
@@ -102,13 +102,13 @@ export function PhonePromptModal({ isOpen, onSubmit, onSkip }: PhonePromptModalP
               variant="outline"
               className="flex-1"
             >
-              Пропустить
+              Skip
             </Button>
           </div>
         </form>
 
         <p className="text-xs text-gray-500 mt-4 text-center">
-          Вы всегда можете добавить или изменить номер телефона в настройках профиля
+          You can always add or change your phone number in profile settings
         </p>
       </div>
     </div>

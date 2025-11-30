@@ -41,8 +41,8 @@ export default function ExistingAccountModal({
                             <AlertCircle size={24} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold">Аккаунт уже существует</h2>
-                            <p className="text-white/90 text-sm">Мы нашли ваш профиль в системе</p>
+                            <h2 className="text-xl font-bold">Account Already Exists</h2>
+                            <p className="text-white/90 text-sm">We found your profile in the system</p>
                         </div>
                     </div>
                 </div>
@@ -65,8 +65,8 @@ export default function ExistingAccountModal({
                     {/* Message */}
                     <div className="text-center space-y-3">
                         <p className="text-gray-700 leading-relaxed">
-                            На указанные данные уже зарегистрирован аккаунт.
-                            Вы можете войти в систему или восстановить пароль.
+                            An account is already registered with the specified data.
+                            You can sign in or reset your password.
                         </p>
                     </div>
 
@@ -77,7 +77,7 @@ export default function ExistingAccountModal({
                             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                         >
                             <Key size={18} className="mr-2" />
-                            Войти в аккаунт
+                            Sign In to Account
                         </Button>
 
                         <Button
@@ -86,14 +86,14 @@ export default function ExistingAccountModal({
                             className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3 rounded-lg font-medium transition-all duration-200"
                         >
                             <Mail size={18} className="mr-2" />
-                            Сбросить пароль
+                            Reset Password
                         </Button>
                     </div>
 
                     {/* Help Text */}
                     <div className="text-center">
                         <p className="text-xs text-gray-500">
-                            Не помните пароль? Мы отправим ссылку для восстановления на вашу почту
+                            Don't remember your password? We'll send a recovery link to your email
                         </p>
                     </div>
                 </div>

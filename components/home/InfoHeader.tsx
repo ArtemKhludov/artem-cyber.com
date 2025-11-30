@@ -13,7 +13,7 @@ export function InfoHeader({ onCallRequest }: InfoHeaderProps) {
       onCallRequest()
     } else {
       // Fallback behavior for backwards compatibility
-      alert('Заказ звонка будет доступен в ближайшее время')
+      alert('Call request will be available soon')
     }
   }
 
@@ -22,8 +22,8 @@ export function InfoHeader({ onCallRequest }: InfoHeaderProps) {
       <div className="container mx-auto px-4 flex justify-between items-center text-sm">
         <div className="flex items-center space-x-2">
           <Phone className="w-4 h-4" />
-          <a href="tel:+79991234567" className="hover:text-blue-300 transition-colors">
-            +7 (999) 123-45-67
+          <a href="tel:+15551234567" className="hover:text-blue-300 transition-colors">
+            +1 (555) 123-4567
           </a>
         </div>
         <Button 
@@ -32,7 +32,7 @@ export function InfoHeader({ onCallRequest }: InfoHeaderProps) {
           onClick={handleCallRequest}
           className="text-white hover:bg-slate-800"
         >
-          Заказать звонок
+          Request a Call
         </Button>
       </div>
     </div>

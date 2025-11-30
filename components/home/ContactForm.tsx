@@ -40,21 +40,21 @@ export function ContactForm() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Введите ваше имя'
+      newErrors.name = 'Please enter your name'
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Введите номер телефона'
+      newErrors.phone = 'Please enter your phone number'
     } else if (!/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Введите корректный номер телефона'
+      newErrors.phone = 'Please enter a valid phone number'
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Введите корректный email'
+      newErrors.email = 'Please enter a valid email'
     }
 
     if (!formData.message.trim()) {
-      newErrors.message = 'Введите ваше сообщение'
+      newErrors.message = 'Please enter your message'
     }
 
     setErrors(newErrors)
@@ -70,7 +70,7 @@ export function ContactForm() {
     setSubmitError(null)
 
     try {
-      // Отправляем данные через тот же API, что и форма "Заказать звонок"
+      // Send data through the same API as the "Request a Call" form
       const response = await fetch('/api/callback', {
         method: 'POST',
         headers: {
@@ -81,31 +81,31 @@ export function ContactForm() {
           phone: formData.phone,
           email: formData.email,
           message: formData.message,
-          preferred_time: '', // Пустое поле для формы обратной связи
+          preferred_time: '', // Empty field for contact form
           source_page: window.location.pathname,
           product_type: 'contact_form',
-          product_name: 'Обратная связь',
-          notes: `Сообщение: ${formData.message}`
+          product_name: 'Contact Form',
+          notes: `Message: ${formData.message}`
         })
       })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Ошибка отправки сообщения')
+        throw new Error(result.error || 'Error sending message')
       }
 
       setIsSubmitted(true)
       setFormData({ name: '', phone: '', email: '', message: '' })
 
-      // Сброс формы через 5 секунд
+      // Reset form after 5 seconds
       setTimeout(() => {
         setIsSubmitted(false)
       }, 5000)
 
     } catch (error) {
       console.error('Error submitting form:', error)
-      setSubmitError(error instanceof Error ? error.message : 'Произошла ошибка при отправке')
+      setSubmitError(error instanceof Error ? error.message : 'An error occurred while sending')
     } finally {
       setIsSubmitting(false)
     }
@@ -121,33 +121,33 @@ export function ContactForm() {
   const contactInfo = [
     {
       icon: Phone,
-      title: 'Телефон',
-      value: '+7 (999) 123-45-67',
-      subtitle: 'Ежедневно с 9:00 до 21:00'
+      title: 'Phone',
+      value: '+1 (555) 123-4567',
+      subtitle: 'Daily from 9:00 AM to 9:00 PM'
     },
     {
       icon: Mail,
       title: 'Email',
       value: 'support@energylogic.com',
-      subtitle: 'Ответим в течение часа'
+      subtitle: 'We respond within an hour'
     },
     {
       icon: MapPin,
-      title: 'Адрес',
-      value: 'Москва, ул. Примерная, 123',
-      subtitle: 'Офис для личных встреч'
+      title: 'Address',
+      value: 'New York, NY 10001',
+      subtitle: 'Office for in-person meetings'
     },
     {
       icon: Clock,
-      title: 'Время работы',
-      value: '9:00 - 21:00',
-      subtitle: 'Пн-Вс, без выходных'
+      title: 'Business Hours',
+      value: '9:00 AM - 9:00 PM',
+      subtitle: 'Mon-Sun, no holidays'
     }
   ]
 
   return (
     <section id="contacts" ref={sectionRef} className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white relative overflow-hidden">
-      {/* Декоративный фон */}
+      {/* Decorative background */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 w-full h-full opacity-20">
           <div className="w-full h-full" style={{
@@ -159,31 +159,31 @@ export function ContactForm() {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* Заголовок секции */}
+        {/* Section header */}
         <div className={`text-center mb-16 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
           <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">
-            Свяжитесь с нами
+            Contact Us
           </span>
           <h2 className="text-4xl md:text-5xl font-bold mt-2 mb-6">
-            Готовы изменить свою
+            Ready to change your
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              {" "}жизнь?
+              {" "}life?
             </span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Остались вопросы? Хотите узнать больше о наших программах?
-            Напишите нам, и мы поможем выбрать идеальный путь трансформации.
+            Have questions? Want to learn more about our programs?
+            Write to us, and we'll help you choose the perfect path to transformation.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Левая часть - контактная информация */}
+          {/* Left part - contact information */}
           <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'
             }`}>
             <div className="space-y-8">
               <div>
-                <h3 className="text-2xl font-bold mb-6">Как с нами связаться</h3>
+                <h3 className="text-2xl font-bold mb-6">How to Contact Us</h3>
                 <div className="space-y-6">
                   {contactInfo.map((info, index) => {
                     const IconComponent = info.icon
@@ -203,28 +203,28 @@ export function ContactForm() {
                 </div>
               </div>
 
-              {/* Дополнительная информация */}
+              {/* Additional information */}
               <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                <h4 className="font-semibold text-white mb-4">Быстрый старт</h4>
+                <h4 className="font-semibold text-white mb-4">Quick Start</h4>
                 <div className="space-y-3 text-sm text-gray-300">
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                    Бесплатная консультация за 15 минут
+                    Free consultation in 15 minutes
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                    Подбор оптимальной программы
+                    Selection of optimal program
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                    Ответы на все ваши вопросы
+                    Answers to all your questions
                   </div>
                 </div>
               </div>
 
-              {/* Социальные сети */}
+              {/* Social networks */}
               <div>
-                <h4 className="font-semibold text-white mb-4">Мы в социальных сетях</h4>
+                <h4 className="font-semibold text-white mb-4">We're on Social Media</h4>
                 <div className="flex space-x-4">
                   {[
                     { name: 'Telegram', href: '#', color: 'bg-blue-500' },
@@ -245,13 +245,13 @@ export function ContactForm() {
             </div>
           </div>
 
-          {/* Правая часть - форма */}
+          {/* Right part - form */}
           <div className={`transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
             }`}>
             <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
               {!isSubmitted ? (
                 <>
-                  <h3 className="text-2xl font-bold text-white mb-6">Отправить сообщение</h3>
+                  <h3 className="text-2xl font-bold text-white mb-6">Send Message</h3>
 
                   {submitError && (
                     <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
@@ -263,7 +263,7 @@ export function ContactForm() {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Ваше имя *
+                          Your Name *
                         </label>
                         <input
                           type="text"
@@ -271,14 +271,14 @@ export function ContactForm() {
                           onChange={(e) => handleInputChange('name', e.target.value)}
                           className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.name ? 'border-red-500' : 'border-white/20'
                             }`}
-                          placeholder="Введите ваше имя"
+                          placeholder="Enter your name"
                         />
                         {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Телефон *
+                          Phone *
                         </label>
                         <input
                           type="tel"
@@ -286,7 +286,7 @@ export function ContactForm() {
                           onChange={(e) => handleInputChange('phone', e.target.value)}
                           className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.phone ? 'border-red-500' : 'border-white/20'
                             }`}
-                          placeholder="+7 (999) 123-45-67"
+                          placeholder="+1 (555) 123-4567"
                         />
                         {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
                       </div>
@@ -294,7 +294,7 @@ export function ContactForm() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Email (необязательно)
+                        Email (optional)
                       </label>
                       <input
                         type="email"
@@ -309,7 +309,7 @@ export function ContactForm() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Сообщение *
+                        Message *
                       </label>
                       <textarea
                         rows={4}
@@ -317,7 +317,7 @@ export function ContactForm() {
                         onChange={(e) => handleInputChange('message', e.target.value)}
                         className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none ${errors.message ? 'border-red-500' : 'border-white/20'
                           }`}
-                        placeholder="Расскажите, чем мы можем помочь..."
+                        placeholder="Tell us how we can help..."
                       />
                       {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message}</p>}
                     </div>
@@ -330,24 +330,24 @@ export function ContactForm() {
                       {isSubmitting ? (
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Отправляем...
+                          Sending...
                         </div>
                       ) : (
                         <div className="flex items-center justify-center">
                           <Send className="mr-2 w-5 h-5" />
-                          Отправить сообщение
+                          Send Message
                         </div>
                       )}
                     </Button>
 
                     <p className="text-xs text-gray-400 text-center mt-4">
-                      Нажимая кнопку, вы соглашаетесь с{' '}
+                      By clicking the button, you agree to our{' '}
                       <Link href="/privacy" className="text-blue-400 hover:underline font-medium">
-                        политикой конфиденциальности
+                        Privacy Policy
                       </Link>
-                      {' '}и{' '}
+                      {' '}and{' '}
                       <Link href="/terms" className="text-blue-400 hover:underline font-medium">
-                        пользовательским соглашением
+                        Terms of Service
                       </Link>
                     </p>
                   </form>
@@ -358,15 +358,15 @@ export function ContactForm() {
                     <CheckCircle className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-4">
-                    Спасибо за обращение!
+                    Thank You for Reaching Out!
                   </h3>
                   <p className="text-gray-300 text-lg">
-                    Мы получили ваше сообщение и свяжемся с вами в течение часа.
+                    We've received your message and will contact you within an hour.
                   </p>
                   <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
                     <p className="text-sm text-gray-400">
-                      Следующий шаг: наш специалист проанализирует ваш запрос и предложит
-                      оптимальное решение именно для вашей ситуации.
+                      Next step: Our specialist will analyze your request and suggest
+                      the optimal solution for your situation.
                     </p>
                   </div>
                 </div>

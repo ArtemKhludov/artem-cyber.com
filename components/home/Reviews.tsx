@@ -13,86 +13,86 @@ export function Reviews() {
   const reviews = [
     {
       id: 1,
-      name: 'Анна Михайлова',
+      name: 'Anna Mitchell',
       age: 34,
-      profession: 'Маркетолог',
+      profession: 'Marketing Manager',
       avatar: 'AM',
       rating: 5,
-      text: 'EnergyLogic перевернул мое представление о себе. За 20 минут сессии я узнала о себе больше, чем за годы самоанализа. PDF-отчет настолько точный, что я несколько раз перечитывала, не веря своим глазам. Особенно поразил анализ моих скрытых страхов — все в точку!',
-      program: 'Mini-сессия',
+      text: 'EnergyLogic completely changed my self-perception. In 20 minutes of the session, I learned more about myself than in years of self-analysis. The PDF report is so accurate that I reread it multiple times, not believing my eyes. The analysis of my hidden fears was especially striking — everything was spot on!',
+      program: 'Mini Session',
       beforeAfter: {
-        before: 'Постоянные сомнения в себе',
-        after: 'Уверенность и ясность целей'
+        before: 'Constant self-doubt',
+        after: 'Confidence and clarity of goals'
       }
     },
     {
       id: 2,
-      name: 'Дмитрий Воронин',
+      name: 'David Warren',
       age: 41,
-      profession: 'IT-директор',
-      avatar: 'ДВ',
+      profession: 'IT Director',
+      avatar: 'DW',
       rating: 5,
-      text: 'Программа "21 день" кардинально изменила мою жизнь. Я наконец понял, почему застрял в карьере и отношениях. Система выявила глубинные блоки, о которых я даже не подозревал. Теперь я руковожу командой из 50 человек и счастлив в браке.',
-      program: '21 день',
+      text: 'The "21 Days" program radically changed my life. I finally understood why I was stuck in my career and relationships. The system revealed deep blocks I didn\'t even suspect existed. Now I manage a team of 50 people and am happily married.',
+      program: '21 Days',
       beforeAfter: {
-        before: 'Выгорание и кризис среднего возраста',
-        after: 'Новая должность и гармония в семье'
+        before: 'Burnout and midlife crisis',
+        after: 'New position and family harmony'
       }
     },
     {
       id: 3,
-      name: 'Елена Соколова',
+      name: 'Elena Scott',
       age: 28,
-      profession: 'Психолог',
-      avatar: 'ЕС',
+      profession: 'Psychologist',
+      avatar: 'ES',
       rating: 5,
-      text: 'Как психолог, я была скептически настроена к ИИ-анализу. Но результат превзошел все ожидания! Система увидела то, что я годами пыталась проработать в терапии. Особенно впечатлил анализ речевых паттернов — каждая пауза и интонация были интерпретированы верно.',
-      program: 'Глубокий день',
+      text: 'As a psychologist, I was skeptical about AI analysis. But the result exceeded all expectations! The system saw what I had been trying to work through in therapy for years. The analysis of speech patterns was especially impressive — every pause and intonation was interpreted correctly.',
+      program: 'Deep Day',
       beforeAfter: {
-        before: 'Профессиональное выгорание',
-        after: 'Новый подход к работе с клиентами'
+        before: 'Professional burnout',
+        after: 'New approach to working with clients'
       }
     },
     {
       id: 4,
-      name: 'Алексей Петров',
+      name: 'Alex Peterson',
       age: 37,
-      profession: 'Предприниматель',
-      avatar: 'АП',
+      profession: 'Entrepreneur',
+      avatar: 'AP',
       rating: 5,
-      text: 'Благодаря EnergyLogic я понял истинные причины неудач в бизнесе. Оказалось, проблема была не в стратегии, а в моих внутренних установках. После прохождения программы открыл новое направление, которое принесло 300% прибыли за полгода.',
-      program: '21 день',
+      text: 'Thanks to EnergyLogic, I understood the true causes of business failures. It turned out the problem wasn\'t in strategy, but in my internal patterns. After completing the program, I opened a new direction that brought 300% profit in half a year.',
+      program: '21 Days',
       beforeAfter: {
-        before: 'Череда неудачных проектов',
-        after: 'Успешный стартап и финансовая свобода'
+        before: 'Series of failed projects',
+        after: 'Successful startup and financial freedom'
       }
     },
     {
       id: 5,
-      name: 'Мария Кузнецова',
+      name: 'Maria Kuznets',
       age: 45,
-      profession: 'Врач',
-      avatar: 'МК',
+      profession: 'Doctor',
+      avatar: 'MK',
       rating: 5,
-      text: 'В 45 лет я думала, что уже поздно что-то менять. EnergyLogic показал мне, что я только в начале пути. Анализ выявил мой скрытый творческий потенциал. Сейчас я не только врач, но и художник — открыла персональную выставку!',
-      program: 'Глубокий день',
+      text: 'At 45, I thought it was too late to change anything. EnergyLogic showed me I\'m just at the beginning of the journey. The analysis revealed my hidden creative potential. Now I\'m not only a doctor but also an artist — I opened a personal exhibition!',
+      program: 'Deep Day',
       beforeAfter: {
-        before: 'Ощущение упущенных возможностей',
-        after: 'Реализация творческого потенциала'
+        before: 'Feeling of missed opportunities',
+        after: 'Realization of creative potential'
       }
     },
     {
       id: 6,
-      name: 'Игорь Смирнов',
+      name: 'Igor Smith',
       age: 31,
-      profession: 'Тренер',
-      avatar: 'ИС',
+      profession: 'Coach',
+      avatar: 'IS',
       rating: 5,
-      text: 'Работая с людьми, я думал, что хорошо разбираюсь в психологии. EnergyLogic открыл мне глаза на собственные проблемы. Система точно определила мои защитные механизмы и показала, как они мешают близости. Наконец-то нашел свою половинку!',
-      program: 'Mini-сессия',
+      text: 'Working with people, I thought I understood psychology well. EnergyLogic opened my eyes to my own problems. The system accurately identified my defense mechanisms and showed how they hinder intimacy. Finally found my soulmate!',
+      program: 'Mini Session',
       beforeAfter: {
-        before: 'Одиночество и страх близости',
-        after: 'Счастливые отношения и помолвка'
+        before: 'Loneliness and fear of intimacy',
+        after: 'Happy relationship and engagement'
       }
     }
   ]
@@ -114,7 +114,7 @@ export function Reviews() {
     return () => observer.disconnect()
   }, [])
 
-  // Автопрокрутка
+  // Auto-scroll
   useEffect(() => {
     if (!isAutoPlay) return
 
@@ -138,26 +138,26 @@ export function Reviews() {
   return (
     <section id="reviews" ref={sectionRef} className="py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
-        {/* Заголовок секции */}
+        {/* Section header */}
         <div className={`text-center mb-16 transform transition-all duration-1000 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`}>
           <span className="text-green-600 font-semibold text-sm uppercase tracking-wide">
-            Отзывы клиентов
+            Client Reviews
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mt-2 mb-6">
-            Истории 
+            Stories of
             <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              {" "}трансформации
+              {" "}transformation
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Более 10,000 человек уже изменили свою жизнь с помощью EnergyLogic. 
-            Прочитайте их истории и убедитесь сами.
+            Over 10,000 people have already changed their lives with EnergyLogic. 
+            Read their stories and see for yourself.
           </p>
         </div>
 
-        {/* Карусель отзывов */}
+        {/* Reviews carousel */}
         <div className="relative max-w-6xl mx-auto">
           <div className="overflow-hidden rounded-3xl">
             <div 
@@ -168,29 +168,29 @@ export function Reviews() {
                 <div key={review.id} className="w-full flex-shrink-0">
                   <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mx-4 border border-gray-100">
                     <div className="grid md:grid-cols-3 gap-8 items-start">
-                      {/* Левая часть - информация о клиенте */}
+                      {/* Left part - client information */}
                       <div className="text-center md:text-left">
-                        {/* Аватар */}
+                        {/* Avatar */}
                         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full text-white text-xl font-bold mb-4">
                           {review.avatar}
                         </div>
                         
-                        {/* Информация */}
+                        {/* Information */}
                         <h3 className="text-xl font-bold text-gray-900 mb-1">{review.name}</h3>
-                        <p className="text-gray-600 mb-1">{review.age} лет, {review.profession}</p>
+                        <p className="text-gray-600 mb-1">{review.age} years old, {review.profession}</p>
                         <div className="flex justify-center md:justify-start mb-4">
                           {[...Array(review.rating)].map((_, i) => (
                             <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
                           ))}
                         </div>
                         
-                        {/* Программа */}
+                        {/* Program */}
                         <div className="inline-block bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
                           {review.program}
                         </div>
                       </div>
 
-                      {/* Центральная часть - отзыв */}
+                      {/* Center part - review */}
                       <div className="md:col-span-2">
                         <div className="relative">
                           <Quote className="absolute -top-2 -left-2 w-8 h-8 text-green-200" />
@@ -199,17 +199,17 @@ export function Reviews() {
                           </blockquote>
                         </div>
 
-                        {/* До/После */}
+                        {/* Before/After */}
                         <div className="grid md:grid-cols-2 gap-4">
                           <div className="bg-red-50 p-4 rounded-xl border border-red-100">
                             <h4 className="font-semibold text-red-800 mb-2 text-sm uppercase tracking-wide">
-                              До EnergyLogic
+                              Before EnergyLogic
                             </h4>
                             <p className="text-red-700 text-sm">{review.beforeAfter.before}</p>
                           </div>
                           <div className="bg-green-50 p-4 rounded-xl border border-green-100">
                             <h4 className="font-semibold text-green-800 mb-2 text-sm uppercase tracking-wide">
-                              После EnergyLogic
+                              After EnergyLogic
                             </h4>
                             <p className="text-green-700 text-sm">{review.beforeAfter.after}</p>
                           </div>
@@ -222,7 +222,7 @@ export function Reviews() {
             </div>
           </div>
 
-          {/* Навигация */}
+          {/* Navigation */}
           <div className="flex items-center justify-center mt-8 space-x-4">
             <Button
               variant="outline"
@@ -233,7 +233,7 @@ export function Reviews() {
               <ChevronLeft className="w-4 h-4 text-green-600" />
             </Button>
 
-            {/* Индикаторы */}
+            {/* Indicators */}
             <div className="flex space-x-2">
               {reviews.map((_, index) => (
                 <button
@@ -262,15 +262,15 @@ export function Reviews() {
           </div>
         </div>
 
-        {/* Статистика */}
+        {/* Statistics */}
         <div className={`mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 transform transition-all duration-1000 delay-500 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`}>
           {[
-            { number: '10,000+', label: 'Довольных клиентов' },
-            { number: '98%', label: 'Положительных отзывов' },
-            { number: '4.9/5', label: 'Средняя оценка' },
-            { number: '50+', label: 'Городов России' }
+            { number: '10,000+', label: 'Satisfied Clients' },
+            { number: '98%', label: 'Positive Reviews' },
+            { number: '4.9/5', label: 'Average Rating' },
+            { number: '50+', label: 'US Cities' }
           ].map((stat, index) => (
             <div key={index} className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
               <div className="text-3xl font-bold text-green-600 mb-2">{stat.number}</div>
@@ -279,20 +279,20 @@ export function Reviews() {
           ))}
         </div>
 
-        {/* CTA блок */}
+        {/* CTA block */}
         <div className={`mt-16 text-center transform transition-all duration-1000 delay-700 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`}>
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Готовы написать свою историю успеха?
+              Ready to write your success story?
             </h3>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Присоединяйтесь к тысячам людей, которые уже изменили свою жизнь. 
-              Ваша трансформация начинается с первой сессии.
+              Join thousands of people who have already changed their lives. 
+              Your transformation begins with your first session.
             </p>
             <Button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3">
-              Начать трансформацию
+              Start Transformation
             </Button>
           </div>
         </div>

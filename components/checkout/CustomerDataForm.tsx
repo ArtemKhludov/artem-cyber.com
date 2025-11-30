@@ -31,23 +31,23 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
         const newErrors: Partial<CustomerData> = {}
 
         if (!formData.name.trim()) {
-            newErrors.name = 'Имя обязательно'
+            newErrors.name = 'Name is required'
         }
 
         if (!formData.email.trim()) {
-            newErrors.email = 'Email обязателен'
+            newErrors.email = 'Email is required'
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Неверный формат email'
+            newErrors.email = 'Invalid email format'
         }
 
         if (!formData.phone.trim()) {
-            newErrors.phone = 'Телефон обязателен'
+            newErrors.phone = 'Phone is required'
         } else if (!/^[+]?[0-9\s\-()]{10,}$/.test(formData.phone.replace(/\s/g, ''))) {
-            newErrors.phone = 'Неверный формат телефона'
+            newErrors.phone = 'Invalid phone format'
         }
 
         if (!formData.country.trim()) {
-            newErrors.country = 'Страна обязательна'
+            newErrors.country = 'Country is required'
         }
 
         setErrors(newErrors)
@@ -63,7 +63,7 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
 
     const handleInputChange = (field: keyof CustomerData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }))
-        // Очищаем ошибку при изменении поля
+        // Clear error when field changes
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: undefined }))
         }
@@ -72,13 +72,13 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
     return (
         <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold text-gray-900 mb-6">
-                Данные для доставки
+                Delivery Information
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                        Имя и фамилия *
+                        Full Name *
                     </label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -91,7 +91,7 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
                             onChange={(e) => handleInputChange('name', e.target.value)}
                             className={`block w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.name ? 'border-red-300' : 'border-gray-300'
                                 }`}
-                            placeholder="Введите ваше имя и фамилию"
+                            placeholder="Enter your full name"
                         />
                     </div>
                     {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -120,7 +120,7 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
 
                 <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                        Телефон *
+                        Phone *
                     </label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -133,7 +133,7 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
                             onChange={(e) => handleInputChange('phone', e.target.value)}
                             className={`block w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.phone ? 'border-red-300' : 'border-gray-300'
                                 }`}
-                            placeholder="+7 (999) 123-45-67"
+                            placeholder="+1 (555) 123-4567"
                         />
                     </div>
                     {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
@@ -141,7 +141,7 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
 
                 <div>
                     <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-                        Страна *
+                        Country *
                     </label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -154,7 +154,7 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
                             onChange={(e) => handleInputChange('country', e.target.value)}
                             className={`block w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.country ? 'border-red-300' : 'border-gray-300'
                                 }`}
-                            placeholder="Россия"
+                            placeholder="United States"
                         />
                     </div>
                     {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country}</p>}
@@ -169,33 +169,33 @@ export function CustomerDataForm({ onSubmit, loading = false }: CustomerDataForm
                         {loading ? (
                             <div className="flex items-center justify-center">
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                Обрабатываем заказ...
+                                Processing order...
                             </div>
                         ) : (
-                            'Подтвердить заказ'
+                            'Confirm Order'
                         )}
                     </Button>
                 </div>
 
                 <p className="text-xs text-gray-500 text-center mt-4">
-                    Нажимая кнопку, вы соглашаетесь с{' '}
+                    By clicking the button, you agree to our{' '}
                     <Link href="/privacy" className="text-blue-600 hover:underline font-medium">
-                        политикой конфиденциальности
+                        Privacy Policy
                     </Link>
                     {', '}
                     <Link href="/terms" className="text-blue-600 hover:underline font-medium">
-                        пользовательским соглашением
+                        Terms of Service
                     </Link>
-                    {' '}и{' '}
+                    {' '}and{' '}
                     <Link href="/refund" className="text-blue-600 hover:underline font-medium">
-                        условиями возврата
+                        Refund Policy
                     </Link>
                 </p>
             </form>
 
             <div className="mt-4 text-xs text-gray-500">
-                <p>* Обязательные поля</p>
-                <p>Эти данные будут использованы для доставки материалов и создания личного кабинета</p>
+                <p>* Required fields</p>
+                <p>This information will be used for material delivery and account creation</p>
             </div>
         </div>
     )

@@ -56,10 +56,10 @@ function LoginForm() {
   const googleCodeClientRef = useRef<{ requestCode: () => void } | null>(null)
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
 
-  // Если пользователь уже авторизован, перенаправляем
+  // If user is already authenticated, redirect
   useEffect(() => {
     if (user) {
-      // Определяем куда перенаправить в зависимости от роли
+      // Determine where to redirect based on role
       console.log('useEffect redirect - user role:', user.role, 'redirect:', redirect)
       if (redirect && redirect !== '/') {
         console.log('Redirecting to custom redirect:', redirect)
@@ -81,7 +81,7 @@ function LoginForm() {
     setLockedUntil(null)
 
     if (captchaRequired && recaptchaEnabled && !captchaToken) {
-      setError('Подтвердите, что вы не робот')
+      setError('Please confirm you are not a robot')
       setLoading(false)
       return
     }
@@ -97,15 +97,15 @@ function LoginForm() {
       setCaptchaToken(null)
       setLockedUntil(null)
     } else {
-      let errorMessage = result.error || 'Ошибка входа'
+      let errorMessage = result.error || 'Login error'
 
       if (result.captchaRequired) {
         if (!recaptchaEnabled) {
           setCaptchaRequired(false)
-          errorMessage = 'Требуется подтверждение reCAPTCHA, но ключ не настроен'
+          errorMessage = 'reCAPTCHA verification required, but key is not configured'
         } else {
           setCaptchaRequired(true)
-          errorMessage = result.error || 'Подтвердите, что вы не робот'
+          errorMessage = result.error || 'Please confirm you are not a robot'
         }
       } else {
         setCaptchaRequired(false)
@@ -117,7 +117,7 @@ function LoginForm() {
         setLockedUntil(null)
       }
 
-      if (result.error?.includes('не зарегистрирован') || result.error?.includes('не найден') || result.error?.includes('не существует')) {
+      if (result.error?.includes('not registered') || result.error?.includes('not found') || result.error?.includes('does not exist') || result.error?.includes('не зарегистрирован') || result.error?.includes('не найден') || result.error?.includes('не существует')) {
         setShowUserNotFoundModal(true)
       } else {
         setError(errorMessage)
@@ -147,13 +147,13 @@ function LoginForm() {
   const handleGoogleCallback = useCallback(async (response: { code?: string; error?: string; error_description?: string }) => {
     if (response.error) {
       console.error('Google OAuth error:', response.error, response.error_description)
-      setError('Не удалось выполнить авторизацию через Google')
+      setError('Failed to authenticate with Google')
       setLoading(false)
       return
     }
 
     if (!response.code) {
-      setError('Google не вернул код авторизации')
+      setError('Google did not return authorization code')
       setLoading(false)
       return
     }
@@ -171,7 +171,7 @@ function LoginForm() {
       const data = await request.json()
 
       if (request.ok) {
-        // Перезагружаем страницу чтобы AuthContext обновился
+        // Reload page so AuthContext updates
         if (redirect && redirect !== '/') {
           window.location.href = redirect
         } else if (data.user?.role === 'admin') {
@@ -180,11 +180,11 @@ function LoginForm() {
           window.location.href = '/dashboard'
         }
       } else {
-        setError(data.error || 'Ошибка авторизации через Google')
+        setError(data.error || 'Google authentication error')
       }
     } catch (error) {
       console.error('Google OAuth request failed:', error)
-      setError('Ошибка сети при авторизации через Google')
+      setError('Network error during Google authentication')
     } finally {
       setLoading(false)
     }
@@ -209,10 +209,10 @@ function LoginForm() {
   }, [initializeGoogleClient])
 
   const handleGoogleAuth = () => {
-    // Используем redirect flow вместо popup для продакшна
+    // Use redirect flow instead of popup for production
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
     if (!clientId) {
-      setError('Google OAuth не настроен')
+      setError('Google OAuth is not configured')
       return
     }
 
@@ -250,17 +250,17 @@ function LoginForm() {
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
-              Войти в аккаунт
+              Sign In
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              Или{' '}
+              Or{' '}
               <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                создайте новый аккаунт
+                create a new account
               </Link>
             </p>
           </div>
 
-          {/* OAuth кнопки */}
+          {/* OAuth buttons */}
           <div className="mt-8 space-y-3">
             <Button
               type="button"
@@ -274,7 +274,7 @@ function LoginForm() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              <span>Войти через Google</span>
+              <span>Sign in with Google</span>
             </Button>
           </div>
 
@@ -283,7 +283,7 @@ function LoginForm() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">или</span>
+              <span className="px-2 bg-white text-gray-500">or</span>
             </div>
           </div>
 
@@ -313,14 +313,14 @@ function LoginForm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Введите ваш email"
+                    placeholder="Enter your email"
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Пароль
+                  Password
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -335,7 +335,7 @@ function LoginForm() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Введите пароль"
+                    placeholder="Enter your password"
                   />
                   <button
                     type="button"
@@ -363,20 +363,20 @@ function LoginForm() {
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Запомнить меня
+                  Remember me
                 </label>
               </div>
 
               <div className="text-sm">
                 <Link href="/auth/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                  Забыли пароль?
+                  Forgot password?
                 </Link>
               </div>
             </div>
 
             {lockedUntil && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
-                Попробуйте снова после {new Date(lockedUntil).toLocaleString('ru-RU')}
+                Try again after {new Date(lockedUntil).toLocaleString('en-US')}
               </div>
             )}
 
@@ -400,10 +400,10 @@ function LoginForm() {
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Входим...
+                    Signing in...
                   </div>
                 ) : (
-                  'Войти'
+                  'Sign In'
                 )}
               </Button>
             </div>
@@ -411,16 +411,16 @@ function LoginForm() {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Нет аккаунта?{' '}
+              Don't have an account?{' '}
               <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                Зарегистрироваться
+                Sign up
               </Link>
             </p>
           </div>
         </div>
       </div>
 
-      {/* Модальные окна */}
+      {/* Modals */}
       <UserNotFoundModal
         isOpen={showUserNotFoundModal}
         onClose={handleCloseModals}
@@ -444,7 +444,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div>Загрузка...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <SessionChecker />
       <LoginForm />
     </Suspense>

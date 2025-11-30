@@ -36,10 +36,10 @@ export default function ForgotPasswordPage() {
             if (response.ok) {
                 setIsSuccess(true)
             } else {
-                setError(data.error || 'Произошла ошибка')
+                setError(data.error || 'An error occurred')
             }
         } catch (error) {
-            setError('Произошла ошибка при отправке запроса')
+            setError('An error occurred while sending the request')
         } finally {
             setIsLoading(false)
         }
@@ -54,38 +54,38 @@ export default function ForgotPasswordPage() {
                             <CheckCircle className="h-6 w-6 text-green-600" />
                         </div>
                         <CardTitle className="text-2xl font-bold text-gray-900">
-                            🤖 ИИ отправил письмо!
+                            🤖 AI Sent Email!
                         </CardTitle>
                         <CardDescription className="text-gray-600">
-                            Проверьте вашу почту
+                            Check your email
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Alert>
                             <Mail className="h-4 w-4" />
                             <AlertDescription>
-                                Если пользователь с email <strong>{email}</strong> существует,
-                                на него отправлено письмо с инструкциями по восстановлению пароля.
+                                If a user with email <strong>{email}</strong> exists,
+                                a password recovery email has been sent to them.
                             </AlertDescription>
                         </Alert>
 
                         <div className="space-y-3">
                             <p className="text-sm text-gray-600">
-                                💡 <strong>Интересный факт:</strong> Наш ИИ использует криптографические
-                                алгоритмы военного уровня для защиты ваших данных!
+                                💡 <strong>Interesting Fact:</strong> Our AI uses military-grade
+                                cryptographic algorithms to protect your data!
                             </p>
 
                             <div className="flex flex-col space-y-2">
                                 <Button asChild variant="outline">
                                     <Link href="/auth/login">
                                         <ArrowLeft className="mr-2 h-4 w-4" />
-                                        Вернуться к входу
+                                        Back to Sign In
                                     </Link>
                                 </Button>
 
                                 <Button asChild>
                                     <Link href="/">
-                                        На главную
+                                        To Home Page
                                     </Link>
                                 </Button>
                             </div>
@@ -104,10 +104,10 @@ export default function ForgotPasswordPage() {
                         <Mail className="h-6 w-6 text-blue-600" />
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">
-                        🔐 Восстановление пароля
+                        🔐 Password Recovery
                     </CardTitle>
                     <CardDescription className="text-gray-600">
-                        Введите ваш email для получения ссылки восстановления
+                        Enter your email to receive a recovery link
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -135,10 +135,10 @@ export default function ForgotPasswordPage() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ИИ обрабатывает запрос...
+                                    AI processing request...
                                 </>
                             ) : (
-                                '🚀 Отправить ссылку восстановления'
+                                '🚀 Send Recovery Link'
                             )}
                         </Button>
                     </form>
@@ -150,7 +150,7 @@ export default function ForgotPasswordPage() {
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
                                 <span className="bg-background px-2 text-muted-foreground">
-                                    Или
+                                    Or
                                 </span>
                             </div>
                         </div>
@@ -159,13 +159,13 @@ export default function ForgotPasswordPage() {
                             <Button asChild variant="outline">
                                 <Link href="/auth/login">
                                     <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Вернуться к входу
+                                    Back to Sign In
                                 </Link>
                             </Button>
 
                             <Button asChild variant="ghost">
                                 <Link href="/auth/signup">
-                                    Создать новый аккаунт
+                                    Create New Account
                                 </Link>
                             </Button>
                         </div>
@@ -173,8 +173,8 @@ export default function ForgotPasswordPage() {
 
                     <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                         <p className="text-sm text-blue-800">
-                            💡 <strong>Совет:</strong> Наш ИИ отправит вам безопасную ссылку,
-                            которая будет действительна в течение 1 часа.
+                            💡 <strong>Tip:</strong> Our AI will send you a secure link
+                            that will be valid for 1 hour.
                         </p>
                     </div>
                 </CardContent>

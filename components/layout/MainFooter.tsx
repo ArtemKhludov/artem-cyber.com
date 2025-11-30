@@ -5,10 +5,10 @@ import { Phone, Mail, MessageCircle } from 'lucide-react'
 
 export function MainFooter() {
   const navigation = [
-    { name: 'О проекте', href: '/about' },
-    { name: 'Каталог', href: '/catalog' },
-    { name: 'Отзывы', href: '/reviews' },
-    { name: 'Контакты', href: '/contacts' },
+    { name: 'About', href: '/about' },
+    { name: 'Catalog', href: '/catalog' },
+    { name: 'Reviews', href: '/reviews' },
+    { name: 'Contact', href: '/contacts' },
   ]
 
   return (
@@ -24,14 +24,14 @@ export function MainFooter() {
               </span>
             </Link>
             <p className="text-gray-300 leading-relaxed max-w-md">
-              Революционная платформа для глубокого самопознания и трансформации личности 
-              с использованием искусственного интеллекта.
+              Revolutionary platform for deep self-discovery and personal transformation 
+              using artificial intelligence.
             </p>
           </div>
 
           {/* Navigation */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Навигация</h3>
+            <h3 className="text-lg font-semibold text-white">Navigation</h3>
             <ul className="space-y-2">
               {navigation.map((item) => (
                 <li key={item.name}>
@@ -48,7 +48,7 @@ export function MainFooter() {
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Контакты</h3>
+            <h3 className="text-lg font-semibold text-white">Contact</h3>
             <div className="space-y-3">
               <a
                 href="mailto:energylogic@project.ai"
@@ -81,20 +81,20 @@ export function MainFooter() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} EnergyLogic. Все права защищены.
+              © {new Date().getFullYear()} EnergyLogic. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link
                 href="/privacy"
                 className="text-gray-400 hover:text-blue-400 text-sm transition-colors duration-200"
               >
-                Конфиденциальность
+                Privacy Policy
               </Link>
               <Link
                 href="/terms"
                 className="text-gray-400 hover:text-blue-400 text-sm transition-colors duration-200"
               >
-                Условия использования
+                Terms of Service
               </Link>
             </div>
           </div>

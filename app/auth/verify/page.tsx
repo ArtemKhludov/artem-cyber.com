@@ -18,7 +18,7 @@ function VerifyEmailContent() {
             verifyEmail(token)
         } else {
             setStatus('error')
-            setMessage('Токен верификации не найден')
+            setMessage('Verification token not found')
         }
     }, [token])
 
@@ -32,11 +32,11 @@ function VerifyEmailContent() {
                 setMessage(data.message)
             } else {
                 setStatus('error')
-                setMessage(data.error || 'Ошибка верификации')
+                setMessage(data.error || 'Verification error')
             }
         } catch (error) {
             setStatus('error')
-            setMessage('Ошибка сети')
+            setMessage('Network error')
         }
     }
 
@@ -54,10 +54,10 @@ function VerifyEmailContent() {
                                 <>
                                     <Loader2 className="h-16 w-16 text-blue-500 animate-spin mx-auto mb-4" />
                                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                                        Подтверждение email
+                                        Email Verification
                                     </h1>
                                     <p className="text-gray-600">
-                                        Проверяем ваш токен верификации...
+                                        Verifying your token...
                                     </p>
                                 </>
                             )}
@@ -66,7 +66,7 @@ function VerifyEmailContent() {
                                 <>
                                     <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                                        Email подтвержден!
+                                        Email Verified!
                                     </h1>
                                     <p className="text-gray-600 mb-6">
                                         {message}
@@ -75,7 +75,7 @@ function VerifyEmailContent() {
                                         onClick={handleContinue}
                                         className="w-full bg-blue-600 hover:bg-blue-700"
                                     >
-                                        Продолжить
+                                        Continue
                                     </Button>
                                 </>
                             )}
@@ -84,7 +84,7 @@ function VerifyEmailContent() {
                                 <>
                                     <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
                                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                                        Ошибка верификации
+                                        Verification Error
                                     </h1>
                                     <p className="text-gray-600 mb-6">
                                         {message}
@@ -94,7 +94,7 @@ function VerifyEmailContent() {
                                         variant="outline"
                                         className="w-full"
                                     >
-                                        Вернуться к входу
+                                        Back to Sign In
                                     </Button>
                                 </>
                             )}
@@ -113,7 +113,7 @@ export default function VerifyEmailPage() {
                 <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
                     <div className="text-center">
                         <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-                        <p className="text-gray-600">Загрузка...</p>
+                        <p className="text-gray-600">Loading...</p>
                     </div>
                 </div>
             </PageLayout>
