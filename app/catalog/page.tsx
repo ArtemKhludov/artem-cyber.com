@@ -10,7 +10,7 @@ import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
 
-// Компонент карточки документа с анимацией
+// Animated document card
 function DocumentCard({ document, index }: { document: Document; index: number }) {
   const [isVisible, setIsVisible] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -21,7 +21,7 @@ function DocumentCard({ document, index }: { document: Document; index: number }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          // Добавляем задержку для каскадной анимации
+          // Add a delay for cascading animation
           setTimeout(() => {
             setIsVisible(true)
           }, index * 100)
@@ -52,7 +52,7 @@ function DocumentCard({ document, index }: { document: Document; index: number }
 
         {/* PDF Preview Section */}
         <div className="relative h-64 overflow-hidden">
-          {/* Обложка как фон */}
+          {/* Cover as background */}
           {!imageError && document.cover_url && (
             <img
               src={document.cover_url}
@@ -62,12 +62,12 @@ function DocumentCard({ document, index }: { document: Document; index: number }
             />
           )}
 
-          {/* Fallback градиент если нет обложки */}
+          {/* Fallback gradient if no cover */}
           {(imageError || !document.cover_url) && (
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
               <div className="text-center">
                 <FileText className="w-16 h-16 text-white/80 mx-auto mb-2" />
-                <p className="text-white/80 text-sm font-medium">Курс</p>
+                <p className="text-white/80 text-sm font-medium">Course</p>
               </div>
             </div>
           )}
@@ -78,16 +78,16 @@ function DocumentCard({ document, index }: { document: Document; index: number }
               <iframe
                 src={`${document.file_url}#toolbar=0&navpanes=0&scrollbar=0&page=1&zoom=page-fit`}
                 className="w-full h-full pointer-events-none"
-                title={`Предпросмотр ${document.title}`}
+                title={`Preview of ${document.title}`}
                 onLoad={() => setPdfPreviewLoaded(true)}
               />
 
-              {/* Overlay для читаемости */}
+              {/* Overlay for readability */}
               <div className="absolute inset-0 bg-black/20"></div>
 
-              {/* Индикатор предпросмотра */}
+              {/* Preview indicator */}
               <div className="absolute top-4 left-4 bg-white/90 rounded-lg px-3 py-1 text-xs font-medium text-gray-700">
-                📄 Первая страница
+                📄 First page
               </div>
             </div>
           )}
@@ -96,7 +96,7 @@ function DocumentCard({ document, index }: { document: Document; index: number }
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
             <div className="text-center text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
               <Eye className="w-12 h-12 mx-auto mb-2 animate-pulse" />
-              <p className="text-sm font-medium">Предпросмотр курса</p>
+              <p className="text-sm font-medium">Course preview</p>
             </div>
           </div>
 
@@ -104,11 +104,11 @@ function DocumentCard({ document, index }: { document: Document; index: number }
           <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
             {(document as any).originalPrice ? (
               <div className="text-center">
-                <div className="line-through text-xs opacity-75">{(document as any).originalPrice.toLocaleString('ru-RU')} ₽</div>
-                <div>{document.price_rub.toLocaleString('ru-RU')} ₽</div>
+                <div className="line-through text-xs opacity-75">{(document as any).originalPrice.toLocaleString('en-US')} ₽</div>
+                <div>{document.price_rub.toLocaleString('en-US')} ₽</div>
               </div>
             ) : (
-              <div>{document.price_rub.toLocaleString('ru-RU')} ₽</div>
+              <div>{document.price_rub.toLocaleString('en-US')} ₽</div>
             )}
           </div>
         </div>
@@ -123,14 +123,13 @@ function DocumentCard({ document, index }: { document: Document; index: number }
             {document.description}
           </p>
 
-          {/* Информация о рабочих тетрадях */}
+          {/* Workbook info */}
           {document.has_workbook && (document.workbook_count || 0) > 0 && (
             <div className="mb-4">
               <div className="flex items-center text-sm text-orange-600 bg-orange-50 rounded-lg px-3 py-2">
                 <FileText className="w-4 h-4 mr-2" />
                 <span className="font-medium">
-                  {document.workbook_count || 0} рабоч{(document.workbook_count || 0) === 1 ? 'ая тетрадь' :
-                    (document.workbook_count || 0) < 5 ? 'ие тетради' : 'ых тетрадей'}
+                  {document.workbook_count || 0} workbook{(document.workbook_count || 0) === 1 ? '' : 's'}
                 </span>
               </div>
               {document.workbooks && document.workbooks.length > 0 && (
@@ -158,7 +157,7 @@ function DocumentCard({ document, index }: { document: Document; index: number }
             >
               <Link href={`/courses/${document.id}`}>
                 <Eye className="mr-2 w-4 h-4" />
-                Посмотреть подробнее
+                View details
               </Link>
             </Button>
 
@@ -169,7 +168,7 @@ function DocumentCard({ document, index }: { document: Document; index: number }
             >
               <Link href={`/checkout/${document.id}`}>
                 <ShoppingCart className="mr-2 w-4 h-4" />
-                Купить сейчас
+                Buy now
               </Link>
             </Button>
           </div>
@@ -197,7 +196,7 @@ export default function CatalogPage() {
     setIsCallModalOpen(false)
   }
 
-  // Анимация заголовка
+  // Header animation
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -215,30 +214,30 @@ export default function CatalogPage() {
     return () => observer.disconnect()
   }, [])
 
-  // Загрузка документов
+  // Load documents
   const loadDocuments = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Используем наш API с обновленными ценами
+      // Use API with updated pricing
       const response = await fetch('/api/documents')
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Ошибка загрузки документов')
+        throw new Error(result.error || 'Failed to load documents')
       }
 
       if (result.data && result.data.length > 0) {
         setDocuments(result.data)
-        console.log(`✅ Загружено ${result.data.length} документов в каталог с обновленными ценами`)
+        console.log(`✅ Loaded ${result.data.length} documents into catalog with updated pricing`)
       } else {
-        console.log('⚠️ Документы не найдены')
-        setError('Документы не найдены')
+        console.log('⚠️ Documents not found')
+        setError('No documents found')
       }
     } catch (err) {
       console.error('❌ Error loading documents for catalog:', err)
-      setError('Ошибка загрузки документов')
+      setError('Failed to load documents')
     } finally {
       setLoading(false)
     }
@@ -248,13 +247,13 @@ export default function CatalogPage() {
     loadDocuments()
   }, [])
 
-  // Сортировка документов
+  // Sort documents
   const sortedDocuments = [...documents].sort((a, b) => {
     switch (sortBy) {
       case 'price':
         return a.price_rub - b.price_rub
       case 'title':
-        return a.title.localeCompare(a.title, 'ru')
+        return a.title.localeCompare(a.title, 'en')
       case 'date':
       default:
         return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
@@ -267,10 +266,10 @@ export default function CatalogPage() {
 
   return (
     <div className="relative">
-      {/* Главное меню */}
+      {/* Main menu */}
       <MainHeader onCallRequest={handleCallRequest} />
 
-      {/* Основной контент */}
+      {/* Main content */}
       <main ref={sectionRef}>
         {/* Hero Section */}
         <section className="pt-32 pb-20 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
@@ -278,17 +277,17 @@ export default function CatalogPage() {
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Каталог курсов
+                  Course catalog
                 </span>
               </h1>
               <p className="text-xl md:text-2xl mb-12 text-blue-100 leading-relaxed">
-                Полная коллекция методик и руководств для трансформации личности
+                A complete collection of guides and methods for personal transformation
               </p>
             </div>
           </div>
         </section>
 
-        {/* Основной контент */}
+        {/* Content */}
         <section className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
@@ -299,20 +298,20 @@ export default function CatalogPage() {
 
                   <div className="flex items-center gap-3">
                     <Filter className="w-5 h-5 text-gray-500" />
-                    <span className="text-gray-700 font-medium">Сортировка:</span>
+                    <span className="text-gray-700 font-medium">Sort by:</span>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as any)}
                       className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                     >
-                      <option value="date">По дате добавления</option>
-                      <option value="price">По цене</option>
-                      <option value="title">По названию</option>
+                      <option value="date">Newest</option>
+                      <option value="price">Price</option>
+                      <option value="title">Title</option>
                     </select>
                   </div>
 
                   <div className="text-sm text-gray-600">
-                    <span className="font-medium text-blue-600">{sortedDocuments.length}</span> курсов доступно
+                    <span className="font-medium text-blue-600">{sortedDocuments.length}</span> courses available
                   </div>
                 </div>
               </div>
@@ -321,7 +320,7 @@ export default function CatalogPage() {
               {loading && (
                 <div className="flex flex-col items-center justify-center py-20">
                   <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mb-4"></div>
-                  <span className="text-gray-600 text-lg">Загружаем курсы...</span>
+                  <span className="text-gray-600 text-lg">Loading courses...</span>
                 </div>
               )}
 
@@ -332,7 +331,7 @@ export default function CatalogPage() {
                     <FileText className="w-16 h-16 text-red-400 mx-auto mb-4" />
                     <p className="text-red-600 mb-6 text-lg">{error}</p>
                     <Button onClick={refresh} variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
-                      Попробовать снова
+                      Try again
                     </Button>
                   </div>
                 </div>
@@ -342,12 +341,12 @@ export default function CatalogPage() {
               {!loading && !error && documents.length === 0 && (
                 <div className="text-center py-20">
                   <FileText className="w-20 h-20 text-gray-400 mx-auto mb-6" />
-                  <h3 className="text-2xl font-semibold text-gray-600 mb-4">Каталог временно пуст</h3>
-                  <p className="text-gray-500 text-lg">Курсы будут добавлены в ближайшее время</p>
+                  <h3 className="text-2xl font-semibold text-gray-600 mb-4">The catalog is temporarily empty</h3>
+                  <p className="text-gray-500 text-lg">New courses will be added soon</p>
                 </div>
               )}
 
-              {/* Documents Grid - 2 колонки для лучшей читаемости */}
+              {/* Documents grid - 2 columns for readability */}
               {!loading && !error && sortedDocuments.length > 0 && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -363,23 +362,23 @@ export default function CatalogPage() {
                   {/* Statistics */}
                   <div className="mt-16">
                     <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-100">
-                      <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">Статистика курсов</h3>
+                      <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">Course stats</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="text-center">
                           <div className="text-3xl font-bold text-blue-600 mb-1">{sortedDocuments.length}</div>
-                          <div className="text-gray-600">Всего курсов</div>
+                          <div className="text-gray-600">Total courses</div>
                         </div>
                         <div className="text-center">
                           <div className="text-3xl font-bold text-purple-600 mb-1">50K+</div>
-                          <div className="text-gray-600">Довольных клиентов</div>
+                          <div className="text-gray-600">Happy clients</div>
                         </div>
                         <div className="text-center">
                           <div className="text-3xl font-bold text-green-600 mb-1">24/7</div>
-                          <div className="text-gray-600">Поддержка</div>
+                          <div className="text-gray-600">Support</div>
                         </div>
                       </div>
                       <p className="text-sm text-gray-500 mt-6 text-center">
-                        Каталог автоматически обновляется при добавлении новых курсов
+                        The catalog updates automatically when new courses are added
                       </p>
                     </div>
                   </div>
@@ -393,18 +392,18 @@ export default function CatalogPage() {
         <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Готовы начать свое путешествие к самопознанию?
+              Ready to start your journey of self-discovery?
             </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Присоединяйтесь к тысячам людей, которые уже изменили свою жизнь с помощью EnergyLogic
+              Join thousands who have already transformed their lives with EnergyLogic
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button onClick={handleCallRequest} size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-                Заказать звонок
+                Request a call
               </Button>
               <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
                 <Link href="/book">
-                  Записаться на сессию
+                  Book a session
                 </Link>
               </Button>
             </div>

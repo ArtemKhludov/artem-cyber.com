@@ -23,10 +23,10 @@ export default function GlobalError({
           <div className="text-center px-4 max-w-2xl mx-auto">
             <div className="text-6xl mb-6">💥</div>
             <h1 className="text-4xl font-bold text-white mb-4">
-              Упс! Что-то пошло не так
+              Oops! Something went wrong
             </h1>
             <p className="text-blue-200 mb-8 text-lg">
-              Наши разработчики уже уведомлены и исправляют проблему
+              Our engineers have been notified and are already fixing the issue
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -34,18 +34,18 @@ export default function GlobalError({
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Попробовать снова
+                Try again
               </Button>
               <Button asChild variant="outline" className="border-white/30 text-white hover:bg-white/10">
                 <Link href="/">
                   <Home className="w-4 h-4 mr-2" />
-                  На главную
+                  Back home
                 </Link>
               </Button>
               <Button asChild variant="outline" className="border-white/30 text-white hover:bg-white/10">
                 <Link href="/catalog">
                   <ShoppingBag className="w-4 h-4 mr-2" />
-                  В каталог
+                  Browse catalog
                 </Link>
               </Button>
             </div>

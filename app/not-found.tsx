@@ -13,7 +13,7 @@ export default function NotFound() {
   useEffect(() => {
     setIsVisible(true)
 
-    // Управление миганием
+    // Toggle blinking effect
     const blinkInterval = setInterval(() => {
       setIsBlinking(prev => !prev)
     }, 800)
@@ -24,9 +24,9 @@ export default function NotFound() {
   return (
     <PageLayout>
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Энергетический фон - такой же как на главной */}
+        {/* Energy background similar to the hero */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
-          {/* Звездный эффект */}
+          {/* Star effect */}
           <div className="absolute inset-0">
             {[...Array(80)].map((_, i) => (
               <div
@@ -42,7 +42,7 @@ export default function NotFound() {
             ))}
           </div>
 
-          {/* Энергетические волны */}
+          {/* Energy waves */}
           <div className="absolute inset-0 opacity-30">
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
@@ -50,11 +50,11 @@ export default function NotFound() {
             <div className="absolute top-3/4 left-1/3 w-72 h-72 bg-pink-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '3s' }}></div>
           </div>
 
-          {/* Градиентный оверлей */}
+          {/* Gradient overlay */}
           <div className="absolute inset-0 bg-black/20"></div>
         </div>
 
-        {/* Контент */}
+        {/* Content */}
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <div className={`transform transition-all duration-1000 ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
@@ -66,21 +66,21 @@ export default function NotFound() {
               </h1>
             </div>
 
-            {/* Мигающая надпись */}
+            {/* Blinking copy */}
             <div className={`mb-12 transition-opacity duration-300 ${
               isBlinking ? 'opacity-100' : 'opacity-60'
             }`}>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 flex items-center justify-center gap-3">
                 <Sparkles className="w-8 h-8 text-yellow-400 animate-spin" />
-                Наши разработчики уже летят к тебе
+                Our engineers are already on their way
                 <Sparkles className="w-8 h-8 text-yellow-400 animate-spin" />
               </h2>
               <p className="text-xl text-blue-200 max-w-2xl mx-auto">
-                Эта страница попала в другое измерение, но мы её вернём!
+                This page slipped into another dimension, but we will bring it back!
               </p>
             </div>
 
-            {/* Кнопки */}
+            {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               <Button 
                 asChild 
@@ -88,7 +88,7 @@ export default function NotFound() {
               >
                 <Link href="/" className="flex items-center gap-3">
                   <Home className="w-5 h-5" />
-                  На главную
+                  Back home
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </Button>
@@ -100,21 +100,21 @@ export default function NotFound() {
               >
                 <Link href="/catalog" className="flex items-center gap-3">
                   <ShoppingBag className="w-5 h-5" />
-                  В каталог
+                  Browse catalog
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </Button>
             </div>
 
-            {/* Анимация разработчиков внизу */}
+            {/* Developer animation */}
             <div className="relative">
               <div className="flex justify-center items-center space-x-4">
-                {/* Космический корабль */}
+                {/* Spaceship */}
                 <div className="animate-bounce">
                   <div className="text-4xl">🚀</div>
                 </div>
                 
-                {/* Звёздочки */}
+                {/* Stars */}
                 <div className="flex space-x-2">
                   {[...Array(5)].map((_, i) => (
                     <div 
@@ -130,20 +130,20 @@ export default function NotFound() {
                   ))}
                 </div>
 
-                {/* Разработчик */}
+                {/* Developer */}
                 <div className="animate-bounce" style={{ animationDelay: '0.5s' }}>
                   <div className="text-4xl">👨‍💻</div>
                 </div>
               </div>
               
               <p className="text-blue-200 mt-4 text-sm animate-pulse">
-                Скорость полёта: 299,792,458 м/с (скорость света) ⚡
+                Travel speed: 299,792,458 m/s (speed of light) ⚡
               </p>
             </div>
           </div>
         </div>
 
-        {/* Дополнительные плавающие элементы */}
+        {/* Floating particles */}
         <div className="absolute inset-0 pointer-events-none">
           {[...Array(20)].map((_, i) => (
             <div
