@@ -74,7 +74,7 @@ export function AboutSection({ onCallRequest }: AboutSectionProps) {
               </p>
 
               <p>
-                We don't just offer analysis — we provide a path to transformation.
+                We don't just offer analysis - we provide a path to transformation.
                 Each client receives a personalized development program based on
                 their unique characteristics and needs.
               </p>

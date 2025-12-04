@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       `, { count: 'exact' })
             .order('created_at', { ascending: false })
 
-        // Фильтрация
+        // Filtering
         if (status && status !== 'all') {
             query = query.eq('status', status)
         }
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
             query = query.eq('assigned_admin_id', assignedAdmin)
         }
 
-        // Пагинация
+        // Pagination
         query = query.range(offset, offset + limit - 1)
 
         const { data, error, count } = await query
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Enhanced callback fetch error:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения заявок' },
+                { error: 'Failed to fetch requests' },
                 { status: 500 }
             )
         }
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Enhanced callback API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
@@ -110,29 +110,29 @@ export async function POST(request: NextRequest) {
             metadata = {}
         } = body
 
-        // Валидация обязательных полей
+        // Required fields validation
         if (!name || !phone) {
             return NextResponse.json(
-                { error: 'Имя и телефон обязательны' },
+                { error: 'Name and phone are required' },
                 { status: 400 }
             )
         }
 
-        // Валидация телефона
+        // Phone validation
         const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/
         if (!phoneRegex.test(phone)) {
             return NextResponse.json(
-                { error: 'Неверный формат телефона' },
+                { error: 'Invalid phone format' },
                 { status: 400 }
             )
         }
 
-        // Валидация email (если предоставлен)
+        // Email validation (if provided)
         if (email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
             if (!emailRegex.test(email)) {
                 return NextResponse.json(
-                    { error: 'Неверный формат email' },
+                    { error: 'Invalid email format' },
                     { status: 400 }
                 )
             }
@@ -140,8 +140,7 @@ export async function POST(request: NextRequest) {
 
         const supabase = getSupabaseAdmin()
 
-        // Сохранение заявки в базу данных
-        // Триггер автоматически создаст пользователя и issue_reports
+        // Save request; DB trigger auto-creates user and issue_reports
         const { data, error } = await supabase
             .from('callback_requests')
             .insert([
@@ -153,7 +152,7 @@ export async function POST(request: NextRequest) {
                     message: message?.trim() || null,
                     source_page: source_page || 'unknown',
                     product_type: product_type || 'callback',
-                    product_name: product_name || 'Заказ звонка',
+                    product_name: product_name || 'Call request',
                     notes: notes || null,
                     source: 'website',
                     status: 'new',
@@ -177,43 +176,43 @@ export async function POST(request: NextRequest) {
         if (error) {
             console.error('Enhanced callback insert error:', error)
             return NextResponse.json(
-                { error: 'Ошибка сохранения заявки', details: error.message },
+                { error: 'Failed to save request', details: error.message },
                 { status: 500 }
             )
         }
 
-        // Отправка уведомления в Telegram
-        const telegramMessage = `🆕 Новая заявка из CRM-системы:\n` +
-            `👤 Имя: ${name}\n` +
-            `📧 Email: ${email || 'Не указан'}\n` +
-            `📞 Телефон: ${phone}\n` +
-            `📦 Тип: ${product_type || 'callback'}\n` +
-            `🛍️ Товар/Услуга: ${product_name || 'Заказ звонка'}\n` +
-            `📝 Заметки: ${notes || 'Нет'}\n` +
-            `🌐 Источник: ${source_page || 'Не указан'}\n` +
-            `⚡ Приоритет: ${priority}\n` +
-            `🏷️ Теги: ${tags.length > 0 ? tags.join(', ') : 'Нет'}`
+        // Telegram notification
+        const telegramMessage = `🆕 New CRM callback request:\n` +
+            `👤 Name: ${name}\n` +
+            `📧 Email: ${email || 'Not provided'}\n` +
+            `📞 Phone: ${phone}\n` +
+            `📦 Type: ${product_type || 'callback'}\n` +
+            `🛍️ Product/Service: ${product_name || 'Call request'}\n` +
+            `📝 Notes: ${notes || 'None'}\n` +
+            `🌐 Source: ${source_page || 'Not specified'}\n` +
+            `⚡ Priority: ${priority}\n` +
+            `🏷️ Tags: ${tags.length > 0 ? tags.join(', ') : 'None'}`
 
         notifyCallbackTelegram(telegramMessage).catch((e) =>
             console.error('Telegram callback notify error:', e)
         )
 
-        // Если пользователь был создан автоматически, отправляем приветственное письмо
+        // If user auto-created, send welcome email
         if (data.auto_created_user && data.users?.temp_password) {
-            const welcomeMessage = `Добро пожаловать в EnergyLogic!
+            const welcomeMessage = `Welcome to EnergyLogic!
 
-Ваши данные для входа в личный кабинет:
+Your login details:
 Email: ${data.users.email}
-Временный пароль: ${data.users.temp_password}
+Temporary password: ${data.users.temp_password}
 
-Пожалуйста, смените пароль при первом входе.
+Please change your password on first login.
 
-С уважением,
-Команда EnergyLogic`
+Regards,
+EnergyLogic Team`
 
             notifyUserEmail({
                 to: data.users.email,
-                subject: 'Добро пожаловать в EnergyLogic!',
+                subject: 'Welcome to EnergyLogic!',
                 html: welcomeMessage.replace(/\n/g, '<br>'),
                 text: welcomeMessage
             }).catch((e) =>

@@ -9,22 +9,22 @@ export async function POST(request: NextRequest) {
 
         if (!event_type || !course_id) {
             return NextResponse.json({
-                error: 'Отсутствуют обязательные параметры'
+                error: 'Required parameters are missing'
             }, { status: 400 })
         }
 
-        // Проверяем доступ к курсу
+        // Check course access
         const accessCheck = await checkCourseAccess(course_id)
 
         if (!accessCheck.hasAccess || !accessCheck.userEmail) {
             return NextResponse.json({
-                error: 'Доступ запрещен'
+                error: 'Access denied'
             }, { status: 403 })
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Логируем событие в таблицу аналитики
+        // Log event to analytics table
         const { data, error } = await supabase
             .from('user_analytics_events')
             .insert({
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         if (error) {
             console.error('Error logging analytics event:', error)
             return NextResponse.json({
-                error: 'Ошибка сохранения события'
+                error: 'Failed to save event'
             }, { status: 500 })
         }
 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('Analytics API error:', error)
         return NextResponse.json({
-            error: 'Внутренняя ошибка сервера'
+            error: 'Internal server error'
         }, { status: 500 })
     }
 }

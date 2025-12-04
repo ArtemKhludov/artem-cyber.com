@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
       const telegramMessage = `📄 Новый документ добавлен в систему:
 📋 Название: ${document?.title}
 💰 Цена: ${document?.price_rub} ₽
-📊 Страниц: ${document?.page_count ?? '—'}
+📊 Страниц: ${document?.page_count ?? '-'}
 📅 Дата: ${new Date().toLocaleString('ru-RU')}`
 
       const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {

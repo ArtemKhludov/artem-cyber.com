@@ -845,7 +845,7 @@ export default function CoursePlayer() {
                                             void handleDownload(mainPdfKey, course.file_url, `${course.title}.pdf`, {
                                                 materialId: courseId,
                                                 materialType: 'main_pdf',
-                                                materialTitle: `${course.title} — Основной PDF`
+                                                materialTitle: `${course.title} - Основной PDF`
                                             })
                                         }}
                                         className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -868,7 +868,7 @@ export default function CoursePlayer() {
                                             void handlePreviewPdf({
                                                 materialKey: mainPdfKey,
                                                 fileUrl: course.file_url,
-                                                title: `${course.title} — Основной PDF`,
+                                                title: `${course.title} - Основной PDF`,
                                                 materialId: courseId,
                                                 materialType: 'main_pdf',
                                                 description: course.main_pdf_description || undefined

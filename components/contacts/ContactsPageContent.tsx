@@ -291,7 +291,7 @@ export function ContactsPageContent() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Работаете ли вы в выходные?</h3>
-                  <p className="text-gray-600 text-sm">Техническая поддержка доступна 24/7, консультации — с понедельника по пятницу.</p>
+                  <p className="text-gray-600 text-sm">Техническая поддержка доступна 24/7, консультации - с понедельника по пятницу.</p>
                 </div>
               </div>
             </div>

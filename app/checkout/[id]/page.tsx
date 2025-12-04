@@ -38,8 +38,8 @@ export async function generateMetadata({ params }: CheckoutPageProps) {
     .single()
 
   return {
-    title: document ? `Оплата: ${document.title} - EnergyLogic` : 'Оплата - EnergyLogic',
-    description: 'Безопасная оплата документов EnergyLogic через Stripe или Cryptomus',
+    title: document ? `Checkout: ${document.title} - EnergyLogic` : 'Checkout - EnergyLogic',
+    description: 'Secure payment for EnergyLogic documents via Stripe or Cryptomus',
   }
 }
 

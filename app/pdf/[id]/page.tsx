@@ -31,7 +31,7 @@ export default function PDFPage({ params }: PDFPageProps) {
         setLoading(true)
         setError(null)
 
-        // Загружаем основной документ
+        // Load main document
         const { data: document, error: docError } = await supabase
           .from('documents')
           .select('*')
@@ -39,12 +39,12 @@ export default function PDFPage({ params }: PDFPageProps) {
           .single()
 
         if (docError) {
-          throw new Error('Документ не найден')
+          throw new Error('Document not found')
         }
 
         setDocument(document)
 
-        // Загружаем другие документы
+        // Load other documents
         const { data: others, error: othersError } = await supabase
           .from('documents')
           .select('*')
@@ -59,7 +59,7 @@ export default function PDFPage({ params }: PDFPageProps) {
 
       } catch (err) {
         console.error('Error loading document:', err)
-        setError(err instanceof Error ? err.message : 'Ошибка загрузки')
+        setError(err instanceof Error ? err.message : 'Failed to load')
       } finally {
         setLoading(false)
       }
@@ -87,21 +87,21 @@ export default function PDFPage({ params }: PDFPageProps) {
           <div className="text-center">
             <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Документ не найден
+              Document not found
             </h1>
             <p className="text-gray-600 mb-6">
-              {error || 'Запрошенный документ не существует или был удален'}
+              {error || 'The requested document does not exist or was removed'}
             </p>
             <div className="space-x-4">
               <Button asChild>
                 <Link href="/">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  На главную
+                  Back home
                 </Link>
               </Button>
               <Button asChild variant="outline">
                 <Link href="/catalog">
-                  Каталог
+                  Catalog
                 </Link>
               </Button>
             </div>
@@ -136,15 +136,15 @@ export default function PDFPage({ params }: PDFPageProps) {
 
             <div className="container mx-auto px-4 relative z-10">
               <div className="text-center mb-16">
-                <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Курсы</span>
+                <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Courses</span>
                 <h2 className="text-4xl md:text-5xl font-bold mt-2 mb-6">
-                  Другие полезные
+                  More helpful
                   <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                    {" "}материалы
+                    {" "}materials
                   </span>
                 </h2>
                 <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                  Откройте для себя больше практических руководств для личностного роста
+                  Discover more practical guides for personal growth
                 </p>
               </div>
 

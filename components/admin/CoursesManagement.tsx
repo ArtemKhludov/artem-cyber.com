@@ -446,7 +446,7 @@ export function CoursesManagement() {
                         }
                         : doc
                 ))
-                alert(`Video added! Now ${updatedVideos.length} videos. Don't forget to upload the file.`)
+                alert(`Video added! Now ${updatedVideos.length} videos. Do not forget to upload the file.`)
             } else {
                 const error = await response.json()
                 alert(`Error: ${error.error}`)
@@ -940,13 +940,13 @@ export function CoursesManagement() {
                                         </div>
                                     ))}
                                 </div>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
 
-                                placeholder={`Video lesson ${index + 1} URL`}
-                            </DialogContent>
-                        </Dialog>
-                    </div>
-
-                    <Card>
+            <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
                                 <FileText className="h-5 w-5 mr-2" />

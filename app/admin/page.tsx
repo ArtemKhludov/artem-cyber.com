@@ -1218,7 +1218,7 @@ function AdminPageContent() {
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-1">
                   <h3 className="text-white font-semibold mb-3">Recent Grants/Revokes</h3>
                   {recentLoading ? (
-                    <p className="text-white/70 text-sm">Loading…</p>
+                    <p className="text-white/70 text-sm">Loading...</p>
                   ) : recentEvents.length === 0 ? (
                     <p className="text-white/50 text-sm">No Events</p>
                   ) : (

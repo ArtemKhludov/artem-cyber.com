@@ -325,7 +325,7 @@ export default function IssuesDashboard() {
                       <TableCell>
                         <Badge className={SEVERITY_COLORS[issue.severity] || 'bg-gray-100 text-gray-700'}>{issue.severity}</Badge>
                       </TableCell>
-                      <TableCell>{issue.assignee || '—'}</TableCell>
+                      <TableCell>{issue.assignee || '-'}</TableCell>
                       <TableCell>{new Date(issue.created_at).toLocaleString('ru-RU')}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">

@@ -162,7 +162,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
         <DialogHeader>
           <DialogTitle>Сообщить о проблеме</DialogTitle>
           <DialogDescription>
-            Расскажите, что пошло не так — мы передадим запрос команде поддержки.
+            Расскажите, что пошло не так - мы передадим запрос команде поддержки.
           </DialogDescription>
         </DialogHeader>
 
@@ -273,7 +273,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
         <DialogFooter className="flex items-center justify-between gap-2">
           <Button variant="outline" onClick={() => handleClose(false)}>Закрыть</Button>
           <Button onClick={handleSubmit} disabled={state === 'submitting' || state === 'success'}>
-            {state === 'submitting' ? 'Отправка…' : state === 'success' ? 'Отправлено' : 'Отправить'}
+            {state === 'submitting' ? 'Отправка...' : state === 'success' ? 'Отправлено' : 'Отправить'}
           </Button>
         </DialogFooter>
       </DialogContent>

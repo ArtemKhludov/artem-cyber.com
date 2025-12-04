@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         const supabase = getSupabaseAdmin()
         const stripe = getStripeInstance()
 
-        // Находим зависшие pending-покупки (без фильтра по created_at — текущая схема)
+        // Находим зависшие pending-покупки (без фильтра по created_at - текущая схема)
         const { data: pending, error: qErr } = await supabase
             .from('purchases')
             .select('id, stripe_payment_intent_id, stripe_session_id, payment_status, amount_paid, currency, document_id, user_id, user_email, payment_method')

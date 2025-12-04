@@ -18,7 +18,7 @@ interface SessionItem {
   isCurrent: boolean
 }
 
-const formatDateTime = (value: string | null, fallback = '—') => {
+const formatDateTime = (value: string | null, fallback = '-') => {
   if (!value) return fallback
   try {
     return new Date(value).toLocaleString('ru-RU')
@@ -93,7 +93,7 @@ export function SessionDevices() {
       <Card>
         <CardHeader>
           <CardTitle>Устройства</CardTitle>
-          <CardDescription>Подождите, загружаем активные сессии…</CardDescription>
+          <CardDescription>Подождите, загружаем активные сессии...</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-6">
           <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
@@ -157,7 +157,7 @@ export function SessionDevices() {
                     ) : null}
                   </div>
                   <div className="text-xs text-gray-500">
-                    IP: {session.ipAddress || '—'}
+                    IP: {session.ipAddress || '-'}
                     {session.userAgent ? ` · ${session.userAgent.slice(0, 80)}` : ''}
                   </div>
                   <div className="text-xs text-gray-500">
@@ -182,7 +182,7 @@ export function SessionDevices() {
                   >
                     {isBusy ? (
                       <>
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" /> Завершение…
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" /> Завершение...
                       </>
                     ) : (
                       <>

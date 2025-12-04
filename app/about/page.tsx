@@ -65,7 +65,7 @@ export default function AboutPage() {
   const whatWeDo = [
     'Identify repeating patterns (self-sacrifice, avoidance, fear of success, false self, etc.)',
     'Understand where you lose energy and control',
-    'Make key decisions — not from panic, but from clarity',
+    'Make key decisions - not from panic, but from clarity',
     'Get a clear plan based on you, not someone else\'s theory'
   ]
 
@@ -76,18 +76,18 @@ export default function AboutPage() {
   ]
 
   const revolutionPoints = [
-    '🤖 AI doesn\'t just help, it diagnoses — in real-time, accurately and deeper than humans',
-    '🧬 We combine emotions, hormones, thinking, and patterns into one map — fractal, living, updatable',
-    '💥 We don\'t work with symptoms — we uncover the root of the problem and immediately provide a path to change',
-    '🚫 We don\'t depend on one "expert\'s" opinion, AI is like hundreds of PhDs in all fields simultaneously — we have no fatigue, ego, bias, or "soft answers"'
+    '🤖 AI doesn\'t just help, it diagnoses - in real-time, accurately and deeper than humans',
+    '🧬 We combine emotions, hormones, thinking, and patterns into one map - fractal, living, updatable',
+    '💥 We don\'t work with symptoms - we uncover the root of the problem and immediately provide a path to change',
+    '🚫 We don\'t depend on one "expert\'s" opinion, AI is like hundreds of PhDs in all fields simultaneously - we have no fatigue, ego, bias, or "soft answers"'
   ]
 
   const forWhom = [
-    '🧱 Stuck — in a decision, state, life',
+    '🧱 Stuck - in a decision, state, life',
     '🔁 Sees that they repeat the same mistakes but can\'t break free',
     '❌ Tired of others\' advice and "motivation" that don\'t work',
     '🧩 Wants to understand themselves deeper than any books or psychotherapy allowed',
-    '⚡️ Ready to hear the truth — and turn it into action'
+    '⚡️ Ready to hear the truth - and turn it into action'
   ]
 
   return (
@@ -138,7 +138,7 @@ export default function AboutPage() {
 
                 <div className="text-center mb-12">
                   <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
-                    We show the truth — about you, your patterns, mistakes, key decision points, and resources.
+                    We show the truth - about you, your patterns, mistakes, key decision points, and resources.
                   </p>
                 </div>
               </div>
@@ -234,10 +234,10 @@ export default function AboutPage() {
               {/* Conclusion */}
               <div className="text-center p-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white">
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                  EnergyLogic is not about "improving."
+                  EnergyLogic is not about &quot;improving.&quot;
                 </h2>
                 <p className="text-xl leading-relaxed max-w-3xl mx-auto">
-                  It's about remembering who you are — without noise, lies, and fear.<br />
+                  It&apos;s about remembering who you are - without noise, lies, and fear.<br />
                   And starting to live from that point.
                 </p>
               </div>

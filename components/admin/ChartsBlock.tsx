@@ -64,7 +64,7 @@ export default function ChartsBlock() {
                     </select>
                 </div>
                 {loading ? (
-                    <p className="text-white/70 text-sm">Загрузка…</p>
+                    <p className="text-white/70 text-sm">Загрузка...</p>
                 ) : error ? (
                     <p className="text-red-300 text-sm">{error}</p>
                 ) : (
@@ -78,7 +78,7 @@ export default function ChartsBlock() {
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3">Выдачи / Отзывы доступа</h3>
                 {loading ? (
-                    <p className="text-white/70 text-sm">Загрузка…</p>
+                    <p className="text-white/70 text-sm">Загрузка...</p>
                 ) : error ? (
                     <p className="text-red-300 text-sm">{error}</p>
                 ) : (
@@ -92,7 +92,7 @@ export default function ChartsBlock() {
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3">Воронка</h3>
                 {loading || !data ? (
-                    <p className="text-white/70 text-sm">Загрузка…</p>
+                    <p className="text-white/70 text-sm">Загрузка...</p>
                 ) : (
                     <div className="flex gap-4 text-white">
                         <div className="flex-1 bg-white/10 rounded p-3 text-center">
@@ -114,7 +114,7 @@ export default function ChartsBlock() {
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3">Аномалии</h3>
                 {loading || !data ? (
-                    <p className="text-white/70 text-sm">Загрузка…</p>
+                    <p className="text-white/70 text-sm">Загрузка...</p>
                 ) : (
                     <ul className="text-white/90 text-sm">
                         <li>Застрявшие pending (&gt;24ч): {data.anomalies?.stuckPending || 0}</li>
@@ -126,7 +126,7 @@ export default function ChartsBlock() {
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3">Топ курсов (выручка)</h3>
                 {loading || !data ? (
-                    <p className="text-white/70 text-sm">Загрузка…</p>
+                    <p className="text-white/70 text-sm">Загрузка...</p>
                 ) : (
                     <ul className="text-white/90 text-sm">
                         {(data.topRevenueCourses || []).map((c: any) => (
@@ -139,7 +139,7 @@ export default function ChartsBlock() {
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3">Топ курсов (активные доступы)</h3>
                 {loading || !data ? (
-                    <p className="text-white/70 text-sm">Загрузка…</p>
+                    <p className="text-white/70 text-sm">Загрузка...</p>
                 ) : (
                     <ul className="text-white/90 text-sm">
                         {(data.topAccessCourses || []).map((c: any) => (

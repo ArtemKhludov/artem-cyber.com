@@ -59,7 +59,7 @@ export function Advantages() {
       icon: Shield,
       title: 'Safe Boundaries, but Radical Honesty',
       subtitle: 'Truth that liberates',
-      description: 'We create a safe space to work with the deepest traumas and fears. At the same time, our approach involves maximum honesty — only this way real changes are possible.',
+      description: 'We create a safe space to work with the deepest traumas and fears. At the same time, our approach involves maximum honesty - only this way real changes are possible.',
       features: [
         'Confidentiality guaranteed',
         'Ethical standards of work',

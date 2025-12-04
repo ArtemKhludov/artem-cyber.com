@@ -114,7 +114,7 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
   const formatDate = (occurredAt: string) => {
     const date = new Date(occurredAt)
     if (Number.isNaN(date.getTime())) {
-      return '—'
+      return '-'
     }
     return date.toLocaleDateString('ru-RU')
   }

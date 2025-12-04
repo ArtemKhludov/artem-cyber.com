@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
                         `   Created: ${new Date(issue.created_at).toLocaleDateString('en-US')}\n\n`
                 })
             } else {
-                statusMessage += `📝 You don't have any support requests yet.`
+                statusMessage += `📝 You do not have any support requests yet.`
             }
 
             await sendTelegramMessage(botToken, chatId, statusMessage)
@@ -308,7 +308,7 @@ export async function POST(request: NextRequest) {
             if (purchasesError || !purchases || purchases.length === 0) {
                 await sendTelegramMessage(botToken, chatId,
                     '🛒 <b>My Purchases</b>\n\n' +
-                    'You don't have any purchases yet.\n\n' +
+                    'You do not have any purchases yet.\n\n' +
                     'Go to the catalog to choose a suitable course.'
                 )
                 return NextResponse.json({ ok: true })

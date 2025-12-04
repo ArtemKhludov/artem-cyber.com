@@ -123,7 +123,7 @@ const PURCHASE_STATUS_META: Record<PurchaseStatus, {
     label: 'Processing',
     badgeClass: 'bg-blue-100 text-blue-800',
     allowActions: false,
-    hint: 'Payment is being processed. Refresh the page in a few minutes — access will appear automatically.',
+    hint: 'Payment is being processed. Refresh the page in a few minutes - access will appear automatically.',
     tone: 'info',
     allowRetry: true,
     supportReason: 'Payment stuck in "Processing" status'
@@ -1067,7 +1067,7 @@ export default function DashboardPage() {
                                     </TableCell>
                                     <TableCell>{formattedDate}</TableCell>
                                     <TableCell>${purchase.price.toLocaleString('en-US')}</TableCell>
-                                    <TableCell>{formattedExpiresAt || '—'}</TableCell>
+                                    <TableCell>{formattedExpiresAt || '-'}</TableCell>
                                     <TableCell className="text-right">
                                       <div className="flex justify-end gap-2">
                                         {statusMeta.allowActions && openHref ? (
