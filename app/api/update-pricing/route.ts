@@ -3,35 +3,35 @@ import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
     try {
-        // Конкретные цены для обновления (используем точные названия из базы)
+        // Specific prices to update (use exact titles from DB)
         const pricingUpdates = [
             {
-                title: "EnergyLogic: Искусство Перекалибровки Реальности",
+                title: "EnergyLogic: The Art of Reality Recalibration",
                 price: 2990,
                 price_rub: 2990
             },
             {
-                title: "Карта Самопознания: Когда Я Ничего Не Понимаю",
+                title: "Self-Discovery Map: When I Understand Nothing",
                 price: 1990,
                 price_rub: 1990
             },
             {
-                title: "Нейробиология эмоций: биологические основы и методы синхронизации",
+                title: "Neurobiology of Emotions: Foundations and Synchronization Methods",
                 price: 2490,
                 price_rub: 2490
             },
             {
-                title: "Распознавание внешних сценариев: Инструменты самонаблюдения",
+                title: "Recognizing External Scripts: Self-Observation Tools",
                 price: 3490,
                 price_rub: 3490
             },
             {
-                title: "Настраиваемая реальность: метафизическая модель сознания",
+                title: "Configurable Reality: Metaphysical Model of Consciousness",
                 price: 3990,
                 price_rub: 3990
             },
             {
-                title: "Квантовая Архитектура Намерения: Метод Сознательной Перезаписи Реальности",
+                title: "Quantum Architecture of Intention: Conscious Reality Rewrite",
                 price: 4990,
                 price_rub: 4990
             }
@@ -59,14 +59,14 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: 'Цены обновлены',
+            message: 'Prices updated',
             results
         })
 
     } catch (error) {
         console.error('Update pricing error:', error)
         return NextResponse.json(
-            { error: 'Ошибка обновления цен' },
+            { error: 'Pricing update failed' },
             { status: 500 }
         )
     }

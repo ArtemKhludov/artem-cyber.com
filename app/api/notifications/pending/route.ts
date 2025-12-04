@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
     
-    // Получаем все ожидающие уведомления
+    // Fetch all pending notifications
     const { data: notifications, error } = await supabase
       .from('callback_notifications')
       .select('*')

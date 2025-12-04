@@ -235,7 +235,7 @@ export default function RevokeAccessModal({
                             <option value="">Выберите курс</option>
                             {filteredDocuments.map((d) => (
                                 <option key={d.id} value={d.id}>
-                                    {d.title}{d.price_rub ? ` — ${d.price_rub} ₽` : ''}
+                                    {d.title}{d.price_rub ? ` - ${d.price_rub} ₽` : ''}
                                 </option>
                             ))}
                         </select>
@@ -285,7 +285,7 @@ export default function RevokeAccessModal({
                     <div className="flex items-center justify-end gap-3 pt-2">
                         <Button type="button" variant="outline" onClick={onClose}>Отмена</Button>
                         <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700">
-                            {loading ? 'Отзыв…' : 'Отозвать доступ'}
+                            {loading ? 'Отзыв...' : 'Отозвать доступ'}
                         </Button>
                     </div>
                 </form>

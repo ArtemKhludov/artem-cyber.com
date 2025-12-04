@@ -19,66 +19,66 @@ export async function POST(request: NextRequest) {
 
         switch (testType) {
             case 'welcome':
-                subject = '🧪 Тест Resend - Добро пожаловать'
+                subject = '🧪 Resend Test - Welcome'
                 emailContent = {
                     html: `
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                            <h1 style="color: #2563eb;">🧪 Тест Resend</h1>
-                            <p>Это тестовое письмо для проверки работы Resend на домене energylogic-ai.com</p>
-                            <p><strong>Время отправки:</strong> ${new Date().toLocaleString('ru-RU')}</p>
-                            <p><strong>Тип теста:</strong> Welcome Email</p>
+                            <h1 style="color: #2563eb;">🧪 Resend Test</h1>
+                            <p>This is a test email to verify Resend on domain energylogic-ai.com</p>
+                            <p><strong>Sent at:</strong> ${new Date().toLocaleString('en-US')}</p>
+                            <p><strong>Test type:</strong> Welcome Email</p>
                             <hr style="margin: 20px 0;">
                             <p style="color: #666; font-size: 14px;">
-                                Если вы получили это письмо, значит Resend работает корректно!
+                                If you received this email, Resend works correctly!
                             </p>
                         </div>
                     `,
-                    text: `🧪 Тест Resend - Добро пожаловать\n\nЭто тестовое письмо для проверки работы Resend на домене energylogic-ai.com\nВремя отправки: ${new Date().toLocaleString('ru-RU')}\nТип теста: Welcome Email\n\nЕсли вы получили это письмо, значит Resend работает корректно!`
+                    text: `🧪 Resend Test - Welcome\n\nThis is a test email to verify Resend on energylogic-ai.com\nSent at: ${new Date().toLocaleString('en-US')}\nTest type: Welcome Email\n\nIf you received this email, Resend works correctly!`
                 }
                 break
 
             case 'callback':
-                subject = '🧪 Тест Resend - Обратный звонок'
+                subject = '🧪 Resend Test - Callback'
                 emailContent = {
                     html: `
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                            <h1 style="color: #2563eb;">🧪 Тест Resend</h1>
-                            <p>Это тестовое письмо для проверки работы Resend на домене energylogic-ai.com</p>
-                            <p><strong>Время отправки:</strong> ${new Date().toLocaleString('ru-RU')}</p>
-                            <p><strong>Тип теста:</strong> Callback Email</p>
+                            <h1 style="color: #2563eb;">🧪 Resend Test</h1>
+                            <p>This is a test email to verify Resend on domain energylogic-ai.com</p>
+                            <p><strong>Sent at:</strong> ${new Date().toLocaleString('en-US')}</p>
+                            <p><strong>Test type:</strong> Callback Email</p>
                             <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <h3>Детали тестового запроса:</h3>
-                                <p><strong>Имя:</strong> Тестовый Пользователь</p>
+                                <h3>Test request details:</h3>
+                                <p><strong>Name:</strong> Test User</p>
                                 <p><strong>Email:</strong> ${email}</p>
-                                <p><strong>Телефон:</strong> +7 (999) 123-45-67</p>
-                                <p><strong>Сообщение:</strong> Это тестовый запрос на обратный звонок</p>
+                                <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+                                <p><strong>Message:</strong> This is a test callback request</p>
                             </div>
                             <hr style="margin: 20px 0;">
                             <p style="color: #666; font-size: 14px;">
-                                Если вы получили это письмо, значит Resend работает корректно!
+                                If you received this email, Resend works correctly!
                             </p>
                         </div>
                     `,
-                    text: `🧪 Тест Resend - Обратный звонок\n\nЭто тестовое письмо для проверки работы Resend на домене energylogic-ai.com\nВремя отправки: ${new Date().toLocaleString('ru-RU')}\nТип теста: Callback Email\n\nДетали тестового запроса:\nИмя: Тестовый Пользователь\nEmail: ${email}\nТелефон: +7 (999) 123-45-67\nСообщение: Это тестовый запрос на обратный звонок\n\nЕсли вы получили это письмо, значит Resend работает корректно!`
+                    text: `🧪 Resend Test - Callback\n\nThis is a test email to verify Resend on energylogic-ai.com\nSent at: ${new Date().toLocaleString('en-US')}\nTest type: Callback Email\n\nTest request details:\nName: Test User\nEmail: ${email}\nPhone: +1 (555) 123-4567\nMessage: This is a test callback request\n\nIf you received this email, Resend works correctly!`
                 }
                 break
 
             default:
-                subject = '🧪 Тест Resend - Простое письмо'
+                subject = '🧪 Resend Test - Simple email'
                 emailContent = {
                     html: `
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                            <h1 style="color: #2563eb;">🧪 Тест Resend</h1>
-                            <p>Это тестовое письмо для проверки работы Resend на домене energylogic-ai.com</p>
-                            <p><strong>Время отправки:</strong> ${new Date().toLocaleString('ru-RU')}</p>
-                            <p><strong>Тип теста:</strong> Simple Email</p>
+                            <h1 style="color: #2563eb;">🧪 Resend Test</h1>
+                            <p>This is a test email to verify Resend on domain energylogic-ai.com</p>
+                            <p><strong>Sent at:</strong> ${new Date().toLocaleString('en-US')}</p>
+                            <p><strong>Test type:</strong> Simple Email</p>
                             <hr style="margin: 20px 0;">
                             <p style="color: #666; font-size: 14px;">
-                                Если вы получили это письмо, значит Resend работает корректно!
+                                If you received this email, Resend works correctly!
                             </p>
                         </div>
                     `,
-                    text: `🧪 Тест Resend - Простое письмо\n\nЭто тестовое письмо для проверки работы Resend на домене energylogic-ai.com\nВремя отправки: ${new Date().toLocaleString('ru-RU')}\nТип теста: Simple Email\n\nЕсли вы получили это письмо, значит Resend работает корректно!`
+                    text: `🧪 Resend Test - Simple email\n\nThis is a test email to verify Resend on energylogic-ai.com\nSent at: ${new Date().toLocaleString('en-US')}\nTest type: Simple Email\n\nIf you received this email, Resend works correctly!`
                 }
         }
 
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
             }, { status: 400 })
         }
 
-        // Используем POST логику
+        // Reuse POST logic
         const response = await POST(request)
         return response
 

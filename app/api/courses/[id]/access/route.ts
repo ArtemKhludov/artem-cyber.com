@@ -66,7 +66,7 @@ export async function GET(
     const now = new Date()
 
     if (!courseAccess || (courseAccess.expires_at && new Date(courseAccess.expires_at) <= now)) {
-      // Если доступа нет — пробуем восстановить его из завершенных покупок
+      // Если доступа нет - пробуем восстановить его из завершенных покупок
       try {
         await ensureCourseAccessForUser(supabase, userId, id)
       } catch (ensureError) {

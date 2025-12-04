@@ -11,7 +11,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
 })
 
-// Это должно быть настроено в Stripe Dashboard
+// Must be configured in Stripe Dashboard
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
 
 export async function HEAD() {
@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get('stripe-signature')!
 
   try {
-    // Проверяем подпись webhook
+    // Verify webhook signature
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
 
-    // Обрабатываем различные типы событий
+    // Handle event types
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
         const purchase = purchasesUpdated?.[0] || requestsUpdated?.[0]
         if (purchase) {
           const telegramMessage = `✅ Stripe checkout.session.completed\n` +
-            `Email: ${purchase.user_email || purchase.email || '—'}\n` +
-            `Doc: ${purchase.document_id || '—'}\n` +
+            `Email: ${purchase.user_email || purchase.email || '-'}\n` +
+            `Doc: ${purchase.document_id || '-'}\n` +
             `Amount: ${(purchase.amount_paid ?? purchase.amount ?? '')} ${purchase.currency || ''}\n` +
             `PI/Session: ${paymentIntentId || sessionId}`
           notifyPaymentTelegram(telegramMessage).catch((e) => console.error('Telegram notify error:', e))
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 
         console.log('Payment completed:', sessionId)
 
-        // Синхронизируем user_course_access с новым успешным платежом
+        // Sync user_course_access with successful payment
         await syncCourseAccessByStatus(supabase, purchasesUpdated, 'completed', {
           source: 'stripe',
           metadata: {
@@ -143,9 +143,9 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('Payment session expired:', sessionId)
-        notifyPaymentTelegram(`⚠️ Stripe checkout.session.expired\nSession: ${sessionId}\nPI: ${paymentIntentId || '—'}`).catch(() => { })
+        notifyPaymentTelegram(`⚠️ Stripe checkout.session.expired\nSession: ${sessionId}\nPI: ${paymentIntentId || '-'}`).catch(() => { })
 
-        // Отзываем доступ, если платеж не завершился
+        // Revoke access if payment did not complete
         await syncCourseAccessByStatus(supabase, failedPurchases, 'failed', {
           source: 'stripe',
           reason: 'checkout_session_expired',
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const supabase = getSupabaseAdmin()
 
-        // Помечаем покупку как неудачную
+        // Mark purchase as failed
         const { data: failedPurchases, error } = await supabase
           .from('purchases')
           .update({
@@ -265,7 +265,7 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('Charge refunded:', charge.id)
-        notifyPaymentTelegram(`↩️ Stripe charge.refunded\nCharge: ${charge.id}\nPI: ${paymentIntentId || '—'}`).catch(() => { })
+        notifyPaymentTelegram(`↩️ Stripe charge.refunded\nCharge: ${charge.id}\nPI: ${paymentIntentId || '-'}`).catch(() => { })
 
         // При возврате блокируем доступ к курсу
         await syncCourseAccessByStatus(supabase, refundedPurchases, 'refunded', {

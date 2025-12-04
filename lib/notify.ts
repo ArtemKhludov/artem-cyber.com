@@ -161,7 +161,7 @@ export async function notifyIssueTelegram(payload: IssueTelegramPayload): Promis
 function truncate(value: string, max: number): string {
     if (!value) return ''
     if (value.length <= max) return value
-    return value.slice(0, max - 1) + '…'
+    return value.slice(0, max - 1) + '...'
 }
 // Convenience wrappers for common streams
 export async function notifyCallbackTelegram(message: string): Promise<void> {

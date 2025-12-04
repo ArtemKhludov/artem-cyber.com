@@ -30,7 +30,7 @@ export async function GET(
         if (error) {
             console.error('Callback replies fetch error:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения ответов' },
+                { error: 'Failed to fetch replies' },
                 { status: 500 }
             )
         }
@@ -40,7 +40,7 @@ export async function GET(
     } catch (error) {
         console.error('Callback replies API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
@@ -54,7 +54,7 @@ export async function POST(
         const resolvedParams = await params
         const callbackId = resolvedParams.id
 
-        // Проверяем, кто отправляет ответ (админ или пользователь)
+        // Determine who is sending reply (admin or user)
         const authHeader = request.headers.get('authorization')
         const isAdmin = authHeader?.startsWith('Bearer ')
 
@@ -74,14 +74,14 @@ export async function POST(
 
         if (!message || message.trim().length === 0) {
             return NextResponse.json(
-                { error: 'Сообщение не может быть пустым' },
+                { error: 'Message cannot be empty' },
                 { status: 400 }
             )
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Получаем информацию о заявке
+        // Get callback request info
         const { data: callbackRequest, error: callbackError } = await supabase
             .from('callback_requests')
             .select(`
@@ -101,16 +101,16 @@ export async function POST(
 
         if (callbackError || !callbackRequest) {
             return NextResponse.json(
-                { error: 'Заявка не найдена' },
+                { error: 'Request not found' },
                 { status: 404 }
             )
         }
 
-        // Определяем тип автора
+        // Determine author type
         const authorType = validation.user.role === 'admin' ? 'admin' : 'user'
         const authorEmail = validation.user.email
 
-        // Создаем ответ
+        // Create reply
         const { data: reply, error: replyError } = await supabase
             .from('callback_replies')
             .insert([
@@ -129,12 +129,12 @@ export async function POST(
         if (replyError) {
             console.error('Callback reply insert error:', replyError)
             return NextResponse.json(
-                { error: 'Ошибка сохранения ответа' },
+                { error: 'Failed to save reply' },
                 { status: 500 }
             )
         }
 
-        // Обновляем статус заявки
+        // Update request status
         let newStatus = callbackRequest.status
         if (authorType === 'admin' && callbackRequest.status === 'new') {
             newStatus = 'in_progress'
@@ -152,19 +152,19 @@ export async function POST(
                 .eq('id', callbackId)
         }
 
-        // Отправляем уведомления
+        // Send notifications
         if (!is_internal && callbackRequest.users) {
             const user = callbackRequest.users
 
-            // Уведомление по email
+            // Email notification
             if (user.notify_email_enabled && authorType === 'admin') {
-                const emailSubject = `Ответ на вашу заявку: ${callbackRequest.product_name || 'Заявка на звонок'}`
-                const emailMessage = `Здравствуйте, ${user.name}!
+                const emailSubject = `Reply to your request: ${callbackRequest.product_name || 'Call request'}`
+                const emailMessage = `Hello ${user.name},
 
 ${message}
 
-С уважением,
-Команда EnergyLogic`
+Regards,
+EnergyLogic Team`
 
                 notifyUserEmail({
                     to: user.email,
@@ -175,7 +175,7 @@ ${message}
                     console.error('Callback reply email error:', e)
                 )
 
-                // Записываем уведомление
+                // Log notification
                 await supabase
                     .from('callback_notifications')
                     .insert({
@@ -192,19 +192,19 @@ ${message}
                     })
             }
 
-            // Уведомление в Telegram
+            // Telegram notification
             if (user.notify_telegram_enabled && user.telegram_chat_id && authorType === 'admin') {
-                const telegramMessage = `💬 <b>Новый ответ на вашу заявку</b>\n\n` +
+                const telegramMessage = `💬 <b>New reply to your request</b>\n\n` +
                     `${message}\n\n` +
-                    `📞 <b>Ваша заявка:</b> ${callbackRequest.product_name || 'Заявка на звонок'}\n` +
-                    `📅 <b>Дата:</b> ${new Date().toLocaleString('ru-RU')}\n\n` +
-                    `💡 <i>Для ответа используйте личный кабинет</i>`
+                    `📞 <b>Your request:</b> ${callbackRequest.product_name || 'Call request'}\n` +
+                    `📅 <b>Date:</b> ${new Date().toLocaleString('en-US')}\n\n` +
+                    `💡 <i>Please reply via your dashboard</i>`
 
                 notifyUserTelegram(user.telegram_chat_id, telegramMessage).catch((e) =>
                     console.error('Callback reply telegram error:', e)
                 )
 
-                // Записываем уведомление
+                // Log notification
                 await supabase
                     .from('callback_notifications')
                     .insert({

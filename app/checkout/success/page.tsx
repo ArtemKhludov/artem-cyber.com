@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button'
 import { PageLayout } from '@/components/layout/PageLayout'
 
 export const metadata = {
-  title: 'Оплата завершена - EnergyLogic',
-  description: 'Спасибо за покупку! Ваш документ готов к скачиванию.',
+  title: 'Payment complete - EnergyLogic',
+  description: 'Thank you for your purchase! Your document is ready to download.',
 }
 
 function SuccessPageContent() {
@@ -21,11 +21,11 @@ function SuccessPageContent() {
 
           {/* Success Message */}
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Оплата успешно завершена!
+            Payment completed successfully!
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Спасибо за покупку! Ваш документ уже готов к скачиванию. 
-            Мы также отправили ссылку на скачивание на указанную электронную почту.
+            Thank you for your purchase! Your document is ready to download.
+            We also sent a download link to your email.
           </p>
 
           {/* Action Cards */}
@@ -36,14 +36,14 @@ function SuccessPageContent() {
                 <Download className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Скачать документ
+                Download document
               </h3>
               <p className="text-gray-600 mb-4">
-                Получите мгновенный доступ к приобретенному PDF-документу
+                Get instant access to your purchased PDF
               </p>
               <Button className="w-full bg-blue-600 hover:bg-blue-700">
                 <Download className="w-4 h-4 mr-2" />
-                Скачать сейчас
+                Download now
               </Button>
             </div>
 
@@ -53,14 +53,14 @@ function SuccessPageContent() {
                 <Mail className="w-8 h-8 text-purple-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Проверьте почту
+                Check your email
               </h3>
               <p className="text-gray-600 mb-4">
-                Мы отправили ссылку для скачивания и чек об оплате на вашу почту
+                We've sent the download link and receipt to your email
               </p>
               <Button variant="outline" className="w-full border-purple-500 text-purple-600 hover:bg-purple-50">
                 <Mail className="w-4 h-4 mr-2" />
-                Не пришло письмо?
+                Didn't get the email?
               </Button>
             </div>
           </div>
@@ -68,29 +68,29 @@ function SuccessPageContent() {
           {/* Additional Information */}
           <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Что дальше?
+              What's next?
             </h3>
             <div className="grid md:grid-cols-3 gap-6 text-sm">
               <div className="text-center">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <span className="text-green-600 font-bold">1</span>
                 </div>
-                <h4 className="font-medium text-gray-900 mb-2">Скачайте файл</h4>
-                <p className="text-gray-600">Сохраните PDF на своё устройство для постоянного доступа</p>
+                <h4 className="font-medium text-gray-900 mb-2">Download the file</h4>
+                <p className="text-gray-600">Save the PDF to your device for quick access</p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <span className="text-blue-600 font-bold">2</span>
                 </div>
-                <h4 className="font-medium text-gray-900 mb-2">Изучайте материал</h4>
-                <p className="text-gray-600">Применяйте полученные знания в своей жизни</p>
+                <h4 className="font-medium text-gray-900 mb-2">Study the material</h4>
+                <p className="text-gray-600">Apply the insights to your life</p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <span className="text-purple-600 font-bold">3</span>
                 </div>
-                <h4 className="font-medium text-gray-900 mb-2">Получите поддержку</h4>
-                <p className="text-gray-600">Обращайтесь к нашим экспертам при возникновении вопросов</p>
+                <h4 className="font-medium text-gray-900 mb-2">Get support</h4>
+                <p className="text-gray-600">Reach out to our experts if you have questions</p>
               </div>
             </div>
           </div>
@@ -100,21 +100,21 @@ function SuccessPageContent() {
             <Button asChild variant="outline" className="border-gray-300">
               <Link href="/catalog">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Вернуться к каталогу
+                Back to catalog
               </Link>
             </Button>
             <Button asChild className="bg-blue-600 hover:bg-blue-700">
               <Link href="/">
-                На главную страницу
+                Back to home
               </Link>
             </Button>
           </div>
 
           {/* Support Info */}
           <div className="mt-12 p-6 bg-gray-50 rounded-xl">
-            <h4 className="font-semibold text-gray-900 mb-2">Нужна помощь?</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">Need help?</h4>
             <p className="text-gray-600 mb-4">
-              Если у вас возникли проблемы со скачиванием или есть вопросы, свяжитесь с нами:
+              If you have issues with the download or any questions, contact us:
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
@@ -125,10 +125,10 @@ function SuccessPageContent() {
               </a>
               <span className="hidden sm:inline text-gray-400">•</span>
               <a 
-                href="tel:+79991234567" 
+                href="tel:+15551234567" 
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                +7 (999) 123-45-67
+                +1 (555) 123-4567
               </a>
             </div>
           </div>

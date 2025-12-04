@@ -19,7 +19,7 @@ export default function PrivacyPage() {
 
           <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">1. General Provisions</h2>
           <p className="text-gray-700 mb-4">
-            This Privacy Policy describes how we — the EnergyLogic project team operating from Los Angeles, California, USA — collect, use, and store your personal data.
+            This Privacy Policy describes how we - the EnergyLogic project team operating from Los Angeles, California, USA - collect, use, and store your personal data.
           </p>
           <p className="text-gray-700 mb-4">
             At the time of publication of this document, no legal entity has been registered; however, we strictly adhere to the principles of:

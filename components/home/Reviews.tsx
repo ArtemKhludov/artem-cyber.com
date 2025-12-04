@@ -18,7 +18,7 @@ export function Reviews() {
       profession: 'Marketing Manager',
       avatar: 'AM',
       rating: 5,
-      text: 'EnergyLogic completely changed my self-perception. In 20 minutes of the session, I learned more about myself than in years of self-analysis. The PDF report is so accurate that I reread it multiple times, not believing my eyes. The analysis of my hidden fears was especially striking — everything was spot on!',
+      text: 'EnergyLogic completely changed my self-perception. In 20 minutes of the session, I learned more about myself than in years of self-analysis. The PDF report is so accurate that I reread it multiple times, not believing my eyes. The analysis of my hidden fears was especially striking - everything was spot on!',
       program: 'Mini Session',
       beforeAfter: {
         before: 'Constant self-doubt',
@@ -46,7 +46,7 @@ export function Reviews() {
       profession: 'Psychologist',
       avatar: 'ES',
       rating: 5,
-      text: 'As a psychologist, I was skeptical about AI analysis. But the result exceeded all expectations! The system saw what I had been trying to work through in therapy for years. The analysis of speech patterns was especially impressive — every pause and intonation was interpreted correctly.',
+      text: 'As a psychologist, I was skeptical about AI analysis. But the result exceeded all expectations! The system saw what I had been trying to work through in therapy for years. The analysis of speech patterns was especially impressive - every pause and intonation was interpreted correctly.',
       program: 'Deep Day',
       beforeAfter: {
         before: 'Professional burnout',
@@ -74,7 +74,7 @@ export function Reviews() {
       profession: 'Doctor',
       avatar: 'MK',
       rating: 5,
-      text: 'At 45, I thought it was too late to change anything. EnergyLogic showed me I\'m just at the beginning of the journey. The analysis revealed my hidden creative potential. Now I\'m not only a doctor but also an artist — I opened a personal exhibition!',
+      text: 'At 45, I thought it was too late to change anything. EnergyLogic showed me I\'m just at the beginning of the journey. The analysis revealed my hidden creative potential. Now I\'m not only a doctor but also an artist - I opened a personal exhibition!',
       program: 'Deep Day',
       beforeAfter: {
         before: 'Feeling of missed opportunities',

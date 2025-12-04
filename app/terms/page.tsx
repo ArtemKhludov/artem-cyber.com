@@ -25,7 +25,7 @@ export default function TermsPage() {
           <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">1. General Provisions</h2>
           <div className="text-gray-700 mb-6 space-y-4">
             <p>
-              <strong>1.1.</strong> This agreement (hereinafter — "Agreement") governs the relationship between the user (hereinafter — "User") and the owners of the EnergyLogic platform (hereinafter — "Administration").
+              <strong>1.1.</strong> This agreement (hereinafter - "Agreement") governs the relationship between the user (hereinafter - "User") and the owners of the EnergyLogic platform (hereinafter - "Administration").
             </p>
             <p>
               <strong>1.2.</strong> By using the site, you confirm your agreement with the terms of this Agreement. If you disagree with any provision, please discontinue use of the site.

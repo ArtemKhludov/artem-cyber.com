@@ -1,4 +1,4 @@
-// API для обработки отложенных email уведомлений
+// API to process queued email notifications
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin()
     
-    // Получаем все pending уведомления
+    // Fetch pending notifications
     const { data: notifications, error } = await supabase
       .from('callback_notifications')
       .select(`
@@ -31,20 +31,20 @@ export async function POST(request: NextRequest) {
       `)
       .eq('status', 'pending')
       .order('created_at', { ascending: true })
-      .limit(10) // Обрабатываем по 10 за раз
+      .limit(10) // Process 10 at a time
 
-    if (error) {
-      console.error('Error fetching notifications:', error)
-      return NextResponse.json(
-        { error: 'Ошибка получения уведомлений' },
+      if (error) {
+        console.error('Error fetching notifications:', error)
+        return NextResponse.json(
+        { error: 'Failed to fetch notifications' },
         { status: 500 }
-      )
-    }
+        )
+      }
 
     if (!notifications || notifications.length === 0) {
       return NextResponse.json({
         success: true,
-        message: 'Нет pending уведомлений',
+        message: 'No pending notifications',
         processed: 0
       })
     }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
               emailSent = await emailService.sendCallbackReplyEmail({
                 name: notification.callback_requests.name,
                 email: notification.callback_requests.email,
-                adminName: notification.metadata?.admin_name || 'Специалист',
+                adminName: notification.metadata?.admin_name || 'Specialist',
                 message: notification.metadata?.message || '',
                 callbackId: notification.callback_request_id,
                 dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
               emailSent = await emailService.sendCallbackStatusEmail({
                 name: notification.callback_requests.name,
                 email: notification.callback_requests.email,
-                status: notification.metadata?.status || 'Обновлен',
+                status: notification.metadata?.status || 'Updated',
                 callbackId: notification.callback_request_id,
                 dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
               })
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
             console.log(`Unknown notification type: ${notification.notification_type}`)
         }
 
-        // Обновляем статус уведомления
+        // Update notification status
         const updateData: any = {
           status: emailSent ? 'sent' : 'failed',
           sent_at: new Date().toISOString()
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error(`Error processing notification ${notification.id}:`, error)
         
-        // Помечаем как failed
+        // Mark as failed
         await supabase
           .from('callback_notifications')
           .update({
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Обработано ${processed} уведомлений, ошибок: ${errors}`,
+      message: `Processed ${processed} notifications, errors: ${errors}`,
       processed,
       errors,
       total: notifications.length
@@ -146,13 +146,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error processing notifications:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-// GET endpoint для проверки статуса уведомлений
+// GET endpoint to check notification stats
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin()
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Error fetching notification stats:', error)
       return NextResponse.json(
-        { error: 'Ошибка получения статистики' },
+        { error: 'Failed to fetch stats' },
         { status: 500 }
       )
     }
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching notification stats:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

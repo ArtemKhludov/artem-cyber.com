@@ -267,7 +267,7 @@ export const fallbackDocuments: Document[] = [
   {
     id: "fallback-2",
     title: "Карта Самопознания: Когда Я Ничего Не Понимаю",
-    description: "Путешествие к истинному пониманию себя — это непрерывный процесс трансформации",
+    description: "Путешествие к истинному пониманию себя - это непрерывный процесс трансформации",
     price_rub: 199,
     file_url: "#",
     cover_url: "/images/fallback-cover-2.jpg",

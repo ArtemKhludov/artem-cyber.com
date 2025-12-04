@@ -47,7 +47,7 @@ export default function LogsViewer() {
                 <input value={action} onChange={(e) => setAction(e.target.value)} placeholder="action" className="px-3 py-2 rounded bg-white/20 border border-white/30 text-white placeholder-white/50" />
                 <button onClick={load} className="px-3 py-2 rounded bg-blue-600 text-white">Обновить</button>
             </div>
-            {loading ? <div className="text-white/80 text-sm">Загрузка…</div> : error ? <div className="text-red-300 text-sm">{error}</div> : (
+            {loading ? <div className="text-white/80 text-sm">Загрузка...</div> : error ? <div className="text-red-300 text-sm">{error}</div> : (
                 <div className="max-h-96 overflow-auto">
                     <table className="w-full text-sm">
                         <thead className="text-white/60">

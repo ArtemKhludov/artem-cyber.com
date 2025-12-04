@@ -18,7 +18,7 @@ export default function ContactsPage() {
   ])
   const sectionRef = useRef<HTMLElement>(null)
 
-  // Состояния для формы обратного звонка
+  // Callback form state
   const [callbackFormData, setCallbackFormData] = useState({
     name: '',
     phone: '',
@@ -78,7 +78,7 @@ export default function ContactsPage() {
       setIsCallbackSubmitted(true)
       setCallbackFormData({ name: '', phone: '', email: '', preferred_time: '', message: '', agreed: false })
 
-      // Сброс формы через 5 секунд
+      // Reset form after 5 seconds
       setTimeout(() => {
         setIsCallbackSubmitted(false)
       }, 5000)
@@ -135,7 +135,7 @@ export default function ContactsPage() {
             setChatMessages(prev => [...prev, managerResponse])
           }, 1000)
         } else {
-          throw new Error('Ошибка отправки')
+          throw new Error('Send error')
         }
       } catch (error) {
         // Failure: show error message
@@ -196,7 +196,7 @@ export default function ContactsPage() {
       title: 'Hours',
       value: '24/7',
       href: '#',
-      description: 'We’re always on'
+      description: 'We are always on'
     }
   ]
 
@@ -209,10 +209,10 @@ export default function ContactsPage() {
 
   return (
     <div className="relative">
-      {/* Главное меню */}
+      {/* Main menu */}
       <MainHeader onCallRequest={handleCallRequest} />
 
-      {/* Основной контент */}
+      {/* Main content */}
       <main ref={sectionRef}>
         {/* Hero Section */}
         <section className="pt-32 pb-20 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
@@ -220,22 +220,22 @@ export default function ContactsPage() {
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Контакты
+                  Contacts
                 </span>
               </h1>
               <p className="text-xl md:text-2xl mb-12 text-blue-100 leading-relaxed">
-                Свяжитесь с нами любым удобным способом<br />
-                Мы всегда готовы помочь и ответить на ваши вопросы
+                Reach out in any way you like<br />
+                We're always ready to help and answer your questions
               </p>
             </div>
           </div>
         </section>
 
-        {/* Контактная информация */}
+        {/* Contact info */}
         <section className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              {/* Контактные данные */}
+              {/* Contact cards */}
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
                 {contactInfo.map((contact, index) => (
                   <div key={index} className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
@@ -254,11 +254,11 @@ export default function ContactsPage() {
                 ))}
               </div>
 
-              {/* Основной контент */}
+              {/* Core content */}
               <div className="grid lg:grid-cols-2 gap-12">
-                {/* Форма обратного звонка */}
+                {/* Callback form */}
                 <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 p-8 rounded-2xl shadow-lg border border-blue-100 relative overflow-hidden">
-                  {/* Декоративные элементы */}
+                  {/* Decorative elements */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-xl"></div>
 
@@ -269,14 +269,14 @@ export default function ContactsPage() {
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                          Заказать обратный звонок
+                          Request a call back
                         </h2>
-                        <p className="text-sm text-gray-500">Мы перезвоним вам в удобное время</p>
+                        <p className="text-sm text-gray-500">We'll call you back at a convenient time</p>
                       </div>
                     </div>
 
                     <p className="text-gray-600 mb-6 text-lg">
-                      📞 Оставьте свои контакты, и мы перезвоним вам в удобное время
+                      📞 Leave your contacts and we'll call you back at a convenient time
                     </p>
 
                     {!isCallbackSubmitted ? (
@@ -289,14 +289,14 @@ export default function ContactsPage() {
 
                         <form onSubmit={handleCallbackSubmit} className="space-y-4">
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">👤 Ваше имя *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">👤 Your name *</label>
                             <div className="relative">
                               <input
                                 type="text"
                                 value={callbackFormData.name}
                                 onChange={(e) => setCallbackFormData(prev => ({ ...prev, name: e.target.value }))}
                                 className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300"
-                                placeholder="Введите ваше имя"
+                                placeholder="Enter your name"
                                 required
                               />
                               <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
@@ -306,14 +306,14 @@ export default function ContactsPage() {
                           </div>
 
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">📱 Телефон *</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">📱 Phone *</label>
                             <div className="relative">
                               <input
                                 type="tel"
                                 value={callbackFormData.phone}
                                 onChange={(e) => setCallbackFormData(prev => ({ ...prev, phone: e.target.value }))}
                                 className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300"
-                                placeholder="+7 (999) 123-45-67"
+                                placeholder="+1 (555) 123-4567"
                                 required
                               />
                               <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
@@ -323,7 +323,7 @@ export default function ContactsPage() {
                           </div>
 
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">📧 Email (необязательно)</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">📧 Email (optional)</label>
                             <div className="relative">
                               <input
                                 type="email"
@@ -339,14 +339,14 @@ export default function ContactsPage() {
                           </div>
 
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">⏰ Удобное время для звонка</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">⏰ Preferred call time</label>
                             <div className="relative">
                               <select
                                 value={callbackFormData.preferred_time}
                                 onChange={(e) => setCallbackFormData(prev => ({ ...prev, preferred_time: e.target.value }))}
                                 className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300 appearance-none"
                               >
-                                <option value="">В любое время</option>
+                                <option value="">Any time</option>
                                 <option value="9:00 - 12:00">9:00 - 12:00</option>
                                 <option value="12:00 - 15:00">12:00 - 15:00</option>
                                 <option value="15:00 - 18:00">15:00 - 18:00</option>
@@ -362,14 +362,14 @@ export default function ContactsPage() {
                           </div>
 
                           <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">💬 Комментарий</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">💬 Message</label>
                             <div className="relative">
                               <textarea
                                 rows={3}
                                 value={callbackFormData.message}
                                 onChange={(e) => setCallbackFormData(prev => ({ ...prev, message: e.target.value }))}
                                 className="w-full px-4 py-3 pl-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300 resize-none"
-                                placeholder="О чем хотите поговорить?"
+                                placeholder="What would you like to discuss?"
                               />
                               <div className="absolute left-4 top-4">
                                 <MessageSquare className="w-5 h-5 text-gray-400" />
@@ -377,7 +377,7 @@ export default function ContactsPage() {
                             </div>
                           </div>
 
-                          {/* Согласие с правовыми документами */}
+                          {/* Legal consent */}
                           <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
                             <div className="flex items-start space-x-3">
                               <input
@@ -389,18 +389,18 @@ export default function ContactsPage() {
                                 required
                               />
                               <label htmlFor="callback-disclaimer" className="text-sm text-gray-700 leading-relaxed">
-                                <span className="font-medium text-yellow-800">⚠️ Важно:</span>{' '}
-                                Нажимая кнопку, вы соглашаетесь с{' '}
+                                <span className="font-medium text-yellow-800">⚠️ Important:</span>{' '}
+                                By clicking the button, you agree to our{' '}
                                 <Link href="/privacy" className="text-blue-600 hover:underline font-medium">
-                                  политикой конфиденциальности
+                                  Privacy Policy
                                 </Link>
                                 {', '}
                                 <Link href="/terms" className="text-blue-600 hover:underline font-medium">
-                                  пользовательским соглашением
+                                  Terms of Service
                                 </Link>
-                                {' '}и{' '}
+                                {' '}and{' '}
                                 <Link href="/disclaimer" className="text-blue-600 hover:underline font-medium">
-                                  отказом от ответственности
+                                  Disclaimer
                                 </Link>
                               </label>
                             </div>
@@ -414,12 +414,12 @@ export default function ContactsPage() {
                             {isCallbackSubmitting ? (
                               <div className="flex items-center justify-center">
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                Отправляем...
+                                Sending...
                               </div>
                             ) : (
                               <>
                                 <Phone className="mr-2 w-5 h-5" />
-                                Заказать звонок
+                                Request a call
                               </>
                             )}
                           </Button>
@@ -431,15 +431,14 @@ export default function ContactsPage() {
                           <CheckCircle className="w-8 h-8 text-white" />
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                          Спасибо за заявку!
+                          Thanks for your request!
                         </h3>
                         <p className="text-gray-600 text-lg">
-                          Мы получили вашу заявку и перезвоним вам в указанное время.
+                          We received your request and will call you at the selected time.
                         </p>
                         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
                           <p className="text-sm text-blue-700">
-                            Следующий шаг: наш специалист свяжется с вами для уточнения деталей
-                            и ответит на все ваши вопросы.
+                            Next step: our specialist will contact you to confirm details and answer any questions.
                           </p>
                         </div>
                       </div>
@@ -447,9 +446,9 @@ export default function ContactsPage() {
                   </div>
                 </div>
 
-                {/* Онлайн чат */}
+                {/* Online chat */}
                 <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 p-8 rounded-2xl shadow-lg border border-blue-100 relative overflow-hidden">
-                  {/* Декоративные элементы */}
+                  {/* Decorative elements */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-xl"></div>
 
@@ -461,22 +460,22 @@ export default function ContactsPage() {
                         </div>
                         <div>
                           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                            Онлайн чат
+                            Online chat
                           </h2>
-                          <p className="text-sm text-gray-500">Прямая связь с нашими специалистами</p>
+                          <p className="text-sm text-gray-500">Direct line with our specialists</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 bg-green-100 px-3 py-1 rounded-full">
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm text-green-700 font-medium">Онлайн</span>
+                        <span className="text-sm text-green-700 font-medium">Online</span>
                       </div>
                     </div>
 
                     <p className="text-gray-600 mb-6 text-lg">
-                      💬 Напишите нам прямо сейчас. Менеджер ответит в течение 2-3 минут
+                      💬 Send us a message now. A manager replies within 2-3 minutes.
                     </p>
 
-                    {/* Чат окно */}
+                    {/* Chat window */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 h-64 mb-6 overflow-y-auto border border-white/50 shadow-inner">
                       {chatMessages.map((message) => (
                         <div
@@ -499,7 +498,7 @@ export default function ContactsPage() {
                       ))}
                     </div>
 
-                    {/* Согласие с отказом от ответственности */}
+                    {/* Disclaimer consent */}
                     <div className="mb-4">
                       <div className="flex items-start space-x-3">
                         <input
@@ -508,16 +507,16 @@ export default function ContactsPage() {
                           className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                         <label htmlFor="chat-disclaimer" className="text-sm text-gray-700 leading-relaxed">
-                          <span className="font-medium text-yellow-800">⚠️ Важно:</span>{' '}
-                          Я подтверждаю, что понимаю, что результаты не являются диагнозом, и принимаю ответственность за использование материалов.{' '}
+                          <span className="font-medium text-yellow-800">⚠️ Important:</span>{' '}
+                          I confirm I understand results are not a diagnosis and I take responsibility for using the materials.{' '}
                           <Link href="/disclaimer" className="text-blue-600 hover:underline font-medium">
-                            Отказ от ответственности
+                            Disclaimer
                           </Link>
                         </label>
                       </div>
                     </div>
 
-                    {/* Поле ввода */}
+                    {/* Input */}
                     <div className="flex space-x-3">
                       <div className="flex-1 relative">
                         <input
@@ -526,7 +525,7 @@ export default function ContactsPage() {
                           onChange={(e) => setChatMessage(e.target.value)}
                           onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                           className="w-full px-4 py-3 pr-12 bg-white/90 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-300"
-                          placeholder="💬 Введите ваше сообщение..."
+                          placeholder="💬 Enter your message..."
                         />
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                           <MessageCircle className="w-5 h-5 text-gray-400" />
@@ -543,11 +542,11 @@ export default function ContactsPage() {
                 </div>
               </div>
 
-              {/* Социальные сети */}
+              {/* Social networks */}
               <div className="mt-16 text-center">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Мы в социальных сетях</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Follow us</h2>
                 <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-                  Следите за нашими новостями, участвуйте в обсуждениях и получайте полезные материалы
+                  Stay tuned for updates, join discussions, and get helpful materials
                 </p>
                 <div className="flex justify-center space-x-4">
                   {socialLinks.map((social, index) => (
@@ -565,15 +564,15 @@ export default function ContactsPage() {
                 </div>
               </div>
 
-              {/* Карта */}
+              {/* Map */}
               <div className="mt-16">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Как нас найти</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">How to find us</h2>
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                   <div className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
                     <div className="text-center">
                       <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">Интерактивная карта</p>
-                      <p className="text-sm text-gray-500">Москва, ул. Примерная, 123</p>
+                      <p className="text-gray-600">Interactive map</p>
+                      <p className="text-sm text-gray-500">Los Angeles, CA</p>
                     </div>
                   </div>
                 </div>
@@ -586,20 +585,20 @@ export default function ContactsPage() {
         <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Готовы начать свое путешествие к самопознанию?
+              Ready to start your journey of self-discovery?
             </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Свяжитесь с нами прямо сейчас и получите персональную консультацию
+              Contact us now and get a personalized consultation
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button onClick={handleCallRequest} size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
                 <Phone className="mr-2 w-4 h-4" />
-                Заказать звонок
+                Request a call
               </Button>
               <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
                 <Link href="/book">
                   <MessageCircle className="mr-2 w-4 h-4" />
-                  Записаться на сессию
+                  Book a session
                 </Link>
               </Button>
             </div>

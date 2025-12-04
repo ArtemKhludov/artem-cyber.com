@@ -47,13 +47,13 @@ export default function CallbacksAdminPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка загрузки заявок')
+        throw new Error(data.error || 'Failed to load requests')
       }
 
       setRequests(data.data)
       setPagination(data.pagination)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Произошла ошибка')
+      setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -74,10 +74,10 @@ export default function CallbacksAdminPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Ошибка обновления статуса')
+        throw new Error('Failed to update status')
       }
 
-      // Обновляем локальное состояние
+      // Update local state
       setRequests(prev => prev.map(req => 
         req.id === id ? { ...req, status: status as any } : req
       ))
@@ -104,20 +104,20 @@ export default function CallbacksAdminPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'new':
-        return 'Новая'
+        return 'New'
       case 'contacted':
-        return 'Связались'
+        return 'Contacted'
       case 'completed':
-        return 'Завершена'
+        return 'Completed'
       case 'cancelled':
-        return 'Отменена'
+        return 'Cancelled'
       default:
         return status
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ru-RU')
+    return new Date(dateString).toLocaleString('en-US')
   }
 
   if (loading && requests.length === 0) {
@@ -125,7 +125,7 @@ export default function CallbacksAdminPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка заявок...</p>
+          <p className="mt-4 text-gray-600">Loading requests...</p>
         </div>
       </div>
     )
@@ -137,10 +137,10 @@ export default function CallbacksAdminPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Заявки на обратный звонок
+            Callback requests
           </h1>
           <p className="text-gray-600">
-            Управление заявками на обратный звонок
+            Manage callback requests
           </p>
         </div>
 
@@ -149,7 +149,7 @@ export default function CallbacksAdminPage() {
           <div className="flex flex-wrap gap-4 items-center">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Статус
+                Status
               </label>
               <select
                 value={statusFilter}
@@ -159,17 +159,17 @@ export default function CallbacksAdminPage() {
                 }}
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="all">Все статусы</option>
-                <option value="new">Новые</option>
-                <option value="contacted">Связались</option>
-                <option value="completed">Завершены</option>
-                <option value="cancelled">Отменены</option>
+                <option value="all">All statuses</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
 
             <div className="ml-auto">
               <Button onClick={fetchRequests} disabled={loading}>
-                Обновить
+                Refresh
               </Button>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function CallbacksAdminPage() {
           {requests.length === 0 ? (
             <div className="text-center py-12">
               <Phone className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Заявок не найдено</p>
+              <p className="text-gray-600">No requests found</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -195,22 +195,22 @@ export default function CallbacksAdminPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Клиент
+                      Client
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Контакты
+                      Contacts
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Детали
+                      Details
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Статус
+                      Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Дата
+                      Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Действия
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -282,14 +282,14 @@ export default function CallbacksAdminPage() {
                                 onClick={() => updateStatus(request.id, 'contacted')}
                                 className="bg-blue-600 hover:bg-blue-700"
                               >
-                                Связались
+                                Contacted
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => updateStatus(request.id, 'cancelled')}
                               >
-                                Отменить
+                                Cancel
                               </Button>
                             </>
                           )}
@@ -300,7 +300,7 @@ export default function CallbacksAdminPage() {
                                 onClick={() => updateStatus(request.id, 'completed')}
                                 className="bg-green-600 hover:bg-green-700"
                               >
-                                Завершить
+                                Complete
                               </Button>
                             </>
                           )}
@@ -325,7 +325,7 @@ export default function CallbacksAdminPage() {
         {pagination && pagination.totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Показано {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} из {pagination.total}
+              Showing {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
             </div>
             <div className="flex space-x-2">
               <Button
@@ -333,14 +333,14 @@ export default function CallbacksAdminPage() {
                 disabled={pagination.page === 1}
                 onClick={() => setCurrentPage(pagination.page - 1)}
               >
-                Назад
+                Prev
               </Button>
               <Button
                 variant="outline"
                 disabled={pagination.page === pagination.totalPages}
                 onClick={() => setCurrentPage(pagination.page + 1)}
               >
-                Вперед
+                Next
               </Button>
             </div>
           </div>

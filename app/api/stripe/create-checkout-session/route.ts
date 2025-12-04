@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Получаем документ из базы данных
+    // Fetch document from database
     const { data: document, error: docError } = await supabase
       .from('documents')
       .select('*')
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Создаем Stripe Checkout Session
+    // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
             currency: currency.toLowerCase(),
             product_data: {
               name: document.title,
-              description: document.description.substring(0, 500), // Stripe ограничивает длину
+              description: document.description.substring(0, 500), // Stripe limits length
               images: [document.cover_url],
             },
-            unit_amount: Math.round(amount * 100), // Stripe работает в копейках
+            unit_amount: Math.round(amount * 100), // Stripe expects minor units
           },
           quantity: 1,
         },
@@ -66,13 +66,13 @@ export async function POST(request: NextRequest) {
         userCountry: userCountry || '',
         userIP: userIP || '',
       },
-      // Если есть email, предзаполняем
+      // Prefill email if provided
       ...(userEmail && {
         customer_email: userEmail,
       }),
     })
 
-    // Создаем запись о покупке в статусе pending
+    // Create purchase record in pending status
     const { error: purchaseError } = await supabase
       .from('purchases')
       .insert({
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     if (purchaseError) {
       console.error('Error creating purchase record:', purchaseError)
-      // Продолжаем выполнение, так как Stripe session уже создан
+      // Continue even if DB insert fails because Stripe session exists
     }
 
     return NextResponse.json({

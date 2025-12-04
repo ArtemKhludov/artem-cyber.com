@@ -15,7 +15,9 @@
     "test:system": "node scripts/test-system.js",
     "test:database": "node scripts/test-database.js",
     "test:ui": "node scripts/test-ui.js",
-    "test:callback": "node scripts/test-callback-flow.js"
+    "test:callback": "node scripts/test-callback-flow.js",
+    "check:typography": "node scripts/check-typography.js",
+    "fix:typography": "node scripts/fix-typography.js"
   },
   "dependencies": {
     "@daily-co/daily-js": "^0.82.0",

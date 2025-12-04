@@ -226,7 +226,7 @@ export default function GrantAccessModal({
                             <option value="">Выберите курс</option>
                             {filteredDocuments.map((d) => (
                                 <option key={d.id} value={d.id}>
-                                    {d.title}{d.price_rub ? ` — ${d.price_rub} ₽` : ''}
+                                    {d.title}{d.price_rub ? ` - ${d.price_rub} ₽` : ''}
                                 </option>
                             ))}
                         </select>
@@ -260,7 +260,7 @@ export default function GrantAccessModal({
                     <div className="flex items-center justify-end gap-3 pt-2">
                         <Button type="button" variant="outline" onClick={onClose}>Отмена</Button>
                         <Button type="submit" disabled={loading} className="bg-green-600 hover:bg-green-700">
-                            {loading ? 'Выдача…' : 'Выдать доступ'}
+                            {loading ? 'Выдача...' : 'Выдать доступ'}
                         </Button>
                     </div>
                 </form>
