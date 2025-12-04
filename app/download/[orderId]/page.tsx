@@ -357,16 +357,15 @@ export default function DownloadPage() {
               </svg>
               <div>
                 <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                  Отчет готовится
+                  Report in progress
                 </h3>
                 <p className="text-yellow-700 mb-4">
-                  Наши специалисты анализируют результаты вашей сессии.
-                  Обычно это занимает 2-3 рабочих дня. Мы уведомим вас по email,
-                  когда отчет будет готов.
+                  Our specialists are analyzing your session results.
+                  This typically takes 2-3 business days. We will email you when the report is ready.
                 </p>
                 <div className="text-sm text-yellow-600">
-                  <strong>Ожидаемое время готовности:</strong>
-                  {order.updated_at && ` ${new Date(new Date(order.updated_at).getTime() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}`}
+                  <strong>Expected ready time:</strong>
+                  {order.updated_at && ` ${new Date(new Date(order.updated_at).getTime() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US')}`}
                 </div>
               </div>
             </div>
@@ -376,7 +375,7 @@ export default function DownloadPage() {
         {/* Navigation */}
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <Button variant="outline" asChild>
-            <Link href="/dashboard">Личный кабинет</Link>
+            <Link href="/dashboard">Dashboard</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/book">Записаться еще раз</Link>
