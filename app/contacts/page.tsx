@@ -14,7 +14,7 @@ export default function ContactsPage() {
   const [chatMessage, setChatMessage] = useState('')
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [chatMessages, setChatMessages] = useState([
-    { id: 1, text: 'Здравствуйте! Чем могу помочь?', isUser: false, time: '14:30' }
+    { id: 1, text: 'Hello! How can I help?', isUser: false, time: '14:30' }
   ])
   const sectionRef = useRef<HTMLElement>(null)
 
@@ -43,7 +43,7 @@ export default function ContactsPage() {
     e.preventDefault()
 
     if (!callbackFormData.agreed) {
-      setCallbackSubmitError('Необходимо согласиться с условиями')
+      setCallbackSubmitError('You must agree to the terms')
       return
     }
 
@@ -64,15 +64,15 @@ export default function ContactsPage() {
           preferred_time: callbackFormData.preferred_time,
           source_page: '/contacts',
           product_type: 'callback_request',
-          product_name: 'Заказ обратного звонка',
-          notes: `Время для звонка: ${callbackFormData.preferred_time || 'В любое время'}. Сообщение: ${callbackFormData.message || 'Нет'}`
+          product_name: 'Callback request',
+          notes: `Preferred time: ${callbackFormData.preferred_time || 'Any time'}. Message: ${callbackFormData.message || 'None'}`
         })
       })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Ошибка отправки заявки')
+        throw new Error(result.error || 'Failed to submit request')
       }
 
       setIsCallbackSubmitted(true)
@@ -85,7 +85,7 @@ export default function ContactsPage() {
 
     } catch (error) {
       console.error('Error submitting callback form:', error)
-      setCallbackSubmitError(error instanceof Error ? error.message : 'Произошла ошибка при отправке')
+      setCallbackSubmitError(error instanceof Error ? error.message : 'An error occurred while sending')
     } finally {
       setIsCallbackSubmitting(false)
     }
@@ -97,40 +97,40 @@ export default function ContactsPage() {
         id: chatMessages.length + 1,
         text: chatMessage,
         isUser: true,
-        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
       }
       setChatMessages([...chatMessages, newMessage])
       const userMessage = chatMessage
       setChatMessage('')
 
       try {
-        // Отправляем сообщение в CRM-систему
+        // Send message to CRM
         const response = await fetch('/api/callback', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            name: 'Пользователь чата',
-            phone: 'Не указан',
-            email: 'Не указан',
+            name: 'Chat user',
+            phone: 'Not provided',
+            email: 'Not provided',
             message: userMessage,
             preferred_time: '',
             source_page: '/contacts',
             product_type: 'chat_message',
-            product_name: 'Сообщение из чата',
-            notes: `Сообщение из чата: ${userMessage}`
+            product_name: 'Chat message',
+            notes: `Chat message: ${userMessage}`
           })
         })
 
         if (response.ok) {
-          // Успешная отправка - показываем подтверждение
+          // Success: show confirmation
           setTimeout(() => {
             const managerResponse = {
               id: chatMessages.length + 2,
-              text: '✅ Сообщение получено! Менеджер свяжется с вами в ближайшее время.',
+              text: '✅ Message received! A manager will contact you shortly.',
               isUser: false,
-              time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+              time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
             }
             setChatMessages(prev => [...prev, managerResponse])
           }, 1000)
@@ -138,13 +138,13 @@ export default function ContactsPage() {
           throw new Error('Ошибка отправки')
         }
       } catch (error) {
-        // Ошибка отправки - показываем сообщение об ошибке
+        // Failure: show error message
         setTimeout(() => {
           const errorResponse = {
             id: chatMessages.length + 2,
-            text: '❌ Произошла ошибка при отправке. Попробуйте еще раз или используйте форму "Заказать звонок".',
+            text: '❌ Failed to send. Please try again or use the "Request a call" form.',
             isUser: false,
-            time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
           }
           setChatMessages(prev => [...prev, errorResponse])
         }, 1000)
@@ -172,31 +172,31 @@ export default function ContactsPage() {
   const contactInfo = [
     {
       icon: Phone,
-      title: 'Телефон',
-      value: '+7 (999) 123-45-67',
-      href: 'tel:+79991234567',
-      description: 'Звоните в любое время'
+      title: 'Phone',
+      value: '+1 (555) 123-4567',
+      href: 'tel:+15551234567',
+      description: 'Call us any time'
     },
     {
       icon: Mail,
       title: 'Email',
       value: 'support@energylogic.com',
       href: 'mailto:support@energylogic.com',
-      description: 'Пишите нам на почту'
+      description: 'Drop us a line'
     },
     {
       icon: MapPin,
-      title: 'Адрес',
-      value: 'Москва, ул. Примерная, 123',
+      title: 'Address',
+      value: 'Los Angeles, CA',
       href: '#',
-      description: 'Наш офис в центре города'
+      description: 'Our US office'
     },
     {
       icon: Clock,
-      title: 'Режим работы',
+      title: 'Hours',
       value: '24/7',
       href: '#',
-      description: 'Работаем круглосуточно'
+      description: 'We’re always on'
     }
   ]
 

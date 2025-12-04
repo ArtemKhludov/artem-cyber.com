@@ -21,7 +21,7 @@ export default function BookPage() {
   const router = useRouter()
   const sectionRef = useRef<HTMLElement>(null)
 
-  // Обработка URL параметров для выбора программы
+  // Handle URL params for program selection
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search)
@@ -91,58 +91,58 @@ export default function BookPage() {
   const programs = [
     {
       id: 'mini-session',
-      title: 'Mini-сессия',
-      subtitle: 'Быстрая диагностика',
+      title: 'Mini Session',
+      subtitle: 'Fast diagnostics',
       price: '₽4,999',
       originalPrice: '₽6,999',
-      duration: '20 минут',
+      duration: '20 minutes',
       features: [
-        'Анализ речевых паттернов',
-        'Базовый PDF-отчет',
-        'Общие рекомендации',
-        'Поддержка 7 дней'
+        'Speech pattern analysis',
+        'Basic PDF report',
+        'General recommendations',
+        '7 days of support'
       ],
-      description: 'Экспресс-анализ личности с базовыми рекомендациями. Идеально для первого знакомства с системой.',
+      description: 'Express personality analysis with baseline recommendations. Perfect for a first look at the system.',
       popular: false,
       gradient: 'from-blue-500 to-blue-600',
       icon: '⚡'
     },
     {
       id: 'deep-day',
-      title: 'Глубокий день',
-      subtitle: 'Полная трансформация',
+      title: 'Deep Day',
+      subtitle: 'Full transformation',
       price: '₽24,999',
       originalPrice: '₽34,999',
-      duration: '6 часов',
+      duration: '6 hours',
       features: [
-        'Глубокий психоанализ',
-        'Детальный PDF-отчет 50+ страниц',
-        'Персональная программа развития',
-        'Индивидуальные упражнения',
-        'Поддержка 30 дней',
-        'Дополнительная сессия через месяц'
+        'Deep psychoanalysis',
+        'Detailed PDF report (50+ pages)',
+        'Personal development program',
+        'Individual exercises',
+        '30 days of support',
+        'Follow-up session in a month'
       ],
-      description: 'Комплексный анализ с детальной проработкой всех аспектов личности и персональной программой развития.',
+      description: 'Comprehensive analysis with deep work on all aspects of personality and a tailored development program.',
       popular: true,
       gradient: 'from-purple-500 to-pink-500',
       icon: '🔮'
     },
     {
       id: 'transformation-21',
-      title: '21 день',
-      subtitle: 'Новое «Я»',
+      title: '21 Days',
+      subtitle: 'New “You”',
       price: '₽49,999',
       originalPrice: '₽69,999',
-      duration: '21 день',
+      duration: '21 days',
       features: [
-        'Ежедневные мини-сессии',
-        'Персональный куратор',
-        'Еженедельные отчеты',
-        'Группа поддержки',
-        'Финальная сессия с планом на год',
-        'Пожизненная поддержка'
+        'Daily mini-sessions',
+        'Personal curator',
+        'Weekly reports',
+        'Support group',
+        'Final session with a 1-year plan',
+        'Lifetime support'
       ],
-      description: 'Полная трансформация личности за 21 день с ежедневным сопровождением и коучингом.',
+      description: 'Complete personality transformation in 21 days with daily guidance and coaching.',
       popular: false,
       gradient: 'from-emerald-500 to-teal-500',
       icon: '🚀'
@@ -151,29 +151,29 @@ export default function BookPage() {
 
   const faqItems = [
     {
-      question: 'Как проходит сессия?',
-      answer: 'Онлайн-встреча через защищенную платформу с записью для анализа'
+      question: 'How does a session work?',
+      answer: 'Online meeting via a secure platform with a recording for analysis'
     },
     {
-      question: 'Можно ли перенести время?',
-      answer: 'Да, можно перенести за 24 часа до начала'
+      question: 'Can I reschedule?',
+      answer: 'Yes, rescheduling is possible up to 24 hours before start'
     },
     {
-      question: 'Когда получу результаты?',
-      answer: 'PDF-отчет будет готов в течение 2-3 дней после сессии'
+      question: 'When will I get results?',
+      answer: 'The PDF report will be ready within 2-3 days after the session'
     },
     {
-      question: 'Есть ли противопоказания?',
-      answer: 'Метод безопасен, противопоказаний нет'
+      question: 'Are there any contraindications?',
+      answer: 'The method is safe; there are no contraindications'
     }
   ]
 
   return (
     <div className="relative">
-      {/* Главное меню */}
+      {/* Main menu */}
       <MainHeader onCallRequest={handleCallRequest} />
 
-      {/* Основной контент */}
+      {/* Main content */}
       <main ref={sectionRef}>
         {/* Hero Section */}
         <section className="pt-32 pb-16 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
@@ -181,30 +181,30 @@ export default function BookPage() {
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Программы трансформации
+                  Transformation programs
                 </span>
               </h1>
               <p className="text-lg md:text-xl mb-8 text-blue-100 leading-relaxed">
-                Персональная энергетическая диагностика с ИИ-анализом
+                Personal energy diagnostics with AI analysis
               </p>
             </div>
           </div>
         </section>
 
-        {/* Переключатель программ */}
+        {/* Program selector */}
         <section className="py-16 bg-white border-b border-gray-100">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                  Выберите подходящую программу
+                  Choose the right program
                 </h2>
                 <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                  Каждая программа разработана для разных уровней готовности к изменениям
+                  Each program is crafted for different levels of readiness for change
                 </p>
               </div>
 
-              {/* Табы программ */}
+              {/* Program tabs */}
               <div className="flex flex-wrap justify-center gap-4 mb-12">
                 {programs.map((program) => (
                   <button
@@ -218,7 +218,7 @@ export default function BookPage() {
                     {program.popular && (
                       <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
                         <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                          Популярный
+                          Popular
                         </div>
                       </div>
                     )}
@@ -230,7 +230,7 @@ export default function BookPage() {
                 ))}
               </div>
 
-              {/* Контент выбранной программы */}
+              {/* Selected program content */}
               <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
                 {programs.map((program) => (
                   <div
@@ -281,7 +281,7 @@ export default function BookPage() {
                             onClick={handleCallRequest}
                             className={`w-full bg-gradient-to-r ${program.gradient} hover:opacity-90 text-white`}
                           >
-                            Записаться на программу
+                            Book this program
                           </Button>
                         </div>
                       </div>
@@ -293,7 +293,7 @@ export default function BookPage() {
           </div>
         </section>
 
-        {/* Основной контент */}
+        {/* Main section */}
         <section className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
@@ -303,7 +303,7 @@ export default function BookPage() {
                 <div className="space-y-6">
                   <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                      Выберите удобное время
+                      Choose a convenient time
                     </h2>
 
                     {isCalLoaded ? (
@@ -315,7 +315,7 @@ export default function BookPage() {
                     ) : (
                       <div className="flex items-center justify-center h-96">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <span className="ml-3 text-gray-600">Загрузка календаря...</span>
+                        <span className="ml-3 text-gray-600">Loading calendar...</span>
                       </div>
                     )}
                   </div>
@@ -325,7 +325,7 @@ export default function BookPage() {
                 <div className="space-y-6">
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-100">
                     <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                      Что включает программа
+                      What’s included
                     </h3>
                     <div className="space-y-4">
                       {programs.find(p => p.id === activeProgram)?.features.map((feature, index) => (
@@ -345,11 +345,10 @@ export default function BookPage() {
                       <Shield className="w-8 h-8 text-green-600 mr-3 mt-1" />
                       <div>
                         <h4 className="font-semibold text-green-900 mb-2">
-                          Гарантия результата
+                          Results guarantee
                         </h4>
                         <p className="text-green-700 text-sm">
-                          Если в течение 7 дней после начала программы вы не увидите ценности,
-                          мы вернем 100% стоимости.
+                          If within 7 days of starting you don’t see value, we’ll refund 100% of the price.
                         </p>
                       </div>
                     </div>
@@ -361,10 +360,10 @@ export default function BookPage() {
               <div className="mt-20">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                    Частые вопросы
+                    Frequently asked questions
                   </h2>
                   <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                    Ответы на самые популярные вопросы о наших программах
+                    Answers to the most common questions about our programs
                   </p>
                 </div>
 
@@ -389,18 +388,18 @@ export default function BookPage() {
         <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Готовы начать свое путешествие к самопознанию?
+              Ready to start your journey of self-discovery?
             </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Присоединяйтесь к тысячам людей, которые уже изменили свою жизнь с помощью EnergyLogic
+              Join thousands who have already transformed their lives with EnergyLogic
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button onClick={handleCallRequest} size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-                Заказать звонок
+                Request a call
               </Button>
               <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
                 <Link href="/catalog">
-                  Посмотреть каталог
+                  Browse catalog
                 </Link>
               </Button>
             </div>
