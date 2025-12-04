@@ -87,7 +87,7 @@ export function Hero() {
               AI that knows
             </span>
             <span className="block text-white mt-2">
-              who you are
+              who you are!
             </span>
           </h1>
 
