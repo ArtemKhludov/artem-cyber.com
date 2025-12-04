@@ -1,4 +1,4 @@
-// Cron job для обработки отложенных email уведомлений
+// Cron job for processing delayed email notifications
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
@@ -7,12 +7,12 @@ import { emailTemplates } from '@/lib/email-templates'
 
 export async function GET(request: NextRequest) {
   try {
-    // CRON_SECRET проверка отключена для упрощения
-    // У вас уже есть все необходимые токены для безопасности
+    // CRON_SECRET check disabled for simplification
+    // You already have all necessary tokens for security
 
     const supabase = getSupabaseAdmin()
 
-    // Получаем все pending уведомления
+    // Get all pending notifications
     const { data: notifications, error } = await supabase
       .from('callback_notifications')
       .select(`
@@ -35,12 +35,12 @@ export async function GET(request: NextRequest) {
       `)
       .eq('status', 'pending')
       .order('created_at', { ascending: true })
-      .limit(20) // Обрабатываем по 20 за раз
+      .limit(20) // Process 20 at a time
 
     if (error) {
       console.error('Error fetching notifications:', error)
       return NextResponse.json(
-        { error: 'Ошибка получения уведомлений' },
+        { error: 'Error fetching notifications' },
         { status: 500 }
       )
     }
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     if (!notifications || notifications.length === 0) {
       return NextResponse.json({
         success: true,
-        message: 'Нет pending уведомлений',
+        message: 'No pending notifications',
         processed: 0
       })
     }
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
               const emailContent = emailTemplates.getCallbackReplyEmailTemplate({
                 name: notification.callback_requests.name,
                 email: notification.callback_requests.email,
-                adminName: 'Администратор',
+                adminName: 'Administrator',
                 message: notification.metadata?.reply_message || '',
                 callbackId: notification.callback_request_id,
                 dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL ||
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
             console.log(`Unknown notification type: ${notification.notification_type}`)
         }
 
-        // Обновляем статус уведомления
+        // Update notification status
         const updateData: any = {
           status: emailSent ? 'sent' : 'failed',
           sent_at: new Date().toISOString()
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         console.error(`Error processing notification ${notification.id}:`, error)
 
-        // Помечаем как failed
+        // Mark as failed
         await supabase
           .from('callback_notifications')
           .update({
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Обработано ${processed} уведомлений, ошибок: ${errors}`,
+      message: `Processed ${processed} notifications, errors: ${errors}`,
       processed,
       errors,
       total: notifications.length,
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error processing notifications:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

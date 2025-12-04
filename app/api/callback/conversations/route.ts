@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
         if (!callbackRequestId) {
             return NextResponse.json(
-                { error: 'ID обращения обязателен' },
+                { error: 'Request ID is required' },
                 { status: 400 }
             )
         }
@@ -25,14 +25,14 @@ export async function GET(request: NextRequest) {
 
         if (!validation.session || !validation.user) {
             return NextResponse.json(
-                { error: 'Необходима авторизация' },
+                { error: 'Authentication required' },
                 { status: 401 }
             )
         }
 
         const user = validation.user
 
-        // Получаем переписку через функцию
+        // Get conversation via function
         const { data: conversations, error } = await supabase
             .rpc('get_callback_conversation', {
                 request_uuid: callbackRequestId,
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Error fetching conversations:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения переписки' },
+                { error: 'Error fetching conversation' },
                 { status: 500 }
             )
         }
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
         if (!callback_request_id || !message) {
             return NextResponse.json(
-                { error: 'ID обращения и сообщение обязательны' },
+                { error: 'Request ID and message are required' },
                 { status: 400 }
             )
         }
@@ -80,14 +80,14 @@ export async function POST(request: NextRequest) {
 
         if (!validation.session || !validation.user) {
             return NextResponse.json(
-                { error: 'Необходима авторизация' },
+                { error: 'Authentication required' },
                 { status: 401 }
             )
         }
 
         const user = validation.user
 
-        // Проверяем, что пользователь имеет доступ к этому обращению
+        // Check that user has access to this request
         const { data: callbackRequest, error: checkError } = await supabase
             .from('callback_requests')
             .select('id, user_id')
@@ -96,23 +96,23 @@ export async function POST(request: NextRequest) {
 
         if (checkError || !callbackRequest) {
             return NextResponse.json(
-                { error: 'Обращение не найдено' },
+                { error: 'Request not found' },
                 { status: 404 }
             )
         }
 
-        // Проверяем права доступа
+        // Check access rights
         const isAdmin = user.role === 'admin'
         const isOwner = callbackRequest.user_id === user.id
 
         if (!isAdmin && !isOwner) {
             return NextResponse.json(
-                { error: 'Нет доступа к этому обращению' },
+                { error: 'No access to this request' },
                 { status: 403 }
             )
         }
 
-        // Создаем сообщение
+        // Create message
         const { data: conversation, error } = await supabase
             .from('callback_conversations')
             .insert([
@@ -133,12 +133,12 @@ export async function POST(request: NextRequest) {
         if (error) {
             console.error('Error creating conversation:', error)
             return NextResponse.json(
-                { error: 'Ошибка создания сообщения' },
+                { error: 'Error creating message' },
                 { status: 500 }
             )
         }
 
-        // Создаем уведомление для получателя
+        // Create notification for recipient
         const notificationData = {
             callback_request_id,
             user_id: isAdmin ? callbackRequest.user_id : null,
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

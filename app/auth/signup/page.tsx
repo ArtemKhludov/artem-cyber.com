@@ -123,7 +123,7 @@ function SignupForm() {
       router.push('/auth/login')
     } else {
       // Check if error is related to existing account
-      if (result.error?.includes('already exists') || result.error?.includes('duplicate') || result.error?.includes('уже существует')) {
+      if (result.error?.includes('already exists') || result.error?.includes('duplicate')) {
         // Show modal with existing account
         setExistingUserData({
           email: formData.email,

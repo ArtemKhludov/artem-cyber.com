@@ -1,145 +1,290 @@
-# 🌟 EnergyLogic - Платформа продажи PDF-руководств
+# EnergyLogic Platform
 
-Современная веб-платформа для продажи цифровых PDF-руководств по личностному развитию с интеграцией онлайн-платежей, системой предпросмотра и красивыми каруселями.
+A modern web platform I built for selling digital courses and materials on personal development. The platform includes AI-powered psychoanalysis sessions, course management, user dashboards, and integrated payment systems.
 
-## ✨ Основные возможности
+## Project Overview
 
-- 🏠 **Лендинговая страница** - современный дизайн со звездным фоном
-- 🎠 **Бесконечные карусели** - плавная прокрутка PDF-файлов с стрелками управления
-- 📖 **Предпросмотр PDF** - просмотр первых страниц перед покупкой
-- 💳 **Двойные платежи** - Stripe для международных платежей, Cryptomus для криптовалют
-- 🌍 **Геолокация** - автоопределение страны для выбора платежной системы  
-- 📊 **Статистика покупок** - динамическое отображение популярности
-- 📱 **Адаптивный дизайн** - идеальная работа на всех устройствах
-- 🔗 **SEO-оптимизация** - правильная структура ссылок и метаданные
+This is a full-stack Next.js application that provides:
+- Landing page with product showcases
+- User authentication (email/password + Google OAuth)
+- Course marketplace and catalog
+- Personal dashboard for purchased courses
+- Admin panel for content and user management
+- Multiple payment integrations (Stripe, Cryptomus)
+- Telegram bot integration for support
+- Email notifications via Resend
+- Session-based authentication with Supabase
 
-## 🛠 Технический стек
+## Tech Stack
 
-### Frontend
-- **Next.js 15** - React фреймворк с App Router
-- **TypeScript** - строгая типизация
-- **Tailwind CSS v4** - утилитарные стили
-- **Lucide React** - иконки
-- **React Hooks** - управление состоянием
+**Frontend:**
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- Radix UI components
+- Lucide icons
+- Framer Motion for animations
 
-### Backend & Платежи
-- **Supabase** - база данных и аутентификация
-- **Stripe** - международные платежи
-- **Cryptomus** - криптовалютные платежи  
-- **IPinfo.io** - геолокация пользователей
+**Backend:**
+- Next.js API routes
+- Supabase (PostgreSQL database + Auth)
+- Stripe (card payments)
+- Cryptomus (crypto payments)
+- Daily.co (video sessions)
+- Telegram Bot API
+- Resend (email delivery)
+- PostHog (analytics)
 
-### Дизайн & UX
-- **Адаптивный дизайн** - мобайл-ферст подход
-- **Smooth анимации** - плавные переходы и эффекты
-- **Бесконечные карусели** - без проблем с зацикливанием
-- **Звездный фон** - динамические градиенты
+**Infrastructure:**
+- Vercel (hosting)
+- Supabase (database + storage)
 
-## 🔧 Конфигурация
+## Project Structure
 
-### Переменные окружения (.env.local)
-
-```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL="https://mcexzjzowwanxawbiizd.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZXh6anpvd3dhbnhawbiizdIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNzg4MjQsImV4cCI6MjA3MDk1NDgyNH0.-sAXcSK2crzmBULuPxRSfI9fNde9aQZxNvag2qkmZUs"
-
-# Stripe (Тестовые ключи)
-STRIPE_PUBLISHABLE_KEY="pk_test_51RwzjrJKXslR96bIz6j7XQrpz92U8YatoN0uj2dmVP1AtN9nJE3CHeSxWrmWg9pGdsX5obDcdPqsco5ccLW18Eyv00sImNc5Ii"
-STRIPE_SECRET_KEY="sk_test_51RwzjrJKXslR96bIAUKh0Jzg18ZoJiqQ8KNJbqRHKah8k95Qz8hOOlethCrm6FDfb4NHZoWbKvVL1r9LE3Ep5OcG00xgfQVDX3"
-STRIPE_WEBHOOK_SECRET="whsec_..." # Настроить при деплое
-
-# Cryptomus
-CRYPTOMUS_MERCHANT_ID="c2b099b4e7ccf66c5f0c3ea1085143da48ddfb63"
-CRYPTOMUS_API_KEY="c2b099b4e7ccf66c5f0c3ea1085143da48ddfb63"
-
-# Геолокация
-IPINFO_API_KEY="YOUR_IPINFO_API_KEY" # Получить на ipinfo.io
+```
+energylogic-site/
+├── app/                          # Next.js App Router pages
+│   ├── api/                      # API routes
+│   │   ├── auth/                 # Authentication endpoints
+│   │   ├── admin/                # Admin operations
+│   │   ├── checkout/             # Payment processing
+│   │   ├── cryptomus/            # Cryptocurrency payments
+│   │   ├── stripe/               # Stripe webhooks
+│   │   ├── courses/              # Course data endpoints
+│   │   ├── materials/            # Material access (signed URLs)
+│   │   ├── purchase/             # Purchase creation
+│   │   ├── user/                 # User profile operations
+│   │   └── webhooks/             # Third-party webhooks
+│   ├── auth/                     # Auth pages (login, signup, etc.)
+│   ├── admin/                    # Admin dashboard
+│   ├── dashboard/                # User dashboard
+│   ├── courses/[id]/             # Individual course pages
+│   ├── checkout/                 # Checkout flow
+│   ├── catalog/                  # Course catalog
+│   ├── about/                    # About page
+│   ├── contacts/                 # Contact page
+│   ├── reviews/                  # Reviews page
+│   ├── terms/                    # Terms of service
+│   ├── privacy/                  # Privacy policy
+│   ├── disclaimer/               # Disclaimer
+│   ├── refund/                   # Refund policy
+│   └── page.tsx                  # Homepage
+│
+├── components/                   # React components
+│   ├── admin/                    # Admin panel components
+│   ├── auth/                     # Authentication components
+│   ├── checkout/                 # Checkout flow components
+│   ├── course/                   # Course player and content
+│   ├── dashboard/                # Dashboard components
+│   ├── home/                     # Landing page sections
+│   ├── layout/                   # Layout components (header, footer)
+│   ├── modals/                   # Modal dialogs
+│   ├── ui/                       # Reusable UI components (shadcn/ui)
+│   └── reviews/                  # Review components
+│
+├── lib/                          # Utility libraries
+│   ├── auth.ts                   # Authentication helpers
+│   ├── supabase.ts               # Supabase client & helpers
+│   ├── stripe.ts                 # Stripe integration
+│   ├── session.ts                # Session management
+│   ├── documents.ts              # Document operations
+│   ├── pricing.ts                # Pricing calculations
+│   ├── notify.ts                 # Notification system (Telegram, Email)
+│   ├── email-service.ts          # Email templates
+│   ├── posthog.ts                # Analytics setup
+│   └── utils.ts                  # General utilities
+│
+├── hooks/                        # Custom React hooks
+│   ├── useCourseMaterials.ts     # Course material fetching
+│   └── useDocuments.ts           # Document fetching
+│
+├── contexts/                     # React contexts
+│   └── AuthContext.tsx           # Global auth state
+│
+├── types/                        # TypeScript definitions
+│   └── index.ts                  # Shared types
+│
+├── middleware.ts                 # Next.js middleware (auth routing)
+│
+├── supabase/
+│   └── migrations/               # Database migrations
+│
+├── scripts/                      # Utility scripts
+│   ├── check-resend-dns.sh       # DNS verification
+│   └── setup-telegram-webhook.sh # Telegram webhook setup
+│
+└── public/                       # Static assets
 ```
 
-### Схема базы данных Supabase
+## Key Features
 
-```sql
--- Таблица документов
-CREATE TABLE documents (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    title TEXT NOT NULL,
-    description TEXT,
-    price INTEGER NOT NULL, -- цена в рублях
-    price_rub INTEGER NOT NULL, -- дублирование для совместимости
-    file_url TEXT NOT NULL,
-    cover_url TEXT,
-    page_count INTEGER DEFAULT 20,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+### Authentication
+- Email/password registration and login
+- Google OAuth integration
+- Password reset flow
+- Email verification
+- Session-based auth with secure cookies
+- Protected routes via middleware
 
--- Таблица покупок
-CREATE TABLE purchases (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    document_id UUID REFERENCES documents(id),
-    email TEXT,
-    payment_method TEXT, -- 'stripe' или 'cryptomus'
-    payment_status TEXT DEFAULT 'pending',
-    amount INTEGER NOT NULL,
-    currency TEXT DEFAULT 'RUB',
-    stripe_session_id TEXT,
-    cryptomus_payment_id TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+### Course System
+- Course catalog with filtering
+- Course detail pages with preview
+- Secure material access (signed URLs)
+- Progress tracking
+- Workbook downloads
+- Video and audio content support
 
--- RLS политики
-ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE purchases ENABLE ROW LEVEL SECURITY;
+### Payments
+- Stripe integration for card payments
+- Cryptomus for cryptocurrency payments
+- Payment status tracking
+- Webhook handling for payment updates
+- Automatic access grant after payment
 
--- Разрешить чтение документов всем
-CREATE POLICY "Documents are viewable by everyone" ON documents
-    FOR SELECT USING (true);
+### User Dashboard
+- Purchase history
+- Course progress tracking
+- Download history
+- Issue reporting system
+- Callback requests
+- Achievement system
 
--- Разрешить создание покупок всем
-CREATE POLICY "Anyone can create purchases" ON purchases
-    FOR INSERT WITH CHECK (true);
-```
+### Admin Panel
+- User management
+- Course/Document management
+- Purchase management
+- Callback request handling
+- Issue management with replies
+- Analytics and charts
+- Logs viewer
 
-## 🚀 Быстрый старт
+### Support System
+- Telegram bot for notifications
+- Email notifications via Resend
+- Issue tracking with replies
+- Callback request system
+- User support via Telegram
 
-### Установка
+## Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Supabase account
+- Stripe account (optional)
+- Telegram bot token (optional)
+
+### Installation
+
 ```bash
-git clone https://github.com/ArtemKhludov/EnergyLogic.git
-cd EnergyLogic
+git clone <repository-url>
+cd energylogic-site
 npm install
 ```
 
-### Настройка
-1. Создайте .env.local с переменными выше
-2. Настройте Supabase проект и загрузите схему
-3. Настройте Stripe webhook endpoints
-4. Получите API ключ IPinfo.io
+### Environment Variables
 
-### Запуск
+Copy `env.example` to `.env.local` and fill in the values:
+
+```bash
+cp env.example .env.local
+```
+
+Required variables:
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key
+- `STRIPE_SECRET_KEY` - Stripe secret key (for payments)
+- `TELEGRAM_BOT_TOKEN` - Telegram bot token (for notifications)
+- `RESEND_API_KEY` - Resend API key (for emails)
+
+See `env.example` for all available configuration options.
+
+### Database Setup
+
+1. Create a Supabase project
+2. Run migrations from `supabase/migrations/`
+3. Set up Row Level Security (RLS) policies
+4. Configure storage buckets for course materials
+
+### Running Locally
+
 ```bash
 npm run dev
 ```
 
-Сайт будет доступен на http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🔗 Важные ссылки
+### Building for Production
 
-- **GitHub**: https://github.com/ArtemKhludov/EnergyLogic.git
-- **Supabase Dashboard**: https://supabase.com/dashboard/project/mcexzjzowwanxawbiizd
-- **Stripe Dashboard**: https://dashboard.stripe.com/
-- **Cryptomus Dashboard**: https://cryptomus.com/
-- **IPinfo.io**: https://ipinfo.io/
+```bash
+npm run build
+npm start
+```
 
-## 📞 Контакты проекта
+## Development Scripts
 
-- **Email**: energylogic@project.ai
-- **Phone**: +7 (999) 123-45-67
-- **Поддержка**: Заказать звонок через сайт
+```bash
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run start            # Start production server
+npm run lint             # Run ESLint
+npm run payments:reconcile  # Reconcile payment records
+npm run e2e:payments-access # Test payment access flow
+```
+
+## Deployment
+
+The project is configured for Vercel deployment:
+
+1. Connect your GitHub repository to Vercel
+2. Add environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
+
+The `vercel.json` file contains deployment configuration.
+
+## API Routes Overview
+
+- `/api/auth/*` - Authentication endpoints
+- `/api/admin/*` - Admin operations (protected)
+- `/api/checkout/*` - Checkout and payment processing
+- `/api/courses/*` - Course data retrieval
+- `/api/materials/*` - Secure material access
+- `/api/user/*` - User profile operations
+- `/api/webhooks/*` - External webhook handlers
+
+## Database Schema
+
+Main tables:
+- `users` - User accounts
+- `documents` - Course materials
+- `purchases` - Purchase records
+- `issue_reports` - User support issues
+- `callbacks` - Callback requests
+- `user_sessions` - Session tracking
+
+See `supabase/migrations/` for full schema.
+
+## Security
+
+- Row Level Security (RLS) enabled on all tables
+- Session-based authentication with secure cookies
+- Signed URLs for material access
+- Rate limiting on API routes
+- Input validation on all forms
+- CSRF protection via Next.js middleware
+
+## License
+
+Private project - All rights reserved
+
+## Contact
+
+- Email: energylogic@project.ai
+- Telegram: @energylogic_callback_bot
 
 ---
 
-**Версия**: 2.0.0  
-**Последнее обновление**: Январь 2025  
-**Статус**: ✅ Готов к продакшену
-<!-- Trigger deployment Tue Sep 30 12:13:00 PDT 2025 -->
-# Test deployment
+**Version**: 2.0.0  
+**Last Updated**: January 2025  
+**Status**: ✅ Production Ready

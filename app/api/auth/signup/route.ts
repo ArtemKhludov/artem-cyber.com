@@ -9,34 +9,34 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const { email, name, password, phone, callback_request_data } = body
 
-        // Валидация обязательных полей
+        // Validate required fields
         if (!email || !name || !password) {
             return NextResponse.json(
-                { error: 'Email, имя и пароль обязательны' },
+                { error: 'Email, name, and password are required' },
                 { status: 400 }
             )
         }
 
-        // Валидация email
+        // Validate email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(email)) {
             return NextResponse.json(
-                { error: 'Неверный формат email' },
+                { error: 'Invalid email format' },
                 { status: 400 }
             )
         }
 
-        // Валидация пароля
+        // Validate password
         if (password.length < 6) {
             return NextResponse.json(
-                { error: 'Пароль должен содержать минимум 6 символов' },
+                { error: 'Password must contain at least 6 characters' },
                 { status: 400 }
             )
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем, существует ли пользователь
+        // Check if user exists
         const { data: existingUser } = await supabase
             .from('users')
             .select('id, email')
@@ -45,15 +45,15 @@ export async function POST(request: NextRequest) {
 
         if (existingUser) {
             return NextResponse.json(
-                { error: 'Пользователь с таким email уже существует' },
+                { error: 'User with this email already exists' },
                 { status: 400 }
             )
         }
 
-        // Хешируем пароль
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 12)
 
-        // Создаем пользователя
+        // Create user
         const { data: newUser, error: createError } = await supabase
             .from('users')
             .insert({
@@ -71,12 +71,12 @@ export async function POST(request: NextRequest) {
             console.error('Error creating user:', createError)
             console.error('Error details:', JSON.stringify(createError, null, 2))
             return NextResponse.json(
-                { error: 'Ошибка создания пользователя', details: createError.message },
+                { error: 'Error creating user', details: createError.message },
                 { status: 500 }
             )
         }
 
-        // Если есть данные callback запроса, создаем его
+        // If callback request data exists, create it
         if (callback_request_data) {
             try {
                 const { data: callbackRequest, error: callbackError } = await supabase
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Отправляем приветственное письмо
+        // Send welcome email
         try {
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ||
                 process.env.NEXT_PUBLIC_APP_URL ||
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
             const emailContent = getWelcomeEmailTemplate({
                 name: newUser.name,
                 email: newUser.email,
-                tempPassword: password, // Временно отправляем пароль в открытом виде
+                tempPassword: password, // Temporarily send password in plain text
                 loginUrl: `${baseUrl}/auth/login`
             })
 
@@ -135,18 +135,18 @@ export async function POST(request: NextRequest) {
             console.log(`Welcome email sent to ${newUser.email}`)
         } catch (emailError) {
             console.error('Error sending welcome email:', emailError)
-            // Не прерываем выполнение, если не удалось отправить email
+            // Don't interrupt execution if email sending failed
         }
 
-        // Отправляем уведомление в Telegram о новой регистрации
+        // Send Telegram notification about new registration
         try {
-            const telegramMessage = `🆕 Новый пользователь зарегистрирован:
-👤 Имя: ${newUser.name}
+            const telegramMessage = `🆕 New user registered:
+👤 Name: ${newUser.name}
 📧 Email: ${newUser.email}
-📞 Телефон: ${newUser.phone || 'Не указан'}
-🔐 Тип регистрации: Email/Пароль
-✅ Email верифицирован: Нет
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`
+📞 Phone: ${newUser.phone || 'Not provided'}
+🔐 Registration type: Email/Password
+✅ Email verified: No
+📅 Date: ${new Date().toLocaleString('en-US')}`
 
             const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
             if (!response.ok) {
                 console.error('Telegram notification failed:', await response.text())
             } else {
-                console.log('✅ Telegram уведомление отправлено')
+                console.log('✅ Telegram notification sent')
             }
         } catch (telegramError) {
             console.error('Telegram error:', telegramError)
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: 'Пользователь успешно создан',
+            message: 'User successfully created',
             user: {
                 id: newUser.id,
                 email: newUser.email,
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('Signup error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

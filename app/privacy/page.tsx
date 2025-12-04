@@ -4,11 +4,11 @@ export default function PrivacyPage() {
   return (
     <PageLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">Политика конфиденциальности</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
 
         <div className="prose prose-lg max-w-none">
           <p className="text-gray-600 text-lg mb-8">
-            Дата последней редакции: {new Date().toLocaleDateString('ru-RU', {
+            Last Updated: {new Date().toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
@@ -17,105 +17,104 @@ export default function PrivacyPage() {
 
           <div className="border-t border-b border-gray-300 my-8"></div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">1. Общие положения</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">1. General Provisions</h2>
           <p className="text-gray-700 mb-4">
-            Настоящая Политика конфиденциальности описывает, как мы — команда проекта EnergyLogic, осуществляющая деятельность из Лос-Анджелеса, Калифорния, США, — собираем, используем и храним ваши персональные данные.
+            This Privacy Policy describes how we — the EnergyLogic project team operating from Los Angeles, California, USA — collect, use, and store your personal data.
           </p>
           <p className="text-gray-700 mb-4">
-            На момент публикации настоящего документа юридическое лицо не зарегистрировано, однако мы строго следуем принципам:
+            At the time of publication of this document, no legal entity has been registered; however, we strictly adhere to the principles of:
           </p>
           <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
-            <li>Федерального закона РФ №152‑ФЗ «О персональных данных»;</li>
-            <li>Общего регламента защиты данных ЕС (GDPR);</li>
-            <li>Закона Калифорнии о конфиденциальности потребителей (CCPA);</li>
-            <li>Общих принципов добросовестного обращения с персональными данными.</li>
+            <li>EU General Data Protection Regulation (GDPR);</li>
+            <li>California Consumer Privacy Act (CCPA);</li>
+            <li>General principles of fair handling of personal data.</li>
           </ul>
 
           <div className="border-t border-b border-gray-300 my-8"></div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">2. Какие данные мы собираем</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">2. What Data We Collect</h2>
           <p className="text-gray-700 mb-4">
-            Мы собираем только те данные, которые вы сознательно и добровольно передаёте при:
+            We collect only the data that you consciously and voluntarily provide when:
           </p>
           <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-            <li>Прохождении тестов и опросов;</li>
-            <li>Оформлении заявки на обратный звонок;</li>
-            <li>Взаимодействии с нашим Telegram-ботом @energylogic_callback_bot;</li>
-            <li>Посещении сайта и использовании его функционала.</li>
+            <li>Taking tests and surveys;</li>
+            <li>Submitting a callback request;</li>
+            <li>Interacting with our Telegram bot @energylogic_callback_bot;</li>
+            <li>Visiting the site and using its features.</li>
           </ul>
           <p className="text-gray-700 mb-4">
-            Может включать:
+            May include:
           </p>
           <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
-            <li>Имя, номер телефона, email (при вводе в форму);</li>
-            <li>Ответы на диагностические тесты;</li>
-            <li>IP-адрес, тип браузера, информация о сессии (анонимно, через Google Analytics или Posthog);</li>
-            <li>Технические метаданные от Supabase, OpenAI и Telegram API.</li>
+            <li>Name, phone number, email (when entered in forms);</li>
+            <li>Answers to diagnostic tests;</li>
+            <li>IP address, browser type, session information (anonymously, via Google Analytics or Posthog);</li>
+            <li>Technical metadata from Supabase, OpenAI, and Telegram API.</li>
           </ul>
 
           <div className="border-t border-b border-gray-300 my-8"></div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">3. Как мы используем данные</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">3. How We Use Data</h2>
           <p className="text-gray-700 mb-4">
-            Ваши данные обрабатываются исключительно с целью:
+            Your data is processed solely for the purpose of:
           </p>
           <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-            <li>Подбора индивидуальных материалов (PDF-документов, программ, видео);</li>
-            <li>Отправки результатов тестирования;</li>
-            <li>Контактной связи по вашему запросу;</li>
-            <li>Улучшения точности нашей аналитики и качества сервиса.</li>
+            <li>Selecting personalized materials (PDF documents, programs, videos);</li>
+            <li>Sending test results;</li>
+            <li>Contact communication at your request;</li>
+            <li>Improving the accuracy of our analytics and service quality.</li>
           </ul>
           <p className="text-gray-700 mb-6">
-            Мы не продаём, не обмениваемся и не передаём ваши данные третьим лицам вне рамок используемых сервисов (Supabase, OpenAI, Telegram, Google).
+            We do not sell, exchange, or transfer your data to third parties outside the scope of the services we use (Supabase, OpenAI, Telegram, Google).
           </p>
 
           <div className="border-t border-b border-gray-300 my-8"></div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">4. Хранение и защита</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">4. Storage and Protection</h2>
           <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
-            <li>Все данные хранятся в Supabase (платформа с серверным контролем доступа и шифрованием);</li>
-            <li>Обращения к OpenAI (GPT) происходят только после согласия пользователя;</li>
-            <li>Telegram-заявки приходят только в закрытый канал, доступный только администратору;</li>
-            <li>Данные удаляются по вашему письменному запросу или автоматически через 12 месяцев без активности.</li>
+            <li>All data is stored in Supabase (a platform with server-side access control and encryption);</li>
+            <li>Requests to OpenAI (GPT) occur only after user consent;</li>
+            <li>Telegram requests come only to a closed channel accessible only to the administrator;</li>
+            <li>Data is deleted upon your written request or automatically after 12 months of inactivity.</li>
           </ul>
 
           <div className="border-t border-b border-gray-300 my-8"></div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">5. Ваши права</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">5. Your Rights</h2>
           <p className="text-gray-700 mb-4">
-            Вы имеете право:
+            You have the right to:
           </p>
           <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-            <li>Получить копию всех данных, которые мы храним о вас;</li>
-            <li>Изменить или удалить их;</li>
-            <li>Запретить дальнейшую обработку.</li>
+            <li>Receive a copy of all data we store about you;</li>
+            <li>Modify or delete it;</li>
+            <li>Prohibit further processing.</li>
           </ul>
           <p className="text-gray-700 mb-6">
-            Запрос можно отправить в Telegram-боте или по email (см. ниже).
+            Requests can be sent via the Telegram bot or email (see below).
           </p>
 
           <div className="border-t border-b border-gray-300 my-8"></div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">6. Использование файлов cookie</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">6. Use of Cookies</h2>
           <p className="text-gray-700 mb-6">
-            Мы используем файлы cookie и пиксели отслеживания, чтобы анализировать поведение на сайте. Это помогает нам улучшать пользовательский опыт. Вы можете отключить cookie в настройках вашего браузера.
+            We use cookies and tracking pixels to analyze behavior on the site. This helps us improve the user experience. You can disable cookies in your browser settings.
           </p>
 
           <div className="border-t border-b border-gray-300 my-8"></div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">7. Контактная информация</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">7. Contact Information</h2>
           <div className="text-gray-700 mb-6 space-y-2">
-            <p><strong>Адрес:</strong> 6333 Canoga Ave, Apt 255, Woodland Hills, Los Angeles, CA 91367, USA</p>
+            <p><strong>Address:</strong> 6333 Canoga Ave, Apt 255, Woodland Hills, Los Angeles, CA 91367, USA</p>
             <p><strong>Telegram:</strong> @energylogic_callback_bot</p>
             <p><strong>Email:</strong> energylogic@project.ai</p>
-            <p><strong>Ответственный за обработку данных:</strong> Artem Khlydov (основатель проекта)</p>
+            <p><strong>Data Protection Officer:</strong> Artem Khlydov (project founder)</p>
           </div>
 
           <div className="border-t border-b border-gray-300 my-8"></div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">8. Изменения в политике</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">8. Policy Changes</h2>
           <p className="text-gray-700 mb-6">
-            Эта политика может быть обновлена без предварительного уведомления. Все изменения будут отражены на этой странице с актуальной датой редакции.
+            This policy may be updated without prior notice. All changes will be reflected on this page with the current revision date.
           </p>
         </div>
       </div>

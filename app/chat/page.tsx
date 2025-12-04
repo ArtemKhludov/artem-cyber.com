@@ -24,13 +24,13 @@ export default function ChatPage() {
               className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Вернуться на главную
+              Back to Home
             </Link>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Чат с экспертами
+              Chat with Experts
             </h1>
             <p className="text-lg text-gray-600">
-              Получите персональную консультацию от наших экспертов в области энергетической диагностики
+              Get personalized consultation from our experts in energy diagnostics
             </p>
           </div>
 
@@ -43,8 +43,8 @@ export default function ChatPage() {
                   <MessageCircle className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold">Эксперт EnergyLogic</h2>
-                  <p className="text-blue-100">Онлайн • Готов к консультации</p>
+                  <h2 className="text-xl font-semibold">EnergyLogic Expert</h2>
+                  <p className="text-blue-100">Online • Ready for Consultation</p>
                 </div>
               </div>
             </div>
@@ -54,26 +54,26 @@ export default function ChatPage() {
               <div className="text-center">
                 <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  Чат будет доступен в ближайшее время
+                  Chat will be available soon
                 </h3>
                 <p className="text-gray-600 mb-6 max-w-md">
-                  Мы работаем над интеграцией системы чата. Пока что вы можете заказать звонок или воспользоваться другими способами связи.
+                  We are working on integrating the chat system. For now, you can request a call or use other contact methods.
                 </p>
 
                 {/* Alternative Contact Methods */}
                 <div className="space-y-3">
                   <Button onClick={handleCallRequest} className="w-full bg-blue-600 hover:bg-blue-700">
                     <Phone className="w-4 h-4 mr-2" />
-                    Заказать звонок
+                    Request a Call
                   </Button>
                   <Button variant="outline" className="w-full" asChild>
                     <Link href="mailto:energylogic@project.ai">
-                      Написать на email
+                      Send Email
                     </Link>
                   </Button>
                   <Button variant="outline" className="w-full" asChild>
-                    <Link href="tel:+79991234567">
-                      Позвонить напрямую
+                    <Link href="tel:+15551234567">
+                      Call Directly
                     </Link>
                   </Button>
                 </div>
@@ -86,7 +86,7 @@ export default function ChatPage() {
                 <div className="flex-1 relative">
                   <input
                     type="text"
-                    placeholder="Чат временно недоступен..."
+                    placeholder="Chat is temporarily unavailable..."
                     disabled
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed"
                   />
@@ -96,7 +96,7 @@ export default function ChatPage() {
                 </Button>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Система чата находится в разработке. Используйте альтернативные способы связи.
+                Chat system is under development. Please use alternative contact methods.
               </p>
             </div>
           </div>
@@ -105,25 +105,25 @@ export default function ChatPage() {
           <div className="mt-8 grid md:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl p-6 shadow-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Что можно обсудить в чате?
+                What can be discussed in chat?
               </h3>
               <ul className="text-gray-600 space-y-2">
-                <li>• Вопросы по документам и материалам</li>
-                <li>• Персональные консультации</li>
-                <li>• Выбор подходящей программы</li>
-                <li>• Техническая поддержка</li>
+                <li>• Questions about documents and materials</li>
+                <li>• Personal consultations</li>
+                <li>• Choosing the right program</li>
+                <li>• Technical support</li>
               </ul>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Время работы экспертов
+                Expert Working Hours
               </h3>
               <ul className="text-gray-600 space-y-2">
-                <li>• Понедельник - Пятница: 9:00 - 21:00</li>
-                <li>• Суббота: 10:00 - 18:00</li>
-                <li>• Воскресенье: 12:00 - 17:00</li>
-                <li>• Время московское (UTC+3)</li>
+                <li>• Monday - Friday: 9:00 AM - 9:00 PM</li>
+                <li>• Saturday: 10:00 AM - 6:00 PM</li>
+                <li>• Sunday: 12:00 PM - 5:00 PM</li>
+                <li>• Pacific Time (UTC-8)</li>
               </ul>
             </div>
           </div>

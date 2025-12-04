@@ -117,7 +117,7 @@ function LoginForm() {
         setLockedUntil(null)
       }
 
-      if (result.error?.includes('not registered') || result.error?.includes('not found') || result.error?.includes('does not exist') || result.error?.includes('не зарегистрирован') || result.error?.includes('не найден') || result.error?.includes('не существует')) {
+      if (result.error?.includes('not registered') || result.error?.includes('not found') || result.error?.includes('does not exist')) {
         setShowUserNotFoundModal(true)
       } else {
         setError(errorMessage)

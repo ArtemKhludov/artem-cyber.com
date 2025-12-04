@@ -77,8 +77,8 @@ export function CallbacksSection() {
     } catch (error) {
       console.error('Error fetching callbacks:', error)
       setToast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить обращения',
+        title: 'Error',
+        description: 'Failed to load requests',
         type: 'error'
       })
     } finally {
@@ -121,10 +121,10 @@ export function CallbacksSection() {
       if (result.success) {
         setNewMessage('')
         fetchConversations(selectedCallback.id)
-        fetchCallbacks() // Обновляем список обращений
+        fetchCallbacks() // Refresh requests list
         setToast({
-          title: 'Успешно',
-          description: 'Сообщение отправлено',
+          title: 'Success',
+          description: 'Message sent',
           type: 'success'
         })
       } else {
@@ -133,8 +133,8 @@ export function CallbacksSection() {
     } catch (error) {
       console.error('Error sending message:', error)
       setToast({
-        title: 'Ошибка',
-        description: 'Не удалось отправить сообщение',
+        title: 'Error',
+        description: 'Failed to send message',
         type: 'error'
       })
     } finally {
@@ -154,10 +154,10 @@ export function CallbacksSection() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'new': return 'Новое'
-      case 'contacted': return 'Связались'
-      case 'completed': return 'Завершено'
-      case 'cancelled': return 'Отменено'
+      case 'new': return 'New'
+      case 'contacted': return 'Contacted'
+      case 'completed': return 'Completed'
+      case 'cancelled': return 'Cancelled'
       default: return status
     }
   }
@@ -183,7 +183,7 @@ export function CallbacksSection() {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center">
               <MessageSquare className="w-5 h-5 mr-2" />
-              Мои обращения
+              My Requests
               {callbacks.length > 0 && (
                 <Badge variant="secondary" className="ml-2">
                   {callbacks.length}
@@ -196,7 +196,7 @@ export function CallbacksSection() {
               onClick={() => setIsExpanded(!isExpanded)}
             >
               {isExpanded ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              {isExpanded ? 'Свернуть' : 'Развернуть'}
+              {isExpanded ? 'Collapse' : 'Expand'}
             </Button>
           </div>
         </CardHeader>
@@ -204,11 +204,11 @@ export function CallbacksSection() {
           {callbacks.length === 0 ? (
             <div className="text-center py-8">
               <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 mb-4">У вас пока нет обращений</p>
+              <p className="text-gray-500 mb-4">You don't have any requests yet</p>
               <Button asChild>
                 <a href="/#contact">
                   <Plus className="w-4 h-4 mr-2" />
-                  Создать обращение
+                  Create Request
                 </a>
               </Button>
             </div>
@@ -229,10 +229,10 @@ export function CallbacksSection() {
                         <Badge className={getStatusColor(callback.status)}>
                           {getStatusText(callback.status)}
                         </Badge>
-                        {callback.conversation_status === 'Ожидает ответа' && (
+                        {callback.conversation_status === 'Waiting for response' && (
                           <Badge variant="outline" className="text-orange-600 border-orange-600">
                             <AlertCircle className="w-3 h-3 mr-1" />
-                            Ожидает ответа
+                            Waiting for response
                           </Badge>
                         )}
                       </div>
@@ -244,11 +244,11 @@ export function CallbacksSection() {
                         </span>
                         <span className="flex items-center">
                           <MessageSquare className="w-3 h-3 mr-1" />
-                          {callback.conversation_count} сообщений
+                          {callback.conversation_count} messages
                         </span>
                         {callback.last_message_at && (
                           <span>
-                            Последнее: {formatDate(callback.last_message_at)}
+                            Last: {formatDate(callback.last_message_at)}
                           </span>
                         )}
                       </div>
@@ -263,7 +263,7 @@ export function CallbacksSection() {
                         }}
                       >
                         <MessageSquare className="w-4 h-4 mr-1" />
-                        Переписка
+                        Conversation
                       </Button>
                     )}
                   </div>
@@ -273,7 +273,7 @@ export function CallbacksSection() {
               {!isExpanded && callbacks.length > 3 && (
                 <div className="text-center pt-4">
                   <Button variant="outline" onClick={() => setIsExpanded(true)}>
-                    Показать все ({callbacks.length})
+                    Show All ({callbacks.length})
                   </Button>
                 </div>
               )}
@@ -282,7 +282,7 @@ export function CallbacksSection() {
         </CardContent>
       </Card>
 
-      {/* Модальное окно переписки */}
+      {/* Conversation Modal */}
       {selectedCallback && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
@@ -290,7 +290,7 @@ export function CallbacksSection() {
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold">Переписка по обращению</h2>
+                  <h2 className="text-xl font-bold">Request Conversation</h2>
                   <p className="text-blue-100">{selectedCallback.name}</p>
                 </div>
                 <button
@@ -304,9 +304,9 @@ export function CallbacksSection() {
 
             {/* Content */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-              {/* Переписка */}
+              {/* Conversation */}
               <div className="space-y-4 mb-6">
-                <h3 className="font-semibold">Сообщения</h3>
+                <h3 className="font-semibold">Messages</h3>
                 <div className="max-h-96 overflow-y-auto space-y-3">
                   {conversations.map((message) => (
                     <div
@@ -333,14 +333,14 @@ export function CallbacksSection() {
                 </div>
               </div>
 
-              {/* Форма отправки сообщения */}
+              {/* Message Form */}
               <div className="space-y-3 pt-4 border-t">
-                <Label htmlFor="message">Отправить сообщение</Label>
+                <Label htmlFor="message">Send Message</Label>
                 <Textarea
                   id="message"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Введите ваше сообщение..."
+                  placeholder="Enter your message..."
                   rows={3}
                 />
                 <Button
@@ -351,12 +351,12 @@ export function CallbacksSection() {
                   {isSending ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Отправка...
+                      Sending...
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      Отправить
+                      Send
                     </>
                   )}
                 </Button>

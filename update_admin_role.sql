@@ -1,19 +1,19 @@
--- Обновляем роль пользователя на админа
+-- Update user role to admin
 UPDATE users 
 SET role = 'admin' 
 WHERE email = 'admin@energylogic.com';
 
 
-Как проверить:
-1. Проверьте админ панель:
-Войдите как админ: 
+How to verify:
+1. Check admin panel:
+Login as admin: 
 admin@energylogic.com
 admin123
-В админ панели должна быть красная кнопка "Выйти" в правом верхнем углу
-Нажмите "Выйти" - должно перенаправить на страницу входа
-2. Проверьте личный кабинет пользователя:
-Войдите как пользователь: 
+The admin panel should have a red "Logout" button in the top right corner
+Click "Logout" - should redirect to login page
+2. Check user dashboard:
+Login as user: 
 user@test.com
 user123
-В личном кабинете должна быть красная кнопка "Выйти" в правом верхнем углу
-Нажмите "Выйти" - должно перенаправить на страницу входа
+The dashboard should have a red "Logout" button in the top right corner
+Click "Logout" - should redirect to login page

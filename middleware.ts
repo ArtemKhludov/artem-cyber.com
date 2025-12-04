@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
     const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value
 
-    // Пропускаем все API routes
+    // Skip all API routes
     if (pathname.startsWith('/api/')) {
         return NextResponse.next()
     }
@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
     const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route))
     const isAuthRoute = pathname.startsWith('/auth/')
 
-    // Логирование для дебага (удалить после исправления)
+    // Debug logging (remove after fixing)
     if (process.env.NODE_ENV === 'production') {
         console.log('[Middleware]', {
             pathname,
@@ -29,21 +29,21 @@ export function middleware(request: NextRequest) {
         })
     }
 
-    // Если это публичная страница - всегда пропускаем
+    // If this is a public page - always allow
     if (isPublicRoute) {
         return NextResponse.next()
     }
 
-    // Если это страница авторизации - пропускаем (но проверяем токен для редиректа)
+    // If this is an auth page - allow (but check token for redirect)
     if (isAuthRoute) {
-        // Если есть токен и это страница логина/регистрации - перенаправляем на главную
+        // If token exists and this is login/signup page - redirect to home
         if (sessionToken && (pathname === '/auth/login' || pathname === '/auth/signup')) {
             return NextResponse.redirect(new URL('/', request.url))
         }
         return NextResponse.next()
     }
 
-    // Если это защищенная страница и нет токена - перенаправляем на логин
+    // If this is a protected page and no token - redirect to login
     if (isProtectedRoute && !sessionToken) {
         const loginUrl = new URL('/auth/login', request.url)
         const currentPath = pathname + request.nextUrl.search

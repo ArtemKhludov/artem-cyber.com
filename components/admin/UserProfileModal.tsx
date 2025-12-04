@@ -93,7 +93,7 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
   const fetchUserData = async () => {
     setIsLoading(true)
     try {
-      // Получаем данные пользователя
+      // Get user data
       const userResponse = await fetch(`/api/users/${userId}`)
       const userResult = await userResponse.json()
       
@@ -101,7 +101,7 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
         setUser(userResult.data)
       }
 
-      // Получаем обращения пользователя
+      // Get user requests
       const callbacksResponse = await fetch(`/api/admin/callbacks?user_id=${userId}`)
       const callbacksResult = await callbacksResponse.json()
       
@@ -111,8 +111,8 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
     } catch (error) {
       console.error('Error fetching user data:', error)
       setToast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить данные пользователя',
+        title: 'Error',
+        description: 'Failed to load user data',
         type: 'error'
       })
     } finally {
@@ -156,8 +156,8 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
         setNewMessage('')
         fetchConversations(selectedCallback.id)
         setToast({
-          title: 'Успешно',
-          description: 'Сообщение отправлено',
+          title: 'Success',
+          description: 'Message sent',
           type: 'success'
         })
       } else {
@@ -166,8 +166,8 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
     } catch (error) {
       console.error('Error sending message:', error)
       setToast({
-        title: 'Ошибка',
-        description: 'Не удалось отправить сообщение',
+        title: 'Error',
+        description: 'Failed to send message',
         type: 'error'
       })
     } finally {
@@ -196,7 +196,7 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ru-RU')
+    return new Date(dateString).toLocaleString('en-US')
   }
 
   if (!isOpen) return null
@@ -213,8 +213,8 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                   <User className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{user?.name || 'Загрузка...'}</h2>
-                  <p className="text-blue-100">Профиль пользователя</p>
+                  <h2 className="text-2xl font-bold">{user?.name || 'Loading...'}</h2>
+                  <p className="text-blue-100">User Profile</p>
                 </div>
               </div>
               <button
@@ -235,18 +235,18 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
             ) : (
               <Tabs defaultValue="profile" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="profile">Профиль</TabsTrigger>
-                  <TabsTrigger value="callbacks">Обращения ({callbacks.length})</TabsTrigger>
-                  <TabsTrigger value="conversation">Переписка</TabsTrigger>
+                  <TabsTrigger value="profile">Profile</TabsTrigger>
+                  <TabsTrigger value="callbacks">Requests ({callbacks.length})</TabsTrigger>
+                  <TabsTrigger value="conversation">Conversation</TabsTrigger>
                 </TabsList>
 
-                {/* Профиль пользователя */}
+                {/* User Profile */}
                 <TabsContent value="profile" className="space-y-6">
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center">
                         <User className="w-5 h-5 mr-2" />
-                        Информация о пользователе
+                        User Information
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -261,21 +261,21 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                         <div className="flex items-center space-x-3">
                           <Phone className="w-5 h-5 text-gray-400" />
                           <div>
-                            <p className="text-sm text-gray-500">Телефон</p>
-                            <p className="font-medium">{user?.phone || 'Не указан'}</p>
+                            <p className="text-sm text-gray-500">Phone</p>
+                            <p className="font-medium">{user?.phone || 'Not specified'}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-3">
                           <Calendar className="w-5 h-5 text-gray-400" />
                           <div>
-                            <p className="text-sm text-gray-500">Дата регистрации</p>
-                            <p className="font-medium">{user?.created_at ? formatDate(user.created_at) : 'Неизвестно'}</p>
+                            <p className="text-sm text-gray-500">Registration Date</p>
+                            <p className="font-medium">{user?.created_at ? formatDate(user.created_at) : 'Unknown'}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-3">
                           <Star className="w-5 h-5 text-gray-400" />
                           <div>
-                            <p className="text-sm text-gray-500">Роль</p>
+                            <p className="text-sm text-gray-500">Role</p>
                             <Badge variant="secondary">{user?.role || 'user'}</Badge>
                           </div>
                         </div>
@@ -287,39 +287,39 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                     <CardHeader>
                       <CardTitle className="flex items-center">
                         <FileText className="w-5 h-5 mr-2" />
-                        Статистика
+                        Statistics
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="text-center p-4 bg-blue-50 rounded-lg">
                           <div className="text-2xl font-bold text-blue-600">{callbacks.length}</div>
-                          <div className="text-sm text-gray-600">Всего обращений</div>
+                          <div className="text-sm text-gray-600">Total Requests</div>
                         </div>
                         <div className="text-center p-4 bg-green-50 rounded-lg">
                           <div className="text-2xl font-bold text-green-600">
                             {callbacks.filter(c => c.status === 'completed').length}
                           </div>
-                          <div className="text-sm text-gray-600">Завершенных</div>
+                          <div className="text-sm text-gray-600">Completed</div>
                         </div>
                         <div className="text-center p-4 bg-yellow-50 rounded-lg">
                           <div className="text-2xl font-bold text-yellow-600">
                             {callbacks.filter(c => c.status === 'new').length}
                           </div>
-                          <div className="text-sm text-gray-600">Новых</div>
+                          <div className="text-sm text-gray-600">New</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
 
-                {/* Список обращений */}
+                {/* Requests List */}
                 <TabsContent value="callbacks" className="space-y-4">
                   {callbacks.length === 0 ? (
                     <Card>
                       <CardContent className="text-center py-12">
                         <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">У пользователя пока нет обращений</p>
+                        <p className="text-gray-500">User has no requests yet</p>
                       </CardContent>
                     </Card>
                   ) : (
@@ -352,9 +352,9 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                                   </span>
                                   <span className="flex items-center">
                                     <MessageSquare className="w-3 h-3 mr-1" />
-                                    {callback.conversation_count} сообщений
+                                    {callback.conversation_count} messages
                                   </span>
-                                  <span className={callback.conversation_status === 'Ожидает ответа' ? 'text-orange-600' : 'text-green-600'}>
+                                  <span className={callback.conversation_status === 'Waiting for response' ? 'text-orange-600' : 'text-green-600'}>
                                     {callback.conversation_status}
                                   </span>
                                 </div>
@@ -377,18 +377,18 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                   )}
                 </TabsContent>
 
-                {/* Переписка */}
+                {/* Conversation */}
                 <TabsContent value="conversation" className="space-y-4">
                   {!selectedCallback ? (
                     <Card>
                       <CardContent className="text-center py-12">
                         <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">Выберите обращение для просмотра переписки</p>
+                        <p className="text-gray-500">Select a request to view conversation</p>
                       </CardContent>
                     </Card>
                   ) : (
                     <div className="space-y-4">
-                      {/* Заголовок обращения */}
+                      {/* Request Header */}
                       <Card>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
@@ -403,10 +403,10 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                         </CardContent>
                       </Card>
 
-                      {/* Переписка */}
+                      {/* Conversation */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Переписка</CardTitle>
+                          <CardTitle>Conversation</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                           <div className="max-h-96 overflow-y-auto space-y-3">
@@ -434,14 +434,14 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                             ))}
                           </div>
 
-                          {/* Форма отправки сообщения */}
+                          {/* Message Form */}
                           <div className="space-y-3 pt-4 border-t">
-                            <Label htmlFor="message">Отправить сообщение</Label>
+                            <Label htmlFor="message">Send Message</Label>
                             <Textarea
                               id="message"
                               value={newMessage}
                               onChange={(e) => setNewMessage(e.target.value)}
-                              placeholder="Введите ваше сообщение..."
+                              placeholder="Enter your message..."
                               rows={3}
                             />
                             <Button
@@ -452,12 +452,12 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                               {isSending ? (
                                 <>
                                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                  Отправка...
+                                  Sending...
                                 </>
                               ) : (
                                 <>
                                   <Send className="w-4 h-4 mr-2" />
-                                  Отправить
+                                  Send
                                 </>
                               )}
                             </Button>

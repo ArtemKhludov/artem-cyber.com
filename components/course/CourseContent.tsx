@@ -16,7 +16,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
     const [isPlaying, setIsPlaying] = useState(false)
     const [inlineError, setInlineError] = useState<string | null>(null)
 
-    // Используем хук для безопасного доступа к материалам
+    // Use hook for safe access to materials
     const { materials, loading, error, refetch } = useCourseMaterials(document.id, {
         file_url: document.file_url,
         workbook_url: document.workbook_url,
@@ -26,7 +26,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
         cover_url: document.cover_url,
     })
 
-    // Проверяем, является ли это мини-курсом
+    // Check if this is a mini course
     const isMiniCourse = document.course_type === 'mini_course'
 
     if (!isMiniCourse) {
@@ -34,14 +34,14 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
     }
 
     const videoTitles = [
-        'Что такое намерение до мысли',
-        'Ошибки при работе с намерением',
-        'Пример перезаписи на простом кейсе'
+        'What is intention before thought',
+        'Common mistakes when working with intention',
+        'Rewriting example on a simple case'
     ]
 
     const handleVideoPlay = (index: number) => {
         if (!isPurchased) {
-            alert('Для просмотра видео необходимо приобрести мини-курс')
+            alert('You need to purchase the mini course to watch videos')
             return
         }
         setInlineError(null)
@@ -51,7 +51,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
 
     const handleDownload = (url: string, filename: string) => {
         if (!isPurchased) {
-            alert('Для скачивания материалов необходимо приобрести мини-курс')
+            alert('You need to purchase the mini course to download materials')
             return
         }
 
@@ -92,21 +92,21 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
         const ttl = typeof data?.expiresIn === 'number' ? data.expiresIn : 120
         const hint = window.document.getElementById(`ttl-hint-${document.id}`)
         if (hint) {
-            hint.textContent = `Ссылка действует ~${ttl} сек`
+            hint.textContent = `Link valid for ~${ttl} sec`
         }
         return data.url as string
     }
 
     return (
         <div className="space-y-6">
-            {/* Основной PDF */}
+            {/* Main PDF */}
             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                 <div className="flex items-center gap-3 mb-4">
                     <FileText className="w-6 h-6 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Основной PDF</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Main PDF</h3>
                 </div>
                 <p className="text-gray-600 mb-4">
-                    «Квантовая Архитектура Намерения» - 20-30 страниц плотного текста с схемами
+                    "Quantum Architecture of Intention" - 20-30 pages of dense text with diagrams
                 </p>
                 {isPurchased ? (
                     <Button
@@ -116,29 +116,29 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                 const signed = await fetchSignedUrl(document.file_url)
                                 handleDownload(signed, `${document.title}.pdf`)
                             } catch (e) {
-                                setInlineError('Не удалось получить безопасную ссылку. Ссылка могла истечь. Попробуйте снова.')
+                                setInlineError('Failed to get secure link. The link may have expired. Please try again.')
                             }
                         }}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                         <Download className="w-4 h-4 mr-2" />
-                        Скачать PDF
+                        Download PDF
                     </Button>
                 ) : (
                     <div className="text-sm text-gray-500">
-                        Доступно после покупки
+                        Available after purchase
                     </div>
                 )}
-                <div id={`ttl-hint-${document.id}`} className="mt-2 text-xs text-gray-500">Ссылка действует около 2 минут. При истечении — запросите заново.</div>
+                <div id={`ttl-hint-${document.id}`} className="mt-2 text-xs text-gray-500">Link valid for about 2 minutes. If expired, request it again.</div>
                 {inlineError && (
                     <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
                         <Clock className="w-4 h-4 mt-0.5" />
                         <div className="flex-1">
                             <p>{inlineError}</p>
                             <div className="mt-2 flex gap-2">
-                                <Button size="sm" variant="outline" onClick={() => { setInlineError(null); void refetch(); }}>Повторить</Button>
+                                <Button size="sm" variant="outline" onClick={() => { setInlineError(null); void refetch(); }}>Retry</Button>
                                 <Button size="sm" variant="ghost" asChild>
-                                    <a href={`mailto:support@energylogic.ai?subject=${encodeURIComponent('Проблема со скачиванием PDF')}&body=${encodeURIComponent(`Документ: ${document.title} (${document.id})`)}`}>Связаться с поддержкой</a>
+                                    <a href={`mailto:support@energylogic.ai?subject=${encodeURIComponent('PDF Download Issue')}&body=${encodeURIComponent(`Document: ${document.title} (${document.id})`)}`}>Contact Support</a>
                                 </Button>
                             </div>
                         </div>
@@ -146,26 +146,26 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                 )}
             </div>
 
-            {/* Рабочие тетради */}
+            {/* Workbooks */}
             {document.has_workbook && (document.workbooks && document.workbooks.length > 0 || document.workbook_url) && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <div className="flex items-center gap-3 mb-4">
                         <FileText className="w-6 h-6 text-green-600" />
                         <h3 className="text-lg font-semibold text-gray-900">
-                            Рабочие тетради
+                            Workbooks
                             {document.workbooks && document.workbooks.length > 0 && (
                                 <span className="text-sm text-gray-500 ml-2">
-                                    ({document.workbooks.length} тетрадей)
+                                    ({document.workbooks.length} workbooks)
                                 </span>
                             )}
                         </h3>
                     </div>
 
                     {document.workbooks && document.workbooks.length > 0 ? (
-                        // Новые множественные рабочие тетради
+                        // New multiple workbooks
                         <div className="space-y-4">
                             <p className="text-gray-600">
-                                Рабочие тетради с таблицами, чек-листами и практическими заданиями:
+                                Workbooks with tables, checklists, and practical exercises:
                             </p>
                             <div className="space-y-3">
                                 {document.workbooks.map((workbook, index) => (
@@ -190,18 +190,18 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                                 const signed = await fetchSignedUrl(workbook.file_url)
                                                                 handleDownload(signed, `${workbook.title}.pdf`)
                                                             } catch {
-                                                                setInlineError('Не удалось получить ссылку на рабочую тетрадь. Попробуйте снова.')
+                                                                setInlineError('Failed to get workbook link. Please try again.')
                                                             }
                                                         }}
                                                         size="sm"
                                                         className="bg-green-600 hover:bg-green-700 text-white"
                                                     >
                                                         <Download className="w-4 h-4 mr-1" />
-                                                        Скачать
+                                                        Download
                                                     </Button>
                                                 ) : (
                                                     <div className="text-sm text-gray-500">
-                                                        Доступно после покупки
+                                                        Available after purchase
                                                     </div>
                                                 )}
                                             </div>
@@ -211,15 +211,15 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                             </div>
                         </div>
                     ) : (
-                        // Старая одиночная рабочая тетрадь (для обратной совместимости)
+                        // Legacy single workbook (for backwards compatibility)
                         <div>
                             <p className="text-gray-600 mb-4">
-                                Краткая рабочая тетрадь (7-10 страниц) с таблицами и чек-листами:
+                                Brief workbook (7-10 pages) with tables and checklists:
                             </p>
                             <ul className="text-sm text-gray-600 mb-4 space-y-1">
-                                <li>• «Истинное намерение или ложное?»</li>
-                                <li>• «Алгоритм перезаписи в 5 шагов»</li>
-                                <li>• «Дневник намерения (шаблон на неделю)»</li>
+                                <li>• "True intention or false?"</li>
+                                <li>• "Rewriting algorithm in 5 steps"</li>
+                                <li>• "Intention diary (weekly template)"</li>
                             </ul>
                             {isPurchased ? (
                                 <Button
@@ -229,17 +229,17 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                             const signed = await fetchSignedUrl(document.workbook_url!)
                                             handleDownload(signed, `${document.title}-workbook.pdf`)
                                         } catch {
-                                            setInlineError('Не удалось получить ссылку на рабочую тетрадь. Попробуйте снова.')
+                                            setInlineError('Failed to get workbook link. Please try again.')
                                         }
                                     }}
                                     className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                     <Download className="w-4 h-4 mr-2" />
-                                    Скачать тетрадь
+                                    Download Workbook
                                 </Button>
                             ) : (
                                 <div className="text-sm text-gray-500">
-                                    Доступно после покупки
+                                    Available after purchase
                                 </div>
                             )}
                         </div>
@@ -247,14 +247,14 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                 </div>
             )}
 
-            {/* Видео */}
+            {/* Videos */}
             {document.has_videos && document.videos && document.videos.length > 0 && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <div className="flex items-center gap-3 mb-4">
                         <Video className="w-6 h-6 text-purple-600" />
-                        <h3 className="text-lg font-semibold text-gray-900">Видео-уроки</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Video Lessons</h3>
                         <span className="text-sm text-gray-500">
-                            ({document.video_count || document.videos.length} видео по 5-7 минут)
+                            ({document.video_count || document.videos.length} videos, 5-7 min each)
                         </span>
                     </div>
 
@@ -264,7 +264,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                 <div className="flex items-center justify-between">
                                     <div className="flex-1">
                                         <h4 className="font-medium text-gray-900 mb-1">
-                                            {video.title || `Видео ${index + 1}`}
+                                            {video.title || `Video ${index + 1}`}
                                         </h4>
                                         {video.description && (
                                             <p className="text-sm text-gray-600 mb-1">
@@ -272,7 +272,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                             </p>
                                         )}
                                         <p className="text-sm text-gray-500">
-                                            Продолжительность: 5-7 минут
+                                            Duration: 5-7 minutes
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
@@ -284,7 +284,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                     className="bg-purple-600 hover:bg-purple-700 text-white"
                                                 >
                                                     <Play className="w-4 h-4 mr-1" />
-                                                    Смотреть
+                                                    Watch
                                                 </Button>
                                                 <Button
                                                     onClick={async () => {
@@ -293,19 +293,19 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                             const signed = await fetchSignedUrl(video.file_url)
                                                             handleDownload(signed, `${video.title || document.title}-video-${index + 1}.mp4`)
                                                         } catch {
-                                                            setInlineError('Не удалось получить ссылку на видео. Попробуйте снова.')
+                                                            setInlineError('Failed to get video link. Please try again.')
                                                         }
                                                     }}
                                                     size="sm"
                                                     variant="outline"
                                                 >
                                                     <Download className="w-4 h-4 mr-1" />
-                                                    Скачать
+                                                    Download
                                                 </Button>
                                             </>
                                         ) : (
                                             <div className="text-sm text-gray-500">
-                                                Доступно после покупки
+                                                Available after purchase
                                             </div>
                                         )}
                                     </div>
@@ -316,14 +316,14 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                 </div>
             )}
 
-            {/* Аудио-настройка */}
+            {/* Audio Settings */}
             {document.has_audio && document.audio && document.audio.length > 0 && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <div className="flex items-center gap-3 mb-4">
                         <Volume2 className="w-6 h-6 text-orange-600" />
-                        <h3 className="text-lg font-semibold text-gray-900">Аудио-настройка</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Audio Settings</h3>
                         <span className="text-sm text-gray-500">
-                            ({document.audio_count || document.audio.length} аудио по 5 минут)
+                            ({document.audio_count || document.audio.length} audio files, 5 min each)
                         </span>
                     </div>
 
@@ -333,7 +333,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                 <div className="flex items-center justify-between">
                                     <div className="flex-1">
                                         <h4 className="font-medium text-gray-900 mb-1">
-                                            {audioItem.title || `Аудио ${index + 1}`}
+                                            {audioItem.title || `Audio ${index + 1}`}
                                         </h4>
                                         {audioItem.description && (
                                             <p className="text-sm text-gray-600 mb-1">
@@ -341,7 +341,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                             </p>
                                         )}
                                         <p className="text-sm text-gray-500">
-                                            Продолжительность: 5 минут
+                                            Duration: 5 minutes
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
@@ -350,17 +350,17 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                 <Button
                                                     onClick={() => {
                                                         if (!isPurchased) {
-                                                            alert('Для прослушивания аудио необходимо приобрести мини-курс')
+                                                            alert('You need to purchase the mini course to listen to audio')
                                                             return
                                                         }
-                                                        // Здесь можно добавить встроенный аудио-плеер
+                                                        // Here you can add an embedded audio player
                                                         window.open(audioItem.file_url, '_blank')
                                                     }}
                                                     size="sm"
                                                     className="bg-orange-600 hover:bg-orange-700 text-white"
                                                 >
                                                     <Play className="w-4 h-4 mr-1" />
-                                                    Слушать
+                                                    Listen
                                                 </Button>
                                                 <Button
                                                     onClick={async () => {
@@ -369,19 +369,19 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                             const signed = await fetchSignedUrl(audioItem.file_url)
                                                             handleDownload(signed, `${audioItem.title || document.title}-audio-${index + 1}.mp3`)
                                                         } catch {
-                                                            setInlineError('Не удалось получить ссылку на аудио. Попробуйте снова.')
+                                                            setInlineError('Failed to get audio link. Please try again.')
                                                         }
                                                     }}
                                                     size="sm"
                                                     variant="outline"
                                                 >
                                                     <Download className="w-4 h-4 mr-1" />
-                                                    Скачать
+                                                    Download
                                                 </Button>
                                             </>
                                         ) : (
                                             <div className="text-sm text-gray-500">
-                                                Доступно после покупки
+                                                Available after purchase
                                             </div>
                                         )}
                                     </div>
@@ -392,35 +392,35 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                 </div>
             )}
 
-            {/* Общая информация о курсе */}
+            {/* Course Information */}
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
                 <div className="flex items-center gap-3 mb-3">
                     <Clock className="w-6 h-6 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Информация о курсе</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Course Information</h3>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                        <span className="text-gray-600">Общая продолжительность:</span>
+                        <span className="text-gray-600">Total Duration:</span>
                         <span className="font-medium ml-2">
-                            {document.course_duration_minutes || 25} минут
+                            {document.course_duration_minutes || 25} minutes
                         </span>
                     </div>
                     <div>
-                        <span className="text-gray-600">Количество видео:</span>
+                        <span className="text-gray-600">Number of Videos:</span>
                         <span className="font-medium ml-2">
                             {document.video_count || 0}
                         </span>
                     </div>
                     <div>
-                        <span className="text-gray-600">Рабочая тетрадь:</span>
+                        <span className="text-gray-600">Workbook:</span>
                         <span className="font-medium ml-2">
-                            {document.has_workbook ? 'Включена' : 'Нет'}
+                            {document.has_workbook ? 'Included' : 'None'}
                         </span>
                     </div>
                     <div>
-                        <span className="text-gray-600">Аудио-настройка:</span>
+                        <span className="text-gray-600">Audio Settings:</span>
                         <span className="font-medium ml-2">
-                            {document.has_audio ? 'Включена' : 'Нет'}
+                            {document.has_audio ? 'Included' : 'None'}
                         </span>
                     </div>
                 </div>

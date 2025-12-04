@@ -1,4 +1,4 @@
--- Создание таблицы для токенов восстановления пароля
+-- Create table for password reset tokens
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -8,23 +8,23 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
   used_at TIMESTAMP WITH TIME ZONE NULL
 );
 
--- Создание индексов для оптимизации
+-- Create indexes for optimization
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
 
--- RLS политики
+-- RLS policies
 ALTER TABLE password_reset_tokens ENABLE ROW LEVEL SECURITY;
 
--- Политика для service_role (полный доступ)
+-- Policy for service_role (full access)
 CREATE POLICY "Service role can manage password reset tokens" ON password_reset_tokens
   FOR ALL USING (auth.role() = 'service_role');
 
--- Политика для аутентифицированных пользователей (только свои токены)
+-- Policy for authenticated users (only their own tokens)
 CREATE POLICY "Users can view their own password reset tokens" ON password_reset_tokens
   FOR SELECT USING (auth.uid() = user_id);
 
--- Функция для очистки истекших токенов
+-- Function to clean up expired tokens
 CREATE OR REPLACE FUNCTION cleanup_expired_password_reset_tokens()
 RETURNS void AS $$
 BEGIN
@@ -33,11 +33,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Создание триггера для автоматической очистки истекших токенов при создании новых
+-- Create trigger for automatic cleanup of expired tokens when creating new ones
 CREATE OR REPLACE FUNCTION trigger_cleanup_expired_tokens()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Очищаем истекшие токены перед вставкой нового
+  -- Clean up expired tokens before inserting a new one
   PERFORM cleanup_expired_password_reset_tokens();
   RETURN NEW;
 END;
@@ -48,9 +48,9 @@ CREATE TRIGGER cleanup_expired_tokens_trigger
   FOR EACH ROW
   EXECUTE FUNCTION trigger_cleanup_expired_tokens();
 
--- Комментарии
-COMMENT ON TABLE password_reset_tokens IS 'Токены для восстановления пароля пользователей';
-COMMENT ON COLUMN password_reset_tokens.user_id IS 'ID пользователя, для которого создан токен';
-COMMENT ON COLUMN password_reset_tokens.token IS 'Уникальный токен для восстановления пароля';
-COMMENT ON COLUMN password_reset_tokens.expires_at IS 'Время истечения токена';
-COMMENT ON COLUMN password_reset_tokens.used_at IS 'Время использования токена (NULL если не использован)';
+-- Comments
+COMMENT ON TABLE password_reset_tokens IS 'Tokens for user password recovery';
+COMMENT ON COLUMN password_reset_tokens.user_id IS 'ID of the user for whom the token was created';
+COMMENT ON COLUMN password_reset_tokens.token IS 'Unique token for password recovery';
+COMMENT ON COLUMN password_reset_tokens.expires_at IS 'Token expiration time';
+COMMENT ON COLUMN password_reset_tokens.used_at IS 'Token usage time (NULL if not used)';

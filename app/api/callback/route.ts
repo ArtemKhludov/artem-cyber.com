@@ -9,40 +9,40 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, phone, email, preferred_time, message, source_page, product_type, product_name, notes } = body
 
-    // Валидация обязательных полей
+    // Validate required fields
     if (!name || (!phone && product_type !== 'chat_message') || !email) {
       return NextResponse.json(
-        { error: 'Имя, телефон и email обязательны' },
+        { error: 'Name, phone and email are required' },
         { status: 400 }
       )
     }
 
-    // Валидация телефона (базовая проверка) - пропускаем для чата
+    // Phone validation (basic check) - skip for chat
     if (product_type !== 'chat_message' && phone) {
       const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/
       if (!phoneRegex.test(phone)) {
         return NextResponse.json(
-          { error: 'Неверный формат телефона' },
+          { error: 'Invalid phone format' },
           { status: 400 }
         )
       }
     }
 
-    // Валидация email (если предоставлен) - пропускаем для чата
+    // Email validation (if provided) - skip for chat
     if (email && product_type !== 'chat_message') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(email)) {
         return NextResponse.json(
-          { error: 'Неверный формат email' },
+          { error: 'Invalid email format' },
           { status: 400 }
         )
       }
     }
 
-    // Сохранение заявки в базу данных
+    // Save request to database
     const supabase = getSupabaseAdmin()
 
-    // Сначала проверяем, существует ли пользователь
+    // First check if user exists
     let existingUserId = null
     if (email) {
       const { data: existingUser } = await supabase
@@ -53,28 +53,28 @@ export async function POST(request: NextRequest) {
 
       if (existingUser) {
         existingUserId = existingUser.id
-        console.log(`Найден существующий пользователь: ${existingUserId}`)
+        console.log(`Found existing user: ${existingUserId}`)
       }
     }
 
-    // Создаем заявку с привязкой к существующему пользователю или без неё
+    // Create request with link to existing user or without
     const { data, error } = await supabase
       .from('callback_requests')
       .insert([
         {
           name: name.trim(),
-          phone: phone?.trim() || 'Не указан',
+          phone: phone?.trim() || 'Not provided',
           email: email?.trim() || null,
           preferred_time: preferred_time?.trim() || null,
           message: message?.trim() || null,
           source_page: source_page || 'unknown',
           product_type: product_type || 'callback',
-          product_name: product_name || 'Заказ звонка',
+          product_name: product_name || 'Callback Request',
           notes: notes || null,
           source: 'website',
           status: 'new',
-          user_id: existingUserId, // Привязываем к существующему пользователю если найден
-          auto_created_user: false, // Не создаем нового пользователя
+          user_id: existingUserId, // Link to existing user if found
+          auto_created_user: false, // Don't create new user
           user_credentials_sent: false
         }
       ])
@@ -85,26 +85,26 @@ export async function POST(request: NextRequest) {
       console.error('Database error:', error)
       console.error('Error details:', JSON.stringify(error, null, 2))
       return NextResponse.json(
-        { error: 'Ошибка сохранения заявки', details: error.message },
+        { error: 'Error saving request', details: error.message },
         { status: 500 }
       )
     }
 
-    // Отправка уведомления в Telegram (в тему Callbacks)
-    const telegramMessage = `🆕 Новая заявка из CRM-системы:\n` +
-      `👤 Имя: ${name}\n` +
-      `📧 Email: ${email || 'Не указан'}\n` +
-      `📞 Телефон: ${phone}\n` +
-      `📦 Тип: ${product_type || 'callback'}\n` +
-      `🛍️ Товар/Услуга: ${product_name || 'Заказ звонка'}\n` +
-      `📝 Заметки: ${notes || 'Нет'}\n` +
-      `🌐 Источник: ${source_page || 'Не указан'}`
+    // Send notification to Telegram (to Callbacks thread)
+    const telegramMessage = `🆕 New request from CRM system:\n` +
+      `👤 Name: ${name}\n` +
+      `📧 Email: ${email || 'Not provided'}\n` +
+      `📞 Phone: ${phone}\n` +
+      `📦 Type: ${product_type || 'callback'}\n` +
+      `🛍️ Product/Service: ${product_name || 'Callback Request'}\n` +
+      `📝 Notes: ${notes || 'None'}\n` +
+      `🌐 Source: ${source_page || 'Not specified'}`
 
     notifyCallbackTelegram(telegramMessage).catch((e) =>
       console.error('Telegram callback notify error:', e)
     )
 
-    // Создаем уведомление для администратора о новой заявке
+    // Create notification for admin about new request
     if (data.id) {
       try {
         await supabase
@@ -127,17 +127,17 @@ export async function POST(request: NextRequest) {
           ])
       } catch (error) {
         console.error('Error creating admin notification:', error)
-        // Не прерываем выполнение, если не удалось создать уведомление
+        // Don't interrupt execution if notification creation failed
       }
     }
 
-    // ОБЯЗАТЕЛЬНАЯ РЕГИСТРАЦИЯ: Если пользователь не найден, возвращаем ошибку
+    // MANDATORY REGISTRATION: If user not found, return error
     if (!data.user_id && email) {
       console.log('Callback API: User not found, registration required')
       return NextResponse.json({
         success: false,
         needs_registration: true,
-        message: 'Для создания заявки необходимо зарегистрироваться. У вас уже есть аккаунт? Войдите в систему.',
+        message: 'Registration is required to create a request. Do you already have an account? Please sign in.',
         data: {
           email: email,
           name: name,
@@ -152,12 +152,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Если пользователь не предоставил email, тоже требуем регистрацию
+    // If user didn't provide email, also require registration
     if (!email) {
       return NextResponse.json({
         success: false,
         needs_registration: true,
-        message: 'Для создания заявки необходимо указать email и зарегистрироваться. Это позволит вам отслеживать статус заявки и общаться со специалистами.',
+        message: 'Email is required to create a request. Registration will allow you to track request status and communicate with specialists.',
         data: {
           name: name,
           phone: phone,
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Отправляем письмо подтверждения заявки
+    // Send request confirmation email
     if (data.user_id && email) {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ||
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
         console.log(`Callback confirmation email sent to ${data.email}`)
       } catch (emailError) {
         console.error('Error sending callback confirmation email:', emailError)
-        // Не прерываем выполнение, если не удалось отправить email
+        // Don't interrupt execution if email sending failed
       }
     }
 
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Заявка успешно отправлена и добавлена в ваш личный кабинет',
+      message: 'Request successfully submitted and added to your dashboard',
       data: {
         ...data,
         user_exists: true
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Server error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
