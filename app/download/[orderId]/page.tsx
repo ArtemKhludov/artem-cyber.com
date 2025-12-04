@@ -44,7 +44,7 @@ export default function DownloadPage() {
       if (!orderId || !user) return
 
       try {
-        // Получаем заказ
+        // Fetch order
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .select('*')
@@ -53,13 +53,13 @@ export default function DownloadPage() {
           .single()
 
         if (orderError) {
-          setError('Заказ не найден или у вас нет доступа')
+          setError('Order not found or no access')
           return
         }
 
         setOrder(orderData)
 
-        // Если есть document_id в заказе, получаем информацию о документе
+        // If order has document_id, fetch document info
         if ((orderData as any).document_id) {
           const { data: documentData, error: documentError } = await supabase
             .from('documents')
@@ -72,7 +72,7 @@ export default function DownloadPage() {
           }
         }
       } catch (err) {
-        setError('Ошибка загрузки данных')
+        setError('Failed to load data')
         console.error('Error fetching order:', err)
       } finally {
         setLoading(false)
@@ -104,7 +104,7 @@ export default function DownloadPage() {
         })
       }
     } catch (err) {
-      setError('Ошибка при скачивании файла')
+      setError('Error downloading file')
       console.error('Download error:', err)
     } finally {
       setDownloading(false)
@@ -120,10 +120,10 @@ export default function DownloadPage() {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Необходима авторизация
+          Authorization required
         </h1>
         <Button asChild>
-          <Link href="/auth/login">Войти</Link>
+          <Link href="/auth/login">Log in</Link>
         </Button>
       </div>
     )
@@ -146,13 +146,13 @@ export default function DownloadPage() {
         <div className="max-w-md mx-auto">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            {error || 'Заказ не найден'}
+            {error || 'Order not found'}
           </h1>
           <p className="text-gray-600 mb-6">
-            Проверьте ссылку или обратитесь в поддержку
+            Check the link or contact support
           </p>
           <Button asChild>
-            <Link href="/dashboard">Личный кабинет</Link>
+            <Link href="/dashboard">Dashboard</Link>
           </Button>
         </div>
       </div>
@@ -170,12 +170,12 @@ export default function DownloadPage() {
             {hasPDF ? '📄' : '⏳'}
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            {hasPDF ? 'Ваш отчет готов!' : 'Отчет готовится'}
+            {hasPDF ? 'Your report is ready!' : 'Report in progress'}
           </h1>
           <p className="text-xl text-gray-600">
             {hasPDF
-              ? 'Результаты энергетической диагностики доступны для скачивания'
-              : 'Мы обрабатываем результаты вашей сессии'
+              ? 'Your diagnostic results are ready to download'
+              : 'We are processing your session results'
             }
           </p>
         </div>
@@ -183,47 +183,47 @@ export default function DownloadPage() {
         <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
           <div className="bg-gray-50 border-b p-6">
             <h2 className="text-xl font-semibold text-gray-900">
-              Информация о заказе
+              Order details
             </h2>
           </div>
 
           <div className="p-6 space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex justify-between">
-                <span className="text-gray-600">Номер заказа:</span>
+                <span className="text-gray-600">Order ID:</span>
                 <span className="font-mono text-sm">{order.id}</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">Статус:</span>
+                <span className="text-gray-600">Status:</span>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isCompleted
                   ? 'bg-green-100 text-green-800'
                   : 'bg-yellow-100 text-yellow-800'
                   }`}>
-                  {isCompleted ? 'Завершен' : 'В обработке'}
+                  {isCompleted ? 'Completed' : 'In progress'}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">Сумма:</span>
-                <span className="font-semibold">₽{order.amount.toLocaleString()}</span>
+                <span className="text-gray-600">Amount:</span>
+                <span className="font-semibold">₽{order.amount.toLocaleString('en-US')}</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">Дата заказа:</span>
-                <span>{new Date(order.created_at).toLocaleDateString('ru-RU')}</span>
+                <span className="text-gray-600">Order date:</span>
+                <span>{new Date(order.created_at).toLocaleDateString('en-US')}</span>
               </div>
 
               {order.session_date && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Дата сессии:</span>
-                  <span>{new Date(order.session_date).toLocaleDateString('ru-RU')}</span>
+                  <span className="text-gray-600">Session date:</span>
+                  <span>{new Date(order.session_date).toLocaleDateString('en-US')}</span>
                 </div>
               )}
 
               {order.session_time && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Время сессии:</span>
+                  <span className="text-gray-600">Session time:</span>
                   <span>{order.session_time}</span>
                 </div>
               )}
@@ -241,22 +241,22 @@ export default function DownloadPage() {
                 </svg>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-green-800 mb-2">
-                    {document?.course_type === 'mini_course' ? 'Мини-курс готов к изучению' : 'PDF-отчет готов к скачиванию'}
+                    {document?.course_type === 'mini_course' ? 'Mini-course is ready to learn' : 'PDF report is ready to download'}
                   </h3>
                   <p className="text-green-700 mb-4">
                     {document?.course_type === 'mini_course'
-                      ? 'Ваш мини-курс содержит основной PDF, рабочую тетрадь, видео-уроки и аудио-настройку.'
-                      : 'Ваш персональный отчет содержит детальный анализ энергетического состояния, рекомендации и план действий.'
+                      ? 'Your mini-course includes the main PDF, workbook, video lessons, and audio guidance.'
+                      : 'Your personal report contains a detailed analysis, recommendations, and an action plan.'
                     }
                   </p>
                   {document?.course_type === 'mini_course' ? (
                     <div className="text-sm text-green-600 mb-4">
-                      <p>Доступные материалы:</p>
+                      <p>Available materials:</p>
                       <ul className="list-disc list-inside mt-1 space-y-1">
-                        <li>Основной PDF-документ</li>
-                        {document.has_workbook && <li>Рабочая тетрадь</li>}
-                        {document.has_videos && <li>{document.video_count || 0} видео-урока</li>}
-                        {document.has_audio && <li>Аудио-настройка</li>}
+                        <li>Main PDF</li>
+                        {document.has_workbook && <li>Workbook</li>}
+                        {document.has_videos && <li>{document.video_count || 0} video lessons</li>}
+                        {document.has_audio && <li>Audio guidance</li>}
                       </ul>
                     </div>
                   ) : (
@@ -269,14 +269,14 @@ export default function DownloadPage() {
                         {downloading ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            <span>Скачивание...</span>
+                            <span>Downloading...</span>
                           </>
                         ) : (
                           <>
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                             </svg>
-                            <span>Скачать PDF</span>
+                            <span>Download PDF</span>
                           </>
                         )}
                       </Button>
@@ -289,7 +289,7 @@ export default function DownloadPage() {
                           <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                           <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                         </svg>
-                        <span>Просмотр онлайн</span>
+                        <span>View online</span>
                       </Button>
                     </div>
                   )}
@@ -297,7 +297,7 @@ export default function DownloadPage() {
               </div>
             </div>
 
-            {/* Контент мини-курса */}
+            {/* Mini-course content */}
             {document?.course_type === 'mini_course' && (
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <CourseContent document={document} isPurchased={true} />
@@ -307,33 +307,33 @@ export default function DownloadPage() {
             {/* What's Inside */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Что содержится в отчете
+                What’s inside the report
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   {
-                    title: 'Энергетический профиль',
-                    description: 'Детальный анализ вашего текущего состояния'
+                    title: 'Energy profile',
+                    description: 'Detailed analysis of your current state'
                   },
                   {
-                    title: 'Области дисбаланса',
-                    description: 'Выявленные проблемные зоны и их причины'
+                    title: 'Areas of imbalance',
+                    description: 'Identified problem areas and root causes'
                   },
                   {
-                    title: 'Персональные рекомендации',
-                    description: 'Индивидуальный план коррекции и развития'
+                    title: 'Personal recommendations',
+                    description: 'Individual improvement and growth plan'
                   },
                   {
-                    title: 'Практические упражнения',
-                    description: 'Конкретные техники для улучшения состояния'
+                    title: 'Practical exercises',
+                    description: 'Specific techniques to improve your state'
                   },
                   {
-                    title: 'Прогноз развития',
-                    description: 'Ожидаемые результаты при следовании рекомендациям'
+                    title: 'Development forecast',
+                    description: 'Expected results when following the plan'
                   },
                   {
-                    title: 'Дополнительные ресурсы',
-                    description: 'Полезные материалы и ссылки для изучения'
+                    title: 'Additional resources',
+                    description: 'Helpful materials and links to explore'
                   }
                 ].map((item, index) => (
                   <div key={index} className="flex items-start space-x-3">
