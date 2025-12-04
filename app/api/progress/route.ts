@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
         .eq('course_id', courseId)
 
       if (progressError) {
-        console.error('Ошибка получения прогресса курса:', progressError)
-        return NextResponse.json({ error: 'Ошибка получения прогресса' }, { status: 500 })
+        console.error('Error fetching course progress:', progressError)
+        return NextResponse.json({ error: 'Error fetching progress' }, { status: 500 })
       }
 
       const { data: courseStats, error: statsError } = await supabase
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (statsError) {
-        console.error('Ошибка получения статистики курса:', statsError)
+        console.error('Error fetching course stats:', statsError)
       }
 
       const { data: achievements, error: achievementsError } = await supabase
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         .eq('user_email', userEmail)
 
       if (achievementsError) {
-        console.error('Ошибка получения достижений:', achievementsError)
+        console.error('Error fetching achievements:', achievementsError)
       }
 
       const response = NextResponse.json({
@@ -99,8 +99,8 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (summaryError) {
-      console.error('Ошибка получения сводки пользователя:', summaryError)
-      return NextResponse.json({ error: 'Ошибка получения данных' }, { status: 500 })
+      console.error('Error fetching user summary:', summaryError)
+      return NextResponse.json({ error: 'Error fetching data' }, { status: 500 })
     }
 
     const { data: achievements, error: achievementsError } = await supabase
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
       .order('earned_at', { ascending: false })
 
     if (achievementsError) {
-      console.error('Ошибка получения достижений:', achievementsError)
+      console.error('Error fetching achievements:', achievementsError)
     }
 
     const { data: allCoursesStats, error: coursesError } = await supabase
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
       .order('last_activity_at', { ascending: false })
 
     if (coursesError) {
-      console.error('Ошибка получения статистики курсов:', coursesError)
+      console.error('Error fetching course statistics:', coursesError)
     }
 
     const response = NextResponse.json({
@@ -149,8 +149,8 @@ export async function GET(request: NextRequest) {
     applySessionCookie(response, validation)
     return response
   } catch (error) {
-    console.error('Ошибка API прогресса:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    console.error('Progress API error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
       if (error instanceof Error) {
         return NextResponse.json({ error: error.message }, { status: 403 })
       }
-        return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+      return NextResponse.json({ error: 'Request denied' }, { status: 403 })
     }
 
     const { supabase, sessionToken, validation } = await getSessionContext()
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!courseId || !materialType || !materialId || !materialTitle || !status) {
-      return NextResponse.json({ error: 'Недостаточно данных для обновления прогресса' }, { status: 400 })
+      return NextResponse.json({ error: 'Insufficient data to update progress' }, { status: 400 })
     }
 
     const { data: purchase, error: purchaseError } = await supabase
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (purchaseError || !purchase) {
-      return NextResponse.json({ error: 'Курс не приобретен' }, { status: 403 })
+      return NextResponse.json({ error: 'Course not purchased' }, { status: 403 })
     }
 
     const progressData = {
@@ -218,8 +218,8 @@ export async function POST(request: NextRequest) {
       })
 
     if (upsertError) {
-      console.error('Ошибка обновления прогресса:', upsertError)
-      return NextResponse.json({ error: 'Ошибка обновления прогресса' }, { status: 500 })
+      console.error('Error updating progress:', upsertError)
+      return NextResponse.json({ error: 'Error updating progress' }, { status: 500 })
     }
 
     const response = NextResponse.json({ success: true })
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
 
     return response
   } catch (error) {
-    console.error('Ошибка API обновления прогресса:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    console.error('Progress update API error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

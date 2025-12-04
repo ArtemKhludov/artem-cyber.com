@@ -101,16 +101,16 @@ export function CoursesManagement() {
         has_videos: true
     })
 
-    // Функция для генерации правильного slug из названия курса
+    // Function to generate correct slug from course title
     const generateSlug = (title: string): string => {
         if (!title) return 'untitled'
 
         return title
             .toLowerCase()
-            .replace(/[^a-z0-9\s]/g, '') // Удаляем все кроме букв, цифр и пробелов
-            .replace(/\s+/g, '-')        // Заменяем пробелы на дефисы
-            .replace(/-+/g, '-')         // Убираем множественные дефисы
-            .replace(/^-|-$/g, '') || 'untitled' // Убираем дефисы в начале и конце
+            .replace(/[^a-z0-9\s]/g, '') // Remove everything except letters, numbers and spaces
+            .replace(/\s+/g, '-')        // Replace spaces with hyphens
+            .replace(/-+/g, '-')         // Remove multiple hyphens
+            .replace(/^-|-$/g, '') || 'untitled' // Remove hyphens at start and end
     }
 
     useEffect(() => {
@@ -124,10 +124,10 @@ export function CoursesManagement() {
                 const data = await response.json()
                 setDocuments(data.documents)
             } else {
-                console.error('Ошибка загрузки документов')
+                console.error('Error loading documents')
             }
         } catch (error) {
-            console.error('Ошибка загрузки документов:', error)
+            console.error('Error loading documents:', error)
         } finally {
             setLoading(false)
         }
@@ -153,11 +153,11 @@ export function CoursesManagement() {
                 const publicUrl = data.url
 
                 if (documentId && editingDocument) {
-                    // Обновляем существующий документ
+                    // Update existing document
                     const updatedDocument = { ...editingDocument, [field]: publicUrl }
                     setEditingDocument(updatedDocument)
                 } else {
-                    // Обновляем форму нового документа
+                    // Update new document form
                     if (field === 'video_urls') {
                         const videoIndex = parseInt(path.split('video')[1]?.split('.')[0]) - 1
                         const newVideoUrls = [...newDocument.video_urls]
@@ -168,11 +168,11 @@ export function CoursesManagement() {
                     }
                 }
             } else {
-                alert('Ошибка загрузки файла')
+                alert('Error uploading file')
             }
         } catch (error) {
-            console.error('Ошибка загрузки файла:', error)
-            alert('Ошибка загрузки файла')
+            console.error('Error uploading file:', error)
+            alert('Error uploading file')
         } finally {
             setUploading(prev => ({ ...prev, [uploadKey]: false }))
         }
@@ -223,11 +223,11 @@ export function CoursesManagement() {
                 setIsAddDialogOpen(false)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка добавления документа:', error)
-            alert('Ошибка добавления документа')
+            console.error('Error adding document:', error)
+            alert('Error adding document')
         }
     }
 
@@ -249,16 +249,16 @@ export function CoursesManagement() {
                 setEditingDocument(null)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка обновления документа:', error)
-            alert('Ошибка обновления документа')
+            console.error('Error updating document:', error)
+            alert('Error updating document')
         }
     }
 
     const handleDeleteDocument = async (id: string) => {
-        if (!confirm('Вы уверены, что хотите удалить этот курс?')) {
+        if (!confirm('Are you sure you want to delete this course?')) {
             return
         }
 
@@ -271,11 +271,11 @@ export function CoursesManagement() {
                 setDocuments(documents.filter(doc => doc.id !== id))
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка удаления документа:', error)
-            alert('Ошибка удаления документа')
+            console.error('Error deleting document:', error)
+            alert('Error deleting document')
         }
     }
 
@@ -288,83 +288,83 @@ export function CoursesManagement() {
                 },
                 body: JSON.stringify({
                     document_id: document.id,
-                    title: `Рабочая тетрадь ${(document.workbook_count || 0) + 1}`,
-                    description: 'Автоматически созданная рабочая тетрадь',
-                    file_url: 'https://placeholder.com/workbook.pdf', // Временный URL-заглушка
+                    title: `Workbook ${(document.workbook_count || 0) + 1}`,
+                    description: 'Auto-generated workbook',
+                    file_url: 'https://placeholder.com/workbook.pdf', // Temporary placeholder URL
                     order_index: (document.workbook_count || 0) + 1
                 }),
             })
 
             if (response.ok) {
                 const data = await response.json()
-                // Обновляем локальное состояние
+                // Update local state
                 setDocuments(documents.map(doc =>
                     doc.id === document.id
                         ? { ...doc, workbook_count: (doc.workbook_count || 0) + 1 }
                         : doc
                 ))
-                alert('Рабочая тетрадь добавлена! Не забудьте загрузить файл через кнопку 📚.')
+                alert('Workbook added! Don\'t forget to upload the file via the 📚 button.')
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка добавления рабочей тетради:', error)
-            alert('Ошибка добавления рабочей тетради')
+            console.error('Error adding workbook:', error)
+            alert('Error adding workbook')
         }
     }
 
     const handleQuickRemoveWorkbook = async (document: Document) => {
-        if (!confirm('Вы уверены, что хотите удалить последнюю рабочую тетрадь?')) {
+        if (!confirm('Are you sure you want to delete the last workbook?')) {
             return
         }
 
         try {
-            // Сначала получаем список рабочих тетрадей
+            // First get list of workbooks
             const workbooksResponse = await fetch(`/api/admin/workbooks?documentId=${document.id}`)
             if (!workbooksResponse.ok) {
-                throw new Error('Не удалось получить список рабочих тетрадей')
+                throw new Error('Failed to get workbook list')
             }
 
             const workbooksData = await workbooksResponse.json()
             const workbooks = workbooksData.workbooks || []
 
             if (workbooks.length === 0) {
-                alert('Нет рабочих тетрадей для удаления')
+                alert('No workbooks to delete')
                 return
             }
 
-            // Находим последнюю рабочую тетрадь (с максимальным order_index)
+            // Find last workbook (with maximum order_index)
             const lastWorkbook = workbooks.reduce((prev: any, current: any) =>
                 (prev.order_index > current.order_index) ? prev : current
             )
 
-            // Удаляем последнюю рабочую тетрадь
+            // Delete last workbook
             const deleteResponse = await fetch(`/api/admin/workbooks?id=${lastWorkbook.id}`, {
                 method: 'DELETE',
             })
 
             if (deleteResponse.ok) {
-                // Обновляем локальное состояние
+                // Update local state
                 setDocuments(documents.map(doc =>
                     doc.id === document.id
                         ? { ...doc, workbook_count: Math.max((doc.workbook_count || 0) - 1, 0) }
                         : doc
                 ))
-                alert('Рабочая тетрадь удалена!')
+                alert('Workbook deleted!')
             } else {
                 const error = await deleteResponse.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка удаления рабочей тетради:', error)
-            alert('Ошибка удаления рабочей тетради')
+            console.error('Error deleting workbook:', error)
+            alert('Error deleting workbook')
         }
     }
 
     const handleEnableWorkbooks = async (document: Document) => {
         try {
-            // Сначала включаем рабочие тетради для курса
+            // First enable workbooks for the course
             const updateResponse = await fetch(`/api/admin/documents/${document.id}`, {
                 method: 'PUT',
                 headers: {
@@ -376,10 +376,10 @@ export function CoursesManagement() {
             })
 
             if (!updateResponse.ok) {
-                throw new Error('Не удалось включить рабочие тетради для курса')
+                throw new Error('Failed to enable workbooks for the course')
             }
 
-            // Затем создаем первую рабочую тетрадь
+            // Then create the first workbook
             const workbookResponse = await fetch('/api/admin/workbooks', {
                 method: 'POST',
                 headers: {
@@ -387,15 +387,15 @@ export function CoursesManagement() {
                 },
                 body: JSON.stringify({
                     document_id: document.id,
-                    title: 'Рабочая тетрадь 1',
-                    description: 'Первая рабочая тетрадь курса',
-                    file_url: 'https://placeholder.com/workbook.pdf', // Временный URL-заглушка
+                    title: 'Workbook 1',
+                    description: 'First course workbook',
+                    file_url: 'https://placeholder.com/workbook.pdf', // Temporary placeholder URL
                     order_index: 1
                 }),
             })
 
             if (workbookResponse.ok) {
-                // Обновляем локальное состояние
+                // Update local state
                 setDocuments(documents.map(doc =>
                     doc.id === document.id
                         ? {
@@ -405,18 +405,18 @@ export function CoursesManagement() {
                         }
                         : doc
                 ))
-                alert('Рабочие тетради включены! Добавлена первая тетрадь. Не забудьте загрузить файл через кнопку 📚.')
+                alert('Workbooks enabled! First workbook added. Don\'t forget to upload the file via the 📚 button.')
             } else {
                 const error = await workbookResponse.json()
-                alert(`Ошибка создания первой тетради: ${error.error}`)
+                alert(`Error creating first workbook: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка включения рабочих тетрадей:', error)
-            alert('Ошибка включения рабочих тетрадей')
+            console.error('Error enabling workbooks:', error)
+            alert('Error enabling workbooks')
         }
     }
 
-    // Функции для управления видео
+    // Functions for video management
     const handleQuickAddVideo = async (document: Document) => {
         try {
             const currentVideos = document.video_urls || []
@@ -446,30 +446,30 @@ export function CoursesManagement() {
                         }
                         : doc
                 ))
-                alert(`Видео добавлено! Теперь ${updatedVideos.length} видео. Не забудьте загрузить файл.`)
+                alert(`Video added! Now ${updatedVideos.length} videos. Don't forget to upload the file.`)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка добавления видео:', error)
-            alert('Ошибка добавления видео')
+            console.error('Error adding video:', error)
+            alert('Error adding video')
         }
     }
 
     const handleQuickRemoveVideo = async (document: Document) => {
-        if (!confirm('Вы уверены, что хотите удалить последнее видео?')) {
+        if (!confirm('Are you sure you want to delete the last video?')) {
             return
         }
 
         try {
             const currentVideos = document.video_urls || []
             if (currentVideos.length === 0) {
-                alert('Нет видео для удаления')
+                alert('No videos to delete')
                 return
             }
 
-            const updatedVideos = currentVideos.slice(0, -1) // Удаляем последнее видео
+            const updatedVideos = currentVideos.slice(0, -1) // Remove last video
 
             const response = await fetch(`/api/admin/documents/${document.id}`, {
                 method: 'PUT',
@@ -494,14 +494,14 @@ export function CoursesManagement() {
                         }
                         : doc
                 ))
-                alert('Видео удалено!')
+                alert('Video deleted!')
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка удаления видео:', error)
-            alert('Ошибка удаления видео')
+            console.error('Error deleting video:', error)
+            alert('Error deleting video')
         }
     }
 
@@ -530,18 +530,18 @@ export function CoursesManagement() {
                         }
                         : doc
                 ))
-                alert('Видео включено! Добавлено первое видео. Не забудьте загрузить файл.')
+                alert('Videos enabled! First video added. Don\'t forget to upload the file.')
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка включения видео:', error)
-            alert('Ошибка включения видео')
+            console.error('Error enabling videos:', error)
+            alert('Error enabling videos')
         }
     }
 
-    // Функции для управления аудио
+    // Functions for audio management
     const handleEnableAudio = async (document: Document) => {
         try {
             const response = await fetch(`/api/admin/documents/${document.id}`, {
@@ -565,19 +565,19 @@ export function CoursesManagement() {
                         }
                         : doc
                 ))
-                alert('Аудио включено! Не забудьте загрузить файл.')
+                alert('Audio enabled! Don\'t forget to upload the file.')
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка включения аудио:', error)
-            alert('Ошибка включения аудио')
+            console.error('Error enabling audio:', error)
+            alert('Error enabling audio')
         }
     }
 
     const handleDisableAudio = async (document: Document) => {
-        if (!confirm('Вы уверены, что хотите отключить аудио?')) {
+        if (!confirm('Are you sure you want to disable audio?')) {
             return
         }
 
@@ -603,23 +603,23 @@ export function CoursesManagement() {
                         } as Document
                         : doc
                 ))
-                alert('Аудио отключено!')
+                alert('Audio disabled!')
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка отключения аудио:', error)
-            alert('Ошибка отключения аудио')
+            console.error('Error disabling audio:', error)
+            alert('Error disabling audio')
         }
     }
 
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('ru-RU').format(price) + ' ₽'
+        return new Intl.NumberFormat('en-US').format(price) + ' $'
     }
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('ru-RU')
+        return new Date(dateString).toLocaleDateString('en-US')
     }
 
     const getCourseTypeIcon = (type: string) => {
@@ -627,7 +627,7 @@ export function CoursesManagement() {
     }
 
     const getCourseTypeLabel = (type: string) => {
-        return type === 'mini_course' ? 'Мини-курс' : 'PDF'
+        return type === 'mini_course' ? 'Mini Course' : 'PDF'
     }
 
     if (loading) {
@@ -642,103 +642,103 @@ export function CoursesManagement() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Управление курсами</h2>
-                    <p className="text-gray-600">Создавайте и редактируйте курсы</p>
+                    <h2 className="text-2xl font-bold text-gray-900">Course Management</h2>
+                    <p className="text-gray-600">Create and edit courses</p>
                 </div>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>
                         <Button className="bg-blue-600 hover:bg-blue-700">
                             <Plus className="h-4 w-4 mr-2" />
-                            Добавить курс
+                            Add Course
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>Добавить новый курс</DialogTitle>
+                            <DialogTitle>Add New Course</DialogTitle>
                             <DialogDescription>
-                                Заполните информацию о новом курсе
+                                Fill in information about the new course
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
-                            {/* Основная информация */}
+                            {/* Basic Information */}
                             <div className="grid gap-2">
-                                <Label htmlFor="title">Название *</Label>
+                                <Label htmlFor="title">Title *</Label>
                                 <Input
                                     id="title"
                                     value={newDocument.title}
                                     onChange={(e) => setNewDocument({ ...newDocument, title: e.target.value })}
-                                    placeholder="Название курса"
+                                    placeholder="Course title"
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="description">Описание курса</Label>
+                                <Label htmlFor="description">Course Description</Label>
                                 <Textarea
                                     id="description"
                                     value={newDocument.description}
                                     onChange={(e) => setNewDocument({ ...newDocument, description: e.target.value })}
-                                    placeholder="Описание курса"
+                                    placeholder="Course description"
                                     rows={3}
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="course_description">Подробное описание курса</Label>
+                                <Label htmlFor="course_description">Detailed Course Description</Label>
                                 <Textarea
                                     id="course_description"
                                     value={newDocument.course_description || ''}
                                     onChange={(e) => setNewDocument({ ...newDocument, course_description: e.target.value })}
-                                    placeholder="Подробное описание курса для страницы предпросмотра"
+                                    placeholder="Detailed course description for preview page"
                                     rows={4}
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="main_pdf_title">Название главного PDF</Label>
+                                <Label htmlFor="main_pdf_title">Main PDF Title</Label>
                                 <Input
                                     id="main_pdf_title"
                                     value={newDocument.main_pdf_title || ''}
                                     onChange={(e) => setNewDocument({ ...newDocument, main_pdf_title: e.target.value })}
-                                    placeholder="Название главного PDF файла"
+                                    placeholder="Main PDF file title"
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="main_pdf_description">Описание главного PDF</Label>
+                                <Label htmlFor="main_pdf_description">Main PDF Description</Label>
                                 <Textarea
                                     id="main_pdf_description"
                                     value={newDocument.main_pdf_description || ''}
                                     onChange={(e) => setNewDocument({ ...newDocument, main_pdf_description: e.target.value })}
-                                    placeholder="Описание главного PDF файла"
+                                    placeholder="Main PDF file description"
                                     rows={3}
                                 />
                             </div>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="course_type">Тип курса</Label>
+                                    <Label htmlFor="course_type">Course Type</Label>
                                     <select
                                         id="course_type"
                                         value={newDocument.course_type}
                                         onChange={(e) => setNewDocument({ ...newDocument, course_type: e.target.value as 'pdf' | 'mini_course' })}
                                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     >
-                                        <option value="mini_course">Мини-курс</option>
+                                        <option value="mini_course">Mini Course</option>
                                         <option value="pdf">PDF</option>
                                     </select>
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="price_rub">Цена (₽) *</Label>
+                                    <Label htmlFor="price_rub">Price ($) *</Label>
                                     <Input
                                         id="price_rub"
                                         type="number"
                                         value={newDocument.price_rub}
                                         onChange={(e) => setNewDocument({ ...newDocument, price_rub: e.target.value })}
-                                        placeholder="2990"
+                                        placeholder="29.90"
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="page_count">Количество страниц</Label>
+                                    <Label htmlFor="page_count">Page Count</Label>
                                     <Input
                                         id="page_count"
                                         type="number"
@@ -749,18 +749,18 @@ export function CoursesManagement() {
                                 </div>
                             </div>
 
-                            {/* Файлы курса */}
+                            {/* Course Files */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">Файлы курса</h3>
+                                <h3 className="text-lg font-semibold">Course Files</h3>
 
-                                {/* Обложка */}
+                                {/* Cover */}
                                 <div className="grid gap-2">
-                                    <Label>Обложка курса</Label>
+                                    <Label>Course Cover</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             value={newDocument.cover_url}
                                             onChange={(e) => setNewDocument({ ...newDocument, cover_url: e.target.value })}
-                                            placeholder="URL обложки"
+                                            placeholder="Cover URL"
                                         />
                                         <input
                                             type="file"
@@ -789,14 +789,14 @@ export function CoursesManagement() {
                                     </div>
                                 </div>
 
-                                {/* Основной PDF */}
+                                {/* Main PDF */}
                                 <div className="grid gap-2">
-                                    <Label>Основной PDF</Label>
+                                    <Label>Main PDF</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             value={newDocument.file_url}
                                             onChange={(e) => setNewDocument({ ...newDocument, file_url: e.target.value })}
-                                            placeholder="URL основного PDF"
+                                            placeholder="Main PDF URL"
                                         />
                                         <input
                                             type="file"
@@ -825,14 +825,14 @@ export function CoursesManagement() {
                                     </div>
                                 </div>
 
-                                {/* Превью видео */}
+                                {/* Video Preview */}
                                 <div className="grid gap-2">
-                                    <Label>Превью видео</Label>
+                                    <Label>Video Preview</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             value={newDocument.video_preview_url}
                                             onChange={(e) => setNewDocument({ ...newDocument, video_preview_url: e.target.value })}
-                                            placeholder="URL превью видео"
+                                            placeholder="Video preview URL"
                                         />
                                         <input
                                             type="file"
@@ -861,16 +861,16 @@ export function CoursesManagement() {
                                     </div>
                                 </div>
 
-                                {/* Рабочие тетради управляются через иконку книги 📚 в списке курсов */}
+                                {/* Workbooks are managed via the 📚 icon in the course list */}
 
-                                {/* Аудио */}
+                                {/* Audio */}
                                 <div className="grid gap-2">
-                                    <Label>Аудио-настройка</Label>
+                                    <Label>Audio Adjustment</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             value={newDocument.audio_url}
                                             onChange={(e) => setNewDocument({ ...newDocument, audio_url: e.target.value })}
-                                            placeholder="URL аудио файла"
+                                            placeholder="Audio file URL"
                                         />
                                         <input
                                             type="file"
@@ -899,9 +899,9 @@ export function CoursesManagement() {
                                     </div>
                                 </div>
 
-                                {/* Видео уроки */}
+                                {/* Video Lessons */}
                                 <div className="grid gap-2">
-                                    <Label>Видео уроки</Label>
+                                    <Label>Video Lessons</Label>
                                     {newDocument.video_urls.map((url, index) => (
                                         <div key={index} className="flex gap-2">
                                             <Input
@@ -911,7 +911,7 @@ export function CoursesManagement() {
                                                     newVideoUrls[index] = e.target.value
                                                     setNewDocument({ ...newDocument, video_urls: newVideoUrls })
                                                 }}
-                                                placeholder={`URL видео урока ${index + 1}`}
+                                                placeholder={`Video lesson ${index + 1} URL`}
                                             />
                                             <input
                                                 type="file"
@@ -941,673 +941,609 @@ export function CoursesManagement() {
                                     ))}
                                 </div>
 
-                                {/* Дополнительные настройки */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="course_duration_minutes">Продолжительность (минуты)</Label>
-                                        <Input
-                                            id="course_duration_minutes"
-                                            type="number"
-                                            value={newDocument.course_duration_minutes}
-                                            onChange={(e) => setNewDocument({ ...newDocument, course_duration_minutes: e.target.value })}
-                                            placeholder="25"
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="video_count">Количество видео</Label>
-                                        <Input
-                                            id="video_count"
-                                            type="number"
-                                            value={newDocument.video_count}
-                                            onChange={(e) => setNewDocument({ ...newDocument, video_count: e.target.value })}
-                                            placeholder="3"
-                                        />
-                                    </div>
-                                </div>
+                                placeholder={`Video lesson ${index + 1} URL`}
+                            </DialogContent>
+                        </Dialog>
+                    </div>
 
-                                {/* Чекбоксы */}
-                                <div className="grid grid-cols-3 gap-4">
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={newDocument.has_workbook}
-                                            onChange={(e) => setNewDocument({ ...newDocument, has_workbook: e.target.checked })}
-                                            className="rounded"
-                                        />
-                                        <span className="text-sm">Есть рабочая тетрадь</span>
-                                    </label>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={newDocument.has_audio}
-                                            onChange={(e) => setNewDocument({ ...newDocument, has_audio: e.target.checked })}
-                                            className="rounded"
-                                        />
-                                        <span className="text-sm">Есть аудио</span>
-                                    </label>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={newDocument.has_videos}
-                                            onChange={(e) => setNewDocument({ ...newDocument, has_videos: e.target.checked })}
-                                            className="rounded"
-                                        />
-                                        <span className="text-sm">Есть видео</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                                Отмена
-                            </Button>
-                            <Button onClick={handleAddDocument}>
-                                <Save className="h-4 w-4 mr-2" />
-                                Сохранить
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center">
-                        <FileText className="h-5 w-5 mr-2" />
-                        Список курсов ({documents.length})
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Название</TableHead>
-                                <TableHead>Тип</TableHead>
-                                <TableHead>Цена</TableHead>
-                                <TableHead>Материалы</TableHead>
-                                <TableHead>Создан</TableHead>
-                                <TableHead>Действия</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {documents.map((document) => (
-                                <TableRow key={document.id}>
-                                    <TableCell>
-                                        <div>
-                                            <div className="font-medium">{document.title}</div>
-                                            {document.description && (
-                                                <div className="text-sm text-gray-500 truncate max-w-xs">
-                                                    {document.description}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center">
+                                <FileText className="h-5 w-5 mr-2" />
+                                Course List ({documents.length})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Title</TableHead>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Price</TableHead>
+                                        <TableHead>Materials</TableHead>
+                                        <TableHead>Created</TableHead>
+                                        <TableHead>Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {documents.map((document) => (
+                                        <TableRow key={document.id}>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="font-medium">{document.title}</div>
+                                                    {document.description && (
+                                                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                                                            {document.description}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            {getCourseTypeIcon(document.course_type || 'pdf')}
-                                            <span className="text-sm">{getCourseTypeLabel(document.course_type || 'pdf')}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-medium text-green-600">
-                                            {formatPrice(document.price_rub)}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex gap-1">
-                                                {document.cover_url && <Image className="w-4 h-4 text-blue-500" />}
-                                                {document.file_url && <File className="w-4 h-4 text-green-500" />}
-                                                {document.video_preview_url && <Play className="w-4 h-4 text-purple-500" />}
-                                                {document.workbook_url && <BookOpen className="w-4 h-4 text-orange-500" />}
-                                                {document.audio_url && <Volume2 className="w-4 h-4 text-red-500" />}
-                                                {document.video_urls && document.video_urls.length > 0 && <Video className="w-4 h-4 text-indigo-500" />}
-                                            </div>
-                                            {/* Рабочие тетради */}
-                                            {document.has_workbook ? (
-                                                <div className="flex items-center gap-1 ml-2">
-                                                    <span className="text-xs text-gray-500">
-                                                        {document.workbook_count || 0} тетрадей
-                                                    </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    {getCourseTypeIcon(document.course_type || 'pdf')}
+                                                    <span className="text-sm">{getCourseTypeLabel(document.course_type || 'pdf')}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="font-medium text-green-600">
+                                                    {formatPrice(document.price_rub)}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
                                                     <div className="flex gap-1">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleQuickAddWorkbook(document)}
-                                                            className="h-5 w-5 p-0 text-green-600 hover:text-green-700"
-                                                            title="Добавить тетрадь"
-                                                        >
-                                                            <Plus className="h-3 w-3" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleQuickRemoveWorkbook(document)}
-                                                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
-                                                            title="Удалить последнюю тетрадь"
-                                                            disabled={!document.workbook_count || document.workbook_count <= 0}
-                                                        >
-                                                            <Minus className="h-3 w-3" />
-                                                        </Button>
+                                                        {document.cover_url && <Image className="w-4 h-4 text-blue-500" />}
+                                                        {document.file_url && <File className="w-4 h-4 text-green-500" />}
+                                                        {document.video_preview_url && <Play className="w-4 h-4 text-purple-500" />}
+                                                        {document.workbook_url && <BookOpen className="w-4 h-4 text-orange-500" />}
+                                                        {document.audio_url && <Volume2 className="w-4 h-4 text-red-500" />}
+                                                        {document.video_urls && document.video_urls.length > 0 && <Video className="w-4 h-4 text-indigo-500" />}
+                                                    </div>
+                                                    {/* Workbooks */}
+                                                    {document.has_workbook ? (
+                                                        <div className="flex items-center gap-1 ml-2">
+                                                            <span className="text-xs text-gray-500">
+                                                                {document.workbook_count || 0} workbooks
+                                                            </span>
+                                                            <div className="flex gap-1">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => handleQuickAddWorkbook(document)}
+                                                                    className="h-5 w-5 p-0 text-green-600 hover:text-green-700"
+                                                                    title="Add Workbook"
+                                                                >
+                                                                    <Plus className="h-3 w-3" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => handleQuickRemoveWorkbook(document)}
+                                                                    className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
+                                                                    title="Remove Last Workbook"
+                                                                    disabled={!document.workbook_count || document.workbook_count <= 0}
+                                                                >
+                                                                    <Minus className="h-3 w-3" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-1 ml-2">
+                                                            <span className="text-xs text-gray-400">No Workbooks</span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => handleEnableWorkbooks(document)}
+                                                                className="h-5 w-5 p-0 text-blue-600 hover:text-blue-700"
+                                                                title="Enable Workbooks"
+                                                            >
+                                                                <Plus className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Videos */}
+                                                    {document.has_videos ? (
+                                                        <div className="flex items-center gap-1 ml-2">
+                                                            <span className="text-xs text-gray-500">
+                                                                {document.video_count || 0} videos
+                                                            </span>
+                                                            <div className="flex gap-1">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => handleQuickAddVideo(document)}
+                                                                    className="h-5 w-5 p-0 text-indigo-600 hover:text-indigo-700"
+                                                                    title="Add Video"
+                                                                >
+                                                                    <Plus className="h-3 w-3" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => handleQuickRemoveVideo(document)}
+                                                                    className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
+                                                                    title="Remove Last Video"
+                                                                    disabled={!document.video_count || document.video_count <= 0}
+                                                                >
+                                                                    <Minus className="h-3 w-3" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-1 ml-2">
+                                                            <span className="text-xs text-gray-400">No Videos</span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => handleEnableVideos(document)}
+                                                                className="h-5 w-5 p-0 text-indigo-600 hover:text-indigo-700"
+                                                                title="Enable Videos"
+                                                            >
+                                                                <Plus className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Audio */}
+                                                    <div className="flex items-center gap-1 ml-2">
+                                                        {document.has_audio ? (
+                                                            <>
+                                                                <span className="text-xs text-gray-500">Has Audio</span>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => handleDisableAudio(document)}
+                                                                    className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
+                                                                    title="Disable Audio"
+                                                                >
+                                                                    <Minus className="h-3 w-3" />
+                                                                </Button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span className="text-xs text-gray-400">No Audio</span>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => handleEnableAudio(document)}
+                                                                    className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
+                                                                    title="Enable Audio"
+                                                                >
+                                                                    <Plus className="h-3 w-3" />
+                                                                </Button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1 ml-2">
-                                                    <span className="text-xs text-gray-400">Нет тетрадей</span>
+                                            </TableCell>
+                                            <TableCell>{formatDate(document.created_at)}</TableCell>
+                                            <TableCell>
+                                                <div className="flex gap-2">
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
-                                                        onClick={() => handleEnableWorkbooks(document)}
-                                                        className="h-5 w-5 p-0 text-blue-600 hover:text-blue-700"
-                                                        title="Включить рабочие тетради"
+                                                        onClick={() => setEditingDocument(document)}
                                                     >
-                                                        <Plus className="h-3 w-3" />
+                                                        <Edit className="h-4 w-4" />
                                                     </Button>
-                                                </div>
-                                            )}
-
-                                            {/* Видео */}
-                                            {document.has_videos ? (
-                                                <div className="flex items-center gap-1 ml-2">
-                                                    <span className="text-xs text-gray-500">
-                                                        {document.video_count || 0} видео
-                                                    </span>
-                                                    <div className="flex gap-1">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleQuickAddVideo(document)}
-                                                            className="h-5 w-5 p-0 text-indigo-600 hover:text-indigo-700"
-                                                            title="Добавить видео"
-                                                        >
-                                                            <Plus className="h-3 w-3" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleQuickRemoveVideo(document)}
-                                                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
-                                                            title="Удалить последнее видео"
-                                                            disabled={!document.video_count || document.video_count <= 0}
-                                                        >
-                                                            <Minus className="h-3 w-3" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1 ml-2">
-                                                    <span className="text-xs text-gray-400">Нет видео</span>
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
-                                                        onClick={() => handleEnableVideos(document)}
-                                                        className="h-5 w-5 p-0 text-indigo-600 hover:text-indigo-700"
-                                                        title="Включить видео"
+                                                        onClick={() => {
+                                                            setSelectedDocumentForWorkbooks(document)
+                                                            setShowWorkbooksManager(true)
+                                                        }}
+                                                        className="text-blue-600 hover:text-blue-700"
                                                     >
-                                                        <Plus className="h-3 w-3" />
+                                                        <BookOpen className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => handleDeleteDocument(document.id)}
+                                                        className="text-red-600 hover:text-red-700"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
-                                            )}
-
-                                            {/* Аудио */}
-                                            <div className="flex items-center gap-1 ml-2">
-                                                {document.has_audio ? (
-                                                    <>
-                                                        <span className="text-xs text-gray-500">Есть аудио</span>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleDisableAudio(document)}
-                                                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
-                                                            title="Отключить аудио"
-                                                        >
-                                                            <Minus className="h-3 w-3" />
-                                                        </Button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <span className="text-xs text-gray-400">Нет аудио</span>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleEnableAudio(document)}
-                                                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700"
-                                                            title="Включить аудио"
-                                                        >
-                                                            <Plus className="h-3 w-3" />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{formatDate(document.created_at)}</TableCell>
-                                    <TableCell>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => setEditingDocument(document)}
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => {
-                                                    setSelectedDocumentForWorkbooks(document)
-                                                    setShowWorkbooksManager(true)
-                                                }}
-                                                className="text-blue-600 hover:text-blue-700"
-                                            >
-                                                <BookOpen className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleDeleteDocument(document.id)}
-                                                className="text-red-600 hover:text-red-700"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-
-            {/* Диалог редактирования */}
-            {editingDocument && (
-                <Dialog open={!!editingDocument} onOpenChange={() => setEditingDocument(null)}>
-                    <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>Редактировать курс</DialogTitle>
-                            <DialogDescription>
-                                Измените информацию о курсе
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            {/* Основная информация */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-title">Название</Label>
-                                <Input
-                                    id="edit-title"
-                                    value={editingDocument.title}
-                                    onChange={(e) => setEditingDocument({ ...editingDocument, title: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-description">Описание курса</Label>
-                                <Textarea
-                                    id="edit-description"
-                                    value={editingDocument.description}
-                                    onChange={(e) => setEditingDocument({ ...editingDocument, description: e.target.value })}
-                                    rows={3}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-course_description">Подробное описание курса</Label>
-                                <Textarea
-                                    id="edit-course_description"
-                                    value={editingDocument.course_description || ''}
-                                    onChange={(e) => setEditingDocument({ ...editingDocument, course_description: e.target.value })}
-                                    placeholder="Подробное описание курса для страницы предпросмотра"
-                                    rows={4}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-main_pdf_title">Название главного PDF</Label>
-                                <Input
-                                    id="edit-main_pdf_title"
-                                    value={editingDocument.main_pdf_title || ''}
-                                    onChange={(e) => setEditingDocument({ ...editingDocument, main_pdf_title: e.target.value })}
-                                    placeholder="Название главного PDF файла"
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-main_pdf_description">Описание главного PDF</Label>
-                                <Textarea
-                                    id="edit-main_pdf_description"
-                                    value={editingDocument.main_pdf_description || ''}
-                                    onChange={(e) => setEditingDocument({ ...editingDocument, main_pdf_description: e.target.value })}
-                                    placeholder="Описание главного PDF файла"
-                                    rows={3}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="edit-course_type">Тип курса</Label>
-                                    <select
-                                        id="edit-course_type"
-                                        value={editingDocument.course_type || 'pdf'}
-                                        onChange={(e) => setEditingDocument({ ...editingDocument, course_type: e.target.value as 'pdf' | 'mini_course' })}
-                                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    >
-                                        <option value="mini_course">Мини-курс</option>
-                                        <option value="pdf">PDF</option>
-                                    </select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="edit-price_rub">Цена (₽)</Label>
-                                    <Input
-                                        id="edit-price_rub"
-                                        type="number"
-                                        value={editingDocument.price_rub}
-                                        onChange={(e) => setEditingDocument({ ...editingDocument, price_rub: parseInt(e.target.value) })}
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="edit-page_count">Количество страниц</Label>
-                                    <Input
-                                        id="edit-page_count"
-                                        type="number"
-                                        value={(editingDocument as any).page_count || 0}
-                                        onChange={(e) => setEditingDocument({ ...editingDocument, page_count: parseInt(e.target.value) } as any)}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Файлы курса */}
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">Файлы курса</h3>
-
-                                {/* Обложка */}
-                                <div className="grid gap-2">
-                                    <Label>Обложка курса</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={editingDocument.cover_url || ''}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, cover_url: e.target.value })}
-                                            placeholder="URL обложки"
-                                        />
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/cover.png`, 'cover_url', editingDocument.id)
-                                                }
-                                            }}
-                                            className="hidden"
-                                            id="edit-cover-upload"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => document.getElementById('edit-cover-upload')?.click()}
-                                            disabled={uploading[`${editingDocument.id}_cover_url`]}
-                                        >
-                                            {uploading[`${editingDocument.id}_cover_url`] ? (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                            ) : (
-                                                <Upload className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Основной PDF */}
-                                <div className="grid gap-2">
-                                    <Label>Основной PDF</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={editingDocument.file_url || ''}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, file_url: e.target.value })}
-                                            placeholder="URL основного PDF"
-                                        />
-                                        <input
-                                            type="file"
-                                            accept=".pdf"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/main.pdf`, 'file_url', editingDocument.id)
-                                                }
-                                            }}
-                                            className="hidden"
-                                            id="edit-pdf-upload"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => document.getElementById('edit-pdf-upload')?.click()}
-                                            disabled={uploading[`${editingDocument.id}_file_url`]}
-                                        >
-                                            {uploading[`${editingDocument.id}_file_url`] ? (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                            ) : (
-                                                <Upload className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Превью видео */}
-                                <div className="grid gap-2">
-                                    <Label>Превью видео</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={editingDocument.video_preview_url || ''}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, video_preview_url: e.target.value })}
-                                            placeholder="URL превью видео"
-                                        />
-                                        <input
-                                            type="file"
-                                            accept="video/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/preview/preview.mp4`, 'video_preview_url', editingDocument.id)
-                                                }
-                                            }}
-                                            className="hidden"
-                                            id="edit-preview-upload"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => document.getElementById('edit-preview-upload')?.click()}
-                                            disabled={uploading[`${editingDocument.id}_video_preview_url`]}
-                                        >
-                                            {uploading[`${editingDocument.id}_video_preview_url`] ? (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                            ) : (
-                                                <Upload className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Рабочие тетради управляются через иконку книги 📚 в списке курсов */}
-
-                                {/* Аудио */}
-                                <div className="grid gap-2">
-                                    <Label>Аудио-настройка</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={editingDocument.audio_url || ''}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, audio_url: e.target.value })}
-                                            placeholder="URL аудио файла"
-                                        />
-                                        <input
-                                            type="file"
-                                            accept="audio/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/audio.mp3`, 'audio_url', editingDocument.id)
-                                                }
-                                            }}
-                                            className="hidden"
-                                            id="edit-audio-upload"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => document.getElementById('edit-audio-upload')?.click()}
-                                            disabled={uploading[`${editingDocument.id}_audio_url`]}
-                                        >
-                                            {uploading[`${editingDocument.id}_audio_url`] ? (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                            ) : (
-                                                <Upload className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Видео уроки */}
-                                <div className="grid gap-2">
-                                    <Label>Видео уроки</Label>
-                                    {(editingDocument.video_urls || ['', '', '']).map((url, index) => (
-                                        <div key={index} className="flex gap-2">
-                                            <Input
-                                                value={url || ''}
-                                                onChange={(e) => {
-                                                    const newVideoUrls = [...(editingDocument.video_urls || ['', '', ''])]
-                                                    newVideoUrls[index] = e.target.value
-                                                    setEditingDocument({ ...editingDocument, video_urls: newVideoUrls })
-                                                }}
-                                                placeholder={`URL видео урока ${index + 1}`}
-                                            />
-                                            <input
-                                                type="file"
-                                                accept="video/*"
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0]
-                                                    if (file) {
-                                                        handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/videos/video${index + 1}.mp4`, 'video_urls', editingDocument.id)
-                                                    }
-                                                }}
-                                                className="hidden"
-                                                id={`edit-video-upload-${index}`}
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={() => document.getElementById(`edit-video-upload-${index}`)?.click()}
-                                                disabled={uploading[`${editingDocument.id}_video_urls`]}
-                                            >
-                                                {uploading[`${editingDocument.id}_video_urls`] ? (
-                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                                ) : (
-                                                    <Upload className="h-4 w-4" />
-                                                )}
-                                            </Button>
-                                        </div>
+                                            </TableCell>
+                                        </TableRow>
                                     ))}
-                                </div>
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
 
-                                {/* Дополнительные настройки */}
-                                <div className="grid grid-cols-2 gap-4">
+                    {/* Edit Dialog */}
+                    {editingDocument && (
+                        <Dialog open={!!editingDocument} onOpenChange={() => setEditingDocument(null)}>
+                            <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+                                <DialogHeader>
+                                    <DialogTitle>Edit Course</DialogTitle>
+                                    <DialogDescription>
+                                        Update course information
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    {/* Basic Information */}
                                     <div className="grid gap-2">
-                                        <Label htmlFor="edit-course_duration_minutes">Продолжительность (минуты)</Label>
+                                        <Label htmlFor="edit-title">Title</Label>
                                         <Input
-                                            id="edit-course_duration_minutes"
-                                            type="number"
-                                            value={editingDocument.course_duration_minutes || 0}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, course_duration_minutes: parseInt(e.target.value) })}
+                                            id="edit-title"
+                                            value={editingDocument.title}
+                                            onChange={(e) => setEditingDocument({ ...editingDocument, title: e.target.value })}
                                         />
                                     </div>
+
                                     <div className="grid gap-2">
-                                        <Label htmlFor="edit-video_count">Количество видео</Label>
-                                        <Input
-                                            id="edit-video_count"
-                                            type="number"
-                                            value={editingDocument.video_count || 0}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, video_count: parseInt(e.target.value) })}
+                                        <Label htmlFor="edit-description">Course Description</Label>
+                                        <Textarea
+                                            id="edit-description"
+                                            value={editingDocument.description}
+                                            onChange={(e) => setEditingDocument({ ...editingDocument, description: e.target.value })}
+                                            rows={3}
                                         />
                                     </div>
-                                </div>
 
-                                {/* Чекбоксы */}
-                                <div className="grid grid-cols-3 gap-4">
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={editingDocument.has_workbook || false}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, has_workbook: e.target.checked })}
-                                            className="rounded"
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="edit-course_description">Detailed Course Description</Label>
+                                        <Textarea
+                                            id="edit-course_description"
+                                            value={editingDocument.course_description || ''}
+                                            onChange={(e) => setEditingDocument({ ...editingDocument, course_description: e.target.value })}
+                                            placeholder="Detailed course description for preview page"
+                                            rows={4}
                                         />
-                                        <span className="text-sm">Есть рабочая тетрадь</span>
-                                    </label>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={editingDocument.has_audio || false}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, has_audio: e.target.checked })}
-                                            className="rounded"
-                                        />
-                                        <span className="text-sm">Есть аудио</span>
-                                    </label>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={editingDocument.has_videos || false}
-                                            onChange={(e) => setEditingDocument({ ...editingDocument, has_videos: e.target.checked })}
-                                            className="rounded"
-                                        />
-                                        <span className="text-sm">Есть видео</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setEditingDocument(null)}>
-                                Отмена
-                            </Button>
-                            <Button onClick={() => handleUpdateDocument(editingDocument)}>
-                                <Save className="h-4 w-4 mr-2" />
-                                Сохранить
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            )}
+                                    </div>
 
-            {/* Модальное окно управления рабочими тетрадями */}
-            {showWorkbooksManager && selectedDocumentForWorkbooks && (
-                <Dialog open={showWorkbooksManager} onOpenChange={setShowWorkbooksManager}>
-                    <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>
-                                Управление рабочими тетрадями: {selectedDocumentForWorkbooks.title}
-                            </DialogTitle>
-                            <DialogDescription>
-                                Добавляйте, редактируйте и упорядочивайте рабочие тетради для курса
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="py-4">
-                            <WorkbooksManager
-                                documentId={selectedDocumentForWorkbooks.id}
-                                documentTitle={selectedDocumentForWorkbooks.title}
-                                onWorkbooksChange={(count) => {
-                                    // Обновляем количество рабочих тетрадей в списке курсов
-                                    setDocuments(documents.map(doc =>
-                                        doc.id === selectedDocumentForWorkbooks.id
-                                            ? { ...doc, workbook_count: count }
-                                            : doc
-                                    ))
-                                }}
-                            />
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowWorkbooksManager(false)}>
-                                Закрыть
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            )}
-        </div>
-    )
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="edit-main_pdf_title">Main PDF Title</Label>
+                                        <Input
+                                            id="edit-main_pdf_title"
+                                            value={editingDocument.main_pdf_title || ''}
+                                            onChange={(e) => setEditingDocument({ ...editingDocument, main_pdf_title: e.target.value })}
+                                            placeholder="Main PDF file title"
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="edit-main_pdf_description">Main PDF Description</Label>
+                                        <Textarea
+                                            id="edit-main_pdf_description"
+                                            value={editingDocument.main_pdf_description || ''}
+                                            onChange={(e) => setEditingDocument({ ...editingDocument, main_pdf_description: e.target.value })}
+                                            placeholder="Main PDF file description"
+                                            rows={3}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="edit-course_type">Course Type</Label>
+                                            <select
+                                                id="edit-course_type"
+                                                value={editingDocument.course_type || 'pdf'}
+                                                onChange={(e) => setEditingDocument({ ...editingDocument, course_type: e.target.value as 'pdf' | 'mini_course' })}
+                                                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            >
+                                                <option value="mini_course">Mini Course</option>
+                                                <option value="pdf">PDF</option>
+                                            </select>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="edit-price_rub">Price ($)</Label>
+                                            <Input
+                                                id="edit-price_rub"
+                                                type="number"
+                                                value={editingDocument.price_rub}
+                                                onChange={(e) => setEditingDocument({ ...editingDocument, price_rub: parseInt(e.target.value) })}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="edit-page_count">Page Count</Label>
+                                            <Input
+                                                id="edit-page_count"
+                                                type="number"
+                                                value={(editingDocument as any).page_count || 0}
+                                                onChange={(e) => setEditingDocument({ ...editingDocument, page_count: parseInt(e.target.value) } as any)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Course Files */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold">Course Files</h3>
+
+                                        {/* Cover */}
+                                        <div className="grid gap-2">
+                                            <Label>Course Cover</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    value={editingDocument.cover_url || ''}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, cover_url: e.target.value })}
+                                                    placeholder="Cover URL"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0]
+                                                        if (file) {
+                                                            handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/cover.png`, 'cover_url', editingDocument.id)
+                                                        }
+                                                    }}
+                                                    className="hidden"
+                                                    id="edit-cover-upload"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => document.getElementById('edit-cover-upload')?.click()}
+                                                    disabled={uploading[`${editingDocument.id}_cover_url`]}
+                                                >
+                                                    {uploading[`${editingDocument.id}_cover_url`] ? (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                    ) : (
+                                                        <Upload className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Main PDF */}
+                                        <div className="grid gap-2">
+                                            <Label>Main PDF</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    value={editingDocument.file_url || ''}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, file_url: e.target.value })}
+                                                    placeholder="Main PDF URL"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept=".pdf"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0]
+                                                        if (file) {
+                                                            handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/main.pdf`, 'file_url', editingDocument.id)
+                                                        }
+                                                    }}
+                                                    className="hidden"
+                                                    id="edit-pdf-upload"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => document.getElementById('edit-pdf-upload')?.click()}
+                                                    disabled={uploading[`${editingDocument.id}_file_url`]}
+                                                >
+                                                    {uploading[`${editingDocument.id}_file_url`] ? (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                    ) : (
+                                                        <Upload className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Video Preview */}
+                                        <div className="grid gap-2">
+                                            <Label>Video Preview</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    value={editingDocument.video_preview_url || ''}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, video_preview_url: e.target.value })}
+                                                    placeholder="Video preview URL"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="video/*"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0]
+                                                        if (file) {
+                                                            handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/preview/preview.mp4`, 'video_preview_url', editingDocument.id)
+                                                        }
+                                                    }}
+                                                    className="hidden"
+                                                    id="edit-preview-upload"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => document.getElementById('edit-preview-upload')?.click()}
+                                                    disabled={uploading[`${editingDocument.id}_video_preview_url`]}
+                                                >
+                                                    {uploading[`${editingDocument.id}_video_preview_url`] ? (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                    ) : (
+                                                        <Upload className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Workbooks are managed via the 📚 icon in the course list */}
+
+                                        {/* Audio */}
+                                        <div className="grid gap-2">
+                                            <Label>Audio Adjustment</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    value={editingDocument.audio_url || ''}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, audio_url: e.target.value })}
+                                                    placeholder="Audio file URL"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="audio/*"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0]
+                                                        if (file) {
+                                                            handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/audio.mp3`, 'audio_url', editingDocument.id)
+                                                        }
+                                                    }}
+                                                    className="hidden"
+                                                    id="edit-audio-upload"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => document.getElementById('edit-audio-upload')?.click()}
+                                                    disabled={uploading[`${editingDocument.id}_audio_url`]}
+                                                >
+                                                    {uploading[`${editingDocument.id}_audio_url`] ? (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                    ) : (
+                                                        <Upload className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Video Lessons */}
+                                        <div className="grid gap-2">
+                                            <Label>Video Lessons</Label>
+                                            {(editingDocument.video_urls || ['', '', '']).map((url, index) => (
+                                                <div key={index} className="flex gap-2">
+                                                    <Input
+                                                        value={url || ''}
+                                                        onChange={(e) => {
+                                                            const newVideoUrls = [...(editingDocument.video_urls || ['', '', ''])]
+                                                            newVideoUrls[index] = e.target.value
+                                                            setEditingDocument({ ...editingDocument, video_urls: newVideoUrls })
+                                                        }}
+                                                        placeholder={`Video lesson ${index + 1} URL`}
+                                                    />
+                                                    <input
+                                                        type="file"
+                                                        accept="video/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0]
+                                                            if (file) {
+                                                                handleFileUpload(file, `courses/${generateSlug(editingDocument.title)}/videos/video${index + 1}.mp4`, 'video_urls', editingDocument.id)
+                                                            }
+                                                        }}
+                                                        className="hidden"
+                                                        id={`edit-video-upload-${index}`}
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() => document.getElementById(`edit-video-upload-${index}`)?.click()}
+                                                        disabled={uploading[`${editingDocument.id}_video_urls`]}
+                                                    >
+                                                        {uploading[`${editingDocument.id}_video_urls`] ? (
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                        ) : (
+                                                            <Upload className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Additional Settings */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="edit-course_duration_minutes">Duration (minutes)</Label>
+                                                <Input
+                                                    id="edit-course_duration_minutes"
+                                                    type="number"
+                                                    value={editingDocument.course_duration_minutes || 0}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, course_duration_minutes: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="edit-video_count">Number of Videos</Label>
+                                                <Input
+                                                    id="edit-video_count"
+                                                    type="number"
+                                                    value={editingDocument.video_count || 0}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, video_count: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Checkboxes */}
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <label className="flex items-center space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editingDocument.has_workbook || false}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, has_workbook: e.target.checked })}
+                                                    className="rounded"
+                                                />
+                                                <span className="text-sm">Has Workbook</span>
+                                            </label>
+                                            <label className="flex items-center space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editingDocument.has_audio || false}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, has_audio: e.target.checked })}
+                                                    className="rounded"
+                                                />
+                                                <span className="text-sm">Has Audio</span>
+                                            </label>
+                                            <label className="flex items-center space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editingDocument.has_videos || false}
+                                                    onChange={(e) => setEditingDocument({ ...editingDocument, has_videos: e.target.checked })}
+                                                    className="rounded"
+                                                />
+                                                <span className="text-sm">Has Videos</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setEditingDocument(null)}>
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={() => handleUpdateDocument(editingDocument)}>
+                                        <Save className="h-4 w-4 mr-2" />
+                                        Save
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+
+                    {/* Workbook Management Modal */}
+                    {showWorkbooksManager && selectedDocumentForWorkbooks && (
+                        <Dialog open={showWorkbooksManager} onOpenChange={setShowWorkbooksManager}>
+                            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        Workbook Management: {selectedDocumentForWorkbooks.title}
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Add, edit, and organize workbooks for the course
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="py-4">
+                                    <WorkbooksManager
+                                        documentId={selectedDocumentForWorkbooks.id}
+                                        documentTitle={selectedDocumentForWorkbooks.title}
+                                        onWorkbooksChange={(count) => {
+                                            // Update workbook count in course list
+                                            setDocuments(documents.map(doc =>
+                                                doc.id === selectedDocumentForWorkbooks.id
+                                                    ? { ...doc, workbook_count: count }
+                                                    : doc
+                                            ))
+                                        }}
+                                    />
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setShowWorkbooksManager(false)}>
+                                        Close
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+            </div>
+            )
 }

@@ -37,13 +37,13 @@ interface PurchaseRow {
 }
 
 const PURCHASE_STATUS_META: Record<PurchaseStatus, { label: string; badgeClass: string; allowActions: boolean } > = {
-  completed: { label: "Завершено", badgeClass: "bg-green-100 text-green-800", allowActions: true },
-  active: { label: "Активно", badgeClass: "bg-emerald-100 text-emerald-800", allowActions: true },
-  in_progress: { label: "В обработке", badgeClass: "bg-blue-100 text-blue-800", allowActions: false },
-  pending: { label: "Ожидание оплаты", badgeClass: "bg-yellow-100 text-yellow-800", allowActions: false },
-  expired: { label: "Доступ истёк", badgeClass: "bg-orange-100 text-orange-800", allowActions: false },
-  revoked: { label: "Доступ отозван", badgeClass: "bg-red-100 text-red-800", allowActions: false },
-  failed: { label: "Ошибка оплаты", badgeClass: "bg-rose-100 text-rose-800", allowActions: false }
+  completed: { label: "Completed", badgeClass: "bg-green-100 text-green-800", allowActions: true },
+  active: { label: "Active", badgeClass: "bg-emerald-100 text-emerald-800", allowActions: true },
+  in_progress: { label: "Processing", badgeClass: "bg-blue-100 text-blue-800", allowActions: false },
+  pending: { label: "Awaiting payment", badgeClass: "bg-yellow-100 text-yellow-800", allowActions: false },
+  expired: { label: "Access expired", badgeClass: "bg-orange-100 text-orange-800", allowActions: false },
+  revoked: { label: "Access revoked", badgeClass: "bg-red-100 text-red-800", allowActions: false },
+  failed: { label: "Payment failed", badgeClass: "bg-rose-100 text-rose-800", allowActions: false }
 }
 
 export default function PurchasesPage() {
@@ -75,7 +75,7 @@ export default function PurchasesPage() {
       const data = await res.json()
       setPurchases(data.purchases || [])
     } catch (e) {
-      setError("Не удалось загрузить покупки. Попробуйте позже.")
+      setError("Could not load purchases. Please try again later.")
     } finally {
       setIsLoading(false)
     }
@@ -98,13 +98,13 @@ export default function PurchasesPage() {
 
   const handleExport = () => {
     if (filtered.length === 0) return
-    const header = ["ID", "Название", "Тип", "Статус", "Дата", "Сумма"]
+    const header = ["ID", "Name", "Type", "Status", "Date", "Amount"]
     const rows = filtered.map((p) => [
       p.id,
       p.product_name,
       p.product_type,
       PURCHASE_STATUS_META[p.status].label,
-      new Date(p.created_at).toLocaleDateString("ru-RU"),
+      new Date(p.created_at).toLocaleDateString("en-US"),
       (p.price || 0).toFixed(2)
     ])
     const csv = [header, ...rows]
@@ -145,36 +145,36 @@ export default function PurchasesPage() {
     if (p.receipt_url) {
       window.open(p.receipt_url, "_blank", "noopener,noreferrer")
     } else {
-      const subject = `Запрос чека по покупке ${p.product_name}`
-      const body = `Прошу отправить чек по покупке ${p.product_name} (ID ${p.id}).` 
+      const subject = `Receipt request for purchase ${p.product_name}`
+      const body = `Please send the receipt for purchase ${p.product_name} (ID ${p.id}).`
       window.location.href = `mailto:support@energylogic.ai?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
     }
   }
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+          <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Мои покупки</h1>
-            <p className="text-gray-600">Фильтры, экспорт и быстрые действия</p>
+            <h1 className="text-3xl font-bold text-gray-900">My purchases</h1>
+            <p className="text-gray-600">Filters, export, and quick actions</p>
           </div>
 
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
             <div className="flex w-full flex-col gap-3 md:flex-row md:items-end md:gap-4">
               <div className="w-full md:w-72">
-                <label htmlFor="purchases-search" className="mb-1 block text-sm font-medium text-gray-600">Поиск</label>
-                <Input id="purchases-search" placeholder="Название, курс или ID" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <label htmlFor="purchases-search" className="mb-1 block text-sm font-medium text-gray-600">Search</label>
+                <Input id="purchases-search" placeholder="Name, course, or ID" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               <div className="w-full md:w-56">
-                <label htmlFor="purchases-status" className="mb-1 block text-sm font-medium text-gray-600">Статус</label>
+                <label htmlFor="purchases-status" className="mb-1 block text-sm font-medium text-gray-600">Status</label>
                 <select
                   id="purchases-status"
                   className="h-10 w-full rounded-md border border-input bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={statusFilterValue}
                   onChange={(e) => setStatusFilterValue(e.target.value as any)}
                 >
-                  <option value="all">Все статусы</option>
+                  <option value="all">All statuses</option>
                   {Object.entries(PURCHASE_STATUS_META).map(([key, meta]) => (
                     <option key={key} value={key}>{meta.label}</option>
                   ))}
@@ -182,11 +182,11 @@ export default function PurchasesPage() {
               </div>
             </div>
             <div className="text-sm text-gray-600 md:text-right">
-              <div>Отобрано {filtered.length} · {new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(filteredTotal)}</div>
+              <div>Selected {filtered.length} · {new Intl.NumberFormat("en-US", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(filteredTotal)}</div>
               <div className="mt-2">
                 <Button size="sm" variant="outline" onClick={handleExport} disabled={filtered.length === 0}>
                   <Download className="mr-2 h-4 w-4" />
-                  Экспорт CSV
+                  Export CSV
                 </Button>
               </div>
             </div>
@@ -196,12 +196,12 @@ export default function PurchasesPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead>Название</TableHead>
-                  <TableHead>Тип</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead>Дата</TableHead>
-                  <TableHead>Сумма</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -229,25 +229,25 @@ export default function PurchasesPage() {
                             <span className="text-xs text-gray-500">ID: {p.id}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{p.product_type === "mini_course" ? "Мини-курс" : p.product_type === "pdf" ? "Курс" : "Сессия"}</TableCell>
+                        <TableCell>{p.product_type === "mini_course" ? "Mini-course" : p.product_type === "pdf" ? "Course" : "Session"}</TableCell>
                         <TableCell><Badge className={meta.badgeClass}>{meta.label}</Badge></TableCell>
-                        <TableCell>{new Date(p.created_at).toLocaleDateString("ru-RU")}</TableCell>
-                        <TableCell>{(p.price || 0).toLocaleString("ru-RU")} ₽</TableCell>
+                        <TableCell>{new Date(p.created_at).toLocaleDateString("en-US")}</TableCell>
+                        <TableCell>{(p.price || 0).toLocaleString("en-US")} ₽</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             {meta.allowActions && openHref ? (
                               <Button size="sm" variant="outline" asChild>
                                 <a href={openHref} onClick={() => handleOpen(p)}>
                                   <PlayCircle className="h-4 w-4 mr-2" />
-                                  Открыть
+                                  Open
                                 </a>
                               </Button>
                             ) : (
                               <Button size="sm" variant="outline" disabled>
-                                Открыть
+                                Open
                               </Button>
                             )}
-                            <Button size="sm" variant="ghost" onClick={() => handleReceipt(p)}>Чек</Button>
+                            <Button size="sm" variant="ghost" onClick={() => handleReceipt(p)}>Receipt</Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -256,7 +256,7 @@ export default function PurchasesPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="py-6 text-center text-sm text-gray-500">
-                      Покупки не найдены.
+                      No purchases found.
                     </TableCell>
                   </TableRow>
                 )}
@@ -268,5 +268,3 @@ export default function PurchasesPage() {
     </MainLayout>
   )
 }
-
-
