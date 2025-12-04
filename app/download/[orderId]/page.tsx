@@ -378,17 +378,17 @@ export default function DownloadPage() {
             <Link href="/dashboard">Dashboard</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/book">Записаться еще раз</Link>
+            <Link href="/book">Book another session</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/">Главная страница</Link>
+            <Link href="/">Home</Link>
           </Button>
         </div>
 
         {/* Support */}
         <div className="mt-8 text-center text-sm text-gray-500">
           <p>
-            Вопросы по отчету? Обратитесь в поддержку:
+            Questions about the report? Contact support:
             <a href="mailto:support@energylogic.com" className="text-blue-600 hover:underline ml-1">
               support@energylogic.com
             </a>
