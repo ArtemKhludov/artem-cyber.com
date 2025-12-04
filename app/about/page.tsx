@@ -105,7 +105,7 @@ export default function AboutPage() {
                 About <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">EnergyLogic</span>
               </h1>
               <p className="text-xl md:text-2xl mb-12 text-blue-100 leading-relaxed">
-                We are EnergyLogic.<br />
+                We are EnergyLogic!<br />
                 A new system of self-understanding and inner alignment
               </p>
             </div>
