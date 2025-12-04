@@ -77,11 +77,11 @@ export function EmptyCoursesAnimation() {
                     </div>
 
                     <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-                        Дерево знаний ждет вас!
+                        The Tree of Knowledge Awaits You!
                     </h3>
 
                     <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                        Начните свой путь к новым знаниям. Каждый курс — это новый лист на вашем дереве мудрости.
+                        Start your journey to new knowledge. Each course is a new leaf on your tree of wisdom.
                     </p>
 
                     {/* Animated call-to-action */}
@@ -89,7 +89,7 @@ export function EmptyCoursesAnimation() {
                         <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                             <div className="flex items-center">
                                 <Zap className="w-5 h-5 mr-2 animate-pulse" />
-                                Выбрать первый курс
+                                Choose Your First Course
                                 <Star className="w-5 h-5 ml-2 animate-spin" style={{ animationDuration: '3s' }} />
                             </div>
                         </button>

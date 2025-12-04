@@ -99,8 +99,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Bot not configured' }, { status: 500 })
         }
 
-        // Webhook secret проверка отключена для упрощения настройки
-        // У вас уже есть все необходимые токены для безопасности
+        // Webhook secret check disabled for easier setup
+        // You already have all necessary tokens for security
 
         const update: TelegramUpdate = await request.json()
 
@@ -113,26 +113,26 @@ export async function POST(request: NextRequest) {
         const text = message.text || ''
         const userId = message.from.id
 
-        // Обрабатываем команду /start с токеном
+        // Handle /start command with token
         if (text.startsWith('/start ')) {
             const token = text.split(' ')[1]
 
             if (!token) {
                 await sendTelegramMessage(botToken, chatId,
-                    '👋 <b>Добро пожаловать в EnergyLogic Support!</b>\n\n' +
-                    'Этот бот поможет вам получать уведомления о ваших обращениях в поддержку.\n\n' +
-                    'Для связывания аккаунта перейдите в личный кабинет и нажмите "Подключить Telegram".\n\n' +
-                    '<i>Доступные команды:</i>\n' +
-                    '/help - справка\n' +
-                    '/status - статус аккаунта\n' +
-                    '/purchases - мои покупки'
+                    '👋 <b>Welcome to EnergyLogic Support!</b>\n\n' +
+                    'This bot will help you receive notifications about your support requests.\n\n' +
+                    'To link your account, go to your dashboard and click "Connect Telegram".\n\n' +
+                    '<i>Available commands:</i>\n' +
+                    '/help - help\n' +
+                    '/status - account status\n' +
+                    '/purchases - my purchases'
                 )
                 return NextResponse.json({ ok: true })
             }
 
             const supabase = getSupabaseAdmin()
 
-            // Ищем токен в базе данных
+            // Search for token in database
             const { data: linkToken, error: tokenError } = await supabase
                 .from('telegram_link_tokens')
                 .select('*, users(*)')
@@ -143,13 +143,13 @@ export async function POST(request: NextRequest) {
 
             if (tokenError || !linkToken) {
                 await sendTelegramMessage(botToken, chatId,
-                    '❌ Токен связывания недействителен или истек.\n\n' +
-                    'Пожалуйста, перейдите в личный кабинет и создайте новую ссылку для связывания.'
+                    '❌ Linking token is invalid or expired.\n\n' +
+                    'Please go to your dashboard and create a new linking link.'
                 )
                 return NextResponse.json({ ok: true })
             }
 
-            // Обновляем пользователя с данными Telegram
+            // Update user with Telegram data
             const { error: updateError } = await supabase
                 .from('users')
                 .update({
@@ -162,18 +162,18 @@ export async function POST(request: NextRequest) {
             if (updateError) {
                 console.error('User update error:', updateError)
                 await sendTelegramMessage(botToken, chatId,
-                    '❌ Произошла ошибка при связывании аккаунта. Попробуйте позже.'
+                    '❌ An error occurred while linking your account. Please try again later.'
                 )
                 return NextResponse.json({ ok: true })
             }
 
-            // Отмечаем токен как использованный
+            // Mark token as used
             await supabase
                 .from('telegram_link_tokens')
                 .update({ used_at: new Date().toISOString() })
                 .eq('id', linkToken.id)
 
-            // Записываем в аудит
+            // Record in audit
             await supabase
                 .from('user_contact_audit')
                 .insert({
@@ -182,17 +182,17 @@ export async function POST(request: NextRequest) {
                     new_value: chatId
                 })
 
-            const userName = (linkToken.users as any)?.name || (linkToken.users as any)?.email || 'Пользователь'
+            const userName = (linkToken.users as any)?.name || (linkToken.users as any)?.email || 'User'
 
             await sendTelegramMessage(botToken, chatId,
-                `✅ <b>Аккаунт успешно связан!</b>\n\n` +
-                `Привет, ${userName}!\n\n` +
-                `Теперь вы будете получать уведомления о новых ответах на ваши обращения в поддержку.\n\n` +
-                `<i>Этот бот предназначен только для уведомлений. Для общения с поддержкой используйте личный кабинет.</i>`,
+                `✅ <b>Account Successfully Linked!</b>\n\n` +
+                `Hello, ${userName}!\n\n` +
+                `You will now receive notifications about new replies to your support requests.\n\n` +
+                `<i>This bot is for notifications only. To communicate with support, use your dashboard.</i>`,
                 {
                     inline_keyboard: [[
                         {
-                            text: '🔗 Открыть личный кабинет',
+                            text: '🔗 Open Dashboard',
                             url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
                         }
                     ]]
@@ -202,35 +202,35 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ ok: true })
         }
 
-        // Обрабатываем команду /start без токена
+        // Handle /start command without token
         if (text === '/start') {
             await sendTelegramMessage(botToken, chatId,
-                '👋 <b>Добро пожаловать!</b>\n\n' +
-                'Этот бот предназначен для уведомлений о ваших обращениях в поддержку.\n\n' +
-                'Для связывания аккаунта перейдите в личный кабинет и нажмите "Подключить Telegram".'
+                '👋 <b>Welcome!</b>\n\n' +
+                'This bot is for notifications about your support requests.\n\n' +
+                'To link your account, go to your dashboard and click "Connect Telegram".'
             )
             return NextResponse.json({ ok: true })
         }
 
-        // Обрабатываем команду /help
+        // Handle /help command
         if (text === '/help') {
             await sendTelegramMessage(botToken, chatId,
-                '📋 <b>Доступные команды:</b>\n\n' +
-                '/start - Начать работу с ботом\n' +
-                '/help - Показать эту справку\n' +
-                '/status - Статус аккаунта и последние обращения\n' +
-                '/purchases - Мои покупки\n' +
-                '/unlink - Отвязать аккаунт\n\n' +
-                '<i>Для создания новых обращений используйте личный кабинет.</i>'
+                '📋 <b>Available Commands:</b>\n\n' +
+                '/start - Start working with the bot\n' +
+                '/help - Show this help\n' +
+                '/status - Account status and recent requests\n' +
+                '/purchases - My purchases\n' +
+                '/unlink - Unlink account\n\n' +
+                '<i>To create new requests, use your dashboard.</i>'
             )
             return NextResponse.json({ ok: true })
         }
 
-        // Обрабатываем команду /status
+        // Handle /status command
         if (text === '/status') {
             const supabase = getSupabaseAdmin()
 
-            // Находим пользователя по telegram_chat_id
+            // Find user by telegram_chat_id
             const { data: user, error: userError } = await supabase
                 .from('users')
                 .select('id, name, email, phone, telegram_username')
@@ -239,13 +239,13 @@ export async function POST(request: NextRequest) {
 
             if (userError || !user) {
                 await sendTelegramMessage(botToken, chatId,
-                    '❌ Аккаунт не связан с этим Telegram аккаунтом.\n\n' +
-                    'Перейдите в личный кабинет и нажмите "Подключить Telegram".'
+                    '❌ Account is not linked to this Telegram account.\n\n' +
+                    'Go to your dashboard and click "Connect Telegram".'
                 )
                 return NextResponse.json({ ok: true })
             }
 
-            // Получаем последние обращения
+            // Get recent requests
             const { data: issues, error: issuesError } = await supabase
                 .from('issue_reports')
                 .select('id, title, status, created_at, issue_replies(id, message, created_at)')
@@ -253,36 +253,36 @@ export async function POST(request: NextRequest) {
                 .order('created_at', { ascending: false })
                 .limit(3)
 
-            let statusMessage = `👤 <b>Статус аккаунта</b>\n\n` +
-                `Имя: ${user.name || 'Не указано'}\n` +
+            let statusMessage = `👤 <b>Account Status</b>\n\n` +
+                `Name: ${user.name || 'Not specified'}\n` +
                 `Email: ${user.email}\n` +
-                `Телефон: ${user.phone || 'Не указан'}\n` +
-                `Telegram: @${user.telegram_username || 'Не указан'}\n\n`
+                `Phone: ${user.phone || 'Not specified'}\n` +
+                `Telegram: @${user.telegram_username || 'Not specified'}\n\n`
 
             if (issues && issues.length > 0) {
-                statusMessage += `📝 <b>Последние обращения:</b>\n\n`
+                statusMessage += `📝 <b>Recent Requests:</b>\n\n`
                 issues.forEach((issue, index) => {
                     const statusEmoji = resolveStatusEmoji(issue.status)
 
                     const replyCount = issue.issue_replies?.length || 0
                     statusMessage += `${index + 1}. ${statusEmoji} ${issue.title}\n` +
-                        `   Статус: ${issue.status}\n` +
-                        `   Ответов: ${replyCount}\n` +
-                        `   Создано: ${new Date(issue.created_at).toLocaleDateString('ru-RU')}\n\n`
+                        `   Status: ${issue.status}\n` +
+                        `   Replies: ${replyCount}\n` +
+                        `   Created: ${new Date(issue.created_at).toLocaleDateString('en-US')}\n\n`
                 })
             } else {
-                statusMessage += `📝 У вас пока нет обращений в поддержку.`
+                statusMessage += `📝 You don't have any support requests yet.`
             }
 
             await sendTelegramMessage(botToken, chatId, statusMessage)
             return NextResponse.json({ ok: true })
         }
 
-        // Обрабатываем команду /purchases
+        // Handle /purchases command
         if (text === '/purchases') {
             const supabase = getSupabaseAdmin()
 
-            // Находим пользователя по telegram_chat_id
+            // Find user by telegram_chat_id
             const { data: user, error: userError } = await supabase
                 .from('users')
                 .select('id')
@@ -291,13 +291,13 @@ export async function POST(request: NextRequest) {
 
             if (userError || !user) {
                 await sendTelegramMessage(botToken, chatId,
-                    '❌ Аккаунт не связан с этим Telegram аккаунтом.\n\n' +
-                    'Перейдите в личный кабинет и нажмите "Подключить Telegram".'
+                    '❌ Account is not linked to this Telegram account.\n\n' +
+                    'Go to your dashboard and click "Connect Telegram".'
                 )
                 return NextResponse.json({ ok: true })
             }
 
-            // Получаем покупки пользователя
+            // Get user purchases
             const { data: purchases, error: purchasesError } = await supabase
                 .from('purchases')
                 .select('id, product_name, price, status, created_at, currency')
@@ -307,34 +307,34 @@ export async function POST(request: NextRequest) {
 
             if (purchasesError || !purchases || purchases.length === 0) {
                 await sendTelegramMessage(botToken, chatId,
-                    '🛒 <b>Мои покупки</b>\n\n' +
-                    'У вас пока нет покупок.\n\n' +
-                    'Перейдите в каталог, чтобы выбрать подходящий курс.'
+                    '🛒 <b>My Purchases</b>\n\n' +
+                    'You don't have any purchases yet.\n\n' +
+                    'Go to the catalog to choose a suitable course.'
                 )
                 return NextResponse.json({ ok: true })
             }
 
-            let purchasesMessage = `🛒 <b>Мои покупки (последние 5):</b>\n\n`
+            let purchasesMessage = `🛒 <b>My Purchases (last 5):</b>\n\n`
             purchases.forEach((purchase, index) => {
                 const statusEmoji = resolvePurchaseStatusEmoji(purchase.status)
 
                 purchasesMessage += `${index + 1}. ${statusEmoji} ${purchase.product_name}\n` +
-                    `   Цена: ${purchase.price} ${purchase.currency || 'RUB'}\n` +
-                    `   Статус: ${purchase.status}\n` +
-                    `   Дата: ${new Date(purchase.created_at).toLocaleDateString('ru-RU')}\n\n`
+                    `   Price: ${purchase.price} ${purchase.currency || 'USD'}\n` +
+                    `   Status: ${purchase.status}\n` +
+                    `   Date: ${new Date(purchase.created_at).toLocaleDateString('en-US')}\n\n`
             })
 
-            purchasesMessage += `\n<i>Для подробной информации и доступа к материалам перейдите в личный кабинет.</i>`
+            purchasesMessage += `\n<i>For detailed information and access to materials, go to your dashboard.</i>`
 
             await sendTelegramMessage(botToken, chatId, purchasesMessage)
             return NextResponse.json({ ok: true })
         }
 
-        // Обрабатываем команду /unlink
+        // Handle /unlink command
         if (text === '/unlink') {
             const supabase = getSupabaseAdmin()
 
-            // Находим пользователя по telegram_chat_id
+            // Find user by telegram_chat_id
             const { data: user, error: userError } = await supabase
                 .from('users')
                 .select('id, name, email')
@@ -343,12 +343,12 @@ export async function POST(request: NextRequest) {
 
             if (userError || !user) {
                 await sendTelegramMessage(botToken, chatId,
-                    '❌ Аккаунт не связан с этим Telegram аккаунтом.'
+                    '❌ Account is not linked to this Telegram account.'
                 )
                 return NextResponse.json({ ok: true })
             }
 
-            // Отвязываем аккаунт
+            // Unlink account
             const { error: updateError } = await supabase
                 .from('users')
                 .update({
@@ -361,12 +361,12 @@ export async function POST(request: NextRequest) {
             if (updateError) {
                 console.error('User unlink error:', updateError)
                 await sendTelegramMessage(botToken, chatId,
-                    '❌ Произошла ошибка при отвязывании аккаунта. Попробуйте позже.'
+                    '❌ An error occurred while unlinking your account. Please try again later.'
                 )
                 return NextResponse.json({ ok: true })
             }
 
-            // Записываем в аудит
+            // Record in audit
             await supabase
                 .from('user_contact_audit')
                 .insert({
@@ -376,19 +376,19 @@ export async function POST(request: NextRequest) {
                 })
 
             await sendTelegramMessage(botToken, chatId,
-                '✅ <b>Аккаунт успешно отвязан!</b>\n\n' +
-                'Вы больше не будете получать уведомления в Telegram.\n\n' +
-                'Для повторного связывания перейдите в личный кабинет.'
+                '✅ <b>Account Successfully Unlinked!</b>\n\n' +
+                'You will no longer receive notifications in Telegram.\n\n' +
+                'To link again, go to your dashboard.'
             )
 
             return NextResponse.json({ ok: true })
         }
 
-        // Для всех остальных сообщений
+        // For all other messages
         await sendTelegramMessage(botToken, chatId,
-            '🤖 <b>Этот бот предназначен только для уведомлений.</b>\n\n' +
-            'Для общения с поддержкой используйте личный кабинет или отправьте обращение через сайт.\n\n' +
-            'Используйте /help для просмотра доступных команд.'
+            '🤖 <b>This bot is for notifications only.</b>\n\n' +
+            'To communicate with support, use your dashboard or submit a request through the website.\n\n' +
+            'Use /help to view available commands.'
         )
 
         return NextResponse.json({ ok: true })

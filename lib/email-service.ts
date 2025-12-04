@@ -1,4 +1,4 @@
-// Сервис для отправки email уведомлений через Resend
+// Service for sending email notifications via Resend
 
 import {
   getWelcomeEmailTemplate,
@@ -32,7 +32,7 @@ class EmailService {
     };
   }
 
-  // Универсальный метод для отправки email
+  // Universal method for sending email
   async sendEmail(params: {
     to: string;
     subject: string;
@@ -75,7 +75,7 @@ class EmailService {
     }
   }
 
-  // Отправка приветственного письма новому пользователю
+  // Send welcome email to new user
   async sendWelcomeEmail(userData: UserWelcomeData): Promise<boolean> {
     try {
       if (!this.config.apiKey) {
@@ -118,7 +118,7 @@ class EmailService {
     }
   }
 
-  // Отправка уведомления о новом ответе на заявку
+  // Send notification about new reply to request
   async sendCallbackReplyEmail(replyData: CallbackReplyData): Promise<boolean> {
     try {
       if (!this.config.apiKey) {
@@ -161,7 +161,7 @@ class EmailService {
     }
   }
 
-  // Отправка уведомления об изменении статуса заявки
+  // Send notification about request status change
   async sendCallbackStatusEmail(statusData: CallbackStatusData): Promise<boolean> {
     try {
       if (!this.config.apiKey) {
@@ -204,12 +204,12 @@ class EmailService {
     }
   }
 
-  // Проверка конфигурации email сервиса
+  // Check email service configuration
   isConfigured(): boolean {
     return !!this.config.apiKey;
   }
 
-  // Получение информации о конфигурации
+  // Get configuration information
   getConfig(): Partial<EmailServiceConfig> {
     return {
       fromEmail: this.config.fromEmail,
@@ -220,11 +220,11 @@ class EmailService {
   }
 }
 
-// Экспортируем singleton instance
+// Export singleton instance
 export const emailService = new EmailService();
 
-// Экспортируем функцию sendEmail для совместимости
+// Export sendEmail function for compatibility
 export const sendEmail = emailService.sendEmail.bind(emailService);
 
-// Экспортируем типы для использования в других модулях
+// Export types for use in other modules
 export type { UserWelcomeData, CallbackReplyData, CallbackStatusData };

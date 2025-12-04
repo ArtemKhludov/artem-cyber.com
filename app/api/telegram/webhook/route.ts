@@ -49,12 +49,12 @@ export async function POST(request: NextRequest) {
 
         console.log('Telegram webhook received:', JSON.stringify(update, null, 2))
 
-        // Обрабатываем сообщения
+        // Handle messages
         if (update.message) {
             await handleMessage(update.message)
         }
 
-        // Обрабатываем callback queries (кнопки)
+        // Handle callback queries (buttons)
         if (update.callback_query) {
             await handleCallbackQuery(update.callback_query)
         }
@@ -78,7 +78,7 @@ async function handleMessage(message: TelegramUpdate['message']) {
 
     const supabase = getSupabaseAdmin()
 
-    // Проверяем, есть ли пользователь с таким Telegram ID
+    // Check if user with this Telegram ID exists
     const { data: user, error: userError } = await supabase
         .from('users')
         .select('id, name, email, telegram_chat_id')
@@ -86,75 +86,75 @@ async function handleMessage(message: TelegramUpdate['message']) {
         .single()
 
     if (userError || !user) {
-        // Пользователь не найден, отправляем инструкции
-        await sendMessage(chat.id, `👋 Привет! Я бот EnergyLogic.
+        // User not found, send instructions
+        await sendMessage(chat.id, `👋 Hello! I'm the EnergyLogic bot.
 
-Для получения уведомлений о ваших заявках, пожалуйста:
+To receive notifications about your requests, please:
 
-1. Зайдите в личный кабинет: https://www.energylogic-ai.com/dashboard
-2. В разделе "Настройки" подключите Telegram
-3. Введите ваш Telegram username: @${from.username || 'ваш_username'}
+1. Go to your dashboard: https://www.energylogic-ai.com/dashboard
+2. In the "Settings" section, connect Telegram
+3. Enter your Telegram username: @${from.username || 'your_username'}
 
-После подключения вы будете получать уведомления о:
-• Новых ответах на ваши заявки
-• Изменении статуса заявок
-• Важных обновлениях
+After connecting, you will receive notifications about:
+• New replies to your requests
+• Request status changes
+• Important updates
 
-Если у вас нет аккаунта, зарегистрируйтесь на сайте!`)
+If you don't have an account, register on the website!`)
         return
     }
 
-    // Обрабатываем команды
+    // Handle commands
     if (text) {
         switch (text.toLowerCase()) {
             case '/start':
-                await sendMessage(chat.id, `👋 Привет, ${user.name}!
+                await sendMessage(chat.id, `👋 Hello, ${user.name}!
 
-Ваш Telegram успешно подключен к EnergyLogic.
+Your Telegram is successfully connected to EnergyLogic.
 
-Вы будете получать уведомления о:
-• 📧 Новых ответах на ваши заявки
-• 📊 Изменении статуса заявок  
-• 🔔 Важных обновлениях
+You will receive notifications about:
+• 📧 New replies to your requests
+• 📊 Request status changes
+• 🔔 Important updates
 
-Для отключения уведомлений зайдите в личный кабинет и отключите Telegram в настройках.`)
+To disable notifications, go to your dashboard and disable Telegram in settings.`)
                 break
 
             case '/help':
-                await sendMessage(chat.id, `🆘 Помощь по боту EnergyLogic:
+                await sendMessage(chat.id, `🆘 EnergyLogic Bot Help:
 
-/start - Начать работу с ботом
-/help - Показать эту справку
-/status - Проверить статус подключения
+/start - Start working with the bot
+/help - Show this help
+/status - Check connection status
 
-Для получения поддержки:
-• Зайдите в личный кабинет: https://www.energylogic-ai.com/dashboard
-• Создайте заявку на обратный звонок
-• Обратитесь к администратору
+To get support:
+• Go to your dashboard: https://www.energylogic-ai.com/dashboard
+• Create a callback request
+• Contact administrator
 
-Бот работает автоматически и не требует постоянного взаимодействия.`)
+The bot works automatically and doesn't require constant interaction.`)
                 break
 
             case '/status':
-                await sendMessage(chat.id, `✅ Статус подключения:
+                await sendMessage(chat.id, `✅ Connection Status:
 
-👤 Пользователь: ${user.name}
+👤 User: ${user.name}
 📧 Email: ${user.email}
-🔗 Telegram: Подключен
+🔗 Telegram: Connected
 📱 Chat ID: ${telegramUserId}
 
-Все уведомления активны!`)
+All notifications are active!`)
                 break
 
             default:
-                // Обычное сообщение - предлагаем создать заявку
-                await sendMessage(chat.id, `💬 Спасибо за сообщение!
+                // Regular message - suggest creating a request
+                await sendMessage(chat.id, `💬 Thank you for your message!
 
-Для получения помощи:
-• Создайте заявку на обратный звонок в личном кабинете
-• Или напишите нам на email: support@energylogic-ai.com
+To get help:
+• Create a callback request in your dashboard
+• Or email us at: support@energylogic-ai.com
 
-Я автоматически уведомлю вас о всех обновлениях по вашим заявкам!`)
+I will automatically notify you about all updates on your requests!`)
         }
     }
 }
@@ -167,12 +167,12 @@ async function handleCallbackQuery(callbackQuery: TelegramUpdate['callback_query
 
     console.log(`Processing callback query from ${telegramUserId}: ${data}`)
 
-    // Отвечаем на callback query
-    await answerCallbackQuery(callbackQuery.id, 'Обработано!')
+    // Answer callback query
+    await answerCallbackQuery(callbackQuery.id, 'Processed!')
 
-    // Здесь можно добавить обработку различных кнопок
+    // Here you can add handling for various buttons
     if (data === 'dashboard') {
-        await sendMessage(from.id, 'Перейдите в личный кабинет: https://www.energylogic-ai.com/dashboard')
+        await sendMessage(from.id, 'Go to your dashboard: https://www.energylogic-ai.com/dashboard')
     }
 }
 

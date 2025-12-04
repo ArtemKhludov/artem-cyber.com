@@ -1,53 +1,53 @@
 #!/bin/bash
 
-# Скрипт для настройки Telegram webhook
-# Использование: ./scripts/setup-telegram-webhook.sh <BOT_TOKEN>
+# Script for setting up Telegram webhook
+# Usage: ./scripts/setup-telegram-webhook.sh <BOT_TOKEN>
 
 BOT_TOKEN=$1
 WEBHOOK_URL="https://www.energylogic-ai.com/api/telegram/webhook"
 
 if [ -z "$BOT_TOKEN" ]; then
-    echo "❌ Ошибка: Не указан токен бота"
-    echo "Использование: $0 <BOT_TOKEN>"
-    echo "Пример: $0 123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+    echo "❌ Error: Bot token not specified"
+    echo "Usage: $0 <BOT_TOKEN>"
+    echo "Example: $0 123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
     exit 1
 fi
 
-echo "🤖 Настройка Telegram webhook"
+echo "🤖 Setting up Telegram webhook"
 echo "=================================="
 echo "Bot Token: ${BOT_TOKEN:0:10}..."
 echo "Webhook URL: $WEBHOOK_URL"
 echo ""
 
-# Проверка токена бота
-echo "🔍 Проверка токена бота..."
+# Check bot token
+echo "🔍 Checking bot token..."
 BOT_INFO=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getMe")
 if echo "$BOT_INFO" | grep -q '"ok":true'; then
     BOT_NAME=$(echo "$BOT_INFO" | grep -o '"first_name":"[^"]*"' | cut -d'"' -f4)
     BOT_USERNAME=$(echo "$BOT_INFO" | grep -o '"username":"[^"]*"' | cut -d'"' -f4)
-    echo "✅ Бот найден: $BOT_NAME (@$BOT_USERNAME)"
+    echo "✅ Bot found: $BOT_NAME (@$BOT_USERNAME)"
 else
-    echo "❌ Ошибка: Неверный токен бота"
-    echo "Ответ API: $BOT_INFO"
+    echo "❌ Error: Invalid bot token"
+    echo "API Response: $BOT_INFO"
     exit 1
 fi
 
 echo ""
 
-# Удаление старого webhook
-echo "🗑️ Удаление старого webhook..."
+# Delete old webhook
+echo "🗑️ Deleting old webhook..."
 DELETE_RESULT=$(curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/deleteWebhook")
 if echo "$DELETE_RESULT" | grep -q '"ok":true'; then
-    echo "✅ Старый webhook удален"
+    echo "✅ Old webhook deleted"
 else
-    echo "⚠️ Предупреждение: Не удалось удалить старый webhook"
-    echo "Ответ: $DELETE_RESULT"
+    echo "⚠️ Warning: Failed to delete old webhook"
+    echo "Response: $DELETE_RESULT"
 fi
 
 echo ""
 
-# Установка нового webhook
-echo "🔗 Установка нового webhook..."
+# Set new webhook
+echo "🔗 Setting up new webhook..."
 SET_RESULT=$(curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/setWebhook" \
   -H "Content-Type: application/json" \
   -d "{
@@ -56,58 +56,58 @@ SET_RESULT=$(curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/setWebhook"
   }")
 
 if echo "$SET_RESULT" | grep -q '"ok":true'; then
-    echo "✅ Webhook успешно установлен"
+    echo "✅ Webhook successfully set"
 else
-    echo "❌ Ошибка установки webhook"
-    echo "Ответ API: $SET_RESULT"
+    echo "❌ Error setting webhook"
+    echo "API Response: $SET_RESULT"
     exit 1
 fi
 
 echo ""
 
-# Проверка webhook
-echo "🔍 Проверка webhook..."
+# Check webhook
+echo "🔍 Checking webhook..."
 WEBHOOK_INFO=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getWebhookInfo")
 if echo "$WEBHOOK_INFO" | grep -q '"ok":true'; then
     WEBHOOK_URL_CHECK=$(echo "$WEBHOOK_INFO" | grep -o '"url":"[^"]*"' | cut -d'"' -f4)
     PENDING_UPDATES=$(echo "$WEBHOOK_INFO" | grep -o '"pending_update_count":[0-9]*' | cut -d':' -f2)
     
-    echo "✅ Webhook проверен:"
+    echo "✅ Webhook verified:"
     echo "   URL: $WEBHOOK_URL_CHECK"
-    echo "   Ожидающих обновлений: $PENDING_UPDATES"
+    echo "   Pending updates: $PENDING_UPDATES"
     
     if [ "$WEBHOOK_URL_CHECK" = "$WEBHOOK_URL" ]; then
-        echo "✅ URL webhook корректен"
+        echo "✅ Webhook URL is correct"
     else
-        echo "❌ URL webhook не совпадает"
+        echo "❌ Webhook URL mismatch"
     fi
 else
-    echo "❌ Ошибка проверки webhook"
-    echo "Ответ API: $WEBHOOK_INFO"
+    echo "❌ Error checking webhook"
+    echo "API Response: $WEBHOOK_INFO"
 fi
 
 echo ""
 
-# Тестирование бота
-echo "🧪 Тестирование бота..."
-echo "Отправьте команду /start боту @$BOT_USERNAME в Telegram"
-echo "Бот должен ответить приветственным сообщением"
+# Test bot
+echo "🧪 Testing bot..."
+echo "Send /start command to @$BOT_USERNAME bot in Telegram"
+echo "Bot should respond with a welcome message"
 
 echo ""
 echo "=================================="
-echo "🎉 Настройка завершена!"
+echo "🎉 Setup completed!"
 echo ""
-echo "📋 Следующие шаги:"
-echo "1. Добавьте токен в переменные окружения Vercel:"
+echo "📋 Next steps:"
+echo "1. Add token to Vercel environment variables:"
 echo "   USER_TELEGRAM_BOT_TOKEN=$BOT_TOKEN"
 echo ""
-echo "2. Протестируйте бота, отправив /start"
+echo "2. Test the bot by sending /start"
 echo ""
-echo "3. Проверьте логи webhook в Vercel Dashboard"
+echo "3. Check webhook logs in Vercel Dashboard"
 echo ""
-echo "4. Настройте подключение пользователей в личном кабинете"
+echo "4. Set up user connection in dashboard"
 echo ""
-echo "🔗 Полезные ссылки:"
-echo "• Бот: https://t.me/$BOT_USERNAME"
+echo "🔗 Useful links:"
+echo "• Bot: https://t.me/$BOT_USERNAME"
 echo "• Webhook: $WEBHOOK_URL"
 echo "• Vercel Dashboard: https://vercel.com/dashboard"

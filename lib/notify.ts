@@ -66,7 +66,7 @@ type IssueTelegramPayload = {
 
 export async function notifyIssueTelegram(payload: IssueTelegramPayload): Promise<void> {
     try {
-        // Используем основной бот для уведомлений об обращениях
+        // Use main bot for issue notifications
         const botToken = process.env.TELEGRAM_BOT_TOKEN
         const chatId = process.env.TELEGRAM_CHAT_ID
         const threadId = process.env.TELEGRAM_THREAD_ISSUES
@@ -76,7 +76,7 @@ export async function notifyIssueTelegram(payload: IssueTelegramPayload): Promis
             return
         }
 
-        // Получаем дополнительные данные для красивого форматирования
+        // Get additional data for nice formatting
         const { getUserInfo, getDocumentInfo, getPurchaseInfo } = await import('@/lib/supabase')
 
         let userInfo = ''
@@ -84,63 +84,63 @@ export async function notifyIssueTelegram(payload: IssueTelegramPayload): Promis
         let purchaseInfo = ''
 
         try {
-            // Получаем информацию о пользователе
+            // Get user information
             const user = await getUserInfo(payload.userId)
             if (user) {
-                const name = user.name || 'Без имени'
-                const phone = user.phone || 'Без телефона'
+                const name = user.name || 'No name'
+                const phone = user.phone || 'No phone'
                 userInfo = `👤 ${name} (${phone})`
             } else {
                 userInfo = `👤 ${payload.userEmail}`
             }
 
-            // Получаем информацию о документе
+            // Get document information
             if (payload.documentId) {
                 const doc = await getDocumentInfo(payload.documentId)
-                documentInfo = doc ? `📄 ${doc.title}` : `📄 Документ ${payload.documentId}`
+                documentInfo = doc ? `📄 ${doc.title}` : `📄 Document ${payload.documentId}`
             }
 
-            // Получаем информацию о покупке
+            // Get purchase information
             if (payload.purchaseId) {
                 const purchase = await getPurchaseInfo(payload.purchaseId)
-                purchaseInfo = purchase ? `🛒 ${purchase.product_name} (${purchase.amount_paid} ${purchase.currency})` : `🛒 Покупка ${payload.purchaseId}`
+                purchaseInfo = purchase ? `🛒 ${purchase.product_name} (${purchase.amount_paid} ${purchase.currency})` : `🛒 Purchase ${payload.purchaseId}`
             }
         } catch (dbError) {
             console.warn('Failed to fetch additional info for Telegram notification:', dbError)
-            // Fallback к базовому форматированию
+            // Fallback to basic formatting
             userInfo = `👤 ${payload.userEmail}`
-            if (payload.documentId) documentInfo = `📄 Документ ${payload.documentId}`
-            if (payload.purchaseId) purchaseInfo = `🛒 Покупка ${payload.purchaseId}`
+            if (payload.documentId) documentInfo = `📄 Document ${payload.documentId}`
+            if (payload.purchaseId) purchaseInfo = `🛒 Purchase ${payload.purchaseId}`
         }
 
         const lines: string[] = []
-        lines.push('🆕 Новое обращение пользователя')
+        lines.push('🆕 New user issue')
         lines.push(`🆔 ID: ${payload.issueId}`)
         lines.push(userInfo)
 
         if (payload.type) {
             const typeLabels: Record<string, string> = {
-                access: '🔐 Доступ',
-                payment: '💳 Оплата',
-                content: '📄 Контент',
-                bug: '🐛 Ошибка',
-                other: '❓ Другое'
+                access: '🔐 Access',
+                payment: '💳 Payment',
+                content: '📄 Content',
+                bug: '🐛 Bug',
+                other: '❓ Other'
             }
-            lines.push(`📋 Тип: ${typeLabels[payload.type] || payload.type}`)
+            lines.push(`📋 Type: ${typeLabels[payload.type] || payload.type}`)
         }
 
         if (payload.severity) {
             const severityLabels: Record<string, string> = {
-                low: '🟢 Низкая',
-                normal: '🟡 Нормальная',
-                high: '🟠 Высокая',
-                urgent: '🔴 Критичная'
+                low: '🟢 Low',
+                normal: '🟡 Normal',
+                high: '🟠 High',
+                urgent: '🔴 Urgent'
             }
-            lines.push(`⚡ Важность: ${severityLabels[payload.severity] || payload.severity}`)
+            lines.push(`⚡ Severity: ${severityLabels[payload.severity] || payload.severity}`)
         }
 
-        lines.push(`📝 Тема: ${payload.title}`)
-        lines.push(`📄 Описание: ${truncate(payload.description, 500)}`)
+        lines.push(`📝 Title: ${payload.title}`)
+        lines.push(`📄 Description: ${truncate(payload.description, 500)}`)
 
         if (documentInfo) lines.push(documentInfo)
         if (purchaseInfo) lines.push(purchaseInfo)
@@ -241,7 +241,7 @@ export async function notifyUserEmail({
     }
 }
 
-// Функция для отправки уведомлений пользователям в Telegram
+// Function to send notifications to users via Telegram
 export async function notifyUserTelegram(userId: string, message: string, issueId?: string): Promise<{ ok: boolean; error?: string }> {
     try {
         const botToken = process.env.USER_TELEGRAM_BOT_TOKEN
@@ -249,7 +249,7 @@ export async function notifyUserTelegram(userId: string, message: string, issueI
             return { ok: false, error: 'USER_TELEGRAM_BOT_TOKEN not configured' }
         }
 
-        // Получаем информацию о пользователе
+        // Get user information
         const { getUserInfo } = await import('@/lib/supabase')
         const user = await getUserInfo(userId)
 
@@ -260,7 +260,7 @@ export async function notifyUserTelegram(userId: string, message: string, issueI
         const replyMarkup = issueId ? {
             inline_keyboard: [[
                 {
-                    text: '💬 Открыть в личном кабинете',
+                    text: '💬 Open Dashboard',
                     url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
                 }
             ]]
@@ -290,12 +290,12 @@ export async function notifyUserTelegram(userId: string, message: string, issueI
     }
 }
 
-// Функция для отправки уведомления о новом ответе на обращение
+// Function to send notification about new reply to issue
 export async function notifyUserOnReply(issueId: string, replyId: string, adminName: string, message: string): Promise<void> {
     try {
         const supabase = getSupabaseAdmin()
 
-        // Получаем информацию об обращении
+        // Get issue information
         const { data: issue, error: issueError } = await supabase
             .from('issue_reports')
             .select('user_id, title, user_email')
@@ -307,20 +307,20 @@ export async function notifyUserOnReply(issueId: string, replyId: string, adminN
             return
         }
 
-        // Получаем информацию о пользователе
+        // Get user information
         const { getUserInfo } = await import('@/lib/supabase')
         const user = await getUserInfo(issue.user_id)
 
-        const telegramMessage = `💬 <b>Новый ответ на ваше обращение</b>\n\n` +
-            `📝 <b>Тема:</b> ${issue.title}\n` +
-            `👤 <b>Ответил:</b> ${adminName}\n\n` +
-            `💬 <b>Ответ:</b>\n${truncate(message, 300)}\n\n` +
-            `<i>Для просмотра полного ответа и продолжения диалога перейдите в личный кабинет.</i>`
+        const telegramMessage = `💬 <b>New reply to your issue</b>\n\n` +
+            `📝 <b>Title:</b> ${issue.title}\n` +
+            `👤 <b>Replied by:</b> ${adminName}\n\n` +
+            `💬 <b>Reply:</b>\n${truncate(message, 300)}\n\n` +
+            `<i>To view the full reply and continue the conversation, go to your dashboard.</i>`
 
-        // Отправляем уведомления параллельно
+        // Send notifications in parallel
         const promises: Promise<any>[] = []
 
-        // Telegram уведомление
+        // Telegram notification
         if (user?.notify_telegram_enabled) {
             promises.push(
                 notifyUserTelegram(issue.user_id, telegramMessage, issueId)
@@ -328,62 +328,62 @@ export async function notifyUserOnReply(issueId: string, replyId: string, adminN
             )
         }
 
-        // Email уведомление
+        // Email notification
         if (user?.notify_email_enabled !== false) {
             promises.push(
                 sendEmail({
                     to: issue.user_email,
-                    subject: `Ответ на ваше обращение: ${issue.title}`,
+                    subject: `Reply to your issue: ${issue.title}`,
                     html: `
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                            <h2 style="color: #333;">Новый ответ на ваше обращение</h2>
-                            <p>Здравствуйте!</p>
+                            <h2 style="color: #333;">New reply to your issue</h2>
+                            <p>Hello!</p>
                             
                             <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                                <h3 style="margin-top: 0;">Тема обращения:</h3>
+                                <h3 style="margin-top: 0;">Issue Title:</h3>
                                 <p><strong>${issue.title}</strong></p>
                                 
-                                <h3>Ответ от ${adminName}:</h3>
+                                <h3>Reply from ${adminName}:</h3>
                                 <p style="white-space: pre-wrap;">${message}</p>
                             </div>
                             
                             <div style="text-align: center; margin: 30px 0;">
                                 <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" 
                                    style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                                    Открыть личный кабинет
+                                    Open Dashboard
                                 </a>
                             </div>
                             
                             <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
                             <p style="color: #666; font-size: 12px;">
-                                Это автоматическое сообщение. Для продолжения диалога перейдите в личный кабинет.
+                                This is an automatic message. To continue the conversation, go to your dashboard.
                             </p>
                         </div>
                     `,
                     text: `
-Новый ответ на ваше обращение
+New reply to your issue
 
-Здравствуйте!
+Hello!
 
-Тема обращения: ${issue.title}
+Issue Title: ${issue.title}
 
-Ответ от ${adminName}:
+Reply from ${adminName}:
 ${message}
 
-Для просмотра полного ответа и продолжения диалога перейдите в личный кабинет:
+To view the full reply and continue the conversation, go to your dashboard:
 ${process.env.NEXT_PUBLIC_APP_URL}/dashboard
 
 ---
-Это автоматическое сообщение.
+This is an automatic message.
                     `
                 }).then(result => ({ channel: 'email', result }))
             )
         }
 
-        // Ждем результаты всех уведомлений
+        // Wait for all notification results
         const results = await Promise.allSettled(promises)
 
-        // Записываем статус доставки в базу данных
+        // Record delivery status in database
         const deliveryStatus: Record<string, any> = {}
 
         results.forEach((result) => {
@@ -397,7 +397,7 @@ ${process.env.NEXT_PUBLIC_APP_URL}/dashboard
             }
         })
 
-        // Обновляем статус доставки в issue_replies
+        // Update delivery status in issue_replies
         await supabase
             .from('issue_replies')
             .update({ delivery_status: deliveryStatus })

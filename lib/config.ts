@@ -1,15 +1,15 @@
 /**
- * Универсальная конфигурация для работы на localhost и продакшне
+ * Universal configuration for localhost and production
  */
 
-// Определяем базовый URL в зависимости от окружения
+// Determine base URL based on environment
 export function getBaseUrl(): string {
-  // В браузере
+  // In browser
   if (typeof window !== 'undefined') {
     return window.location.origin
   }
   
-  // На сервере
+  // On server
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return process.env.NEXT_PUBLIC_SITE_URL
   }
@@ -27,34 +27,34 @@ export function getBaseUrl(): string {
     return `https://${process.env.VERCEL_URL}`
   }
   
-  // Локальная разработка
+  // Local development
   if (process.env.NODE_ENV === 'development') {
     return 'http://localhost:3000'
   }
   
-  // Fallback для продакшна
+  // Fallback for production
   return 'https://www.energylogic-ai.com'
 }
 
-// Получаем URL для OAuth callback
+// Get URL for OAuth callback
 export function getOAuthCallbackUrl(): string {
   const baseUrl = getBaseUrl()
   return `${baseUrl}/api/auth/oauth/google/callback`
 }
 
-// Получаем URL для логина
+// Get URL for login
 export function getLoginUrl(): string {
   const baseUrl = getBaseUrl()
   return `${baseUrl}/auth/login`
 }
 
-// Получаем URL для дашборда
+// Get URL for dashboard
 export function getDashboardUrl(): string {
   const baseUrl = getBaseUrl()
   return `${baseUrl}/dashboard`
 }
 
-// Проверяем, работаем ли мы локально
+// Check if we're running locally
 export function isLocalhost(): boolean {
   if (typeof window !== 'undefined') {
     return window.location.hostname === 'localhost'
@@ -63,7 +63,7 @@ export function isLocalhost(): boolean {
   return process.env.NODE_ENV === 'development'
 }
 
-// Получаем порт для локальной разработки
+// Get port for local development
 export function getLocalPort(): number {
   if (process.env.PORT) {
     return parseInt(process.env.PORT, 10)
@@ -72,20 +72,20 @@ export function getLocalPort(): number {
   return 3000
 }
 
-// Конфигурация для разных окружений
+// Configuration for different environments
 export const config = {
-  // Базовые URL
+  // Base URLs
   baseUrl: getBaseUrl(),
   oauthCallbackUrl: getOAuthCallbackUrl(),
   loginUrl: getLoginUrl(),
   dashboardUrl: getDashboardUrl(),
   
-  // Окружение
+  // Environment
   isLocalhost: isLocalhost(),
   isDevelopment: process.env.NODE_ENV === 'development',
   isProduction: process.env.NODE_ENV === 'production',
   
-  // Порты
+  // Ports
   localPort: getLocalPort(),
   
   // Google OAuth

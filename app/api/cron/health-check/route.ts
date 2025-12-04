@@ -4,20 +4,20 @@ import { notifyTelegram } from '@/lib/notify'
 
 export async function POST(request: NextRequest) {
   try {
-    // CRON_SECRET проверка отключена для упрощения
-    // У вас уже есть все необходимые токены для безопасности
+    // CRON_SECRET check disabled for simplification
+    // You already have all necessary tokens for security
 
     console.log('🏥 Starting health check...')
     
     const healthStatus = await performHealthCheck()
     
     if (!healthStatus.healthy) {
-      // Отправляем уведомление о проблемах
+      // Send notification about issues
       await notifyTelegram(
-        `🚨 Проблемы с сайтом!\n\n` +
-        `❌ Проблемы:\n${healthStatus.issues.join('\n')}\n\n` +
-        `⏰ Время: ${new Date().toLocaleString('ru-RU')}\n` +
-        `🌐 Сайт: https://energylogic-ai.com`,
+        `🚨 Site Issues!\n\n` +
+        `❌ Issues:\n${healthStatus.issues.join('\n')}\n\n` +
+        `⏰ Time: ${new Date().toLocaleString('en-US')}\n` +
+        `🌐 Site: https://energylogic-ai.com`,
         {
           botToken: process.env.TELEGRAM_BOT_TOKEN,
           chatId: process.env.TELEGRAM_CHAT_ID,
@@ -42,7 +42,7 @@ async function performHealthCheck() {
   const issues: string[] = []
   
   try {
-    // Проверяем подключение к Supabase
+    // Check Supabase connection
     const supabase = getSupabaseAdmin()
     const { error } = await supabase
       .from('users')
@@ -59,7 +59,7 @@ async function performHealthCheck() {
   }
 
   try {
-    // Проверяем доступность сайта
+    // Check site availability
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000)
     
@@ -80,7 +80,7 @@ async function performHealthCheck() {
   }
 
   try {
-    // Проверяем API endpoints
+    // Check API endpoints
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 5000)
     
@@ -91,7 +91,7 @@ async function performHealthCheck() {
     
     clearTimeout(timeoutId)
     
-    if (apiResponse.status !== 401) { // 401 ожидается для неавторизованных
+    if (apiResponse.status !== 401) { // 401 expected for unauthorized
       issues.push(`❌ API: Unexpected status ${apiResponse.status}`)
     } else {
       console.log('✅ API: OK')
@@ -100,14 +100,14 @@ async function performHealthCheck() {
     issues.push(`❌ API: Unreachable`)
   }
 
-  // Проверяем использование диска (если доступно)
+  // Check disk usage (if available)
   try {
     const diskUsage = await checkDiskUsage()
     if (diskUsage > 90) {
       issues.push(`⚠️ Disk usage: ${diskUsage}%`)
     }
   } catch (error) {
-    // Игнорируем ошибки проверки диска
+    // Ignore disk check errors
   }
 
   return {
@@ -117,7 +117,7 @@ async function performHealthCheck() {
 }
 
 async function checkDiskUsage(): Promise<number> {
-  // Простая проверка использования диска
-  // В реальном приложении здесь может быть более сложная логика
-  return Math.random() * 100 // Заглушка
+  // Simple disk usage check
+  // In a real application, there may be more complex logic here
+  return Math.random() * 100 // Placeholder
 }

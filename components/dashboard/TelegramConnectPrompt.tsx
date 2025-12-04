@@ -18,7 +18,7 @@ export function TelegramConnectPrompt({ isOpen, onClose, onConnect }: TelegramCo
     const handleConnect = async () => {
         setIsConnecting(true)
         try {
-            // Здесь будет логика подключения Telegram
+            // Telegram connection logic will be here
             onConnect()
             onClose()
         } catch (error) {
@@ -45,10 +45,10 @@ export function TelegramConnectPrompt({ isOpen, onClose, onConnect }: TelegramCo
                         <MessageCircle className="h-8 w-8 text-white" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                        Подключите Telegram для мгновенных уведомлений! 🚀
+                        Connect Telegram for Instant Notifications! 🚀
                     </h2>
                     <p className="text-gray-600">
-                        Получайте уведомления о новых сообщениях, статусе заявок и важных обновлениях прямо в Telegram
+                        Get notifications about new messages, request statuses, and important updates directly in Telegram
                     </p>
                 </div>
 
@@ -58,8 +58,8 @@ export function TelegramConnectPrompt({ isOpen, onClose, onConnect }: TelegramCo
                             <Zap className="h-4 w-4 text-green-600" />
                         </div>
                         <div>
-                            <h3 className="font-semibold text-gray-800">Мгновенные уведомления</h3>
-                            <p className="text-sm text-gray-600">Получайте ответы от специалистов в реальном времени</p>
+                            <h3 className="font-semibold text-gray-800">Instant Notifications</h3>
+                            <p className="text-sm text-gray-600">Receive responses from specialists in real time</p>
                         </div>
                     </div>
 
@@ -68,8 +68,8 @@ export function TelegramConnectPrompt({ isOpen, onClose, onConnect }: TelegramCo
                             <Bell className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>
-                            <h3 className="font-semibold text-gray-800">Статус заявок</h3>
-                            <p className="text-sm text-gray-600">Уведомления об изменении статуса ваших обращений</p>
+                            <h3 className="font-semibold text-gray-800">Request Status</h3>
+                            <p className="text-sm text-gray-600">Notifications about changes in your request status</p>
                         </div>
                     </div>
 
@@ -78,8 +78,8 @@ export function TelegramConnectPrompt({ isOpen, onClose, onConnect }: TelegramCo
                             <Shield className="h-4 w-4 text-purple-600" />
                         </div>
                         <div>
-                            <h3 className="font-semibold text-gray-800">Безопасность</h3>
-                            <p className="text-sm text-gray-600">Ваши данные защищены, уведомления только для вас</p>
+                            <h3 className="font-semibold text-gray-800">Security</h3>
+                            <p className="text-sm text-gray-600">Your data is protected, notifications are only for you</p>
                         </div>
                     </div>
                 </div>
@@ -87,7 +87,7 @@ export function TelegramConnectPrompt({ isOpen, onClose, onConnect }: TelegramCo
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6">
                     <div className="flex items-center space-x-2 text-sm text-gray-700">
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span>Бесплатно • Без спама • Легко отключить</span>
+                        <span>Free • No Spam • Easy to Disable</span>
                     </div>
                 </div>
 
@@ -100,12 +100,12 @@ export function TelegramConnectPrompt({ isOpen, onClose, onConnect }: TelegramCo
                         {isConnecting ? (
                             <>
                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                                Подключение...
+                                Connecting...
                             </>
                         ) : (
                             <>
                                 <MessageCircle className="h-4 w-4 mr-2" />
-                                Подключить Telegram
+                                Connect Telegram
                             </>
                         )}
                     </Button>
@@ -117,12 +117,12 @@ export function TelegramConnectPrompt({ isOpen, onClose, onConnect }: TelegramCo
                         }}
                         className="px-6 py-3"
                     >
-                        Позже
+                        Later
                     </Button>
                 </div>
 
                 <p className="text-xs text-gray-500 text-center mt-4">
-                    Вы можете подключить Telegram в любое время в настройках профиля
+                    You can connect Telegram anytime in your profile settings
                 </p>
             </div>
         </div>

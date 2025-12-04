@@ -1,4 +1,4 @@
-// Шаблоны email уведомлений для системы callback
+// Email notification templates for callback system
 
 export interface EmailTemplate {
   subject: string;
@@ -49,9 +49,9 @@ export interface CallbackConfirmationData {
   loginUrl: string;
 }
 
-// Шаблон приветственного письма для нового пользователя
+// Welcome email template for new user
 export function getWelcomeEmailTemplate(data: UserWelcomeData): EmailTemplate {
-  const subject = `🤖 ИИ проанализировал вашу заявку! Добро пожаловать в EnergyLogic`;
+  const subject = `🤖 AI Analyzed Your Request! Welcome to EnergyLogic`;
 
   const html = `
     <!DOCTYPE html>
@@ -59,7 +59,7 @@ export function getWelcomeEmailTemplate(data: UserWelcomeData): EmailTemplate {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Добро пожаловать в EnergyLogic</title>
+      <title>Welcome to EnergyLogic</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
@@ -95,63 +95,63 @@ export function getWelcomeEmailTemplate(data: UserWelcomeData): EmailTemplate {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🤖 ИИ проанализировал вашу заявку!</h1>
-          <p>Добро пожаловать в EnergyLogic, ${data.name}!</p>
+          <h1>🤖 AI Analyzed Your Request!</h1>
+          <p>Welcome to EnergyLogic, ${data.name}!</p>
         </div>
         
         <div class="content">
-          <p style="font-size: 18px; margin-bottom: 25px;">Привет! 👋 Наш искусственный интеллект уже начал анализировать вашу заявку. Пока он думает (а он думает очень быстро!), мы создали для вас личный кабинет.</p>
+          <p style="font-size: 18px; margin-bottom: 25px;">Hello! 👋 Our artificial intelligence has already started analyzing your request. While it's thinking (and it thinks very fast!), we've created a personal account for you.</p>
           
           <div class="ai-analysis">
-            <h3>🧠 Анализ ИИ завершен</h3>
-            <p><strong>Результат:</strong> Пользователь ${data.name} демонстрирует высокий уровень заинтересованности в энергетической диагностике. Рекомендуется немедленное создание личного кабинета для дальнейшего взаимодействия.</p>
-            <p><strong>Вероятность успешного сотрудничества:</strong> 99.7% (ИИ почти никогда не ошибается!)</p>
+            <h3>🧠 AI Analysis Complete</h3>
+            <p><strong>Result:</strong> User ${data.name} demonstrates a high level of interest in energy diagnostics. Immediate account creation is recommended for further interaction.</p>
+            <p><strong>Success Probability:</strong> 99.7% (AI almost never makes mistakes!)</p>
           </div>
           
           <div class="credentials">
-            <h3>🔑 Ваши данные для входа</h3>
+            <h3>🔑 Your Login Credentials</h3>
             <div class="credential-item">
               <div class="credential-label">📧 Email:</div>
               <div class="credential-value">${data.email}</div>
             </div>
             <div class="credential-item">
-              <div class="credential-label">🔐 Временный пароль:</div>
+              <div class="credential-label">🔐 Temporary Password:</div>
               <div class="credential-value">${data.tempPassword}</div>
             </div>
           </div>
           
           <div style="text-align: center;">
-            <a href="${data.loginUrl}" class="cta-button">🚀 Войти в личный кабинет</a>
+            <a href="${data.loginUrl}" class="cta-button">🚀 Sign In to Dashboard</a>
           </div>
           
           <div class="telegram-promo">
-            <h3>📱 Подключите Telegram для мгновенных уведомлений!</h3>
-            <p><strong>Что вы будете получать:</strong></p>
+            <h3>📱 Connect Telegram for Instant Notifications!</h3>
+            <p><strong>What you'll receive:</strong></p>
             <ul style="margin: 15px 0; padding-left: 20px;">
-              <li>⚡ Мгновенные уведомления о новых ответах</li>
-              <li>📊 Статус ваших заявок в реальном времени</li>
-              <li>🎯 Персональные рекомендации от ИИ</li>
-              <li>💬 Прямое общение с нашими специалистами</li>
+              <li>⚡ Instant notifications about new replies</li>
+              <li>📊 Real-time status of your requests</li>
+              <li>🎯 Personalized recommendations from AI</li>
+              <li>💬 Direct communication with our specialists</li>
             </ul>
-            <p><em>Подключить можно в личном кабинете - это займет 30 секунд!</em></p>
+            <p><em>You can connect in your dashboard - it takes just 30 seconds!</em></p>
           </div>
           
           <div class="fun-fact">
-            <p><strong>Интересный факт:</strong> Наш ИИ проанализировал уже более 10,000 заявок и научился предсказывать, кто из клиентов станет нашими постоянными партнерами. Вы попали в категорию "высокопотенциальных"! 🎯</p>
+            <p><strong>Fun Fact:</strong> Our AI has already analyzed over 10,000 requests and learned to predict which clients will become our regular partners. You've been categorized as "high potential"! 🎯</p>
           </div>
           
           <div class="security-note">
-            <p>⚠️ <strong>Важно:</strong> Обязательно смените временный пароль при первом входе! Даже ИИ не может защитить вас от простых паролей.</p>
+            <p>⚠️ <strong>Important:</strong> Be sure to change your temporary password on first login! Even AI can't protect you from simple passwords.</p>
           </div>
           
-          <p style="font-size: 16px; margin-top: 30px;">Если у вас возникнут вопросы, не стесняйтесь обращаться к нам. Наш ИИ работает 24/7, а люди - почти столько же! 😄</p>
+          <p style="font-size: 16px; margin-top: 30px;">If you have any questions, don't hesitate to contact us. Our AI works 24/7, and people - almost as much! 😄</p>
           
-          <p style="margin-top: 25px;">С уважением,<br><strong>Команда EnergyLogic</strong> 🤖✨</p>
+          <p style="margin-top: 25px;">Best regards,<br><strong>EnergyLogic Team</strong> 🤖✨</p>
         </div>
         
         <div class="footer">
-          <p>Это письмо отправлено нашим ИИ-помощником. Пожалуйста, не отвечайте на него.</p>
-          <p>© 2024 EnergyLogic. Все права защищены. Даже ИИ не может их нарушить.</p>
+          <p>This email was sent by our AI assistant. Please do not reply to it.</p>
+          <p>© 2024 EnergyLogic. All rights reserved. Even AI can't violate them.</p>
         </div>
       </div>
     </body>
@@ -159,45 +159,45 @@ export function getWelcomeEmailTemplate(data: UserWelcomeData): EmailTemplate {
   `;
 
   const text = `
-🤖 ИИ проанализировал вашу заявку! Добро пожаловать в EnergyLogic
+🤖 AI Analyzed Your Request! Welcome to EnergyLogic
 
-Привет! 👋 Наш искусственный интеллект уже начал анализировать вашу заявку. Пока он думает (а он думает очень быстро!), мы создали для вас личный кабинет.
+Hello! 👋 Our artificial intelligence has already started analyzing your request. While it's thinking (and it thinks very fast!), we've created a personal account for you.
 
-🧠 Анализ ИИ завершен:
-Результат: Пользователь ${data.name} демонстрирует высокий уровень заинтересованности в энергетической диагностике. Рекомендуется немедленное создание личного кабинета для дальнейшего взаимодействия.
-Вероятность успешного сотрудничества: 99.7% (ИИ почти никогда не ошибается!)
+🧠 AI Analysis Complete:
+Result: User ${data.name} demonstrates a high level of interest in energy diagnostics. Immediate account creation is recommended for further interaction.
+Success Probability: 99.7% (AI almost never makes mistakes!)
 
-🔑 Ваши данные для входа:
+🔑 Your Login Credentials:
 📧 Email: ${data.email}
-🔐 Временный пароль: ${data.tempPassword}
+🔐 Temporary Password: ${data.tempPassword}
 
-🚀 Войти в личный кабинет: ${data.loginUrl}
+🚀 Sign In to Dashboard: ${data.loginUrl}
 
-📱 Подключите Telegram для мгновенных уведомлений!
-Что вы будете получать:
-⚡ Мгновенные уведомления о новых ответах
-📊 Статус ваших заявок в реальном времени
-🎯 Персональные рекомендации от ИИ
-💬 Прямое общение с нашими специалистами
+📱 Connect Telegram for Instant Notifications!
+What you'll receive:
+⚡ Instant notifications about new replies
+📊 Real-time status of your requests
+🎯 Personalized recommendations from AI
+💬 Direct communication with our specialists
 
-Подключить можно в личном кабинете - это займет 30 секунд!
+You can connect in your dashboard - it takes just 30 seconds!
 
-💡 Интересный факт: Наш ИИ проанализировал уже более 10,000 заявок и научился предсказывать, кто из клиентов станет нашими постоянными партнерами. Вы попали в категорию "высокопотенциальных"! 🎯
+💡 Fun Fact: Our AI has already analyzed over 10,000 requests and learned to predict which clients will become our regular partners. You've been categorized as "high potential"! 🎯
 
-⚠️ ВАЖНО: Обязательно смените временный пароль при первом входе! Даже ИИ не может защитить вас от простых паролей.
+⚠️ IMPORTANT: Be sure to change your temporary password on first login! Even AI can't protect you from simple passwords.
 
-Если у вас возникнут вопросы, не стесняйтесь обращаться к нам. Наш ИИ работает 24/7, а люди - почти столько же! 😄
+If you have any questions, don't hesitate to contact us. Our AI works 24/7, and people - almost as much! 😄
 
-С уважением,
-Команда EnergyLogic 🤖✨
+Best regards,
+EnergyLogic Team 🤖✨
   `;
 
   return { subject, html, text };
 }
 
-// Шаблон уведомления о новом ответе на заявку
+// Template for notification about new reply to request
 export function getCallbackReplyEmailTemplate(data: CallbackReplyData): EmailTemplate {
-  const subject = `🤖 ИИ передал ответ от ${data.adminName} на вашу заявку #${data.callbackId.slice(-8)}`;
+  const subject = `🤖 AI Delivered Reply from ${data.adminName} on Your Request #${data.callbackId.slice(-8)}`;
 
   const html = `
     <!DOCTYPE html>
@@ -205,7 +205,7 @@ export function getCallbackReplyEmailTemplate(data: CallbackReplyData): EmailTem
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Новый ответ на вашу заявку</title>
+      <title>New Reply to Your Request</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
         .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
@@ -236,53 +236,53 @@ export function getCallbackReplyEmailTemplate(data: CallbackReplyData): EmailTem
     <body>
       <div class="container">
         <div class="header">
-          <h1>🤖 ИИ передал ответ!</h1>
-          <p>Новое сообщение от ${data.adminName}</p>
+          <h1>🤖 AI Delivered Reply!</h1>
+          <p>New message from ${data.adminName}</p>
         </div>
         
         <div class="content">
-          <p style="font-size: 18px; margin-bottom: 25px;">Привет, <strong>${data.name}</strong>! 👋</p>
+          <p style="font-size: 18px; margin-bottom: 25px;">Hello, <strong>${data.name}</strong>! 👋</p>
           
           <div class="ai-transmission">
-            <h3>🤖 Передача данных завершена</h3>
-            <p><strong>Источник:</strong> ${data.adminName} (человек, не робот!)</p>
-            <p><strong>Получатель:</strong> ${data.name} (тоже человек, мы проверили!)</p>
-            <p><strong>Статус передачи:</strong> ✅ Успешно доставлено</p>
-            <p><strong>Время обработки ИИ:</strong> 0.003 секунды (мы очень быстрые!)</p>
+            <h3>🤖 Data Transmission Complete</h3>
+            <p><strong>Source:</strong> ${data.adminName} (human, not a robot!)</p>
+            <p><strong>Recipient:</strong> ${data.name} (also human, we checked!)</p>
+            <p><strong>Transmission Status:</strong> ✅ Successfully delivered</p>
+            <p><strong>AI Processing Time:</strong> 0.003 seconds (we're very fast!)</p>
           </div>
           
           <div class="message-box">
-            <h3>📝 Сообщение от ${data.adminName}:</h3>
+            <h3>📝 Message from ${data.adminName}:</h3>
             <div class="message-content">
               ${data.message.replace(/\n/g, '<br>')}
             </div>
           </div>
           
           <div style="text-align: center;">
-            <a href="${data.dashboardUrl}" class="cta-button">🚀 Перейти в личный кабинет</a>
+            <a href="${data.dashboardUrl}" class="cta-button">🚀 Go to Dashboard</a>
           </div>
           
           <div class="login-instructions">
-            <h3>🔑 Как войти в личный кабинет:</h3>
-            <p><strong>Если вы регистрировались через Google:</strong></p>
-            <p>→ Просто нажмите "Войти через Google" на странице входа</p>
-            <p><strong>Если вы создавали логин и пароль:</strong></p>
-            <p>→ Используйте ваш email и пароль для входа</p>
-            <p><strong>Забыли пароль?</strong> → Нажмите "Восстановить пароль" на странице входа</p>
+            <h3>🔑 How to Sign In to Dashboard:</h3>
+            <p><strong>If you registered via Google:</strong></p>
+            <p>→ Simply click "Sign in with Google" on the login page</p>
+            <p><strong>If you created a login and password:</strong></p>
+            <p>→ Use your email and password to sign in</p>
+            <p><strong>Forgot password?</strong> → Click "Reset Password" on the login page</p>
           </div>
           
           <div class="fun-fact">
-            <p><strong>Интересный факт:</strong> Наш ИИ проанализировал тон сообщения от ${data.adminName} и определил, что он написан с энтузиазмом и готовностью помочь. Вероятность положительного исхода вашего обращения: 98.5%! 🎯</p>
+            <p><strong>Fun Fact:</strong> Our AI analyzed the tone of the message from ${data.adminName} and determined it was written with enthusiasm and willingness to help. Probability of positive outcome for your request: 98.5%! 🎯</p>
           </div>
           
-          <p style="font-size: 16px; margin-top: 30px;">Вы можете продолжить общение с нашими специалистами прямо в личном кабинете. Наш ИИ следит за тем, чтобы ни одно сообщение не потерялось!</p>
+          <p style="font-size: 16px; margin-top: 30px;">You can continue communicating with our specialists directly in your dashboard. Our AI ensures no message gets lost!</p>
           
-          <p style="margin-top: 25px;">С уважением,<br><strong>Команда EnergyLogic</strong> 🤖✨</p>
+          <p style="margin-top: 25px;">Best regards,<br><strong>EnergyLogic Team</strong> 🤖✨</p>
         </div>
         
         <div class="footer">
-          <p>Это письмо отправлено нашим ИИ-помощником. Пожалуйста, не отвечайте на него.</p>
-          <p>© 2024 EnergyLogic. Все права защищены. ИИ тоже соблюдает авторские права.</p>
+          <p>This email was sent by our AI assistant. Please do not reply to it.</p>
+          <p>© 2024 EnergyLogic. All rights reserved. AI also respects copyrights.</p>
         </div>
       </div>
     </body>
@@ -290,44 +290,44 @@ export function getCallbackReplyEmailTemplate(data: CallbackReplyData): EmailTem
   `;
 
   const text = `
-🤖 ИИ передал ответ от ${data.adminName} на вашу заявку #${data.callbackId.slice(-8)}
+🤖 AI Delivered Reply from ${data.adminName} on Your Request #${data.callbackId.slice(-8)}
 
-Привет, ${data.name}! 👋
+Hello, ${data.name}! 👋
 
-🤖 Передача данных завершена:
-Источник: ${data.adminName} (человек, не робот!)
-Получатель: ${data.name} (тоже человек, мы проверили!)
-Статус передачи: ✅ Успешно доставлено
-Время обработки ИИ: 0.003 секунды (мы очень быстрые!)
+🤖 Data Transmission Complete:
+Source: ${data.adminName} (human, not a robot!)
+Recipient: ${data.name} (also human, we checked!)
+Transmission Status: ✅ Successfully delivered
+AI Processing Time: 0.003 seconds (we're very fast!)
 
-📝 Сообщение от ${data.adminName}:
+📝 Message from ${data.adminName}:
 ${data.message}
 
-🚀 Перейти в личный кабинет: ${data.dashboardUrl}
+🚀 Go to Dashboard: ${data.dashboardUrl}
 
-🔑 Как войти в личный кабинет:
-Если вы регистрировались через Google:
-→ Просто нажмите "Войти через Google" на странице входа
+🔑 How to Sign In to Dashboard:
+If you registered via Google:
+→ Simply click "Sign in with Google" on the login page
 
-Если вы создавали логин и пароль:
-→ Используйте ваш email и пароль для входа
+If you created a login and password:
+→ Use your email and password to sign in
 
-Забыли пароль? → Нажмите "Восстановить пароль" на странице входа
+Forgot password? → Click "Reset Password" on the login page
 
-💡 Интересный факт: Наш ИИ проанализировал тон сообщения от ${data.adminName} и определил, что он написан с энтузиазмом и готовностью помочь. Вероятность положительного исхода вашего обращения: 98.5%! 🎯
+💡 Fun Fact: Our AI analyzed the tone of the message from ${data.adminName} and determined it was written with enthusiasm and willingness to help. Probability of positive outcome for your request: 98.5%! 🎯
 
-Вы можете продолжить общение с нашими специалистами прямо в личном кабинете. Наш ИИ следит за тем, чтобы ни одно сообщение не потерялось!
+You can continue communicating with our specialists directly in your dashboard. Our AI ensures no message gets lost!
 
-С уважением,
-Команда EnergyLogic 🤖✨
+Best regards,
+EnergyLogic Team 🤖✨
   `;
 
   return { subject, html, text };
 }
 
-// Шаблон уведомления об изменении статуса заявки
+// Template for notification about request status change
 export function getCallbackStatusEmailTemplate(data: CallbackStatusData): EmailTemplate {
-  const subject = `📊 ИИ обновил статус вашей заявки #${data.callbackId.slice(-8)}: ${data.status}`;
+  const subject = `📊 AI Updated Your Request Status #${data.callbackId.slice(-8)}: ${data.status}`;
 
   const html = `
     <!DOCTYPE html>
@@ -335,7 +335,7 @@ export function getCallbackStatusEmailTemplate(data: CallbackStatusData): EmailT
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Статус заявки изменен</title>
+      <title>Request Status Changed</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
         .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
@@ -369,55 +369,55 @@ export function getCallbackStatusEmailTemplate(data: CallbackStatusData): EmailT
     <body>
       <div class="container">
         <div class="header">
-          <h1>📊 ИИ обновил статус!</h1>
-          <p>Ваша заявка движется вперед</p>
+          <h1>📊 AI Updated Status!</h1>
+          <p>Your request is moving forward</p>
         </div>
         
         <div class="content">
-          <p style="font-size: 18px; margin-bottom: 25px;">Привет, <strong>${data.name}</strong>! 👋</p>
+          <p style="font-size: 18px; margin-bottom: 25px;">Hello, <strong>${data.name}</strong>! 👋</p>
           
           <div class="ai-update">
-            <h3>🤖 Система обновления статуса</h3>
-            <p><strong>Время обновления:</strong> ${new Date().toLocaleString('ru-RU')}</p>
-            <p><strong>Обработчик:</strong> ИИ-система EnergyLogic</p>
-            <p><strong>Статус обработки:</strong> ✅ Успешно обновлено</p>
-            <p><strong>Следующий этап:</strong> Ожидание вашего внимания</p>
+            <h3>🤖 Status Update System</h3>
+            <p><strong>Update Time:</strong> ${new Date().toLocaleString('en-US')}</p>
+            <p><strong>Processor:</strong> EnergyLogic AI System</p>
+            <p><strong>Processing Status:</strong> ✅ Successfully updated</p>
+            <p><strong>Next Stage:</strong> Awaiting your attention</p>
           </div>
           
           <div class="status-box">
-            <h3>📋 Текущий статус вашей заявки:</h3>
+            <h3>📋 Current Status of Your Request:</h3>
             <div class="status-value">${data.status}</div>
           </div>
           
           <div class="progress-indicator">
-            <p><strong>⚡ Прогресс:</strong> Наш ИИ отслеживает каждый шаг вашей заявки. Следующее обновление придет автоматически, когда статус изменится!</p>
+            <p><strong>⚡ Progress:</strong> Our AI tracks every step of your request. The next update will come automatically when the status changes!</p>
           </div>
           
           <div style="text-align: center;">
-            <a href="${data.dashboardUrl}" class="cta-button">🚀 Посмотреть в личном кабинете</a>
+            <a href="${data.dashboardUrl}" class="cta-button">🚀 View in Dashboard</a>
           </div>
           
           <div class="login-instructions">
-            <h3>🔑 Как войти в личный кабинет:</h3>
-            <p><strong>Если вы регистрировались через Google:</strong></p>
-            <p>→ Просто нажмите "Войти через Google" на странице входа</p>
-            <p><strong>Если вы создавали логин и пароль:</strong></p>
-            <p>→ Используйте ваш email и пароль для входа</p>
-            <p><strong>Забыли пароль?</strong> → Нажмите "Восстановить пароль" на странице входа</p>
+            <h3>🔑 How to Sign In to Dashboard:</h3>
+            <p><strong>If you registered via Google:</strong></p>
+            <p>→ Simply click "Sign in with Google" on the login page</p>
+            <p><strong>If you created a login and password:</strong></p>
+            <p>→ Use your email and password to sign in</p>
+            <p><strong>Forgot password?</strong> → Click "Reset Password" on the login page</p>
           </div>
           
           <div class="fun-fact">
-            <p><strong>Интересный факт:</strong> Наш ИИ проанализировал скорость обработки вашей заявки и определил, что она обрабатывается на 23% быстрее среднего показателя! Вы попали в категорию "приоритетных клиентов"! 🎯</p>
+            <p><strong>Fun Fact:</strong> Our AI analyzed the processing speed of your request and determined it's being processed 23% faster than average! You've been categorized as a "priority client"! 🎯</p>
           </div>
           
-          <p style="font-size: 16px; margin-top: 30px;">Вы можете отслеживать все изменения по вашей заявке в личном кабинете. Наш ИИ уведомит вас о каждом обновлении!</p>
+          <p style="font-size: 16px; margin-top: 30px;">You can track all changes to your request in your dashboard. Our AI will notify you of every update!</p>
           
-          <p style="margin-top: 25px;">С уважением,<br><strong>Команда EnergyLogic</strong> 🤖✨</p>
+          <p style="margin-top: 25px;">Best regards,<br><strong>EnergyLogic Team</strong> 🤖✨</p>
         </div>
         
         <div class="footer">
-          <p>Это письмо отправлено нашим ИИ-помощником. Пожалуйста, не отвечайте на него.</p>
-          <p>© 2024 EnergyLogic. Все права защищены. ИИ тоже следит за соблюдением прав.</p>
+          <p>This email was sent by our AI assistant. Please do not reply to it.</p>
+          <p>© 2024 EnergyLogic. All rights reserved. AI also monitors rights compliance.</p>
         </div>
       </div>
     </body>
@@ -425,46 +425,46 @@ export function getCallbackStatusEmailTemplate(data: CallbackStatusData): EmailT
   `;
 
   const text = `
-📊 ИИ обновил статус вашей заявки #${data.callbackId.slice(-8)}: ${data.status}
+📊 AI Updated Your Request Status #${data.callbackId.slice(-8)}: ${data.status}
 
-Привет, ${data.name}! 👋
+Hello, ${data.name}! 👋
 
-🤖 Система обновления статуса:
-Время обновления: ${new Date().toLocaleString('ru-RU')}
-Обработчик: ИИ-система EnergyLogic
-Статус обработки: ✅ Успешно обновлено
-Следующий этап: Ожидание вашего внимания
+🤖 Status Update System:
+Update Time: ${new Date().toLocaleString('en-US')}
+Processor: EnergyLogic AI System
+Processing Status: ✅ Successfully updated
+Next Stage: Awaiting your attention
 
-📋 Текущий статус вашей заявки: ${data.status}
+📋 Current Status of Your Request: ${data.status}
 
-⚡ Прогресс: Наш ИИ отслеживает каждый шаг вашей заявки. Следующее обновление придет автоматически, когда статус изменится!
+⚡ Progress: Our AI tracks every step of your request. The next update will come automatically when the status changes!
 
-🚀 Посмотреть в личном кабинете: ${data.dashboardUrl}
+🚀 View in Dashboard: ${data.dashboardUrl}
 
-🔑 Как войти в личный кабинет:
-Если вы регистрировались через Google:
-→ Просто нажмите "Войти через Google" на странице входа
+🔑 How to Sign In to Dashboard:
+If you registered via Google:
+→ Simply click "Sign in with Google" on the login page
 
-Если вы создавали логин и пароль:
-→ Используйте ваш email и пароль для входа
+If you created a login and password:
+→ Use your email and password to sign in
 
-Забыли пароль? → Нажмите "Восстановить пароль" на странице входа
+Forgot password? → Click "Reset Password" on the login page
 
-💡 Интересный факт: Наш ИИ проанализировал скорость обработки вашей заявки и определил, что она обрабатывается на 23% быстрее среднего показателя! Вы попали в категорию "приоритетных клиентов"! 🎯
+💡 Fun Fact: Our AI analyzed the processing speed of your request and determined it's being processed 23% faster than average! You've been categorized as a "priority client"! 🎯
 
-Вы можете отслеживать все изменения по вашей заявке в личном кабинете. Наш ИИ уведомит вас о каждом обновлении!
+You can track all changes to your request in your dashboard. Our AI will notify you of every update!
 
-С уважением,
-Команда EnergyLogic 🤖✨
+Best regards,
+EnergyLogic Team 🤖✨
   `;
 
   return { subject, html, text };
 }
 
 
-// Шаблон для восстановления пароля
+// Template for password recovery
 export function getPasswordResetEmailTemplate(data: PasswordResetData): EmailTemplate {
-  const subject = `🔐 ИИ сгенерировал ссылку для восстановления пароля`;
+  const subject = `🔐 AI Generated Password Reset Link`;
 
   const html = `
     <!DOCTYPE html>
@@ -472,7 +472,7 @@ export function getPasswordResetEmailTemplate(data: PasswordResetData): EmailTem
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Восстановление пароля</title>
+      <title>Password Recovery</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
@@ -503,48 +503,48 @@ export function getPasswordResetEmailTemplate(data: PasswordResetData): EmailTem
     <body>
       <div class="container">
         <div class="header">
-          <h1>🔐 ИИ сгенерировал ссылку!</h1>
-          <p>Восстановление пароля для ${data.name}</p>
+          <h1>🔐 AI Generated Link!</h1>
+          <p>Password recovery for ${data.name}</p>
         </div>
         
         <div class="content">
-          <p style="font-size: 18px; margin-bottom: 25px;">Привет, <strong>${data.name}</strong>! 👋</p>
+          <p style="font-size: 18px; margin-bottom: 25px;">Hello, <strong>${data.name}</strong>! 👋</p>
           
           <div class="ai-security">
-            <h3>🤖 Система безопасности ИИ</h3>
-            <p><strong>Запрос на восстановление:</strong> Подтвержден</p>
-            <p><strong>Время генерации:</strong> ${new Date().toLocaleString('ru-RU')}</p>
-            <p><strong>Безопасность:</strong> ✅ Максимальный уровень</p>
-            <p><strong>Статус токена:</strong> Активен и защищен</p>
+            <h3>🤖 AI Security System</h3>
+            <p><strong>Recovery Request:</strong> Confirmed</p>
+            <p><strong>Generation Time:</strong> ${new Date().toLocaleString('en-US')}</p>
+            <p><strong>Security:</strong> ✅ Maximum level</p>
+            <p><strong>Token Status:</strong> Active and protected</p>
           </div>
           
           <div class="reset-box">
-            <h3>🔑 Ссылка для восстановления пароля</h3>
-            <p>Наш ИИ сгенерировал уникальную ссылку для восстановления вашего пароля:</p>
+            <h3>🔑 Password Recovery Link</h3>
+            <p>Our AI has generated a unique link to recover your password:</p>
             <div class="reset-url">${data.resetUrl}</div>
-            <p><strong>⏰ Ссылка действительна:</strong> ${data.expiresIn}</p>
+            <p><strong>⏰ Link Valid For:</strong> ${data.expiresIn}</p>
           </div>
           
           <div style="text-align: center;">
-            <a href="${data.resetUrl}" class="cta-button">🚀 Восстановить пароль</a>
+            <a href="${data.resetUrl}" class="cta-button">🚀 Reset Password</a>
           </div>
           
           <div class="security-warning">
-            <p>⚠️ <strong>Важно:</strong> Если вы не запрашивали восстановление пароля, просто проигнорируйте это письмо. Наш ИИ автоматически отменит токен через ${data.expiresIn}.</p>
+            <p>⚠️ <strong>Important:</strong> If you didn't request password recovery, simply ignore this email. Our AI will automatically cancel the token after ${data.expiresIn}.</p>
           </div>
           
           <div class="fun-fact">
-            <p><strong>Интересный факт:</strong> Наш ИИ использует криптографические алгоритмы военного уровня для защиты ваших данных. Вероятность взлома: 0.0000001% (это практически невозможно!) 🛡️</p>
+            <p><strong>Fun Fact:</strong> Our AI uses military-grade cryptographic algorithms to protect your data. Probability of breach: 0.0000001% (this is practically impossible!) 🛡️</p>
           </div>
           
-          <p style="font-size: 16px; margin-top: 30px;">После восстановления пароля вы сможете войти в личный кабинет и продолжить работу с нашими программами.</p>
+          <p style="font-size: 16px; margin-top: 30px;">After resetting your password, you'll be able to sign in to your dashboard and continue working with our programs.</p>
           
-          <p style="margin-top: 25px;">С уважением,<br><strong>Команда EnergyLogic</strong> 🤖✨</p>
+          <p style="margin-top: 25px;">Best regards,<br><strong>EnergyLogic Team</strong> 🤖✨</p>
         </div>
         
         <div class="footer">
-          <p>Это письмо отправлено нашим ИИ-помощником. Пожалуйста, не отвечайте на него.</p>
-          <p>© 2024 EnergyLogic. Все права защищены. ИИ тоже защищает ваши данные.</p>
+          <p>This email was sent by our AI assistant. Please do not reply to it.</p>
+          <p>© 2024 EnergyLogic. All rights reserved. AI also protects your data.</p>
         </div>
       </div>
     </body>
@@ -552,39 +552,39 @@ export function getPasswordResetEmailTemplate(data: PasswordResetData): EmailTem
   `;
 
   const text = `
-🔐 ИИ сгенерировал ссылку для восстановления пароля
+🔐 AI Generated Password Reset Link
 
-Привет, ${data.name}! 👋
+Hello, ${data.name}! 👋
 
-🤖 Система безопасности ИИ:
-Запрос на восстановление: Подтвержден
-Время генерации: ${new Date().toLocaleString('ru-RU')}
-Безопасность: ✅ Максимальный уровень
-Статус токена: Активен и защищен
+🤖 AI Security System:
+Recovery Request: Confirmed
+Generation Time: ${new Date().toLocaleString('en-US')}
+Security: ✅ Maximum level
+Token Status: Active and protected
 
-🔑 Ссылка для восстановления пароля:
+🔑 Password Recovery Link:
 ${data.resetUrl}
 
-⏰ Ссылка действительна: ${data.expiresIn}
+⏰ Link Valid For: ${data.expiresIn}
 
-🚀 Восстановить пароль: ${data.resetUrl}
+🚀 Reset Password: ${data.resetUrl}
 
-⚠️ ВАЖНО: Если вы не запрашивали восстановление пароля, просто проигнорируйте это письмо. Наш ИИ автоматически отменит токен через ${data.expiresIn}.
+⚠️ IMPORTANT: If you didn't request password recovery, simply ignore this email. Our AI will automatically cancel the token after ${data.expiresIn}.
 
-💡 Интересный факт: Наш ИИ использует криптографические алгоритмы военного уровня для защиты ваших данных. Вероятность взлома: 0.0000001% (это практически невозможно!) 🛡️
+💡 Fun Fact: Our AI uses military-grade cryptographic algorithms to protect your data. Probability of breach: 0.0000001% (this is practically impossible!) 🛡️
 
-После восстановления пароля вы сможете войти в личный кабинет и продолжить работу с нашими программами.
+After resetting your password, you'll be able to sign in to your dashboard and continue working with our programs.
 
-С уважением,
-Команда EnergyLogic 🤖✨
+Best regards,
+EnergyLogic Team 🤖✨
   `;
 
   return { subject, html, text };
 }
 
-// Шаблон подтверждения заявки на callback
+// Template for callback request confirmation
 export function getCallbackConfirmationEmailTemplate(data: CallbackConfirmationData): EmailTemplate {
-  const subject = `✅ Ваша заявка #${data.callbackId.slice(-8)} принята! ИИ уже работает над ней`;
+  const subject = `✅ Your Request #${data.callbackId.slice(-8)} Accepted! AI is Already Working on It`;
 
   const html = `
     <!DOCTYPE html>
@@ -592,7 +592,7 @@ export function getCallbackConfirmationEmailTemplate(data: CallbackConfirmationD
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Заявка принята</title>
+      <title>Request Accepted</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
         .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); }
@@ -625,62 +625,62 @@ export function getCallbackConfirmationEmailTemplate(data: CallbackConfirmationD
     <body>
       <div class="container">
         <div class="header">
-          <h1>✅ Заявка принята!</h1>
-          <p>ИИ уже работает над вашим запросом</p>
+          <h1>✅ Request Accepted!</h1>
+          <p>AI is already working on your request</p>
         </div>
         
         <div class="content">
-          <p style="font-size: 18px; margin-bottom: 25px;">Привет, <strong>${data.name}</strong>! 👋</p>
+          <p style="font-size: 18px; margin-bottom: 25px;">Hello, <strong>${data.name}</strong>! 👋</p>
           
           <div class="ai-processing">
-            <h3>🤖 ИИ обрабатывает вашу заявку</h3>
-            <p><strong>Статус:</strong> ✅ Принята в работу</p>
-            <p><strong>Номер заявки:</strong> #${data.callbackId.slice(-8)}</p>
-            <p><strong>Время обработки:</strong> ${new Date().toLocaleString('ru-RU')}</p>
-            <p><strong>Приоритет:</strong> Высокий (ИИ определил вас как важного клиента!)</p>
+            <h3>🤖 AI is Processing Your Request</h3>
+            <p><strong>Status:</strong> ✅ Accepted for processing</p>
+            <p><strong>Request Number:</strong> #${data.callbackId.slice(-8)}</p>
+            <p><strong>Processing Time:</strong> ${new Date().toLocaleString('en-US')}</p>
+            <p><strong>Priority:</strong> High (AI identified you as an important client!)</p>
           </div>
           
           <div class="request-details">
-            <h3>📋 Детали вашей заявки</h3>
+            <h3>📋 Your Request Details</h3>
             <div class="detail-item">
-              <span class="detail-label">📞 Телефон:</span>
+              <span class="detail-label">📞 Phone:</span>
               <span class="detail-value">${data.phone}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">⏰ Предпочтительное время:</span>
-              <span class="detail-value">${data.preferredTime || 'Любое удобное время'}</span>
+              <span class="detail-label">⏰ Preferred Time:</span>
+              <span class="detail-value">${data.preferredTime || 'Any convenient time'}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">💬 Сообщение:</span>
-              <span class="detail-value">${data.message || 'Без дополнительных комментариев'}</span>
+              <span class="detail-label">💬 Message:</span>
+              <span class="detail-value">${data.message || 'No additional comments'}</span>
             </div>
           </div>
           
           <div style="text-align: center;">
-            <a href="${data.dashboardUrl}" class="cta-button">🚀 Перейти в личный кабинет</a>
+            <a href="${data.dashboardUrl}" class="cta-button">🚀 Go to Dashboard</a>
           </div>
           
           <div class="login-instructions">
-            <h3>🔑 Как войти в личный кабинет:</h3>
-            <p><strong>Если вы регистрировались через Google:</strong></p>
-            <p>→ Просто нажмите "Войти через Google" на странице входа</p>
-            <p><strong>Если вы создавали логин и пароль:</strong></p>
-            <p>→ Используйте ваш email и пароль для входа</p>
-            <p><strong>Забыли пароль?</strong> → Нажмите "Восстановить пароль" на странице входа</p>
+            <h3>🔑 How to Sign In to Dashboard:</h3>
+            <p><strong>If you registered via Google:</strong></p>
+            <p>→ Simply click "Sign in with Google" on the login page</p>
+            <p><strong>If you created a login and password:</strong></p>
+            <p>→ Use your email and password to sign in</p>
+            <p><strong>Forgot password?</strong> → Click "Reset Password" on the login page</p>
           </div>
           
           <div class="fun-fact">
-            <p><strong>Интересный факт:</strong> Наш ИИ проанализировал вашу заявку и определил, что вы заинтересованы в качественном сервисе. Вероятность успешного решения вашего вопроса: 99.8%! 🎯</p>
+            <p><strong>Fun Fact:</strong> Our AI analyzed your request and determined you're interested in quality service. Probability of successful resolution: 99.8%! 🎯</p>
           </div>
           
-          <p style="font-size: 16px; margin-top: 30px;">В личном кабинете вы сможете отслеживать статус заявки, общаться с нашими специалистами и получать уведомления о всех обновлениях.</p>
+          <p style="font-size: 16px; margin-top: 30px;">In your dashboard, you can track the request status, communicate with our specialists, and receive notifications about all updates.</p>
           
-          <p style="margin-top: 25px;">С уважением,<br><strong>Команда EnergyLogic</strong> 🤖✨</p>
+          <p style="margin-top: 25px;">Best regards,<br><strong>EnergyLogic Team</strong> 🤖✨</p>
         </div>
         
         <div class="footer">
-          <p>Это письмо отправлено нашим ИИ-помощником. Пожалуйста, не отвечайте на него.</p>
-          <p>© 2024 EnergyLogic. Все права защищены. ИИ тоже следит за качеством сервиса.</p>
+          <p>This email was sent by our AI assistant. Please do not reply to it.</p>
+          <p>© 2024 EnergyLogic. All rights reserved. AI also monitors service quality.</p>
         </div>
       </div>
     </body>
@@ -688,44 +688,44 @@ export function getCallbackConfirmationEmailTemplate(data: CallbackConfirmationD
   `;
 
   const text = `
-✅ Ваша заявка #${data.callbackId.slice(-8)} принята! ИИ уже работает над ней
+✅ Your Request #${data.callbackId.slice(-8)} Accepted! AI is Already Working on It
 
-Привет, ${data.name}! 👋
+Hello, ${data.name}! 👋
 
-🤖 ИИ обрабатывает вашу заявку:
-Статус: ✅ Принята в работу
-Номер заявки: #${data.callbackId.slice(-8)}
-Время обработки: ${new Date().toLocaleString('ru-RU')}
-Приоритет: Высокий (ИИ определил вас как важного клиента!)
+🤖 AI is Processing Your Request:
+Status: ✅ Accepted for processing
+Request Number: #${data.callbackId.slice(-8)}
+Processing Time: ${new Date().toLocaleString('en-US')}
+Priority: High (AI identified you as an important client!)
 
-📋 Детали вашей заявки:
-📞 Телефон: ${data.phone}
-⏰ Предпочтительное время: ${data.preferredTime || 'Любое удобное время'}
-💬 Сообщение: ${data.message || 'Без дополнительных комментариев'}
+📋 Your Request Details:
+📞 Phone: ${data.phone}
+⏰ Preferred Time: ${data.preferredTime || 'Any convenient time'}
+💬 Message: ${data.message || 'No additional comments'}
 
-🚀 Перейти в личный кабинет: ${data.dashboardUrl}
+🚀 Go to Dashboard: ${data.dashboardUrl}
 
-🔑 Как войти в личный кабинет:
-Если вы регистрировались через Google:
-→ Просто нажмите "Войти через Google" на странице входа
+🔑 How to Sign In to Dashboard:
+If you registered via Google:
+→ Simply click "Sign in with Google" on the login page
 
-Если вы создавали логин и пароль:
-→ Используйте ваш email и пароль для входа
+If you created a login and password:
+→ Use your email and password to sign in
 
-Забыли пароль? → Нажмите "Восстановить пароль" на странице входа
+Forgot password? → Click "Reset Password" on the login page
 
-💡 Интересный факт: Наш ИИ проанализировал вашу заявку и определил, что вы заинтересованы в качественном сервисе. Вероятность успешного решения вашего вопроса: 99.8%! 🎯
+💡 Fun Fact: Our AI analyzed your request and determined you're interested in quality service. Probability of successful resolution: 99.8%! 🎯
 
-В личном кабинете вы сможете отслеживать статус заявки, общаться с нашими специалистами и получать уведомления о всех обновлениях.
+In your dashboard, you can track the request status, communicate with our specialists, and receive notifications about all updates.
 
-С уважением,
-Команда EnergyLogic 🤖✨
+Best regards,
+EnergyLogic Team 🤖✨
   `;
 
   return { subject, html, text };
 }
 
-// Экспортируем объект с шаблонами для совместимости
+// Export template object for compatibility
 export const emailTemplates = {
   getWelcomeEmailTemplate,
   getCallbackReplyEmailTemplate,

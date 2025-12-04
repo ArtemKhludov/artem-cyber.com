@@ -4,8 +4,8 @@ import { notifyTelegram } from '@/lib/notify'
 
 export async function POST(request: NextRequest) {
   try {
-    // CRON_SECRET проверка отключена для упрощения
-    // У вас уже есть все необходимые токены для безопасности
+    // CRON_SECRET check disabled for simplification
+    // You already have all necessary tokens for security
 
     console.log('🧹 Starting cleanup cron job...')
     
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 async function cleanupExpiredSessions() {
   const supabase = getSupabaseAdmin()
   
-  // Удаляем истекшие сессии (старше 7 дней)
+  // Delete expired sessions (older than 7 days)
   const { error, count } = await supabase
     .from('user_sessions')
     .delete()
@@ -56,7 +56,7 @@ async function cleanupExpiredSessions() {
 async function cleanupOldLogs() {
   const supabase = getSupabaseAdmin()
   
-  // Удаляем старые логи (старше 30 дней)
+  // Delete old logs (older than 30 days)
   const { error, count } = await supabase
     .from('audit_logs')
     .delete()
@@ -72,8 +72,8 @@ async function cleanupOldLogs() {
 }
 
 async function cleanupTemporaryFiles() {
-  // Здесь можно добавить очистку временных файлов
-  // Например, неиспользуемые загруженные файлы
+  // Here you can add temporary files cleanup
+  // For example, unused uploaded files
   console.log('🧹 Temporary files cleanup completed')
   return 0
 }
@@ -81,7 +81,7 @@ async function cleanupTemporaryFiles() {
 async function sendDailyReport() {
   const supabase = getSupabaseAdmin()
   
-  // Получаем статистику за последние 24 часа
+  // Get statistics for the last 24 hours
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   
   const [usersResult, purchasesResult, issuesResult] = await Promise.all([
@@ -103,13 +103,13 @@ async function sendDailyReport() {
   const newPurchases = purchasesResult.count || 0
   const newIssues = issuesResult.count || 0
 
-  // Отправляем ежедневный отчет в Telegram
+  // Send daily report to Telegram
   await notifyTelegram(
-    `📊 Ежедневный отчет\n\n` +
-    `👥 Новые пользователи: ${newUsers}\n` +
-    `🛒 Новые покупки: ${newPurchases}\n` +
-    `🎫 Новые обращения: ${newIssues}\n\n` +
-    `📅 ${new Date().toLocaleDateString('ru-RU')}`,
+    `📊 Daily Report\n\n` +
+    `👥 New Users: ${newUsers}\n` +
+    `🛒 New Purchases: ${newPurchases}\n` +
+    `🎫 New Issues: ${newIssues}\n\n` +
+    `📅 ${new Date().toLocaleDateString('en-US')}`,
     {
       botToken: process.env.TELEGRAM_BOT_TOKEN,
       chatId: process.env.TELEGRAM_CHAT_ID,
