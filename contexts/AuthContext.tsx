@@ -60,15 +60,15 @@ function getCurrentPath() {
 
 function redirectToLogin() {
   if (typeof window === 'undefined') return
-  
+
   const publicPages = ['/', '/catalog', '/about', '/contacts', '/reviews', '/terms', '/privacy', '/disclaimer', '/refund']
   const isPublicPage = publicPages.includes(window.location.pathname)
-  
-  // Не перенаправляем с публичных страниц
+
+  // Do not redirect from public pages
   if (isPublicPage) {
     return
   }
-  
+
   const currentPath = getCurrentPath()
   const loginUrl = `/auth/login?redirect=${encodeURIComponent(currentPath)}`
 
@@ -153,10 +153,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.status === 401) {
         clearSessionCookie()
-        // Не перенаправляем на логин при обновлении страницы
-        // Middleware уже обрабатывает это
+        // Do not redirect to login on page reload
+        // Middleware already handles this
         if (redirectOnFail && typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-          // Перенаправляем только если это не публичная страница
+          // Redirect only if this is not a public page
           const publicPages = ['/', '/catalog', '/about', '/contacts', '/reviews', '/terms', '/privacy', '/disclaimer', '/refund']
           const isPublicPage = publicPages.includes(window.location.pathname)
           if (!isPublicPage) {
@@ -174,8 +174,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    // Проверяем сессию только один раз при монтировании
-    checkSession(false) // false = не перенаправлять на логин
+    // Check session only once on mount
+    checkSession(false) // false = do not redirect to login
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -201,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const timeSinceActivity = now - lastActivityRef.current
       const timeSincePing = now - lastPingRef.current
 
-      // Проверяем, что пользователь все еще авторизован
+      // Make sure the user is still authenticated
       if (user && timeSinceActivity < IDLE_TIMEOUT && timeSincePing >= ACTIVITY_PING_INTERVAL) {
         void pingSession()
       }
@@ -259,13 +259,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return {
         success: false,
-        error: data.error || 'Ошибка входа',
+        error: data.error || 'Login error',
         captchaRequired: Boolean(data.captchaRequired),
         lockedUntil: data.lockedUntil
       }
     } catch (error) {
       console.error('Login failed:', error)
-      return { success: false, error: 'Ошибка сети' }
+      return { success: false, error: 'Network error' }
     }
   }, [checkSession])
 
@@ -307,10 +307,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: true, user: data.user }
       }
 
-      return { success: false, error: data.error || 'Ошибка регистрации' }
+      return { success: false, error: data.error || 'Registration error' }
     } catch (error) {
       console.error('Register failed:', error)
-      return { success: false, error: 'Ошибка сети' }
+      return { success: false, error: 'Network error' }
     }
   }, [])
 

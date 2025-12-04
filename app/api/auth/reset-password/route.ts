@@ -5,29 +5,29 @@ import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
     try {
-        // Проверка origin для CSRF защиты
+        // Check origin for CSRF protection
         try {
             verifyRequestOriginSmart(request, {
                 allowSameDomain: true
             })
         } catch (error) {
             console.error('Origin verification failed for reset password:', error)
-            return NextResponse.json({ error: 'Недопустимый источник запроса' }, { status: 403 })
+            return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 })
         }
 
         const { token, password } = await request.json()
 
         if (!token || !password) {
-            return NextResponse.json({ error: 'Токен и пароль обязательны' }, { status: 400 })
+            return NextResponse.json({ error: 'Token and password are required' }, { status: 400 })
         }
 
         if (password.length < 6) {
-            return NextResponse.json({ error: 'Пароль должен содержать минимум 6 символов' }, { status: 400 })
+            return NextResponse.json({ error: 'Password must contain at least 6 characters' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем токен
+        // Check token
         const { data: resetToken, error: tokenError } = await supabase
             .from('password_reset_tokens')
             .select('user_id, expires_at')
@@ -35,27 +35,27 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (tokenError || !resetToken) {
-            return NextResponse.json({ error: 'Недействительный или истекший токен' }, { status: 400 })
+            return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 })
         }
 
-        // Проверяем, не истек ли токен
+        // Check if token has expired
         const now = new Date()
         const expiresAt = new Date(resetToken.expires_at)
 
         if (now > expiresAt) {
-            // Удаляем истекший токен
+            // Delete expired token
             await supabase
                 .from('password_reset_tokens')
                 .delete()
                 .eq('token', token)
 
-            return NextResponse.json({ error: 'Токен истек. Запросите восстановление пароля заново' }, { status: 400 })
+            return NextResponse.json({ error: 'Token expired. Please request password recovery again' }, { status: 400 })
         }
 
-        // Хешируем новый пароль
+        // Hash new password
         const hashedPassword = await bcrypt.hash(password, 12)
 
-        // Обновляем пароль пользователя
+        // Update user password
         const { error: updateError } = await supabase
             .from('users')
             .update({
@@ -66,16 +66,16 @@ export async function POST(request: NextRequest) {
 
         if (updateError) {
             console.error('Error updating password:', updateError)
-            return NextResponse.json({ error: 'Ошибка при обновлении пароля' }, { status: 500 })
+            return NextResponse.json({ error: 'Error updating password' }, { status: 500 })
         }
 
-        // Удаляем использованный токен
+        // Delete used token
         await supabase
             .from('password_reset_tokens')
             .delete()
             .eq('token', token)
 
-        // Отзываем все активные сессии пользователя для безопасности
+        // Revoke all active user sessions for security
         await supabase
             .from('user_sessions')
             .update({ revoked_at: new Date().toISOString() })
@@ -86,12 +86,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: 'Пароль успешно изменен. Вы можете войти с новым паролем'
+            message: 'Password successfully changed. You can sign in with your new password'
         })
 
     } catch (error) {
         console.error('Error in reset password:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
 
@@ -101,12 +101,12 @@ export async function GET(request: NextRequest) {
         const token = url.searchParams.get('token')
 
         if (!token) {
-            return NextResponse.json({ error: 'Токен не предоставлен' }, { status: 400 })
+            return NextResponse.json({ error: 'Token not provided' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем токен
+        // Check token
         const { data: resetToken, error: tokenError } = await supabase
             .from('password_reset_tokens')
             .select('user_id, expires_at')
@@ -114,24 +114,24 @@ export async function GET(request: NextRequest) {
             .single()
 
         if (tokenError || !resetToken) {
-            return NextResponse.json({ error: 'Недействительный токен' }, { status: 400 })
+            return NextResponse.json({ error: 'Invalid token' }, { status: 400 })
         }
 
-        // Проверяем, не истек ли токен
+        // Check if token has expired
         const now = new Date()
         const expiresAt = new Date(resetToken.expires_at)
 
         if (now > expiresAt) {
-            return NextResponse.json({ error: 'Токен истек' }, { status: 400 })
+            return NextResponse.json({ error: 'Token expired' }, { status: 400 })
         }
 
         return NextResponse.json({
             success: true,
-            message: 'Токен действителен'
+            message: 'Token is valid'
         })
 
     } catch (error) {
         console.error('Error validating reset token:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

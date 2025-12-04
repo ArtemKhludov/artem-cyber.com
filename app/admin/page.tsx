@@ -124,10 +124,10 @@ function AdminPageContent() {
   const [recentEvents, setRecentEvents] = useState<Array<{ id: string; action?: string; created_at?: string; actor_email?: string; target_table?: string; target_id?: string }>>([])
   const [recentLoading, setRecentLoading] = useState(false)
 
-  // Состояния для сортировки
+  // Sorting states
   const [sortField, setSortField] = useState<string>('created_at')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  // Выбор элементов для пакетных действий (только для Покупок)
+  // Selection for batch actions (Purchases only)
   const [selectedPurchaseIds, setSelectedPurchaseIds] = useState<Set<string>>(new Set())
   // View helpers
   const resetFilters = () => {
@@ -137,15 +137,15 @@ function AdminPageContent() {
     setDateFilter('all')
     setSortField('created_at')
     setSortDirection('desc')
-    showToast('Фильтры сброшены')
+    showToast('Filters reset')
   }
   const saveView = () => {
     try {
       const params = new URLSearchParams(window.location.search)
       localStorage.setItem('admin_saved_view', params.toString())
-      showToast('Вид сохранён', 'Вы сможете восстановить его позже')
+      showToast('View saved', 'You can restore it later')
     } catch {
-      showToast('Не удалось сохранить вид', undefined, 'error')
+      showToast('Failed to save view', undefined, 'error')
     }
   }
   const runReconcile = async () => {
@@ -153,23 +153,23 @@ function AdminPageContent() {
       const res = await fetch('/api/admin/payments/reconcile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ windowMinutes: 15 }) })
       const json = await res.json().catch(() => ({}))
       if (!res.ok || json.error) {
-        showToast('Reconcile ошибка', json.error || 'Неизвестная ошибка', 'error')
+        showToast('Reconcile error', json.error || 'Unknown error', 'error')
       } else {
-        showToast('Reconcile выполнен', `Проверено: ${json.checked}`, 'success')
+        showToast('Reconcile completed', `Checked: ${json.checked}`, 'success')
         fetchPurchases()
       }
     } catch (e) {
-      showToast('Reconcile ошибка', 'Сетевая ошибка', 'error')
+      showToast('Reconcile error', 'Network error', 'error')
     }
   }
 
-  // Функция для сортировки данных
+  // Function to sort data
   const sortData = (data: any[], field: string, direction: 'asc' | 'desc') => {
     return [...data].sort((a, b) => {
       let aValue = a[field]
       let bValue = b[field]
 
-      // Обработка разных типов данных
+      // Handle different data types
       if (field === 'created_at') {
         aValue = new Date(aValue).getTime()
         bValue = new Date(bValue).getTime()
@@ -189,7 +189,7 @@ function AdminPageContent() {
     })
   }
 
-  // Функция для обработки клика по заголовку
+  // Function to handle header click
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
@@ -199,7 +199,7 @@ function AdminPageContent() {
     }
   }
 
-  // Функция для отображения иконки сортировки
+  // Function to display sort icon
   const getSortIcon = (field: string) => {
     if (sortField !== field) {
       return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />
@@ -209,7 +209,7 @@ function AdminPageContent() {
       : <ArrowDown className="w-4 h-4 ml-1" />
   }
 
-  // Фильтрация и сортировка данных
+  // Filtering and sorting data
   const filteredRequests = sortData(
     requests.filter(request => {
       const matchesSearch = searchTerm === '' ||
@@ -226,7 +226,7 @@ function AdminPageContent() {
     sortDirection
   )
 
-  // Пагинация (клиентская) для таблиц
+  // Pagination (client-side) for tables
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   useEffect(() => { setPage(1) }, [activeTab, searchTerm, filter, statusFilter, dateFilter])
@@ -234,7 +234,7 @@ function AdminPageContent() {
     const start = (page - 1) * pageSize
     return list.slice(start, start + pageSize)
   }
-  // Перенесено ниже, после объявления filteredPurchases и filteredUsers
+  // Moved below, after filteredPurchases and filteredUsers declarations
 
   const filteredPurchases = sortData(
     purchases.filter(purchase => {
@@ -270,7 +270,7 @@ function AdminPageContent() {
 
   const bulkGrant = async () => {
     if (selectedPurchaseIds.size === 0) return
-    if (!confirm(`Выдать доступ по ${selectedPurchaseIds.size} запись(ям)?`)) return
+    if (!confirm(`Grant access for ${selectedPurchaseIds.size} record(s)?`)) return
     let ok = 0; let fail = 0
     for (const id of selectedPurchaseIds) {
       const item = filteredPurchases.find((p: any) => p.id === id)
@@ -282,14 +282,14 @@ function AdminPageContent() {
         if (res.ok) ok++; else fail++
       } catch { fail++ }
     }
-    showToast('Пакетная выдача завершена', `Успех: ${ok}, Ошибки: ${fail}`, fail ? 'error' : 'success')
+    showToast('Batch grant completed', `Success: ${ok}, Errors: ${fail}`, fail ? 'error' : 'success')
     setSelectedPurchaseIds(new Set())
     fetchPurchases()
   }
 
   const bulkRevoke = async () => {
     if (selectedPurchaseIds.size === 0) return
-    if (!confirm(`Отозвать доступ по ${selectedPurchaseIds.size} запись(ям)?`)) return
+    if (!confirm(`Revoke access for ${selectedPurchaseIds.size} record(s)?`)) return
     let ok = 0; let fail = 0
     for (const id of selectedPurchaseIds) {
       const item = filteredPurchases.find((p: any) => p.id === id)
@@ -300,7 +300,7 @@ function AdminPageContent() {
         if (res.ok) ok++; else fail++
       } catch { fail++ }
     }
-    showToast('Пакетный отзыв завершён', `Успех: ${ok}, Ошибки: ${fail}`, fail ? 'error' : 'success')
+    showToast('Batch revoke completed', `Success: ${ok}, Errors: ${fail}`, fail ? 'error' : 'success')
     setSelectedPurchaseIds(new Set())
     fetchPurchases()
   }
@@ -309,7 +309,7 @@ function AdminPageContent() {
   const purchasesTotalCount = filteredPurchases.length
   const purchasesTotalAmount = filteredPurchases.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
 
-  // Быстрые счётчики по статусам для Покупок
+  // Quick status counters for Purchases
   const purchasesPendingCount = purchases.filter(p => p.status === 'pending').length
   const purchasesCompletedCount = purchases.filter(p => p.status === 'completed').length
   const purchasesCancelledCount = purchases.filter(p => p.status === 'cancelled').length
@@ -327,7 +327,7 @@ function AdminPageContent() {
     sortDirection
   )
 
-  // Показатели и страницы (после инициализации всех filtered-списков)
+  // Metrics and pages (after initializing all filtered lists)
   const totalRows = activeTab === 'requests'
     ? filteredRequests.length
     : activeTab === 'purchases'
@@ -345,15 +345,15 @@ function AdminPageContent() {
         : []
 
   useEffect(() => {
-    // Загружаем данные при первой загрузке
+    // Load data on first load
     fetchRequests()
     fetchPurchases()
     fetchDocuments()
   }, [])
 
-  // Синхронизация состояния фильтров/сортировки с URL
+  // Sync filter/sort state with URL
   useEffect(() => {
-    // Инициализация из URL один раз
+    // Initialize from URL once
     const params = new URLSearchParams(window.location.search)
     const s = params.get('s'); if (s !== null) setSearchTerm(s)
     const f = params.get('f'); if (f !== null) setFilter(f)
@@ -633,31 +633,31 @@ function AdminPageContent() {
       })
 
       if (response.ok) {
-        showToast('Синхронизация завершена', 'Google Sheets обновлены', 'success')
+        showToast('Sync completed', 'Google Sheets updated', 'success')
       } else {
-        showToast('Ошибка синхронизации', 'Не удалось обновить Google Sheets', 'error')
+        showToast('Sync error', 'Failed to update Google Sheets', 'error')
       }
     } catch (error) {
       console.error('Sync error:', error)
-      showToast('Ошибка синхронизации', 'Сетевой сбой или внутренняя ошибка', 'error')
+      showToast('Sync error', 'Network failure or internal error', 'error')
     } finally {
       setSyncing(false)
     }
   }
 
-  // Функция для удаления заявки или покупки
+  // Function to delete request or purchase
   const deleteItem = async (id: string, type: 'request' | 'purchase') => {
-    if (!confirm(`Вы уверены, что хотите удалить эту ${type === 'request' ? 'заявку' : 'покупку'}?`)) {
+    if (!confirm(`Are you sure you want to delete this ${type === 'request' ? 'request' : 'purchase'}?`)) {
       return
     }
 
     try {
       console.log('Deleting item:', { type, id })
 
-      // Проверяем, что тип корректный
+      // Check that type is correct
       if (type !== 'request' && type !== 'purchase') {
         console.error('Invalid type:', type)
-        alert('Ошибка: неверный тип данных')
+        alert('Error: invalid data type')
         return
       }
 
@@ -669,8 +669,8 @@ function AdminPageContent() {
       console.log('Delete response:', responseData)
 
       if (response.ok) {
-        showToast('Удалено', `${type === 'request' ? 'Заявка' : 'Покупка'} удалена`, 'success')
-        // Обновляем данные
+        showToast('Deleted', `${type === 'request' ? 'Request' : 'Purchase'} deleted`, 'success')
+        // Update data
         if (type === 'request') {
           fetchRequests()
         } else {
@@ -678,23 +678,23 @@ function AdminPageContent() {
         }
       } else {
         console.error('Delete failed:', responseData)
-        showToast('Ошибка удаления', responseData.error || 'Неизвестная ошибка', 'error')
+        showToast('Delete error', responseData.error || 'Unknown error', 'error')
       }
     } catch (error) {
       console.error('Delete error:', error)
-      showToast('Ошибка удаления', error instanceof Error ? error.message : 'Неизвестная ошибка', 'error')
+      showToast('Delete error', error instanceof Error ? error.message : 'Unknown error', 'error')
     }
   }
 
-  // Функция для обновления заявки или покупки
+  // Function to update request or purchase
   const updateItem = async (id: string, type: 'request' | 'purchase', data: any) => {
     try {
       console.log('Updating item:', { type, id, data })
 
-      // Проверяем, что тип корректный
+      // Check that type is correct
       if (type !== 'request' && type !== 'purchase') {
         console.error('Invalid type:', type)
-        alert('Ошибка: неверный тип данных')
+        alert('Error: invalid data type')
         return
       }
 
@@ -710,8 +710,8 @@ function AdminPageContent() {
       console.log('Update response:', responseData)
 
       if (response.ok) {
-        showToast('Обновлено', `${type === 'request' ? 'Заявка' : 'Покупка'} обновлена`, 'success')
-        // Обновляем данные
+        showToast('Updated', `${type === 'request' ? 'Request' : 'Purchase'} updated`, 'success')
+        // Update data
         if (type === 'request') {
           fetchRequests()
         } else {
@@ -719,11 +719,11 @@ function AdminPageContent() {
         }
       } else {
         console.error('Update failed:', responseData)
-        showToast('Ошибка обновления', responseData.error || 'Неизвестная ошибка', 'error')
+        showToast('Update error', responseData.error || 'Unknown error', 'error')
       }
     } catch (error) {
       console.error('Update error:', error)
-      showToast('Ошибка обновления', error instanceof Error ? error.message : 'Неизвестная ошибка', 'error')
+      showToast('Update error', error instanceof Error ? error.message : 'Unknown error', 'error')
     }
   }
 
@@ -776,8 +776,8 @@ function AdminPageContent() {
   const exportToCSV = () => {
     const data = activeTab === 'requests' ? requests : purchases
     const headers = activeTab === 'requests'
-      ? ['ID', 'Имя', 'Email', 'Телефон', 'Дата', 'Статус', 'Приоритет', 'Источник', 'Товар']
-      : ['ID', 'Имя', 'Email', 'Телефон', 'Дата', 'Товар', 'Сумма', 'Статус', 'Способ оплаты']
+      ? ['ID', 'Name', 'Email', 'Phone', 'Date', 'Status', 'Priority', 'Source', 'Product']
+      : ['ID', 'Name', 'Email', 'Phone', 'Date', 'Product', 'Amount', 'Status', 'Payment Method']
 
     const csvContent = [
       headers.join(','),
@@ -789,7 +789,7 @@ function AdminPageContent() {
             req.name,
             req.email || '',
             req.phone || '',
-            new Date(req.created_at).toLocaleDateString('ru-RU'),
+            new Date(req.created_at).toLocaleDateString('en-US'),
             req.status,
             req.priority,
             req.source,
@@ -802,7 +802,7 @@ function AdminPageContent() {
             pur.name,
             pur.email || '',
             pur.phone || '',
-            new Date(pur.created_at).toLocaleDateString('ru-RU'),
+            new Date(pur.created_at).toLocaleDateString('en-US'),
             pur.product_name,
             pur.amount,
             pur.status,
@@ -816,7 +816,7 @@ function AdminPageContent() {
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', `${activeTab === 'requests' ? 'заявки' : 'покупки'}_${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute('download', `${activeTab === 'requests' ? 'requests' : 'purchases'}_${new Date().toISOString().split('T')[0]}.csv`)
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -835,8 +835,8 @@ function AdminPageContent() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-white">CRM Система</h1>
-                <p className="text-white/70 mt-1">Управление заявками и покупками</p>
+                <h1 className="text-3xl font-bold text-white">CRM System</h1>
+                <p className="text-white/70 mt-1">Manage requests and purchases</p>
               </div>
               <div className="flex gap-3">
                 <Button
@@ -844,14 +844,14 @@ function AdminPageContent() {
                   className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   <User className="w-4 h-4 mr-2" />
-                  Выйти
+                  Logout
                 </Button>
                 <Button
                   onClick={resetFilters}
                   variant="outline"
                   className="text-white border-white/30"
                 >
-                  Сбросить фильтры
+                  Reset Filters
                 </Button>
                 {activeTab !== 'issues' && (
                   <Button
@@ -859,14 +859,14 @@ function AdminPageContent() {
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Экспорт CSV
+                    Export CSV
                   </Button>
                 )}
                 <Button
                   onClick={saveView}
                   className="bg-white/20 hover:bg-white/30 text-white"
                 >
-                  Сохранить вид
+                  Save View
                 </Button>
                 {activeTab !== 'issues' && (
                   <Button
@@ -883,20 +883,20 @@ function AdminPageContent() {
                     className="bg-green-600 hover:bg-green-700 text-white mr-2"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Обновить {activeTab === 'requests' ? 'заявки' : 'покупки'}
+                    Refresh {activeTab === 'requests' ? 'Requests' : 'Purchases'}
                   </Button>
                 )}
                 <Button
                   onClick={runReconcile}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
-                  Запустить reconcile
+                  Run Reconcile
                 </Button>
                 <Button
                   onClick={() => setActiveTab('logs')}
                   className="bg-white/20 hover:bg-white/30 text-white"
                 >
-                  Логи
+                  Logs
                 </Button>
                 {activeTab !== 'issues' && (
                   <Button
@@ -904,7 +904,7 @@ function AdminPageContent() {
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Добавить {activeTab === 'requests' ? 'заявку' : 'покупку'}
+                    Add {activeTab === 'requests' ? 'Request' : 'Purchase'}
                   </Button>
                 )}
               </div>
@@ -929,7 +929,7 @@ function AdminPageContent() {
               >
                 <div className="flex items-center justify-center">
                   <Phone className="w-4 h-4 mr-2" />
-                  Заявки ({requests.length})
+                  Requests ({requests.length})
                 </div>
               </button>
               <button
@@ -941,7 +941,7 @@ function AdminPageContent() {
               >
                 <div className="flex items-center justify-center">
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  Покупки ({purchases.length})
+                  Purchases ({purchases.length})
                 </div>
               </button>
               <button
@@ -953,7 +953,7 @@ function AdminPageContent() {
               >
                 <div className="flex items-center justify-center">
                   <Users className="w-4 h-4 mr-2" />
-                  Пользователи ({users.length})
+                  Users ({users.length})
                 </div>
               </button>
               <button
@@ -965,7 +965,7 @@ function AdminPageContent() {
               >
                 <div className="flex items-center justify-center">
                   <MessageSquare className="w-4 h-4 mr-2" />
-                  Обращения
+                  Inquiries
                 </div>
               </button>
               <button
@@ -977,7 +977,7 @@ function AdminPageContent() {
               >
                 <div className="flex items-center justify-center">
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Платежи ({payments.length})
+                  Payments ({payments.length})
                 </div>
               </button>
               <button
@@ -989,7 +989,7 @@ function AdminPageContent() {
               >
                 <div className="flex items-center justify-center">
                   <FileText className="w-4 h-4 mr-2" />
-                  Курсы
+                  Courses
                 </div>
               </button>
               <button
@@ -1001,7 +1001,7 @@ function AdminPageContent() {
               >
                 <div className="flex items-center justify-center">
                   <DollarSign className="w-4 h-4 mr-2" />
-                  Цены
+                  Pricing
                 </div>
               </button>
               <button
@@ -1012,7 +1012,7 @@ function AdminPageContent() {
                   }`}
               >
                 <div className="flex items-center justify-center">
-                  Логи
+                  Logs
                 </div>
               </button>
             </div>
@@ -1032,7 +1032,7 @@ function AdminPageContent() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                       type="text"
-                      placeholder={`Поиск по ${activeTab === 'requests' ? 'заявкам' : activeTab === 'purchases' ? 'покупкам' : 'пользователям'}...`}
+                      placeholder={`Search ${activeTab === 'requests' ? 'requests' : activeTab === 'purchases' ? 'purchases' : 'users'}...`}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1057,13 +1057,13 @@ function AdminPageContent() {
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="all">Все статусы</option>
-                    <option value="new">Новые</option>
-                    <option value="completed">Завершенные</option>
-                    <option value="cancelled">Отмененные</option>
+                    <option value="all">All Statuses</option>
+                    <option value="new">New</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
                     {activeTab === 'purchases' && (
                       <>
-                        <option value="pending">Ожидает оплаты</option>
+                        <option value="pending">Payment Pending</option>
                       </>
                     )}
                   </select>
@@ -1074,10 +1074,10 @@ function AdminPageContent() {
                     onChange={(e) => setDateFilter(e.target.value)}
                     className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="all">Все даты</option>
-                    <option value="today">Сегодня</option>
-                    <option value="week">За неделю</option>
-                    <option value="month">За месяц</option>
+                    <option value="all">All Dates</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
                   </select>
 
                   {/* Type Filter */}
@@ -1086,49 +1086,49 @@ function AdminPageContent() {
                     onChange={(e) => setFilter(e.target.value)}
                     className="px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="all">Все типы</option>
+                    <option value="all">All Types</option>
                     {activeTab === 'requests' ? (
                       <>
-                        <option value="callback">Звонки</option>
-                        <option value="pdf">PDF файлы</option>
-                        <option value="program">Программы</option>
-                        <option value="consultation">Консультации</option>
+                        <option value="callback">Calls</option>
+                        <option value="pdf">PDF Files</option>
+                        <option value="program">Programs</option>
+                        <option value="consultation">Consultations</option>
                       </>
                     ) : (
                       <>
-                        <option value="pdf">PDF файлы</option>
-                        <option value="program">Программы</option>
+                        <option value="pdf">PDF Files</option>
+                        <option value="program">Programs</option>
                       </>
                     )}
                   </select>
                 </div>
 
-                {/* Быстрые фильтры по статусу для Покупок */}
+                {/* Quick Status Filters for Purchases */}
                 {activeTab === 'purchases' && (
                   <div className="flex flex-wrap gap-2 mt-4">
                     <button
                       onClick={() => setStatusFilter('all')}
                       className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'all' ? 'bg-white text-gray-900 border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}`}
                     >
-                      Все ({purchases.length})
+                      All ({purchases.length})
                     </button>
                     <button
                       onClick={() => setStatusFilter('pending')}
                       className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'pending' ? 'bg-yellow-400 text-black border-yellow-400' : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/30'}`}
                     >
-                      Ожидает оплаты ({purchasesPendingCount})
+                      Payment Pending ({purchasesPendingCount})
                     </button>
                     <button
                       onClick={() => setStatusFilter('completed')}
                       className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'completed' ? 'bg-green-400 text-black border-green-400' : 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30'}`}
                     >
-                      Оплачено ({purchasesCompletedCount})
+                      Paid ({purchasesCompletedCount})
                     </button>
                     <button
                       onClick={() => setStatusFilter('cancelled')}
                       className={`px-3 py-1 rounded-full text-xs font-medium border ${statusFilter === 'cancelled' ? 'bg-red-400 text-black border-red-400' : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'}`}
                     >
-                      Отменено ({purchasesCancelledCount})
+                      Cancelled ({purchasesCancelledCount})
                     </button>
                   </div>
                 )}
@@ -1147,7 +1147,7 @@ function AdminPageContent() {
                     )}
                     <div>
                       <p className="text-white/70 text-sm">
-                        {activeTab === 'requests' ? 'Всего заявок' : activeTab === 'purchases' ? 'Всего покупок' : 'Всего пользователей'}
+                        {activeTab === 'requests' ? 'Total Requests' : activeTab === 'purchases' ? 'Total Purchases' : 'Total Users'}
                       </p>
                       <p className="text-2xl font-bold text-white">
                         {activeTab === 'requests' ? requests.length : activeTab === 'purchases' ? purchases.length : users.length}
@@ -1160,7 +1160,7 @@ function AdminPageContent() {
                   <div className="flex items-center">
                     <Clock className="w-8 h-8 text-yellow-400 mr-3" />
                     <div>
-                      <p className="text-white/70 text-sm">Новые</p>
+                      <p className="text-white/70 text-sm">New</p>
                       <p className="text-2xl font-bold text-white">
                         {activeTab === 'requests'
                           ? requests.filter(r => r.status === 'new').length
@@ -1176,7 +1176,7 @@ function AdminPageContent() {
                     <User className="w-8 h-8 text-green-400 mr-3" />
                     <div>
                       <p className="text-white/70 text-sm">
-                        {activeTab === 'requests' ? 'В работе' : 'Завершенные'}
+                        {activeTab === 'requests' ? 'In Progress' : 'Completed'}
                       </p>
                       <p className="text-2xl font-bold text-white">
                         {activeTab === 'requests'
@@ -1197,7 +1197,7 @@ function AdminPageContent() {
                     )}
                     <div>
                       <p className="text-white/70 text-sm">
-                        {activeTab === 'requests' ? 'Завершенные' : 'Отмененные'}
+                        {activeTab === 'requests' ? 'Completed' : 'Cancelled'}
                       </p>
                       <p className="text-2xl font-bold text-white">
                         {activeTab === 'requests'
@@ -1213,14 +1213,14 @@ function AdminPageContent() {
               {/* Charts */}
               <ChartsBlock />
 
-              {/* Панель пакетных действий и последние события */}
+              {/* Batch Actions Panel and Recent Events */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-1">
-                  <h3 className="text-white font-semibold mb-3">Последние выдачи/отзывы</h3>
+                  <h3 className="text-white font-semibold mb-3">Recent Grants/Revokes</h3>
                   {recentLoading ? (
-                    <p className="text-white/70 text-sm">Загрузка…</p>
+                    <p className="text-white/70 text-sm">Loading…</p>
                   ) : recentEvents.length === 0 ? (
-                    <p className="text-white/50 text-sm">Нет событий</p>
+                    <p className="text-white/50 text-sm">No Events</p>
                   ) : (
                     <ul className="space-y-2 max-h-48 overflow-auto pr-1">
                       {recentEvents.slice(0, 10).map((ev) => (
@@ -1231,7 +1231,7 @@ function AdminPageContent() {
                               {ev.action || 'event'} {ev.target_table ? `• ${ev.target_table}` : ''}
                             </div>
                             <div className="text-white/50 text-xs">
-                              {ev.actor_email || ''} {ev.created_at ? `• ${new Date(ev.created_at).toLocaleString('ru-RU')}` : ''}
+                              {ev.actor_email || ''} {ev.created_at ? `• ${new Date(ev.created_at).toLocaleString('en-US')}` : ''}
                             </div>
                           </div>
                         </li>
@@ -1242,11 +1242,11 @@ function AdminPageContent() {
                 {activeTab === 'purchases' && selectedPurchaseIds.size > 0 && (
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 md:col-span-2">
                     <div className="flex items-center justify-between">
-                      <div className="text-white">Выбрано записей: {selectedPurchaseIds.size}</div>
+                      <div className="text-white">Selected Records: {selectedPurchaseIds.size}</div>
                       <div className="flex gap-2">
-                        <Button onClick={bulkGrant} className="bg-emerald-600 hover:bg-emerald-700 text-white">Выдать доступ</Button>
-                        <Button onClick={bulkRevoke} className="bg-red-600 hover:bg-red-700 text-white">Отозвать доступ</Button>
-                        <Button variant="outline" onClick={() => setSelectedPurchaseIds(new Set())} className="text-white border-white/30">Сбросить выбор</Button>
+                        <Button onClick={bulkGrant} className="bg-emerald-600 hover:bg-emerald-700 text-white">Grant Access</Button>
+                        <Button onClick={bulkRevoke} className="bg-red-600 hover:bg-red-700 text-white">Revoke Access</Button>
+                        <Button variant="outline" onClick={() => setSelectedPurchaseIds(new Set())} className="text-white border-white/30">Clear Selection</Button>
                       </div>
                     </div>
                   </div>
@@ -1265,7 +1265,7 @@ function AdminPageContent() {
                   <div className="p-8 text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
                     <p className="text-white/70 mt-2">
-                      Загрузка {activeTab === 'requests' ? 'заявок' : activeTab === 'purchases' ? 'покупок' : 'пользователей'}...
+                      Loading {activeTab === 'requests' ? 'requests' : activeTab === 'purchases' ? 'purchases' : 'users'}...
                     </p>
                   </div>
                 ) : (
@@ -1281,41 +1281,41 @@ function AdminPageContent() {
                           {activeTab === 'users' ? (
                             <>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Пользователь
+                                User
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
                                 Email
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Телефон
+                                Phone
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Заявки
+                                Requests
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Покупки
+                                Purchases
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Потрачено
+                                Spent
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Регистрация
+                                Registration
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Последняя активность
+                                Last Activity
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Действия
+                                Actions
                               </th>
                             </>
                           ) : activeTab === 'payments' ? (
                             <>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Пользователь</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Документ</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Дата</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Статус</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Сумма</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Действия</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">User</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Document</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Date</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Status</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Amount</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Actions</th>
                             </>
                           ) : (
                             <>
@@ -1324,12 +1324,12 @@ function AdminPageContent() {
                                 onClick={() => handleSort('name')}
                               >
                                 <div className="flex items-center">
-                                  Клиент
+                                  Client
                                   {getSortIcon('name')}
                                 </div>
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                                Контакты
+                                Contacts
                               </th>
                             </>
                           )}
@@ -1339,7 +1339,7 @@ function AdminPageContent() {
                               onClick={() => handleSort('product_name')}
                             >
                               <div className="flex items-center">
-                                Товар/Услуга
+                                Product/Service
                                 {getSortIcon('product_name')}
                               </div>
                             </th>
@@ -1350,7 +1350,7 @@ function AdminPageContent() {
                               onClick={() => handleSort('source_page')}
                             >
                               <div className="flex items-center">
-                                Источник
+                                Source
                                 {getSortIcon('source_page')}
                               </div>
                             </th>
@@ -1361,7 +1361,7 @@ function AdminPageContent() {
                               onClick={() => handleSort('product_name')}
                             >
                               <div className="flex items-center">
-                                Товар
+                                Product
                                 {getSortIcon('product_name')}
                               </div>
                             </th>
@@ -1371,7 +1371,7 @@ function AdminPageContent() {
                             onClick={() => handleSort('created_at')}
                           >
                             <div className="flex items-center">
-                              Дата
+                              Date
                               {getSortIcon('created_at')}
                             </div>
                           </th>
@@ -1380,7 +1380,7 @@ function AdminPageContent() {
                             onClick={() => handleSort('status')}
                           >
                             <div className="flex items-center">
-                              Статус
+                              Status
                               {getSortIcon('status')}
                             </div>
                           </th>
@@ -1390,7 +1390,7 @@ function AdminPageContent() {
                               onClick={() => handleSort('priority')}
                             >
                               <div className="flex items-center">
-                                Приоритет
+                                Priority
                                 {getSortIcon('priority')}
                               </div>
                             </th>
@@ -1401,7 +1401,7 @@ function AdminPageContent() {
                               onClick={() => handleSort('amount')}
                             >
                               <div className="flex items-center">
-                                Сумма
+                                Amount
                                 {getSortIcon('amount')}
                               </div>
                             </th>
@@ -1411,12 +1411,12 @@ function AdminPageContent() {
                             onClick={() => handleSort('source')}
                           >
                             <div className="flex items-center">
-                              Источник
+                              Source
                               {getSortIcon('source')}
                             </div>
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
-                            Действия
+                            Actions
                           </th>
                         </tr>
                       </thead>
@@ -1429,7 +1429,7 @@ function AdminPageContent() {
                                   onUserSelect={(user) => openUserCard(user.id)}
                                   onUserEdit={(user) => openUserCard(user.id)}
                                   onUserDelete={async (userId) => {
-                                    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                                    if (confirm('Are you sure you want to delete this user?')) {
                                       try {
                                         const response = await fetch(`/api/users/${userId}`, {
                                           method: 'DELETE'
@@ -1455,8 +1455,8 @@ function AdminPageContent() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{pmt.document_id}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                                {new Date(pmt.created_at).toLocaleDateString('ru-RU')}
-                                <div className="text-white/50 text-xs">{new Date(pmt.created_at).toLocaleTimeString('ru-RU')}</div>
+                                {new Date(pmt.created_at).toLocaleDateString('en-US')}
+                                <div className="text-white/50 text-xs">{new Date(pmt.created_at).toLocaleTimeString('en-US')}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(pmt.payment_status)}`}>{pmt.payment_status}</span>
@@ -1474,7 +1474,7 @@ function AdminPageContent() {
                                       rel="noreferrer"
                                       className="text-blue-300 hover:underline"
                                     >
-                                      Открыть в Stripe
+                                      Open in Stripe
                                     </a>
                                   )}
                                   <button
@@ -1484,17 +1484,17 @@ function AdminPageContent() {
                                         const res = await fetch(`/api/admin/audit/purchase?id=${pmt.id}`)
                                         const json = await res.json()
                                         if (res.ok && json.success) {
-                                          const lines = (json.data as any[]).map(ev => `${new Date(ev.created_at).toLocaleString('ru-RU')} • ${ev.action}${ev.actor_email ? ' • ' + ev.actor_email : ''}`).join('\n')
-                                          alert(lines || 'Нет событий')
+                                          const lines = (json.data as any[]).map(ev => `${new Date(ev.created_at).toLocaleString('en-US')} • ${ev.action}${ev.actor_email ? ' • ' + ev.actor_email : ''}`).join('\n')
+                                          alert(lines || 'No Events')
                                         } else {
-                                          alert('Нет событий')
+                                          alert('No Events')
                                         }
                                       } catch {
-                                        alert('Ошибка загрузки таймлайна')
+                                        alert('Error loading timeline')
                                       }
                                     }}
                                   >
-                                    Таймлайн
+                                    Timeline
                                   </button>
                                 </div>
                               </td>
@@ -1546,19 +1546,19 @@ function AdminPageContent() {
                               </td>
                               {activeTab === 'requests' && (
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                                  {item.product_name || 'Не указан'}
+                                  {item.product_name || 'Not Specified'}
                                 </td>
                               )}
                               {activeTab === 'requests' && (
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                                   <div className="flex items-center">
                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                      {item.source_page === '/' ? 'Главная' :
-                                        item.source_page === '/about' ? 'О проекте' :
-                                          item.source_page === '/contacts' ? 'Контакты' :
-                                            item.source_page === '/catalog' ? 'Каталог' :
-                                              item.source_page === '/book' ? 'Программы' :
-                                                item.source_page || 'Не указан'}
+                                      {item.source_page === '/' ? 'Home' :
+                                        item.source_page === '/about' ? 'About' :
+                                          item.source_page === '/contacts' ? 'Contacts' :
+                                            item.source_page === '/catalog' ? 'Catalog' :
+                                              item.source_page === '/book' ? 'Programs' :
+                                                item.source_page || 'Not Specified'}
                                     </span>
                                   </div>
                                 </td>
@@ -1576,10 +1576,10 @@ function AdminPageContent() {
                                 </td>
                               )}
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                                {new Date(item.created_at).toLocaleDateString('ru-RU')}
+                                {new Date(item.created_at).toLocaleDateString('en-US')}
                                 <br />
                                 <span className="text-white/50">
-                                  {new Date(item.created_at).toLocaleTimeString('ru-RU')}
+                                  {new Date(item.created_at).toLocaleTimeString('en-US')}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -1589,18 +1589,18 @@ function AdminPageContent() {
                                     onChange={(e) => updateRequestStatus(item.id, e.target.value)}
                                     className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)} border-0 focus:ring-2 focus:ring-blue-500`}
                                   >
-                                    <option value="new">Новый</option>
-                                    <option value="completed">Завершен</option>
-                                    <option value="cancelled">Отменен</option>
+                                    <option value="new">New</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
                                   </select>
                                 ) : (
                                   <EditableCell
                                     value={item.status}
                                     type="select"
                                     options={[
-                                      { value: 'pending', label: 'Ожидает оплаты' },
-                                      { value: 'completed', label: 'Оплачено' },
-                                      { value: 'cancelled', label: 'Отменено' }
+                                      { value: 'pending', label: 'Payment Pending' },
+                                      { value: 'completed', label: 'Paid' },
+                                      { value: 'cancelled', label: 'Cancelled' }
                                     ]}
                                     onSave={(newValue) => updateItem(item.id, 'purchase', { status: newValue })}
                                     className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}
@@ -1613,10 +1613,10 @@ function AdminPageContent() {
                                     value={item.priority || 'medium'}
                                     type="select"
                                     options={[
-                                      { value: 'urgent', label: 'Срочно' },
-                                      { value: 'high', label: 'Высокий' },
-                                      { value: 'medium', label: 'Средний' },
-                                      { value: 'low', label: 'Низкий' }
+                                      { value: 'urgent', label: 'Urgent' },
+                                      { value: 'high', label: 'High' },
+                                      { value: 'medium', label: 'Medium' },
+                                      { value: 'low', label: 'Low' }
                                     ]}
                                     onSave={(newValue) => updateItem(item.id, 'request', { priority: newValue })}
                                     className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'medium')}`}
@@ -1638,11 +1638,11 @@ function AdminPageContent() {
                                 <div className="flex items-center text-sm text-white">
                                   {getSourceIcon(item.source || 'other')}
                                   <span className="ml-1">
-                                    {item.source === 'website' && 'Сайт'}
-                                    {item.source === 'phone' && 'Телефон'}
-                                    {item.source === 'chat' && 'Чат'}
-                                    {item.source === 'manual' && 'Ручной ввод'}
-                                    {item.source === 'other' && 'Другое'}
+                                    {item.source === 'website' && 'Website'}
+                                    {item.source === 'phone' && 'Phone'}
+                                    {item.source === 'chat' && 'Chat'}
+                                    {item.source === 'manual' && 'Manual Entry'}
+                                    {item.source === 'other' && 'Other'}
                                   </span>
                                 </div>
                               </td>
@@ -1652,12 +1652,12 @@ function AdminPageContent() {
                                     size="sm"
                                     className="bg-blue-600 hover:bg-blue-700 text-white"
                                     onClick={() => {
-                                      // Просмотр - можно добавить модальное окно
-                                      alert(`Просмотр ${activeTab === 'requests' ? 'заявки' : 'покупки'} ID: ${item.id}`)
+                                      // View - can add modal window
+                                      alert(`View ${activeTab === 'requests' ? 'request' : 'purchase'} ID: ${item.id}`)
                                     }}
                                   >
                                     <Edit className="w-4 h-4 mr-1" />
-                                    Просмотр
+                                    View
                                   </Button>
                                   {activeTab === 'purchases' && (
                                     <Button
@@ -1668,7 +1668,7 @@ function AdminPageContent() {
                                         setShowGrantAccess(true)
                                       }}
                                     >
-                                      Выдать доступ
+                                      Grant Access
                                     </Button>
                                   )}
                                   {activeTab === 'purchases' && (
@@ -1681,7 +1681,7 @@ function AdminPageContent() {
                                         setShowRevokeAccess(true)
                                       }}
                                     >
-                                      Отозвать доступ
+                                      Revoke Access
                                     </Button>
                                   )}
                                   <Button
@@ -1690,7 +1690,7 @@ function AdminPageContent() {
                                     onClick={() => deleteItem(item.id, activeTab === 'requests' ? 'request' : 'purchase')}
                                   >
                                     <Trash2 className="w-4 h-4 mr-1" />
-                                    Удалить
+                                    Delete
                                   </Button>
                                 </div>
                               </td>
@@ -1699,10 +1699,10 @@ function AdminPageContent() {
                         )}
                       </tbody>
                     </table>
-                    {/* Пагинация */}
+                    {/* Pagination */}
                     <div className="flex items-center justify-between px-4 py-3 bg-white/10 border-t border-white/10">
                       <div className="flex items-center gap-2 text-white/80 text-sm">
-                        <span>Показывать по</span>
+                        <span>Show</span>
                         <select
                           value={pageSize}
                           onChange={(e) => setPageSize(Number(e.target.value))}
@@ -1710,12 +1710,12 @@ function AdminPageContent() {
                         >
                           {[10, 20, 50, 100].map(n => (<option key={n} value={n}>{n}</option>))}
                         </select>
-                        <span>Всего: {totalRows}</span>
+                        <span>Total: {totalRows}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" className="text-white border-white/30" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Назад</Button>
-                        <span className="text-white/80 text-sm">Стр. {page} из {totalPages}</span>
-                        <Button variant="outline" className="text-white border-white/30" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Вперёд</Button>
+                        <Button variant="outline" className="text-white border-white/30" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Previous</Button>
+                        <span className="text-white/80 text-sm">Page {page} of {totalPages}</span>
+                        <Button variant="outline" className="text-white border-white/30" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Next</Button>
                       </div>
                     </div>
                     {activeTab === 'purchases' && (
@@ -1724,7 +1724,7 @@ function AdminPageContent() {
                           <tfoot>
                             <tr>
                               <td className="px-6 py-3 text-sm font-semibold text-white" colSpan={5}>
-                                Итого записей: {purchasesTotalCount}
+                                Total Records: {purchasesTotalCount}
                               </td>
                               <td className="px-6 py-3 text-sm font-semibold text-white">
                                 {purchasesTotalAmount} ₽

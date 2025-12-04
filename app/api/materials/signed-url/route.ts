@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
         }
 
         if (!permitted) {
-            return NextResponse.json({ error: 'Нет доступа к материалу' }, { status: 403 })
+            return NextResponse.json({ error: 'No access to this material' }, { status: 403 })
         }
 
         // Generate short-lived signed URL
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
             .createSignedUrl(path, expiresIn)
 
         if (error || !data?.signedUrl) {
-            return NextResponse.json({ error: 'Не удалось создать ссылку' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to create link' }, { status: 500 })
         }
 
         // Write audit log (best-effort)
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
         return response
     } catch (error) {
         console.error('Signed URL API error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
 

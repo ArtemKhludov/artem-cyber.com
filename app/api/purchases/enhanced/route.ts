@@ -7,12 +7,12 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Уведомления в Payments-тему
+// Notifications to the Payments topic
 async function sendTelegramNotification(message: string) {
     await notifyPaymentTelegram(message)
 }
 
-// Создание покупки с автоматическим связыванием пользователя
+// Create purchase with automatic user linking
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
@@ -30,49 +30,49 @@ export async function POST(request: NextRequest) {
             source = 'manual'
         } = body
 
-        // Валидация обязательных полей
+        // Validate required fields
         if (!name || !phone || !product_name || !amount) {
             return NextResponse.json(
-                { error: 'Имя, телефон, название продукта и сумма обязательны' },
+                { error: 'Name, phone, product title, and amount are required' },
                 { status: 400 }
             )
         }
 
-        // Нормализация данных
+        // Normalize data
         const normalizedPhone = phone.trim()
         const normalizedEmail = email ? email.trim().toLowerCase() : null
         const normalizedName = name.trim()
 
-        // Валидация формата телефона
+        // Validate phone format
         const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/
         if (!phoneRegex.test(normalizedPhone)) {
             return NextResponse.json(
-                { error: 'Неверный формат телефона' },
+                { error: 'Invalid phone format' },
                 { status: 400 }
             )
         }
 
-        // Валидация формата email
+        // Validate email format
         if (normalizedEmail) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
             if (!emailRegex.test(normalizedEmail)) {
                 return NextResponse.json(
-                    { error: 'Неверный формат email' },
+                    { error: 'Invalid email format' },
                     { status: 400 }
                 )
             }
         }
 
-        // Валидация суммы
+        // Validate amount
         const numericAmount = parseFloat(amount)
         if (isNaN(numericAmount) || numericAmount <= 0) {
             return NextResponse.json(
-                { error: 'Сумма должна быть положительным числом' },
+                { error: 'Amount must be a positive number' },
                 { status: 400 }
             )
         }
 
-        // Создаем покупку - триггер автоматически создаст/найдет пользователя
+        // Create purchase - trigger will automatically create/find the user
         const { data, error } = await supabase
             .from('purchase_requests')
             .insert([
@@ -96,43 +96,43 @@ export async function POST(request: NextRequest) {
         if (error) {
             console.error('Database error:', error)
             return NextResponse.json(
-                { error: 'Ошибка создания покупки', details: error.message },
+                { error: 'Error creating purchase', details: error.message },
                 { status: 500 }
             )
         }
 
-        // Отправка уведомления в Telegram
-        const telegramMessage = `🛒 Новая покупка из CRM-системы:
-👤 Имя: ${normalizedName}
-📧 Email: ${normalizedEmail || 'Не указан'}
-📞 Телефон: ${normalizedPhone}
-📦 Тип товара: ${product_type || 'product'}
-🛍️ Название: ${product_name}
-💰 Сумма: ${numericAmount} ${currency}
-💳 Способ оплаты: ${payment_method || 'unknown'}
-📝 Статус: ${status}
-📝 Заметки: ${notes || 'Нет'}
-🌐 Источник: ${source}
-🆔 ID покупки: ${data.id}`
+        // Send notification to Telegram
+        const telegramMessage = `🛒 New purchase from the CRM system:
+👤 Name: ${normalizedName}
+📧 Email: ${normalizedEmail || 'Not specified'}
+📞 Phone: ${normalizedPhone}
+📦 Product type: ${product_type || 'product'}
+🛍️ Title: ${product_name}
+💰 Amount: ${numericAmount} ${currency}
+💳 Payment method: ${payment_method || 'unknown'}
+📝 Status: ${status}
+📝 Notes: ${notes || 'None'}
+🌐 Source: ${source}
+🆔 Purchase ID: ${data.id}`
 
         await sendTelegramNotification(telegramMessage)
 
         return NextResponse.json({
             success: true,
-            message: 'Покупка успешно создана',
+            message: 'Purchase successfully created',
             data: data
         })
 
     } catch (error) {
         console.error('Server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
 }
 
-// Получение покупок с информацией о пользователях
+// Fetch purchases with user information
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
@@ -156,17 +156,17 @@ export async function GET(request: NextRequest) {
             `)
             .order('created_at', { ascending: false })
 
-        // Фильтрация по пользователю
+        // Filter by user
         if (userId) {
             query = query.eq('user_id', userId)
         }
 
-        // Фильтрация по статусу
+        // Filter by status
         if (status) {
             query = query.eq('status', status)
         }
 
-        // Пагинация
+        // Pagination
         const from = (page - 1) * limit
         const to = from + limit - 1
         query = query.range(from, to)
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Database error:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения данных покупок' },
+                { error: 'Error fetching purchase data' },
                 { status: 500 }
             )
         }
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

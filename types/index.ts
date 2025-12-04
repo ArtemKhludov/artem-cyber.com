@@ -87,12 +87,12 @@ export interface Workbook {
   title: string
   description?: string
   file_url: string
-  video_url?: string  // URL видео-объяснения для воркбука
+  video_url?: string  // Video explanation URL for the workbook
   order_index: number
   is_active: boolean
 }
 
-// Интерфейс для видео курса
+// Interface for course videos
 export interface CourseVideo {
   id: string
   document_id: string
@@ -105,7 +105,7 @@ export interface CourseVideo {
   updated_at: string
 }
 
-// Интерфейс для аудио курса
+// Interface for course audio
 export interface CourseAudio {
   id: string
   document_id: string
@@ -128,30 +128,30 @@ export interface Document {
   cover_url: string
   created_at: string
   updated_at: string
-  // Новые поля для мини-курсов
+  // New fields for mini-courses
   course_type?: 'pdf' | 'mini_course'
-  workbook_url?: string // DEPRECATED: используйте workbooks array
-  workbooks?: Workbook[] // Новое поле для множественных рабочих тетрадей
-  video_urls?: string[] // DEPRECATED: используйте videos array
-  videos?: CourseVideo[] // Новое поле для множественных видео
-  audio_url?: string // DEPRECATED: используйте audio array
-  audio?: CourseAudio[] // Новое поле для множественных аудио
+  workbook_url?: string // DEPRECATED: use workbooks array
+  workbooks?: Workbook[] // New field for multiple workbooks
+  video_urls?: string[] // DEPRECATED: use videos array
+  videos?: CourseVideo[] // New field for multiple videos
+  audio_url?: string // DEPRECATED: use audio array
+  audio?: CourseAudio[] // New field for multiple audio tracks
   video_preview_url?: string
   course_duration_minutes?: number
   video_count?: number
-  audio_count?: number // Количество аудио файлов
+  audio_count?: number // Number of audio files
   has_workbook?: boolean
   has_audio?: boolean
   has_videos?: boolean
-  workbook_count?: number // Количество рабочих тетрадей
+  workbook_count?: number // Number of workbooks
 
-  // Новые поля для предпросмотра курса
-  main_pdf_title?: string // Название главного PDF
-  main_pdf_description?: string // Описание главного PDF
-  course_description?: string // Общее описание курса
-  
-  // Поля для курс-плеера
-  purchase_date?: string // Дата покупки курса
+  // New fields for course preview
+  main_pdf_title?: string // Main PDF title
+  main_pdf_description?: string // Main PDF description
+  course_description?: string // General course description
+
+  // Fields for the course player
+  purchase_date?: string // Course purchase date
 }
 
 // Purchase types for payment tracking

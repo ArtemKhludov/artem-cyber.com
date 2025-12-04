@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Инициализация Google Sheets API
+// Initialize Google Sheets API
 const auth = new google.auth.GoogleAuth({
   keyFile: path.join(process.cwd(), 'config', 'google-credentials.json'),
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -17,6 +17,8 @@ const auth = new google.auth.GoogleAuth({
 const sheets = google.sheets({ version: 'v4', auth })
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID!
+const REQUESTS_SHEET = 'Requests'
+const PURCHASES_SHEET = 'Purchases'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,18 +32,18 @@ export async function POST(request: NextRequest) {
       await syncAll()
     }
 
-    return NextResponse.json({ success: true, message: 'Синхронизация завершена' })
+    return NextResponse.json({ success: true, message: 'Sync completed' })
   } catch (error) {
     console.error('Error syncing with Google Sheets:', error)
     return NextResponse.json(
-      { error: 'Ошибка синхронизации' },
+      { error: 'Sync error' },
       { status: 500 }
     )
   }
 }
 
 async function syncRequests() {
-  // Получаем заявки из Supabase
+  // Fetch requests from Supabase
   const { data: requests, error } = await supabase
     .from('callback_requests')
     .select('*')
@@ -49,9 +51,9 @@ async function syncRequests() {
 
   if (error) throw error
 
-  // Подготавливаем данные для Google Sheets с заголовками
+  // Prepare data for Google Sheets with headers
   const rows = [
-    ['ID', 'Имя', 'Email', 'Телефон', 'Дата создания', 'Статус', 'Приоритет', 'Источник', 'Товар/Услуга', 'Заметки', 'Тип продукта']
+    ['ID', 'Name', 'Email', 'Phone', 'Created At', 'Status', 'Priority', 'Source', 'Product/Service', 'Notes', 'Product Type']
   ]
 
   requests?.forEach(request => {
@@ -60,7 +62,7 @@ async function syncRequests() {
       request.name,
       request.email || '',
       request.phone || '',
-      new Date(request.created_at).toLocaleString('ru-RU'),
+      new Date(request.created_at).toLocaleString('en-US'),
       request.status || 'new',
       request.priority || 'medium',
       request.source || 'website',
@@ -70,22 +72,22 @@ async function syncRequests() {
     ])
   })
 
-  // Очищаем и заполняем лист "Заявки"
+  // Clear and populate the "Requests" sheet
   await sheets.spreadsheets.values.clear({
     spreadsheetId: SPREADSHEET_ID,
-    range: 'Заявки!A:K',
+    range: `${REQUESTS_SHEET}!A:K`,
   })
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: 'Заявки!A1',
+    range: `${REQUESTS_SHEET}!A1`,
     valueInputOption: 'RAW',
     requestBody: {
       values: rows,
     },
   })
 
-  // Добавляем форматирование заголовков
+  // Apply header formatting
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
     requestBody: {
@@ -93,7 +95,7 @@ async function syncRequests() {
         {
           repeatCell: {
             range: {
-              sheetId: await getSheetId('Заявки'),
+              sheetId: await getSheetId(REQUESTS_SHEET),
               startRowIndex: 0,
               endRowIndex: 1,
             },
@@ -112,7 +114,7 @@ async function syncRequests() {
 }
 
 async function syncPurchases() {
-  // Получаем покупки из Supabase
+  // Fetch purchases from Supabase
   const { data: purchases, error } = await supabase
     .from('purchase_requests')
     .select('*')
@@ -120,9 +122,9 @@ async function syncPurchases() {
 
   if (error) throw error
 
-  // Подготавливаем данные для Google Sheets с заголовками
+  // Prepare data for Google Sheets with headers
   const rows = [
-    ['ID', 'Имя', 'Email', 'Телефон', 'Дата создания', 'Товар', 'Сумма', 'Валюта', 'Статус', 'Способ оплаты']
+    ['ID', 'Name', 'Email', 'Phone', 'Created At', 'Product', 'Amount', 'Currency', 'Status', 'Payment Method']
   ]
 
   purchases?.forEach(purchase => {
@@ -131,7 +133,7 @@ async function syncPurchases() {
       purchase.name,
       purchase.email || '',
       purchase.phone || '',
-      new Date(purchase.created_at).toLocaleString('ru-RU'),
+      new Date(purchase.created_at).toLocaleString('en-US'),
       purchase.product_name,
       purchase.amount?.toString() || '',
       purchase.currency || 'RUB',
@@ -140,22 +142,22 @@ async function syncPurchases() {
     ])
   })
 
-  // Очищаем и заполняем лист "Покупки"
+  // Clear and populate the "Purchases" sheet
   await sheets.spreadsheets.values.clear({
     spreadsheetId: SPREADSHEET_ID,
-    range: 'Покупки!A:J',
+    range: `${PURCHASES_SHEET}!A:J`,
   })
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: 'Покупки!A1',
+    range: `${PURCHASES_SHEET}!A1`,
     valueInputOption: 'RAW',
     requestBody: {
       values: rows,
     },
   })
 
-  // Добавляем форматирование заголовков
+  // Apply header formatting
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
     requestBody: {
@@ -163,7 +165,7 @@ async function syncPurchases() {
         {
           repeatCell: {
             range: {
-              sheetId: await getSheetId('Покупки'),
+              sheetId: await getSheetId(PURCHASES_SHEET),
               startRowIndex: 0,
               endRowIndex: 1,
             },
@@ -195,10 +197,10 @@ async function syncAll() {
   await syncPurchases()
 }
 
-// Функция для добавления одной записи
+// Helper to append a single record
 async function addToSheets(type: 'request' | 'purchase', data: any) {
   try {
-    const sheetName = type === 'request' ? 'Заявки' : 'Покупки'
+    const sheetName = type === 'request' ? REQUESTS_SHEET : PURCHASES_SHEET
 
     let row: any[] = []
 
