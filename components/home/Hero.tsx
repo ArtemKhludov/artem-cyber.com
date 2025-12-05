@@ -81,22 +81,22 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Title */}
+          {/* Title - SEO Optimized H1 */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              AI that knows
+              EnergyLogic: AI Life Navigation System
             </span>
-            <span className="block text-white mt-2">
-              who you are!
+            <span className="block text-white mt-2 text-3xl md:text-5xl">
+              Your Personal Life GPS for Financial Stability & Career Growth
             </span>
           </h1>
 
-          {/* Subtitle */}
+          {/* Subtitle - SEO Optimized with LSI Keywords */}
           <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-4xl mx-auto leading-relaxed">
-            Psychoanalysis. Without masks. <br />
-            <span className="text-blue-300 font-semibold">20 minutes → PDF report</span>
+            Navigate your way out of <strong className="text-white">financial stress</strong>, <strong className="text-white">burnout</strong>, and <strong className="text-white">career chaos</strong> with our AI-powered <strong className="text-blue-300">life navigation software</strong>. <br />
+            <span className="text-blue-300 font-semibold">20 minutes → Personalized Recovery Path</span>
             <span className="text-gray-300 mx-4">•</span>
-            <span className="text-purple-300 font-semibold">21 days → new &quot;You&quot;</span>
+            <span className="text-purple-300 font-semibold">21 days → New &quot;You&quot;</span>
           </p>
 
           {/* Buttons */}

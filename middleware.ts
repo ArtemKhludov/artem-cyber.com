@@ -31,7 +31,13 @@ export function middleware(request: NextRequest) {
 
     // If this is a public page - always allow
     if (isPublicRoute) {
-        return NextResponse.next()
+        const response = NextResponse.next()
+        // Add SEO headers for English content
+        response.headers.set('Content-Language', 'en')
+        response.headers.set('Content-Type', 'text/html; charset=UTF-8')
+        response.headers.set('X-Content-Type-Options', 'nosniff')
+        response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+        return response
     }
 
     // If this is an auth page - allow (but check token for redirect)
@@ -40,7 +46,9 @@ export function middleware(request: NextRequest) {
         if (sessionToken && (pathname === '/auth/login' || pathname === '/auth/signup')) {
             return NextResponse.redirect(new URL('/', request.url))
         }
-        return NextResponse.next()
+        const response = NextResponse.next()
+        response.headers.set('Content-Language', 'en')
+        return response
     }
 
     // If this is a protected page and no token - redirect to login
@@ -51,7 +59,11 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl)
     }
 
-    return NextResponse.next()
+    // Add SEO headers for all responses
+    const response = NextResponse.next()
+    response.headers.set('Content-Language', 'en')
+    response.headers.set('Content-Type', 'text/html; charset=UTF-8')
+    return response
 }
 
 export const config = {

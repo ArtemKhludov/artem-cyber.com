@@ -72,6 +72,12 @@ export default function AboutPage() {
     '📽 Media materials (Reels, articles, presentations) that reveal common misconceptions and patterns'
   ]
 
+  const team = [
+    { name: 'Artem K.', role: 'Founder & Chief Navigator', focus: 'Behavior model, routing engine, and product strategy' },
+    { name: 'Elena S.', role: 'Head of Insights', focus: 'Burnout recovery protocols and research ops' },
+    { name: 'Michael L.', role: 'Head of Growth', focus: 'US/EN go-to-market, partnerships, and investor relations' },
+  ]
+
   const revolutionPoints = [
     '🤖 AI doesn\'t just help, it diagnoses - in real-time, accurately and deeper than humans',
     '🧬 We combine emotions, hormones, thinking, and patterns into one map - fractal, living, updatable',
@@ -99,11 +105,10 @@ export default function AboutPage() {
           <div className="container mx-auto px-4">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
-                About <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">EnergyLogic</span>
+                About <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">EnergyLogic</span> – AI Life Navigation System
               </h1>
               <p className="text-xl md:text-2xl mb-12 text-blue-100 leading-relaxed">
-                We are EnergyLogic!<br />
-                A new system of self-understanding and inner alignment
+                AI Life GPS for adults 25–45 in the US/EU. Built by a team obsessed with clarity, financial stability, and burnout recovery.
               </p>
             </div>
           </div>
@@ -202,6 +207,27 @@ export default function AboutPage() {
                   <p className="text-xl font-semibold">
                     No human, even the most experienced, can give you such depth, speed, and structure as EnergyLogic.
                   </p>
+                </div>
+              </div>
+
+              {/* Team */}
+              <div className="mb-16">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    Team Behind the Navigation System
+                  </h2>
+                  <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                    US/EN-first team with backgrounds in behavioral science, AI, and product-led growth.
+                  </p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {team.map((member) => (
+                    <div key={member.name} className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                      <h3 className="text-xl font-semibold text-gray-900">{member.name}</h3>
+                      <p className="text-blue-600 font-medium mb-2">{member.role}</p>
+                      <p className="text-gray-600">{member.focus}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 

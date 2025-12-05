@@ -13,10 +13,13 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigation = [
+    { name: 'How It Works', href: '/how-it-works' },
+    { name: 'Product', href: '/product' },
+    { name: 'Use Cases', href: '/use-cases' },
+    { name: 'Pricing', href: '/pricing' },
     { name: 'About', href: '/about' },
-    { name: 'Programs', href: '/book' },
-    { name: 'Courses', href: '/catalog' },
-    { name: 'Reviews', href: '/reviews' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Investors', href: '/investors' },
     { name: 'Contact', href: '/contacts' },
   ]
 

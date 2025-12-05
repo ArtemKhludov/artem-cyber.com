@@ -5,9 +5,13 @@ import { Phone, Mail, MessageCircle } from 'lucide-react'
 
 export function MainFooter() {
   const navigation = [
+    { name: 'How It Works', href: '/how-it-works' },
+    { name: 'Product', href: '/product' },
+    { name: 'Use Cases', href: '/use-cases' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Investors', href: '/investors' },
     { name: 'About', href: '/about' },
-    { name: 'Catalog', href: '/catalog' },
-    { name: 'Reviews', href: '/reviews' },
     { name: 'Contact', href: '/contacts' },
   ]
 
@@ -24,8 +28,7 @@ export function MainFooter() {
               </span>
             </Link>
             <p className="text-gray-300 leading-relaxed max-w-md">
-              Revolutionary platform for deep self-discovery and personal transformation 
-              using artificial intelligence.
+              EnergyLogic is an AI Life Navigation System that guides adults 25–45 out of debt, burnout, and career chaos with a daily adaptive path.
             </p>
           </div>
 
@@ -51,27 +54,27 @@ export function MainFooter() {
             <h3 className="text-lg font-semibold text-white">Contact</h3>
             <div className="space-y-3">
               <a
-                href="mailto:energylogic@project.ai"
+                href="mailto:support@energylogic-ai.com"
                 className="flex items-center text-gray-300 hover:text-blue-400 transition-colors duration-200"
               >
                 <Mail className="w-4 h-4 mr-3" />
-                energylogic@project.ai
+                support@energylogic-ai.com
               </a>
               <a
-                href="tel:+79991234567"
+                href="tel:+14155550199"
                 className="flex items-center text-gray-300 hover:text-blue-400 transition-colors duration-200"
               >
                 <Phone className="w-4 h-4 mr-3" />
-                +7 (999) 123-45-67
+                +1 (415) 555-0199
               </a>
               <a
-                href="https://t.me/energylogic"
+                href="https://www.linkedin.com/company/energylogic"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center text-gray-300 hover:text-blue-400 transition-colors duration-200"
               >
                 <MessageCircle className="w-4 h-4 mr-3" />
-                Telegram
+                LinkedIn
               </a>
             </div>
           </div>
