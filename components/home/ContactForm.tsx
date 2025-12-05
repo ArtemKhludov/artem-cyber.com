@@ -173,7 +173,7 @@ export function ContactForm() {
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Have questions? Want to learn more about our programs?
-            Write to us, and we'll help you choose the perfect path to transformation.
+            Write to us, and we&apos;ll help you choose the perfect path to transformation.
           </p>
         </div>
 
@@ -224,7 +224,7 @@ export function ContactForm() {
 
               {/* Social networks */}
               <div>
-                <h4 className="font-semibold text-white mb-4">We're on Social Media</h4>
+                <h4 className="font-semibold text-white mb-4">We&apos;re on Social Media</h4>
                 <div className="flex space-x-4">
                   {[
                     { name: 'Telegram', href: '#', color: 'bg-blue-500' },
@@ -361,7 +361,7 @@ export function ContactForm() {
                     Thank You for Reaching Out!
                   </h3>
                   <p className="text-gray-300 text-lg">
-                    We've received your message and will contact you within an hour.
+                    We&apos;ve received your message and will contact you within an hour.
                   </p>
                   <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
                     <p className="text-sm text-gray-400">

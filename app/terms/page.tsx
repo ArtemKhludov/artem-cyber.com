@@ -25,7 +25,7 @@ export default function TermsPage() {
           <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">1. General Provisions</h2>
           <div className="text-gray-700 mb-6 space-y-4">
             <p>
-              <strong>1.1.</strong> This agreement (hereinafter - "Agreement") governs the relationship between the user (hereinafter - "User") and the owners of the EnergyLogic platform (hereinafter - "Administration").
+              <strong>1.1.</strong> This agreement (hereinafter - &quot;Agreement&quot;) governs the relationship between the user (hereinafter - &quot;User&quot;) and the owners of the EnergyLogic platform (hereinafter - &quot;Administration&quot;).
             </p>
             <p>
               <strong>1.2.</strong> By using the site, you confirm your agreement with the terms of this Agreement. If you disagree with any provision, please discontinue use of the site.
@@ -95,7 +95,7 @@ export default function TermsPage() {
             <ul className="list-disc list-inside ml-4 space-y-2">
               <li>using the platform for purposes contrary to applicable law;</li>
               <li>copying, distributing, or commercially using materials without written permission;</li>
-              <li>attempting to change the service logic or interfere with the platform's functioning.</li>
+              <li>attempting to change the service logic or interfere with the platform&apos;s functioning.</li>
             </ul>
           </div>
 

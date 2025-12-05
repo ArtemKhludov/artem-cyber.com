@@ -31,7 +31,7 @@ export default function DisclaimerPage() {
                             <strong>1.2.</strong> All materials are informational and reflective in nature and are aimed at expanding awareness, self-observation, and self-analysis. They are not medical, psychotherapeutic, psychological, or legal services.
                         </p>
                         <p>
-                            <strong>1.3.</strong> Use of the platform implies the user's agreement with this disclaimer.
+                            <strong>1.3.</strong> Use of the platform implies the user&apos;s agreement with this disclaimer.
                         </p>
                     </div>
 
@@ -97,7 +97,7 @@ export default function DisclaimerPage() {
                         <ul className="list-disc list-inside ml-4 space-y-2">
                             <li>they may encounter emotional reactions;</li>
                             <li>the platform does not guarantee results;</li>
-                            <li>participation is always voluntary and can be terminated at the user's request.</li>
+                            <li>participation is always voluntary and can be terminated at the user&apos;s request.</li>
                         </ul>
                     </div>
 

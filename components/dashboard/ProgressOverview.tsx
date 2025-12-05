@@ -313,9 +313,9 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
 
                     <div className="text-gray-700">
                         {userSummary.streak_days >= 7 ? (
-                            <p>🔥 Incredible! You've been studying for {userSummary.streak_days} days in a row. Keep it up!</p>
+                            <p>🔥 Incredible! You&apos;ve been studying for {userSummary.streak_days} days in a row. Keep it up!</p>
                         ) : userSummary.streak_days >= 3 ? (
-                            <p>⭐ Great streak! You've been studying for {userSummary.streak_days} days in a row. Just a bit more to a week!</p>
+                            <p>⭐ Great streak! You&apos;ve been studying for {userSummary.streak_days} days in a row. Just a bit more to a week!</p>
                         ) : userSummary.courses_completed > 0 ? (
                             <p>🎉 Congratulations on completing {userSummary.courses_completed} course(s)! Study more to unlock new achievements.</p>
                         ) : (

@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { 
-  MessageSquare, 
-  Send, 
-  Clock, 
+import {
+  MessageSquare,
+  Send,
+  Clock,
   CheckCircle,
   AlertCircle,
   Plus,
@@ -68,7 +68,7 @@ export function CallbacksSection() {
     try {
       const response = await fetch('/api/user/callbacks')
       const result = await response.json()
-      
+
       if (result.success) {
         setCallbacks(result.data)
       } else {
@@ -90,7 +90,7 @@ export function CallbacksSection() {
     try {
       const response = await fetch(`/api/callback/conversations?callback_request_id=${callbackId}`)
       const result = await response.json()
-      
+
       if (result.success) {
         setConversations(result.data)
       }
@@ -204,7 +204,7 @@ export function CallbacksSection() {
           {callbacks.length === 0 ? (
             <div className="text-center py-8">
               <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 mb-4">You don't have any requests yet</p>
+              <p className="text-gray-500 mb-4">You don&apos;t have any requests yet</p>
               <Button asChild>
                 <a href="/#contact">
                   <Plus className="w-4 h-4 mr-2" />
@@ -217,9 +217,8 @@ export function CallbacksSection() {
               {callbacks.slice(0, isExpanded ? callbacks.length : 3).map((callback) => (
                 <div
                   key={callback.id}
-                  className={`border rounded-lg p-4 transition-all cursor-pointer hover:shadow-md ${
-                    selectedCallback?.id === callback.id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-                  }`}
+                  className={`border rounded-lg p-4 transition-all cursor-pointer hover:shadow-md ${selectedCallback?.id === callback.id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                    }`}
                   onClick={() => setSelectedCallback(callback)}
                 >
                   <div className="flex items-start justify-between">
@@ -314,13 +313,12 @@ export function CallbacksSection() {
                       className={`flex ${message.sender_type === 'admin' ? 'justify-start' : 'justify-end'}`}
                     >
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          message.sender_type === 'admin'
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.sender_type === 'admin'
                             ? 'bg-blue-500 text-white'
                             : message.sender_type === 'system'
-                            ? 'bg-gray-100 text-gray-700'
-                            : 'bg-gray-200 text-gray-800'
-                        }`}
+                              ? 'bg-gray-100 text-gray-700'
+                              : 'bg-gray-200 text-gray-800'
+                          }`}
                       >
                         <p className="text-sm">{message.message}</p>
                         <p className="text-xs opacity-70 mt-1">

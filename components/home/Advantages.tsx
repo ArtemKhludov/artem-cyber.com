@@ -133,7 +133,7 @@ export function Advantages() {
             </span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            We've combined the best achievements of psychology, neuroscience, and artificial intelligence
+            We&apos;ve combined the best achievements of psychology, neuroscience, and artificial intelligence
             to create a unique personality transformation system.
           </p>
         </div>

@@ -225,7 +225,7 @@ export default function ContactsPage() {
               </h1>
               <p className="text-xl md:text-2xl mb-12 text-blue-100 leading-relaxed">
                 Reach out in any way you like<br />
-                We're always ready to help and answer your questions
+                We&apos;re always ready to help and answer your questions
               </p>
             </div>
           </div>
@@ -271,12 +271,12 @@ export default function ContactsPage() {
                         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                           Request a call back
                         </h2>
-                        <p className="text-sm text-gray-500">We'll call you back at a convenient time</p>
+                        <p className="text-sm text-gray-500">We&apos;ll call you back at a convenient time</p>
                       </div>
                     </div>
 
                     <p className="text-gray-600 mb-6 text-lg">
-                      📞 Leave your contacts and we'll call you back at a convenient time
+                      📞 Leave your contacts and we&apos;ll call you back at a convenient time
                     </p>
 
                     {!isCallbackSubmitted ? (

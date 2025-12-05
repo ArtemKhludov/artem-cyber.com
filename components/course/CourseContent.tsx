@@ -106,7 +106,7 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                     <h3 className="text-lg font-semibold text-gray-900">Main PDF</h3>
                 </div>
                 <p className="text-gray-600 mb-4">
-                    "Quantum Architecture of Intention" - 20-30 pages of dense text with diagrams
+                    &quot;Quantum Architecture of Intention&quot; - 20-30 pages of dense text with diagrams
                 </p>
                 {isPurchased ? (
                     <Button
@@ -217,9 +217,9 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                 Brief workbook (7-10 pages) with tables and checklists:
                             </p>
                             <ul className="text-sm text-gray-600 mb-4 space-y-1">
-                                <li>• "True intention or false?"</li>
-                                <li>• "Rewriting algorithm in 5 steps"</li>
-                                <li>• "Intention diary (weekly template)"</li>
+                                <li>• &quot;True intention or false?&quot;</li>
+                                <li>• &quot;Rewriting algorithm in 5 steps&quot;</li>
+                                <li>• &quot;Intention diary (weekly template)&quot;</li>
                             </ul>
                             {isPurchased ? (
                                 <Button

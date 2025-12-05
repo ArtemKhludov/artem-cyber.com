@@ -93,7 +93,7 @@ export default function ExistingAccountModal({
                     {/* Help Text */}
                     <div className="text-center">
                         <p className="text-xs text-gray-500">
-                            Don't remember your password? We'll send a recovery link to your email
+                            Don&apos;t remember your password? We&apos;ll send a recovery link to your email
                         </p>
                     </div>
                 </div>

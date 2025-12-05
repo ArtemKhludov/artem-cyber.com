@@ -121,7 +121,7 @@ function CheckoutContent() {
 
           {/* What's Included */}
           <div className="border rounded-lg p-4">
-            <h3 className="font-semibold mb-3">What's included</h3>
+            <h3 className="font-semibold mb-3">What&apos;s included</h3>
             <ul className="space-y-2 text-sm">
               {[
                 'Personal 60-minute audio session',
@@ -196,7 +196,7 @@ function CheckoutContent() {
               <div>
                 <h4 className="font-semibold text-green-800">Quality guarantee</h4>
                 <p className="text-sm text-green-700 mt-1">
-                  If you're not satisfied with the result, we'll refund 100% within 14 days
+                  If you&apos;re not satisfied with the result, we&apos;ll refund 100% within 14 days
                 </p>
               </div>
             </div>
@@ -211,9 +211,9 @@ export default function CheckoutPage() {
   return (
     <PageLayout>
       <Suspense fallback={
-      <div className="container mx-auto px-4 py-20 text-center">
-        <div className="animate-pulse">Loading...</div>
-      </div>
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="animate-pulse">Loading...</div>
+        </div>
       }>
         <CheckoutContent />
       </Suspense>
