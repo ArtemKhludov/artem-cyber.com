@@ -47,7 +47,7 @@ export function useCourseMaterials(documentId: string, materials: CourseMaterial
             const { data: { session } } = await supabase.auth.getSession()
 
             if (!session) {
-                // Пользователь не авторизован - показываем только публичные материалы
+                // User not authorized - show only public materials
                 setSecureMaterials({
                     cover_url: materials.cover_url,
                     video_preview_url: materials.video_preview_url,
@@ -55,13 +55,13 @@ export function useCourseMaterials(documentId: string, materials: CourseMaterial
                 return
             }
 
-            // Пользователь авторизован - загружаем все материалы
+            // User authorized - load all materials
             const newMaterials: CourseMaterial = {
                 cover_url: materials.cover_url,
                 video_preview_url: materials.video_preview_url,
             }
 
-            // Загружаем приватные материалы
+            // Load private materials
             if (materials.file_url) {
                 try {
                     const secureUrl = await getSecureUrl(materials.file_url.replace(/.*\/courses\//, 'courses/'))

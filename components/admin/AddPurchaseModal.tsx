@@ -66,7 +66,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
   const fetchDocuments = async () => {
     try {
-      // Используем данные из конфигурации цен
+      // Use data from pricing configuration
       setDocuments(PDF_DOCUMENTS.map(doc => ({
         id: doc.id,
         name: doc.title,
@@ -79,7 +79,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
   }
 
   const fetchPrograms = async () => {
-    // Используем данные из конфигурации цен
+    // Use data from pricing configuration
     const allPrograms = [...PROGRAMS, ...ADDITIONAL_SERVICES]
     setPrograms(allPrograms.map(program => ({
       id: program.id,
@@ -93,7 +93,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     setLoading(true)
 
     try {
-      // Добавляем покупку напрямую в таблицу purchase_requests
+      // Add purchase directly to purchase_requests table
       const { data, error } = await supabase
         .from('purchase_requests')
         .insert([{
@@ -113,7 +113,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
       if (error) throw error
 
-      // Синхронизируем с Google Sheets
+      // Sync with Google Sheets
       await fetch('/api/sheets/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -124,7 +124,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
       handleClose()
     } catch (error) {
       console.error('Error adding purchase:', error)
-      alert('Ошибка при добавлении покупки')
+      alert('Error adding purchase')
     } finally {
       setLoading(false)
     }
@@ -150,7 +150,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     let productName = ''
     let productPrice = 0
 
-    // Получаем продукт из конфигурации цен
+    // Get product from pricing configuration
     const product = getProductById(productId)
 
     if (product) {
@@ -176,7 +176,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
           <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-green-600/20"></div>
           <div className="relative z-10">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Добавить покупку</h2>
+              <h2 className="text-2xl font-bold">Add Purchase</h2>
               <button
                 onClick={handleClose}
                 className="text-white/70 hover:text-white transition-colors"
@@ -184,18 +184,18 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <p className="text-white/70 mt-1">Регистрация новой покупки</p>
+            <p className="text-white/70 mt-1">Register new purchase</p>
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Основная информация */}
+            {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Имя клиента *
+                  Client Name *
                 </label>
                 <input
                   type="text"
@@ -203,27 +203,27 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Введите имя клиента"
+                  placeholder="Enter client name"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Статус покупки
+                  Purchase Status
                 </label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="completed">Завершена</option>
-                  <option value="pending">В обработке</option>
-                  <option value="cancelled">Отменена</option>
+                  <option value="completed">Completed</option>
+                  <option value="pending">Pending</option>
+                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
             </div>
 
-            {/* Контакты */}
+            {/* Contacts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -243,7 +243,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Телефон
+                  Phone
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -258,24 +258,24 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
               </div>
             </div>
 
-            {/* Товар */}
+            {/* Product */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Выберите товар/услугу
+                  Select Product/Service
                 </label>
                 <select
                   value={formData.product_id}
                   onChange={(e) => handleProductChange(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="">Выберите товар...</option>
-                  <optgroup label="PDF файлы">
+                  <option value="">Select product...</option>
+                  <optgroup label="PDF Files">
                     {documents.map(doc => (
                       <option key={doc.id} value={doc.id}>{doc.title}</option>
                     ))}
                   </optgroup>
-                  <optgroup label="Программы">
+                  <optgroup label="Programs">
                     {programs.map(prog => (
                       <option key={prog.id} value={prog.id}>{prog.name}</option>
                     ))}
@@ -284,11 +284,11 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
               </div>
             </div>
 
-            {/* Оплата */}
+            {/* Payment */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Сумма *
+                  Amount *
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -306,7 +306,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Валюта
+                  Currency
                 </label>
                 <select
                   value={formData.currency}
@@ -321,32 +321,32 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Способ оплаты
+                  Payment Method
                 </label>
                 <select
                   value={formData.payment_method}
                   onChange={(e) => setFormData(prev => ({ ...prev, payment_method: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="card">Банковская карта</option>
-                  <option value="cash">Наличные</option>
-                  <option value="transfer">Банковский перевод</option>
-                  <option value="crypto">Криптовалюта</option>
+                  <option value="card">Bank Card</option>
+                  <option value="cash">Cash</option>
+                  <option value="transfer">Bank Transfer</option>
+                  <option value="crypto">Cryptocurrency</option>
                 </select>
               </div>
             </div>
 
-            {/* Заметки */}
+            {/* Notes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Заметки
+                Notes
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 rows={4}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Дополнительная информация о покупке..."
+                placeholder="Additional information about the purchase..."
               />
             </div>
           </form>
@@ -360,7 +360,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
               variant="outline"
               className="border-gray-300 text-gray-700 hover:bg-gray-50"
             >
-              Отмена
+              Cancel
             </Button>
             <Button
               onClick={handleSubmit}
@@ -370,12 +370,12 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Добавление...
+                  Adding...
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Добавить покупку
+                  Add Purchase
                 </>
               )}
             </Button>

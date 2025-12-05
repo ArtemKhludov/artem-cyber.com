@@ -48,14 +48,14 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
       })
       
       if (!response.ok) {
-        throw new Error('Не удалось загрузить сессии')
+        throw new Error('Failed to load sessions')
       }
       
       const data = await response.json()
       setSessions(data.sessions || [])
     } catch (err) {
       console.error('Failed to load sessions:', err)
-      setError(err instanceof Error ? err.message : 'Не удалось загрузить активные сессии')
+      setError(err instanceof Error ? err.message : 'Failed to load active sessions')
     } finally {
       setLoading(false)
     }
@@ -81,13 +81,13 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
   const getDeviceLabel = (deviceType: string) => {
     switch (deviceType) {
       case 'desktop':
-        return 'Компьютер'
+        return 'Computer'
       case 'mobile':
-        return 'Мобильный'
+        return 'Mobile'
       case 'tablet':
-        return 'Планшет'
+        return 'Tablet'
       default:
-        return 'Неизвестное устройство'
+        return 'Unknown device'
     }
   }
 
@@ -100,13 +100,13 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
     const days = Math.floor(diff / 86400000)
 
     if (minutes < 1) {
-      return 'Только что'
+      return 'Just now'
     } else if (minutes < 60) {
-      return `${minutes} мин назад`
+      return `${minutes} min ago`
     } else if (hours < 24) {
-      return `${hours} ч назад`
+      return `${hours} h ago`
     } else {
-      return `${days} дн назад`
+      return `${days} days ago`
     }
   }
 
@@ -122,7 +122,7 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
       })
 
       if (response.ok) {
-        // Обновляем список сессий
+        // Refresh session list
         loadSessions()
       }
     } catch (err) {
@@ -138,7 +138,7 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
       })
 
       if (response.ok) {
-        // Перенаправляем на страницу входа
+        // Redirect to login
         window.location.href = '/auth/login'
       }
     } catch (err) {
@@ -152,10 +152,10 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-5 w-5" />
-            Активные сессии
+            Active sessions
           </CardTitle>
           <CardDescription>
-            Управление устройствами и сессиями
+            Manage devices and sessions
           </CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center py-8">
@@ -171,17 +171,17 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-5 w-5" />
-            Активные сессии
+            Active sessions
           </CardTitle>
           <CardDescription>
-            Управление устройствами и сессиями
+            Manage devices and sessions
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-8 text-red-600">
           <AlertCircle className="h-12 w-12 mb-4" />
           <p className="text-center mb-4">{error}</p>
           <Button onClick={loadSessions} variant="outline">
-            Повторить
+            Retry
           </Button>
         </CardContent>
       </Card>
@@ -194,15 +194,15 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-5 w-5" />
-            Активные сессии
+            Active sessions
           </CardTitle>
           <CardDescription>
-            Управление устройствами и сессиями
+            Manage devices and sessions
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-8 text-gray-500">
           <Monitor className="h-12 w-12 mb-4" />
-          <p className="text-center">Нет активных сессий</p>
+          <p className="text-center">No active sessions</p>
         </CardContent>
       </Card>
     )
@@ -213,10 +213,10 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Monitor className="h-5 w-5" />
-          Активные сессии
+          Active sessions
         </CardTitle>
         <CardDescription>
-          Управление устройствами и сессиями
+          Manage devices and sessions
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -237,7 +237,7 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
                   </h4>
                   {session.is_current && (
                     <Badge variant="default" className="text-xs">
-                      Текущая
+                      Current
                     </Badge>
                   )}
                 </div>
@@ -257,12 +257,12 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
                   
                   <div className="flex items-center gap-2">
                     <Clock className="h-3 w-3" />
-                    <span>Активность: {formatLastActivity(session.last_activity)}</span>
+                    <span>Activity: {formatLastActivity(session.last_activity)}</span>
                   </div>
                 </div>
                 
                 <div className="mt-2 text-xs text-gray-500">
-                  Создана: {new Date(session.created_at).toLocaleString('ru-RU')}
+                  Created: {new Date(session.created_at).toLocaleString('en-US')}
                 </div>
               </div>
               
@@ -275,7 +275,7 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <LogOut className="h-3 w-3 mr-1" />
-                    Выйти
+                    Sign out
                   </Button>
                 )}
               </div>
@@ -292,7 +292,7 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
               className="w-full"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Выйти из всех устройств
+              Sign out from all devices
             </Button>
           </div>
         )}
@@ -301,9 +301,9 @@ export function ActiveSessions({ onLogoutAll }: ActiveSessionsProps) {
           <div className="flex items-start gap-2">
             <Shield className="h-4 w-4 text-blue-600 mt-0.5" />
             <div className="text-sm text-blue-800">
-              <p className="font-medium">Безопасность</p>
+              <p className="font-medium">Security</p>
               <p className="text-xs mt-1">
-                Если вы заметили подозрительную активность, выйдите из всех устройств и смените пароль.
+                If you notice suspicious activity, sign out everywhere and change your password.
               </p>
             </div>
           </div>

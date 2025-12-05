@@ -78,8 +78,8 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
 
   const fetchPrograms = async () => {
     setPrograms([
-      { id: 'deep-day', name: 'Глубокий день', description: 'Мини-сессия "Глубокий день"' },
-      { id: '21-days', name: '21 день', description: 'Программа "21 день"' }
+      { id: 'deep-day', name: 'Deep Day', description: 'Mini-session "Deep Day"' },
+      { id: '21-days', name: '21 Days', description: 'Program "21 Days"' }
     ])
   }
 
@@ -106,7 +106,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Ошибка при добавлении заявки')
+        throw new Error(errorData.error || 'Error adding request')
       }
 
       const { data } = await response.json()
@@ -115,7 +115,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
       handleClose()
     } catch (error) {
       console.error('Error adding request:', error)
-      alert('Ошибка при добавлении заявки')
+      alert('Error adding request')
     } finally {
       setLoading(false)
     }
@@ -174,7 +174,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20"></div>
           <div className="relative z-10">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Добавить заявку</h2>
+              <h2 className="text-2xl font-bold">Add Request</h2>
               <button
                 onClick={handleClose}
                 className="text-white/70 hover:text-white transition-colors"
@@ -182,18 +182,18 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <p className="text-white/70 mt-1">Создание новой заявки от клиента</p>
+            <p className="text-white/70 mt-1">Create new client request</p>
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Основная информация */}
+            {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Имя клиента *
+                  Client Name *
                 </label>
                 <input
                   type="text"
@@ -201,29 +201,29 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Введите имя клиента"
+                  placeholder="Enter client name"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Источник заявки
+                  Request Source
                 </label>
                 <select
                   value={formData.source}
                   onChange={(e) => setFormData(prev => ({ ...prev, source: e.target.value as any }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="manual">Ручной ввод</option>
-                  <option value="phone">Телефон</option>
-                  <option value="chat">Чат</option>
-                  <option value="website">Сайт</option>
-                  <option value="other">Другое</option>
+                  <option value="manual">Manual Entry</option>
+                  <option value="phone">Phone</option>
+                  <option value="chat">Chat</option>
+                  <option value="website">Website</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
             </div>
 
-            {/* Контакты */}
+            {/* Contacts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -243,7 +243,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Телефон
+                  Phone
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -258,11 +258,11 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
               </div>
             </div>
 
-            {/* Товар/Услуга */}
+            {/* Product/Service */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Тип товара/услуги
+                  Product/Service Type
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <button
@@ -275,7 +275,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
                     }`}
                   >
                     <FileText className="w-6 h-6 mx-auto mb-2" />
-                    <span className="text-sm">PDF файл</span>
+                    <span className="text-sm">PDF File</span>
                   </button>
                   
                   <button
@@ -288,7 +288,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
                     }`}
                   >
                     <Package className="w-6 h-6 mx-auto mb-2" />
-                    <span className="text-sm">Программа</span>
+                    <span className="text-sm">Program</span>
                   </button>
                   
                   <button
@@ -301,7 +301,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
                     }`}
                   >
                     <MessageSquare className="w-6 h-6 mx-auto mb-2" />
-                    <span className="text-sm">Консультация</span>
+                    <span className="text-sm">Consultation</span>
                   </button>
                   
                   <button
@@ -314,7 +314,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
                     }`}
                   >
                     <User className="w-6 h-6 mx-auto mb-2" />
-                    <span className="text-sm">Другое</span>
+                    <span className="text-sm">Other</span>
                   </button>
                 </div>
               </div>
@@ -322,14 +322,14 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
               {formData.product_type && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Выберите {formData.product_type === 'pdf' ? 'PDF файл' : formData.product_type === 'program' ? 'программу' : 'услугу'}
+                    Select {formData.product_type === 'pdf' ? 'PDF file' : formData.product_type === 'program' ? 'program' : 'service'}
                   </label>
                   <select
                     value={formData.product_id}
                     onChange={(e) => handleProductChange(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">Выберите...</option>
+                    <option value="">Select...</option>
                     {formData.product_type === 'pdf' && documents.map(doc => (
                       <option key={doc.id} value={doc.id}>{doc.name}</option>
                     ))}
@@ -338,62 +338,62 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
                     ))}
                     {formData.product_type === 'consultation' && (
                       <>
-                        <option value="consultation-30">Консультация 30 мин</option>
-                        <option value="consultation-60">Консультация 60 мин</option>
-                        <option value="consultation-90">Консультация 90 мин</option>
+                        <option value="consultation-30">Consultation 30 min</option>
+                        <option value="consultation-60">Consultation 60 min</option>
+                        <option value="consultation-90">Consultation 90 min</option>
                       </>
                     )}
                     {formData.product_type === 'other' && (
-                      <option value="custom">Другое (указать в заметках)</option>
+                      <option value="custom">Other (specify in notes)</option>
                     )}
                   </select>
                 </div>
               )}
             </div>
 
-            {/* Приоритет и заметки */}
+            {/* Priority and Notes */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Приоритет
+                  Priority
                 </label>
                 <select
                   value={formData.priority}
                   onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="low">Низкий</option>
-                  <option value="medium">Средний</option>
-                  <option value="high">Высокий</option>
-                  <option value="urgent">Срочно</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Описание (опционально)
+                  Description (optional)
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Дополнительная информация о заявке..."
+                  placeholder="Additional information about the request..."
                 />
               </div>
             </div>
 
-            {/* Заметки */}
+            {/* Notes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Заметки для менеджера
+                Notes for Manager
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 rows={4}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Важные детали, пожелания клиента, контекст заявки..."
+                placeholder="Important details, client preferences, request context..."
               />
             </div>
           </form>
@@ -407,7 +407,7 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
               variant="outline"
               className="border-gray-300 text-gray-700 hover:bg-gray-50"
             >
-              Отмена
+              Cancel
             </Button>
             <Button
               onClick={handleSubmit}
@@ -417,12 +417,12 @@ export default function AddRequestModal({ isOpen, onClose, onSuccess }: AddReque
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Добавление...
+                  Adding...
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Добавить заявку
+                  Add Request
                 </>
               )}
             </Button>

@@ -19,7 +19,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
   const [pageCount, setPageCount] = useState<number>(0)
   const [pageCountLoading, setPageCountLoading] = useState<boolean>(true)
 
-  // Определяем тип контента
+  // Determine content type
   const isMiniCourse = document.course_type === 'mini_course'
 
   useEffect(() => {
@@ -30,39 +30,39 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
 
       const seed = document.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
 
-      // Общее количество покупок: база + случайные покупки по дням
+      // Total purchases: base + random purchases by day
       const basePurchases = 20 + (seed % 81)
       let totalPurchases = basePurchases
 
-      // Добавляем случайные покупки за каждый день (2-20 в сутки)
+      // Add random purchases for each day (2-20 per day)
       for (let day = 0; day < daysSinceLaunch; day++) {
         const dailySeed = seed + day
-        const dailyPurchases = 2 + (dailySeed % 19) // 2-20 покупок в сутки
+        const dailyPurchases = 2 + (dailySeed % 19) // 2-20 purchases per day
         totalPurchases += dailyPurchases
       }
 
       setPurchaseCount(totalPurchases)
 
-      // Покупки за сегодня: рассчитываем пропорционально (обновляется каждые 20 минут)
+      // Purchases for today: calculate proportionally (updates every 20 minutes)
       const currentTime = now.getTime()
       const twentyMinuteIntervals = Math.floor((currentTime % (24 * 60 * 60 * 1000)) / (20 * 60 * 1000))
       const todaySeed = seed + Math.floor(now.getTime() / (24 * 60 * 60 * 1000))
-      const plannedTodayTotal = 2 + (todaySeed % 19) // Запланировано на сегодня
+      const plannedTodayTotal = 2 + (todaySeed % 19) // Planned for today
 
-      // Распределяем покупки пропорционально времени дня (72 интервала по 20 минут в сутках)
+      // Distribute purchases proportionally by time of day (72 intervals of 20 minutes per day)
       const todayProgress = Math.ceil((plannedTodayTotal * twentyMinuteIntervals) / 72)
       setTodayPurchases(Math.min(todayProgress, plannedTodayTotal))
 
-      // Смотрят сейчас: случайно 20-65, обновляется каждые 3 минуты
+      // Watching now: random 20-65, updates every 3 minutes
       const threeMinuteIntervals = Math.floor(currentTime / (3 * 60 * 1000))
       const viewersSeed = seed + threeMinuteIntervals
-      const viewers = 20 + (viewersSeed % 46) // 20-65 зрителей
+      const viewers = 20 + (viewersSeed % 46) // 20-65 viewers
       setCurrentViewers(viewers)
     }
 
     calculateStats()
 
-    // Обновляем статистику каждую минуту
+    // Update statistics every minute
     const interval = setInterval(calculateStats, 60000)
 
     return () => clearInterval(interval)
@@ -115,12 +115,12 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
     if (onCallRequest) {
       onCallRequest()
     } else {
-      alert('Заказ звонка будет доступен в ближайшее время')
+      alert('Callback request will be available soon')
     }
   }
 
   const handleChatOpen = () => {
-    alert('Чат будет доступен в ближайшее время')
+    alert('Chat will be available soon')
   }
 
   return (
@@ -134,7 +134,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
 
-          {/* Заголовок и описание */}
+          {/* Title and Description */}
           <div className="text-center mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-4">
               {document.title}
@@ -144,26 +144,26 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
             </p>
           </div>
 
-          {/* Обложка */}
+          {/* Cover */}
           {document.cover_url && (
             <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden mb-8">
               <div className="w-full h-96 bg-gray-100 relative overflow-hidden">
                 <img
                   src={document.cover_url}
-                  alt={`Обложка ${document.title}`}
+                  alt={`Cover ${document.title}`}
                   className="w-full h-full object-cover"
                 />
               </div>
             </div>
           )}
 
-          {/* Предпросмотр видео или PDF */}
+          {/* Video or PDF Preview */}
           {isMiniCourse && document.video_preview_url ? (
             <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden mb-8">
               <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b flex items-center gap-2">
                 <Play className="w-4 h-4 text-purple-600" />
                 <span className="text-sm font-medium text-purple-800">
-                  Превью мини-курса
+                  Mini Course Preview
                 </span>
               </div>
 
@@ -176,13 +176,13 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                     preload="metadata"
                     poster={document.cover_url}
                   >
-                    Ваш браузер не поддерживает видео.
+                    Your browser does not support video.
                   </video>
 
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
                     <div className="bg-white/95 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
                       <p className="text-sm text-gray-600 font-medium">
-                        🎥 Превью мини-курса • Полный доступ после покупки
+                        🎥 Mini Course Preview • Full access after purchase
                       </p>
                     </div>
                   </div>
@@ -194,7 +194,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
               <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-medium text-blue-800">
-                  {isMiniCourse ? 'Предпросмотр курса' : 'Предпросмотр курса'}
+                  {isMiniCourse ? 'Course Preview' : 'Course Preview'}
                 </span>
               </div>
 
@@ -211,7 +211,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                           transform: 'scale(1)',
                           transformOrigin: 'top left'
                         }}
-                        title={`Предпросмотр ${document.title}`}
+                        title={`Preview ${document.title}`}
                         scrolling="no"
                       />
 
@@ -225,7 +225,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
                           <div className="bg-white/95 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
                             <p className="text-sm text-gray-600 font-medium">
-                              📄 Показаны первые страницы • Полный доступ после покупки
+                              📄 First pages shown • Full access after purchase
                             </p>
                           </div>
                         </div>
@@ -235,7 +235,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                     <div className="flex items-center justify-center h-full text-gray-500">
                       <div className="text-center">
                         <Eye className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                        <p>Предпросмотр недоступен</p>
+                        <p>Preview unavailable</p>
                       </div>
                     </div>
                   )}
@@ -244,17 +244,17 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
             </div>
           )}
 
-          {/* Контент мини-курса */}
+          {/* Mini Course Content */}
           {isMiniCourse && (
             <div className="mb-8">
               <CourseContent document={document} isPurchased={false} />
             </div>
           )}
 
-          {/* Три блока под PDF - компактные и одинакового размера */}
+          {/* Three blocks under PDF - compact and same size */}
           <div className="grid lg:grid-cols-3 gap-6">
 
-            {/* Левый блок - Кнопки действий */}
+            {/* Left block - Action Buttons */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 flex flex-col justify-center min-h-[180px]">
               <div className="space-y-3">
                 <Button
@@ -262,7 +262,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2.5 text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  {isMiniCourse ? 'Купить курс' : 'Купить курс'} за {document.price_rub.toLocaleString('ru-RU')} ₽
+                  {isMiniCourse ? 'Buy Course' : 'Buy Course'} for {document.price_rub.toLocaleString('en-US')} ₽
                 </Button>
 
                 <Button
@@ -271,7 +271,7 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                   className="w-full py-2.5 rounded-lg border-2 border-blue-200 text-blue-600 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 hover:shadow-md text-sm"
                 >
                   <Phone className="w-4 h-4 mr-2" />
-                  Заказать звонок
+                  Request Call
                 </Button>
 
                 <Button
@@ -280,48 +280,48 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                   className="w-full py-2.5 rounded-lg border-2 border-green-200 text-green-600 hover:border-green-500 hover:bg-green-50 transition-all duration-300 hover:shadow-md text-sm"
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  Перейти в чат
+                  Go to Chat
                 </Button>
               </div>
             </div>
 
-            {/* Средний блок - Статистика покупок */}
+            {/* Middle block - purchase stats */}
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 flex flex-col justify-center min-h-[180px]">
               <div className="text-center">
                 <div className="mb-3">
-                  <div className="text-sm text-green-700 font-medium mb-3">�� Статистика покупок</div>
+                  <div className="text-sm text-green-700 font-medium mb-3">Live purchase stats</div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   <div className="text-center">
-                    <div className="text-lg font-bold text-green-600">{purchaseCount.toLocaleString('ru-RU')}</div>
-                    <div className="text-xs text-green-700">Всего покупок</div>
+                    <div className="text-lg font-bold text-green-600">{purchaseCount.toLocaleString('en-US')}</div>
+                    <div className="text-xs text-green-700">Total purchases</div>
                   </div>
                   <div className="text-center">
                     <div className="text-lg font-bold text-green-600">+{todayPurchases}</div>
-                    <div className="text-xs text-green-700">За сегодня</div>
+                    <div className="text-xs text-green-700">Today</div>
                   </div>
                   <div className="text-center">
                     <div className="text-lg font-bold text-purple-600">{currentViewers}</div>
-                    <div className="text-xs text-purple-700">Смотрят сейчас</div>
+                    <div className="text-xs text-purple-700">Viewing now</div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-center text-xs text-green-600">
                   <span className="mr-1">🕐</span>
-                  Обновлено сейчас
+                  Updated just now
                 </div>
               </div>
             </div>
 
-            {/* Правый блок - Что вы получаете */}
+            {/* Right block - what you get */}
             <div className="bg-gray-50 rounded-xl p-4 flex flex-col justify-center min-h-[180px]">
               <div className="text-center">
-                <h3 className="font-semibold text-gray-900 mb-3 text-sm">Что вы получаете:</h3>
+                <h3 className="font-semibold text-gray-900 mb-3 text-sm">What you get:</h3>
                 <ul className="space-y-2 text-sm text-gray-700 text-left">
                   {isMiniCourse ? (
                     <>
-                      {/* Главный PDF */}
+                      {/* Main PDF */}
                       {document.main_pdf_title && (
                         <li className="flex items-start gap-2">
                           <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
@@ -329,59 +329,59 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
                         </li>
                       )}
 
-                      {/* Рабочие тетради */}
+                      {/* Workbooks */}
                       {(document.workbook_count || 0) > 0 && (
                         <li className="flex items-start gap-2">
                           <span className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                          <span className="text-xs">{document.workbook_count || 0} рабоч{(document.workbook_count || 0) === 1 ? 'ая тетрадь' : (document.workbook_count || 0) < 5 ? 'ие тетради' : 'ых тетрадей'}</span>
+                          <span className="text-xs">{document.workbook_count || 0} workbook{(document.workbook_count || 0) === 1 ? '' : 's'}</span>
                         </li>
                       )}
 
-                      {/* Видео уроки */}
+                      {/* Video Lessons */}
                       {(document.video_count || 0) > 0 && (
                         <li className="flex items-start gap-2">
                           <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                          <span className="text-xs">{document.video_count || 0} видео-урок{(document.video_count || 0) === 1 ? '' : (document.video_count || 0) < 5 ? 'а' : 'ов'}</span>
+                          <span className="text-xs">{document.video_count || 0} video lesson{(document.video_count || 0) === 1 ? '' : 's'}</span>
                         </li>
                       )}
 
-                      {/* Аудио материалы */}
+                      {/* Audio Materials */}
                       {((document as any).audio_count || 0) > 0 && (
                         <li className="flex items-start gap-2">
                           <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                          <span className="text-xs">{(document as any).audio_count || 0} аудио-материал{((document as any).audio_count || 0) === 1 ? '' : ((document as any).audio_count || 0) < 5 ? 'а' : 'ов'}</span>
+                          <span className="text-xs">{(document as any).audio_count || 0} audio track{((document as any).audio_count || 0) === 1 ? '' : 's'}</span>
                         </li>
                       )}
 
-                      {/* Длительность курса */}
+                      {/* Course Duration */}
                       {document.course_duration_minutes && (
                         <li className="flex items-start gap-2">
                           <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                          <span className="text-xs">Длительность: {document.course_duration_minutes} минут</span>
+                          <span className="text-xs">Length: {document.course_duration_minutes} minutes</span>
                         </li>
                       )}
                       <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Бессрочный доступ ко всем материалам</span>
+                        <span className="text-xs">Lifetime access to all materials</span>
                       </li>
                     </>
                   ) : (
                     <>
                       <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Полный доступ к курсу</span>
+                        <span className="text-xs">Full course access</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Возможность скачивания и печати</span>
+                        <span className="text-xs">Download and print enabled</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Бессрочный доступ к материалу</span>
+                        <span className="text-xs">Lifetime access to the material</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span className="text-xs">Поддержка специалистов EnergyLogic</span>
+                        <span className="text-xs">Support from EnergyLogic specialists</span>
                       </li>
                     </>
                   )}
@@ -390,13 +390,13 @@ export function PDFPreview({ document, onCallRequest }: PDFPreviewProps) {
             </div>
           </div>
 
-          {/* Ссылка назад */}
+          {/* Back Link */}
           <div className="mt-8 pt-4 border-t text-center">
             <Link
               href="/#pdf-files"
               className="text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-2 transition-colors"
             >
-              ← Вернуться к каталогу
+              ← Back to Catalog
             </Link>
           </div>
         </div>

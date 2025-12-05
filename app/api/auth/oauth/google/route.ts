@@ -12,7 +12,7 @@ import { google } from 'googleapis'
 
 export async function POST(request: NextRequest) {
     try {
-        // Умная проверка origin для OAuth запросов
+        // Smart origin check for OAuth requests
         try {
             verifyRequestOriginSmart(request, {
                 allowOAuth: true,
@@ -20,13 +20,13 @@ export async function POST(request: NextRequest) {
             })
         } catch (error) {
             console.error('Origin verification failed for OAuth request:', error)
-            return NextResponse.json({ error: 'Недопустимый источник запроса' }, { status: 403 })
+            return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 })
         }
 
         const { code, remember = true } = await request.json()
 
         if (!code) {
-            return NextResponse.json({ error: 'Код авторизации не получен' }, { status: 400 })
+            return NextResponse.json({ error: 'Authorization code not received' }, { status: 400 })
         }
 
         const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
         if (!clientId || !clientSecret) {
             console.error('Google OAuth env vars missing')
-            return NextResponse.json({ error: 'Google OAuth не настроен' }, { status: 500 })
+            return NextResponse.json({ error: 'Google OAuth not configured' }, { status: 500 })
         }
 
         const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         if (!tokenResponse.ok) {
             const errorText = await tokenResponse.text()
             console.error('Google token exchange failed:', tokenResponse.status, errorText)
-            return NextResponse.json({ error: 'Не удалось подтвердить авторизацию Google' }, { status: 401 })
+            return NextResponse.json({ error: 'Failed to verify Google authorization' }, { status: 401 })
         }
 
         const tokenJson = await tokenResponse.json() as { id_token?: string; access_token?: string }
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
         if (!idToken) {
             console.error('Google token exchange returned no id_token')
-            return NextResponse.json({ error: 'Не удалось получить токен Google' }, { status: 401 })
+            return NextResponse.json({ error: 'Failed to obtain Google token' }, { status: 401 })
         }
 
         const oauthClient = new google.auth.OAuth2(clientId)
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         const payload = ticket.getPayload()
 
         if (!payload?.email) {
-            return NextResponse.json({ error: 'Google не передал email пользователя' }, { status: 400 })
+            return NextResponse.json({ error: 'Google did not provide user email' }, { status: 400 })
         }
 
         const email = payload.email
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем, существует ли пользователь
+        // Check if user exists
         const { data: existingUser } = await supabase
             .from('users')
             .select('*')
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
         let user
 
         if (existingUser) {
-            // Пользователь существует, обновляем данные
+            // User exists, update
             const { data: updatedUser, error: updateError } = await supabase
                 .from('users')
                 .update({
@@ -109,14 +109,14 @@ export async function POST(request: NextRequest) {
                 .select()
                 .single()
 
-            if (updateError) {
-                console.error('User update error:', updateError)
-                return NextResponse.json({ error: 'Ошибка обновления пользователя' }, { status: 500 })
-            }
+                if (updateError) {
+                    console.error('User update error:', updateError)
+                    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 })
+                }
 
             user = updatedUser
         } else {
-            // Создаем нового пользователя
+            // Create new user
             const { data: newUser, error: createError } = await supabase
                 .from('users')
                 .insert({
@@ -125,21 +125,21 @@ export async function POST(request: NextRequest) {
                     avatar_url: picture,
                     role: 'user',
                     oauth_provider: 'google',
-                    oauth_id: email, // Используем email как OAuth ID
+                    oauth_id: email, // Use email as OAuth ID
                     email_verified: emailVerified,
                     phone: null,
-                    password_hash: 'oauth_user' // Заглушка для OAuth пользователей
+                    password_hash: 'oauth_user' // Placeholder for OAuth users
                 })
                 .select()
                 .single()
 
-            if (createError) {
-                console.error('User creation error:', createError)
-                return NextResponse.json({
-                    error: 'Ошибка создания пользователя',
-                    details: createError.message
-                }, { status: 500 })
-            }
+                if (createError) {
+                    console.error('User creation error:', createError)
+                    return NextResponse.json({
+                        error: 'Failed to create user',
+                        details: createError.message
+                    }, { status: 500 })
+                }
 
             user = newUser
         }
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
 
         if (sessionError) {
             console.error('Session creation error:', sessionError)
-            return NextResponse.json({ error: 'Ошибка создания сессии' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
         }
 
         const cookieStore = await cookies()
@@ -181,15 +181,15 @@ export async function POST(request: NextRequest) {
 
         const cookieMaxAgeSeconds = Math.max(1, Math.floor((expiresAt.getTime() - now.getTime()) / 1000))
 
-        // Отправка уведомления в Telegram
+        // Telegram notification
         try {
-            const telegramMessage = `🆕 Новый пользователь зарегистрирован:
-👤 Имя: ${user.name}
+            const telegramMessage = `🆕 New user registered:
+👤 Name: ${user.name}
 📧 Email: ${user.email}
-📞 Телефон: Не указан
-🔐 Тип регистрации: Google OAuth
-✅ Email верифицирован: Да
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`
+📞 Phone: Not provided
+🔐 Registration type: Google OAuth
+✅ Email verified: Yes
+📅 Date: ${new Date().toLocaleString('en-US')}`
 
             const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
@@ -206,14 +206,14 @@ export async function POST(request: NextRequest) {
             if (!response.ok) {
                 console.error('Telegram notification failed:', await response.text())
             } else {
-                console.log('✅ Telegram уведомление отправлено')
+                console.log('✅ Telegram notification sent')
             }
         } catch (telegramError) {
             console.error('Telegram error:', telegramError)
         }
 
         const response = NextResponse.json({
-            message: 'Успешная авторизация через Google',
+            message: 'Google login successful',
             user: {
                 id: user.id,
                 email: user.email,
@@ -231,6 +231,6 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('Google OAuth error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

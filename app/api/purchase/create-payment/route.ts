@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Получаем документ из базы данных
+        // Get document from database
         const { data: document, error: docError } = await supabaseAdmin
             .from('documents')
             .select('*')
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Создаем запись о покупке в статусе pending
+        // Create purchase record with pending status
         const { data: purchase, error: purchaseError } = await supabaseAdmin
             .from('purchases')
             .insert({

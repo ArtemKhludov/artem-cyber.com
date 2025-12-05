@@ -20,7 +20,7 @@ export function RouteGuard({ children, requireAuth = false, requireAdmin = false
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    // Если еще загружается - ждем
+    // If still loading - wait
     if (loading) {
       return
     }
@@ -28,28 +28,28 @@ export function RouteGuard({ children, requireAuth = false, requireAdmin = false
     const isPublicRoute = publicRoutes.includes(pathname)
     const isAuthRoute = authRoutes.includes(pathname)
 
-    // Если это публичная страница - пропускаем
+    // If this is a public page - skip
     if (isPublicRoute) {
       setIsChecking(false)
       return
     }
 
-    // Если это страница авторизации и пользователь уже авторизован - перенаправляем на главную
+    // If this is an auth page and user is already authenticated - redirect to home
     if (isAuthRoute && user) {
       router.push('/')
       return
     }
 
-    // Если требуется авторизация, но пользователь не авторизован
+    // If authentication is required but user is not authenticated
     if (requireAuth && !user) {
-      // Не перенаправляем с публичных страниц
+      // Don't redirect from public pages
       if (!isPublicRoute) {
         router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}`)
       }
       return
     }
 
-    // Если требуется админ, но пользователь не админ
+    // If admin is required but user is not admin
     if (requireAdmin && (!user || user.role !== 'admin')) {
       router.push('/')
       return
@@ -58,7 +58,7 @@ export function RouteGuard({ children, requireAuth = false, requireAdmin = false
     setIsChecking(false)
   }, [user, loading, pathname, router, requireAuth, requireAdmin])
 
-  // Показываем загрузку пока проверяем
+    // Show loading while checking
   if (loading || isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center">

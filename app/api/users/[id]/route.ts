@@ -15,12 +15,12 @@ export async function GET(
 
         if (!userId) {
             return NextResponse.json(
-                { error: 'ID пользователя обязателен' },
+                { error: 'User ID is required' },
                 { status: 400 }
             )
         }
 
-        // Получаем основную информацию о CRM пользователе
+        // Get main CRM user information
         const { data: user, error: userError } = await supabase
             .from('crm_users')
             .select('*')
@@ -30,12 +30,12 @@ export async function GET(
         if (userError) {
             console.error('User error:', userError)
             return NextResponse.json(
-                { error: 'Пользователь не найден' },
+                { error: 'User not found' },
                 { status: 404 }
             )
         }
 
-        // Получаем все заявки пользователя
+        // Get all user requests
         const { data: requests, error: requestsError } = await supabase
             .from('callback_requests')
             .select('*')
@@ -46,7 +46,7 @@ export async function GET(
             console.error('Requests error:', requestsError)
         }
 
-        // Получаем все покупки пользователя
+        // Get all user purchases
         const { data: purchases, error: purchasesError } = await supabase
             .from('purchase_requests')
             .select('*')
@@ -67,7 +67,7 @@ export async function GET(
             console.error('Accesses error:', accessesError)
         }
 
-        // Формируем ответ
+        // Form response
         const userData = {
             user: {
                 id: user.id,
@@ -96,7 +96,7 @@ export async function GET(
                 product_name: purchase.product_name,
                 amount: purchase.amount_paid ?? purchase.amount ?? 0,
                 status: purchase.payment_status ?? purchase.status,
-                payment_method: purchase.payment_method || 'Не указан'
+                payment_method: purchase.payment_method || 'Not specified'
             })),
             accesses: (accesses || []).map(access => ({
                 id: access.id,
@@ -117,7 +117,7 @@ export async function GET(
     } catch (error) {
         console.error('Server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
@@ -134,12 +134,12 @@ export async function PUT(
 
         if (!userId) {
             return NextResponse.json(
-                { error: 'ID пользователя обязателен' },
+                { error: 'User ID is required' },
                 { status: 400 }
             )
         }
 
-        // Обновляем информацию о CRM пользователе
+        // Update CRM user information
         const { data, error } = await supabase
             .from('crm_users')
             .update({
@@ -155,21 +155,21 @@ export async function PUT(
         if (error) {
             console.error('Database error:', error)
             return NextResponse.json(
-                { error: 'Ошибка обновления пользователя' },
+                { error: 'Failed to update user' },
                 { status: 500 }
             )
         }
 
         return NextResponse.json({
             success: true,
-            message: 'Пользователь успешно обновлен',
+            message: 'User updated successfully',
             data: data
         })
 
     } catch (error) {
         console.error('Server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
@@ -184,12 +184,12 @@ export async function DELETE(
 
         if (!userId) {
             return NextResponse.json(
-                { error: 'ID пользователя обязателен' },
+                { error: 'User ID is required' },
                 { status: 400 }
             )
         }
 
-        // Удаляем CRM пользователя
+        // Delete CRM user
         const { error } = await supabase
             .from('crm_users')
             .delete()
@@ -198,20 +198,20 @@ export async function DELETE(
         if (error) {
             console.error('Database error:', error)
             return NextResponse.json(
-                { error: 'Ошибка удаления пользователя' },
+                { error: 'Failed to delete user' },
                 { status: 500 }
             )
         }
 
         return NextResponse.json({
             success: true,
-            message: 'Пользователь успешно удален'
+            message: 'User deleted successfully'
         })
 
     } catch (error) {
         console.error('Server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

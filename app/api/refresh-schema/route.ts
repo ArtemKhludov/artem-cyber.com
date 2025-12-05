@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     try {
         const supabase = getSupabaseAdmin()
 
-        // Альтернативный способ - выполняем простой запрос для обновления cache
+        // Alternative method - execute a simple query to refresh cache
         const { data, error } = await supabase
             .from('users')
             .select('id, email, name, google_id, avatar_url, email_verified')
@@ -13,14 +13,14 @@ export async function POST(request: NextRequest) {
 
         if (error) {
             console.error('Schema test error:', error)
-            return NextResponse.json({ 
+            return NextResponse.json({
                 error: 'Schema test failed',
                 details: error.message,
                 code: error.code
             }, { status: 500 })
         }
 
-        // Если запрос прошел успешно, schema cache обновлен
+        // If the query succeeded, schema cache is refreshed
         return NextResponse.json({
             success: true,
             message: 'Schema cache refreshed successfully',
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('Schema refresh error:', error)
-        return NextResponse.json({ 
+        return NextResponse.json({
             error: 'Internal server error',
             details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 })

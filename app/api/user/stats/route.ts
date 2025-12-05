@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
       .maybeSingle()
 
     if (summaryError) {
-      console.error('Ошибка получения сводки пользователя:', summaryError)
-      return NextResponse.json({ error: 'Ошибка получения статистики' }, { status: 500 })
+      console.error('Error fetching user summary:', summaryError)
+      return NextResponse.json({ error: 'Failed to load stats' }, { status: 500 })
     }
 
     const { data: coursesStats, error: coursesError } = await supabase
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       .order('last_activity_at', { ascending: false })
 
     if (coursesError) {
-      console.error('Ошибка получения статистики курсов:', coursesError)
+      console.error('Error fetching course statistics:', coursesError)
     }
 
     const { data: recentAchievements, error: achievementsError } = await supabase
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       .limit(5)
 
     if (achievementsError) {
-      console.error('Ошибка получения достижений:', achievementsError)
+      console.error('Error fetching achievements:', achievementsError)
     }
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       .order('updated_at', { ascending: false })
 
     if (activityError) {
-      console.error('Ошибка получения активности:', activityError)
+      console.error('Error fetching activity:', activityError)
     }
 
     const totalStudyHours = userSummary ? Math.round((userSummary.total_study_time / 3600) * 100) / 100 : 0
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
 
       weeklyActivity.push({
         date: dateStr,
-        day: date.toLocaleDateString('ru-RU', { weekday: 'short' }),
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }),
         activities: dayActivity.length,
         timeSpent: dayActivity.reduce((sum, activity) => sum + (activity.time_spent || 0), 0)
       })
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
 
     return response
   } catch (error) {
-    console.error('Ошибка API статистики пользователя:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    console.error('User stats API error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

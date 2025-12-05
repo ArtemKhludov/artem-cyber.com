@@ -73,12 +73,12 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                 setCoursesStats(data.coursesStats || [])
                 setWeeklyActivity(data.analytics?.weeklyActivity || [])
             } else {
-                setError('Ошибка загрузки данных')
+                setError('Error loading data')
             }
 
         } catch (error) {
-            console.error('Ошибка загрузки прогресса:', error)
-            setError('Ошибка загрузки данных')
+            console.error('Error loading progress:', error)
+            setError('Error loading data')
         } finally {
             setLoading(false)
         }
@@ -87,11 +87,11 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
     const formatStudyTime = (seconds: number) => {
         const hours = Math.floor(seconds / 3600)
         const minutes = Math.floor((seconds % 3600) / 60)
-        
+
         if (hours > 0) {
-            return `${hours}ч ${minutes}м`
+            return `${hours}h ${minutes}m`
         }
-        return `${minutes}м`
+        return `${minutes}m`
     }
 
     const getCompletionColor = (percentage: number) => {
@@ -102,10 +102,10 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
     }
 
     const getStreakMessage = (days: number) => {
-        if (days >= 7) return 'Невероятно! 🔥'
-        if (days >= 3) return 'Отлично! ⭐'
-        if (days >= 1) return 'Хорошо! 👍'
-        return 'Начните серию!'
+        if (days >= 7) return 'Incredible! 🔥'
+        if (days >= 3) return 'Excellent! ⭐'
+        if (days >= 1) return 'Good! 👍'
+        return 'Start a streak!'
     }
 
     if (loading) {
@@ -128,7 +128,7 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
             <div className={`text-center py-8 ${className}`}>
                 <p className="text-red-500 mb-4">{error}</p>
                 <Button onClick={loadProgressData} variant="outline">
-                    Попробовать снова
+                    Try again
                 </Button>
             </div>
         )
@@ -136,7 +136,7 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
 
     return (
         <div className={`space-y-6 ${className}`}>
-            {/* Основная статистика */}
+            {/* Main Statistics */}
             {userSummary && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
@@ -144,11 +144,11 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                             <Star className="w-8 h-8" />
                             <div>
                                 <div className="text-2xl font-bold">{userSummary.total_points}</div>
-                                <div className="text-blue-100 text-sm">Баллов</div>
+                                <div className="text-blue-100 text-sm">Points</div>
                             </div>
                         </div>
                         <div className="mt-3 text-sm text-blue-100">
-                            Уровень {userSummary.current_level}
+                            Level {userSummary.current_level}
                         </div>
                     </div>
 
@@ -157,11 +157,11 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                             <BookOpen className="w-8 h-8" />
                             <div>
                                 <div className="text-2xl font-bold">{userSummary.courses_completed}</div>
-                                <div className="text-green-100 text-sm">Курсов завершено</div>
+                                <div className="text-green-100 text-sm">Courses completed</div>
                             </div>
                         </div>
                         <div className="mt-3 text-sm text-green-100">
-                            из {userSummary.courses_started} начатых
+                            out of {userSummary.courses_started} started
                         </div>
                     </div>
 
@@ -170,7 +170,7 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                             <Clock className="w-8 h-8" />
                             <div>
                                 <div className="text-2xl font-bold">{formatStudyTime(userSummary.total_study_time)}</div>
-                                <div className="text-orange-100 text-sm">Время изучения</div>
+                                <div className="text-orange-100 text-sm">Study time</div>
                             </div>
                         </div>
                     </div>
@@ -180,7 +180,7 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                             <Trophy className="w-8 h-8" />
                             <div>
                                 <div className="text-2xl font-bold">{userSummary.streak_days}</div>
-                                <div className="text-purple-100 text-sm">Дней подряд</div>
+                                <div className="text-purple-100 text-sm">Days in a row</div>
                             </div>
                         </div>
                         <div className="mt-3 text-sm text-purple-100">
@@ -190,26 +190,26 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                 </div>
             )}
 
-            {/* Прогресс до следующего уровня */}
+            {/* Progress to Next Level */}
             {userSummary && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <Target className="w-5 h-5 text-blue-500" />
-                        Прогресс до следующего уровня
+                        Progress to Next Level
                     </h3>
-                    
+
                     <div className="flex items-center gap-4 mb-4">
                         <div className="text-center">
                             <div className="text-3xl font-bold text-blue-600">{userSummary.current_level}</div>
-                            <div className="text-sm text-gray-500">Текущий уровень</div>
+                            <div className="text-sm text-gray-500">Current level</div>
                         </div>
                         <div className="flex-1">
                             <div className="flex justify-between text-sm mb-2">
-                                <span className="text-gray-600">Прогресс</span>
-                                <span className="text-gray-600">{userSummary.points_to_next_level} баллов до уровня {userSummary.current_level + 1}</span>
+                                <span className="text-gray-600">Progress</span>
+                                <span className="text-gray-600">{userSummary.points_to_next_level} points to level {userSummary.current_level + 1}</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-3">
-                                <div 
+                                <div
                                     className="bg-gradient-to-r from-blue-400 to-purple-500 h-3 rounded-full transition-all duration-500"
                                     style={{ width: `${((userSummary.total_points % 100) / 100) * 100}%` }}
                                 ></div>
@@ -217,31 +217,31 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                         </div>
                         <div className="text-center">
                             <div className="text-3xl font-bold text-purple-600">{userSummary.current_level + 1}</div>
-                            <div className="text-sm text-gray-500">Следующий уровень</div>
+                            <div className="text-sm text-gray-500">Next level</div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Активные курсы */}
+            {/* Active Courses */}
             {coursesStats.length > 0 && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                             <BookOpen className="w-5 h-5 text-blue-500" />
-                            Активные курсы
+                            Active Courses
                         </h3>
                         <Button asChild variant="outline" size="sm">
-                            <Link href="/catalog">Все курсы</Link>
+                            <Link href="/catalog">All Courses</Link>
                         </Button>
                     </div>
-                    
+
                     <div className="space-y-4">
                         {coursesStats.slice(0, 3).map((course) => (
                             <div key={course.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                                 {course.cover_image_url && (
-                                    <img 
-                                        src={course.cover_image_url} 
+                                    <img
+                                        src={course.cover_image_url}
                                         alt={course.title}
                                         className="w-16 h-16 rounded-lg object-cover"
                                     />
@@ -249,24 +249,24 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                                 <div className="flex-1">
                                     <h4 className="font-medium text-gray-900 mb-1">{course.title}</h4>
                                     <div className="flex items-center gap-4 text-sm text-gray-600">
-                                        <span>{course.completed_materials} из {course.total_materials} материалов</span>
+                                        <span>{course.completed_materials} of {course.total_materials} materials</span>
                                         <span>{formatStudyTime(course.total_time_spent)}</span>
                                         <span>
-                                            Последняя активность: {new Date(course.last_activity_at).toLocaleDateString('ru-RU')}
+                                            Last activity: {new Date(course.last_activity_at).toLocaleDateString('en-US')}
                                         </span>
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-lg font-bold text-gray-900 mb-1">{course.completion_percentage}%</div>
                                     <div className="w-20 bg-gray-200 rounded-full h-2">
-                                        <div 
+                                        <div
                                             className={`bg-gradient-to-r ${getCompletionColor(course.completion_percentage)} h-2 rounded-full`}
                                             style={{ width: `${course.completion_percentage}%` }}
                                         ></div>
                                     </div>
                                 </div>
                                 <Button asChild size="sm">
-                                    <Link href={`/courses/${course.id}/player`}>Продолжить</Link>
+                                    <Link href={`/courses/${course.id}/player`}>Continue</Link>
                                 </Button>
                             </div>
                         ))}
@@ -274,28 +274,27 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                 </div>
             )}
 
-            {/* Активность за неделю */}
+            {/* Weekly Activity */}
             {weeklyActivity.length > 0 && (
                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <Calendar className="w-5 h-5 text-green-500" />
-                        Активность за неделю
+                        Weekly Activity
                     </h3>
-                    
+
                     <div className="grid grid-cols-7 gap-2">
                         {weeklyActivity.map((day, index) => (
                             <div key={index} className="text-center">
                                 <div className="text-xs text-gray-500 mb-1">{day.day}</div>
-                                <div className={`w-full h-8 rounded-lg flex items-center justify-center text-xs font-medium ${
-                                    day.activities > 0 
-                                        ? 'bg-gradient-to-r from-green-400 to-green-600 text-white' 
-                                        : 'bg-gray-100 text-gray-400'
-                                }`}>
+                                <div className={`w-full h-8 rounded-lg flex items-center justify-center text-xs font-medium ${day.activities > 0
+                                    ? 'bg-gradient-to-r from-green-400 to-green-600 text-white'
+                                    : 'bg-gray-100 text-gray-400'
+                                    }`}>
                                     {day.activities > 0 ? day.activities : '0'}
                                 </div>
                                 {day.timeSpent > 0 && (
                                     <div className="text-xs text-gray-500 mt-1">
-                                        {Math.floor(day.timeSpent / 60)}м
+                                        {Math.floor(day.timeSpent / 60)}m
                                     </div>
                                 )}
                             </div>
@@ -304,23 +303,23 @@ export function ProgressOverview({ className = '' }: ProgressOverviewProps) {
                 </div>
             )}
 
-            {/* Мотивационное сообщение */}
+            {/* Motivational Message */}
             {userSummary && (
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
                     <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                         <Award className="w-5 h-5 text-blue-500" />
-                        Мотивация
+                        Motivation
                     </h3>
-                    
+
                     <div className="text-gray-700">
                         {userSummary.streak_days >= 7 ? (
-                            <p>🔥 Невероятно! Вы занимаетесь {userSummary.streak_days} дней подряд. Продолжайте в том же духе!</p>
+                            <p>🔥 Incredible! You've been studying for {userSummary.streak_days} days in a row. Keep it up!</p>
                         ) : userSummary.streak_days >= 3 ? (
-                            <p>⭐ Отличная серия! Вы занимаетесь {userSummary.streak_days} дней подряд. Еще немного до недели!</p>
+                            <p>⭐ Great streak! You've been studying for {userSummary.streak_days} days in a row. Just a bit more to a week!</p>
                         ) : userSummary.courses_completed > 0 ? (
-                            <p>🎉 Поздравляем с завершением {userSummary.courses_completed} курс(ов)! Изучайте больше, чтобы получить новые достижения.</p>
+                            <p>🎉 Congratulations on completing {userSummary.courses_completed} course(s)! Study more to unlock new achievements.</p>
                         ) : (
-                            <p>🚀 Добро пожаловать! Начните изучать курсы, чтобы получить первые баллы и достижения.</p>
+                            <p>🚀 Welcome! Start studying courses to earn your first points and achievements.</p>
                         )}
                     </div>
                 </div>

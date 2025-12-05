@@ -15,19 +15,19 @@ export interface CourseAccessCheck {
 }
 
 /**
- * Middleware для проверки доступа пользователя к курсу
- * Проверяет авторизацию и наличие покупки курса
+ * Middleware to check user access to a course.
+ * Validates auth and confirms the course purchase/access record.
  */
 export async function checkCourseAccess(courseId: string): Promise<CourseAccessCheck> {
     try {
-        // Получаем токен сессии из cookies
+        // Get session token from cookies
         const cookieStore = await cookies()
         const sessionToken = cookieStore.get('session')?.value || cookieStore.get(SESSION_COOKIE_NAME)?.value
 
         if (!sessionToken) {
             return {
                 hasAccess: false,
-                error: 'Не авторизован'
+                error: 'Not authorized'
             }
         }
 
@@ -47,7 +47,7 @@ export async function checkCourseAccess(courseId: string): Promise<CourseAccessC
 
         const now = new Date()
 
-        // Ищем активную запись доступа (user_course_access) вместо прямого обращения к purchases
+        // Look for an active access record (user_course_access) instead of direct purchases check
         const { data: existingAccess, error: accessError } = await supabase
             .from('user_course_access')
             .select('id, expires_at, revoked_at')
@@ -63,7 +63,7 @@ export async function checkCourseAccess(courseId: string): Promise<CourseAccessC
         const isActive = existingAccess && (!existingAccess.expires_at || new Date(existingAccess.expires_at) > now)
 
         if (!isActive) {
-            // Лениво восстанавливаем доступ из завершенных покупок (если удалили руками)
+            // Lazily restore access from completed purchases (if it was manually removed)
             await ensureCourseAccessForUser(supabase, userId, courseId)
 
             const { data: refreshedAccess } = await supabase
@@ -79,7 +79,7 @@ export async function checkCourseAccess(courseId: string): Promise<CourseAccessC
                     hasAccess: false,
                     userEmail,
                     courseId,
-                    error: 'Нет доступа к курсу. Пожалуйста, приобретите курс.'
+                    error: 'No course access. Please purchase the course.'
                 }
             }
         }
@@ -94,14 +94,14 @@ export async function checkCourseAccess(courseId: string): Promise<CourseAccessC
         console.error('Error checking course access:', error)
         return {
             hasAccess: false,
-            error: 'Внутренняя ошибка сервера'
+            error: 'Internal server error'
         }
     }
 }
 
 /**
- * Проверка доступа для администратора
- * Администраторы имеют доступ ко всем курсам
+ * Access check for admins.
+ * Admins have access to all courses.
  */
 export async function checkAdminCourseAccess(courseId: string): Promise<CourseAccessCheck> {
     try {
@@ -111,7 +111,7 @@ export async function checkAdminCourseAccess(courseId: string): Promise<CourseAc
         if (!sessionToken) {
             return {
                 hasAccess: false,
-                error: 'Не авторизован'
+                error: 'Not authorized'
             }
         }
 
@@ -129,7 +129,7 @@ export async function checkAdminCourseAccess(courseId: string): Promise<CourseAc
         const userEmail = validation.user.email
         const userRole = validation.user.role
 
-        // Администраторы имеют доступ ко всем курсам
+        // Admins have access to all courses
         if (userRole === 'admin') {
             return {
                 hasAccess: true,
@@ -138,20 +138,20 @@ export async function checkAdminCourseAccess(courseId: string): Promise<CourseAc
             }
         }
 
-        // Для обычных пользователей проверяем покупку
+        // For regular users, validate purchase/access
         return await checkCourseAccess(courseId)
 
     } catch (error) {
         console.error('Error checking admin course access:', error)
         return {
             hasAccess: false,
-            error: 'Внутренняя ошибка сервера'
+            error: 'Internal server error'
         }
     }
 }
 
 /**
- * Получение информации о курсе с проверкой доступа
+ * Fetch course info with access validation.
  */
 export async function getCourseWithAccess(courseId: string, allowAdmin: boolean = false) {
     const accessCheck = allowAdmin
@@ -168,7 +168,7 @@ export async function getCourseWithAccess(courseId: string, allowAdmin: boolean 
 
     const supabase = getSupabaseAdmin()
 
-    // Получаем информацию о курсе
+    // Fetch course info
     const { data: course, error: courseError } = await supabase
         .from('documents')
         .select('*')
@@ -178,7 +178,7 @@ export async function getCourseWithAccess(courseId: string, allowAdmin: boolean 
     if (courseError || !course) {
         return {
             success: false,
-            error: 'Курс не найден',
+            error: 'Course not found',
             access: accessCheck
         }
     }
@@ -191,21 +191,21 @@ export async function getCourseWithAccess(courseId: string, allowAdmin: boolean 
 }
 
 /**
- * Middleware функция для использования в API routes
+ * Middleware helper for API routes.
  */
 export function withCourseAuth(handler: (req: any, context: any, access: CourseAccessCheck) => Promise<any>) {
     return async (req: any, context: any) => {
         const courseId = context.params?.courseId
 
         if (!courseId) {
-            return Response.json({ error: 'Course ID не найден' }, { status: 400 })
+            return Response.json({ error: 'Course ID not found' }, { status: 400 })
         }
 
         const access = await checkCourseAccess(courseId)
 
         if (!access.hasAccess) {
             return Response.json({
-                error: access.error || 'Доступ запрещен'
+                error: access.error || 'Access denied'
             }, { status: 403 })
         }
 
@@ -214,21 +214,21 @@ export function withCourseAuth(handler: (req: any, context: any, access: CourseA
 }
 
 /**
- * Middleware функция для администраторов
+ * Middleware helper for administrators.
  */
 export function withAdminCourseAuth(handler: (req: any, context: any, access: CourseAccessCheck) => Promise<any>) {
     return async (req: any, context: any) => {
         const courseId = context.params?.courseId
 
         if (!courseId) {
-            return Response.json({ error: 'Course ID не найден' }, { status: 400 })
+            return Response.json({ error: 'Course ID not found' }, { status: 400 })
         }
 
         const access = await checkAdminCourseAccess(courseId)
 
         if (!access.hasAccess) {
             return Response.json({
-                error: access.error || 'Доступ запрещен'
+                error: access.error || 'Access denied'
             }, { status: 403 })
         }
 

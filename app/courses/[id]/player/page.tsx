@@ -53,7 +53,7 @@ const normalizeStoragePath = (raw: string | null | undefined): string | null => 
                 return null
             }
         } catch (error) {
-            console.warn('Не удалось распарсить URL материала', error)
+            console.warn('Failed to parse material URL', error)
             return null
         }
     }
@@ -67,18 +67,18 @@ const normalizeStoragePath = (raw: string | null | undefined): string | null => 
 
 const formatDurationSeconds = (totalSeconds: number): string => {
     if (totalSeconds <= 0) {
-        return 'менее 1 сек'
+        return 'less than 1 sec'
     }
 
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
 
     if (minutes >= 1) {
-        const secondsPart = seconds > 0 ? ` ${seconds} сек` : ''
-        return `${minutes} мин${secondsPart}`
+        const secondsPart = seconds > 0 ? ` ${seconds} sec` : ''
+        return `${minutes} min${secondsPart}`
     }
 
-    return `${seconds} сек`
+    return `${seconds} sec`
 }
 
 interface CourseProgress {
@@ -179,7 +179,7 @@ export default function CoursePlayer() {
                 })
             })
         } catch (error) {
-            console.warn('Не удалось сохранить активность', error)
+            console.warn('Failed to save activity', error)
         }
     }, [course?.title, courseId])
 
@@ -223,7 +223,7 @@ export default function CoursePlayer() {
         return () => window.clearInterval(timer)
     }, [hasMaterialLinks])
 
-    // Функция для загрузки прогресса курса
+    // Load course progress
     const loadCourseProgress = useCallback(async () => {
         try {
             const response = await fetch(`/api/progress?courseId=${courseId}`, {
@@ -237,13 +237,13 @@ export default function CoursePlayer() {
                 setUserPoints(data.userPoints)
                 setRecentAchievements(data.newAchievements || [])
 
-                // Показываем новое достижение
+                // Show the latest achievement
                 if (data.newAchievements && data.newAchievements.length > 0) {
                     setShowAchievement(data.newAchievements[0])
                 }
             }
         } catch (error) {
-            console.error('Ошибка загрузки прогресса:', error)
+            console.error('Failed to load progress:', error)
         }
     }, [courseId])
 
@@ -262,20 +262,20 @@ export default function CoursePlayer() {
                     try {
                         errorData = await response.json()
                     } catch (jsonError) {
-                        console.warn('Не удалось разобрать ответ при проверке доступа к курсу', jsonError)
+                        console.warn('Failed to parse course access response', jsonError)
                     }
 
                     if (response.status === 401) {
-                        setError('Необходима авторизация')
+                        setError('Authorization required')
                         const redirectTarget = encodeURIComponent(`/courses/${courseId}/player`)
                         router.replace(`/auth/login?redirect=${redirectTarget}`)
                     } else if (response.status === 403) {
-                        setError(errorData?.error || 'Курс не приобретен')
+                        setError(errorData?.error || 'Course not purchased')
                     } else if (response.status === 404) {
-                        setError('Курс не найден')
+                        setError('Course not found')
                         router.replace(`/courses/${courseId}`)
                     } else {
-                        setError(errorData?.error || 'Ошибка загрузки курса')
+                        setError(errorData?.error || 'Failed to load course')
                     }
                     return
                 }
@@ -284,12 +284,12 @@ export default function CoursePlayer() {
                 setCourse(data.course)
                 setUser(data.user)
 
-                // Загружаем прогресс курса
+                // Load course progress
                 await loadCourseProgress()
 
             } catch (err) {
                 console.error('Error checking course access:', err)
-                setError('Ошибка загрузки курса')
+                setError('Failed to load course')
             } finally {
                 setLoading(false)
             }
@@ -300,7 +300,7 @@ export default function CoursePlayer() {
         }
     }, [courseId, loadCourseProgress])
 
-    // Функция для обновления прогресса материала
+    // Update material progress
     const updateMaterialProgress = async (
         materialId: string,
         materialType: string,
@@ -333,28 +333,28 @@ export default function CoursePlayer() {
             if (response.ok) {
                 const data = await response.json()
 
-                // Обновляем локальное состояние
+                // Update local state
                 setCourseStats(data.stats)
                 setUserPoints(data.userPoints)
 
-                // Показываем новое достижение
+                // Show a new achievement
                 if (data.newAchievements && data.newAchievements.length > 0) {
                     setShowAchievement(data.newAchievements[0])
                 }
 
-                // Перезагружаем прогресс
+                // Refresh progress
                 await loadCourseProgress()
             } else {
-                console.error('Ошибка обновления прогресса:', await response.text())
+                console.error('Error updating progress:', await response.text())
             }
         } catch (error) {
-            console.error('Ошибка обновления прогресса:', error)
+            console.error('Error updating progress:', error)
         } finally {
             setUpdatingProgress(null)
         }
     }
 
-    // Функция для проверки статуса материала
+    // Determine material status
     const getMaterialKey = (materialType: string, materialId: string | number) => `${materialType}_${materialId}`
 
     const ensureSignedLink = useCallback(async (
@@ -383,7 +383,7 @@ export default function CoursePlayer() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}))
-                throw new Error(errorData.error || 'Не удалось получить ссылку')
+                throw new Error(errorData.error || 'Could not get a link')
             }
 
             const data = await response.json()
@@ -403,10 +403,10 @@ export default function CoursePlayer() {
             track('signed_url_issued', { courseId, key, path, expiresIn: data.expiresIn })
             return linkInfo
         } catch (error) {
-            console.error('Ошибка получения защищенной ссылки', error)
+            console.error('Failed to obtain signed link', error)
             setLinkErrors((prev) => ({
                 ...prev,
-                [key]: error instanceof Error ? error.message : 'Неизвестная ошибка'
+                [key]: error instanceof Error ? error.message : 'Unknown error'
             }))
             try { track('signed_url_error', { courseId, key, path, message: error instanceof Error ? error.message : String(error) }) } catch { }
             throw error
@@ -422,7 +422,7 @@ export default function CoursePlayer() {
         if (linkLoading[key]) {
             return (
                 <p className="text-xs text-gray-500 mt-2" role="status">
-                    Готовим защищенную ссылку...
+                    Preparing a protected link...
                 </p>
             )
         }
@@ -441,7 +441,7 @@ export default function CoursePlayer() {
             const remainingSeconds = Math.max(0, Math.floor((info.expiresAt - now) / 1000))
             return (
                 <p className="text-xs text-gray-500 mt-2">
-                    Ссылка истечёт через {formatDurationSeconds(remainingSeconds)}
+                    Link expires in {formatDurationSeconds(remainingSeconds)}
                 </p>
             )
         }
@@ -456,7 +456,7 @@ export default function CoursePlayer() {
         return progress?.status || 'not_started'
     }
 
-    // Функция для проверки завершенности материала
+    // Check if material is completed
     const isMaterialCompleted = (materialId: string, materialType: string): boolean => {
         return getMaterialStatus(materialId, materialType) === 'completed'
     }
@@ -472,7 +472,7 @@ export default function CoursePlayer() {
         }
     ) => {
         if (!fileUrl) {
-            console.warn('Попытка скачать материал без ссылки', materialKey)
+            console.warn('Attempt to download material without a link', materialKey)
             return
         }
 
@@ -513,14 +513,14 @@ export default function CoursePlayer() {
                 }
             })
         } catch (error) {
-            console.error('Не удалось скачать материал', error)
+            console.error('Could not download material', error)
             try { track('material_download_failed', { courseId, materialKey }) } catch { }
         }
     }
 
     const handleOpenVideo = async (video: CourseVideo) => {
         if (!video?.file_url) {
-            console.warn('Видео без file_url', video?.id)
+            console.warn('Video without file_url', video?.id)
             return
         }
 
@@ -575,14 +575,14 @@ export default function CoursePlayer() {
                 }
             })
         } catch (error) {
-            console.error('Не удалось открыть видео', error)
+            console.error('Could not open video', error)
             try { track('material_video_play_failed', { courseId, materialKey: videoKey }) } catch { }
         }
     }
 
     const handlePlayAudio = async (audioItem: CourseAudio) => {
         if (!audioItem?.file_url) {
-            console.warn('Аудио без file_url', audioItem?.id)
+            console.warn('Audio without file_url', audioItem?.id)
             return
         }
 
@@ -637,7 +637,7 @@ export default function CoursePlayer() {
                 }
             })
         } catch (error) {
-            console.error('Не удалось воспроизвести аудио', error)
+            console.error('Could not play audio', error)
             try { track('material_audio_play_failed', { courseId, materialKey: audioKey }) } catch { }
         }
     }
@@ -652,7 +652,7 @@ export default function CoursePlayer() {
         description?: string
     }) => {
         if (!params.fileUrl) {
-            console.warn('PDF без file_url', params.materialKey)
+            console.warn('PDF without file_url', params.materialKey)
             return
         }
 
@@ -699,7 +699,7 @@ export default function CoursePlayer() {
                 }
             })
         } catch (error) {
-            console.error('Не удалось открыть PDF предпросмотр', error)
+            console.error('Could not open PDF preview', error)
             track('material_pdf_preview_failed', { courseId, materialKey: params.materialKey })
         }
     }
@@ -722,9 +722,9 @@ export default function CoursePlayer() {
         const minutes = Math.floor((totalSeconds % 3600) / 60)
 
         if (hours > 0) {
-            return `${hours}ч ${minutes}м`
+            return `${hours}h ${minutes}m`
         }
-        return `${minutes}м`
+        return `${minutes}m`
     }
 
     if (loading) {
@@ -744,21 +744,21 @@ export default function CoursePlayer() {
                     <div className="text-center">
                         <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                            Доступ ограничен
+                            Access restricted
                         </h1>
                         <p className="text-gray-600 mb-6">
-                            {error || 'Курс не найден'}
+                            {error || 'Course not found'}
                         </p>
                         <div className="space-x-4">
                             <Button asChild>
                                 <Link href="/catalog">
                                     <ArrowLeft className="w-4 h-4 mr-2" />
-                                    К каталогу
+                                    Back to catalog
                                 </Link>
                             </Button>
                             <Button asChild variant="outline">
                                 <Link href="/catalog">
-                                    Посмотреть другие курсы
+                                    Browse other courses
                                 </Link>
                             </Button>
                         </div>
@@ -773,7 +773,7 @@ export default function CoursePlayer() {
     return (
         <PageLayout>
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-                {/* Заголовок */}
+                {/* Header */}
                 <div className="bg-white shadow-sm border-b">
                     <div className="container mx-auto px-4 py-6">
                         <div className="flex items-center justify-between">
@@ -781,7 +781,7 @@ export default function CoursePlayer() {
                                 <Button asChild variant="ghost" className="mb-4">
                                     <Link href={`/courses/${courseId}`}>
                                         <ArrowLeft className="w-4 h-4 mr-2" />
-                                        Назад к описанию
+                                        Back to overview
                                     </Link>
                                 </Button>
                                 <h1 className="text-3xl font-bold text-gray-900">{course.title}</h1>
@@ -790,16 +790,16 @@ export default function CoursePlayer() {
                             <div className="text-right">
                                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                                     <Clock className="w-4 h-4" />
-                                    <span>Куплен: {course.purchase_date ? new Date(course.purchase_date).toLocaleDateString('ru-RU') : 'Неизвестно'}</span>
+                                    <span>Purchased: {course.purchase_date ? new Date(course.purchase_date).toLocaleDateString('en-US') : 'Unknown'}</span>
                                 </div>
                                 <div className="text-sm text-gray-600 mb-2">
-                                    Прогресс: {getCompletedItems()} из {getTotalItems()} материалов ({getCompletionPercentage()}%)
+                                    Progress: {getCompletedItems()} of {getTotalItems()} items ({getCompletionPercentage()}%)
                                 </div>
                                 {userPoints && (
                                     <div className="flex items-center gap-2 text-sm">
                                         <Star className="w-4 h-4 text-yellow-500" />
-                                        <span className="text-yellow-600 font-medium">{userPoints.total_points} баллов</span>
-                                        <span className="text-gray-500">• Уровень {userPoints.current_level}</span>
+                                        <span className="text-yellow-600 font-medium">{userPoints.total_points} points</span>
+                                        <span className="text-gray-500">• Level {userPoints.current_level}</span>
                                     </div>
                                 )}
                                 <div className="mt-3 flex justify-end">
@@ -807,14 +807,14 @@ export default function CoursePlayer() {
                                         size="sm"
                                         variant="outline"
                                         onClick={() => openIssueDialog({
-                                            subject: `Проблема с курсом: ${course.title}`,
+                                            subject: `Issue with course: ${course.title}`,
                                             courseId,
                                             courseTitle: course.title,
                                             issueType: 'content',
                                             issueSeverity: 'normal'
                                         })}
                                     >
-                                        Сообщить о проблеме
+                                        Report an issue
                                     </Button>
                                 </div>
                             </div>
@@ -825,19 +825,19 @@ export default function CoursePlayer() {
                 <div className="container mx-auto px-4 py-8 space-y-6">
                     <SmartMaterialPreview item={previewItem} onClose={() => setPreviewItem(null)} />
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Основной контент */}
+                        {/* Primary content */}
                         <div className="lg:col-span-2 space-y-6">
-                            {/* Основной PDF */}
+                            {/* Main PDF */}
                             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                                 <div className="flex items-center gap-3 mb-4">
                                     <FileText className="w-6 h-6 text-blue-600" />
-                                    <h2 className="text-xl font-semibold text-gray-900">Основной материал</h2>
+                                    <h2 className="text-xl font-semibold text-gray-900">Main material</h2>
                                     {isMaterialCompleted(courseId, 'main_pdf') && (
                                         <CheckCircle className="w-5 h-5 text-green-500" />
                                     )}
                                 </div>
                                 <p className="text-gray-600 mb-4">
-                                    {course.main_pdf_description || 'Основной PDF-документ курса'}
+                                    {course.main_pdf_description || 'Primary course PDF'}
                                 </p>
                                 <div className="flex gap-3">
                                     <Button
@@ -845,7 +845,7 @@ export default function CoursePlayer() {
                                             void handleDownload(mainPdfKey, course.file_url, `${course.title}.pdf`, {
                                                 materialId: courseId,
                                                 materialType: 'main_pdf',
-                                                materialTitle: `${course.title} - Основной PDF`
+                                                materialTitle: `${course.title} - Main PDF`
                                             })
                                         }}
                                         className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -854,12 +854,12 @@ export default function CoursePlayer() {
                                         {linkLoading[mainPdfKey] ? (
                                             <div className="flex items-center gap-2">
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                Подготавливаем...
+                                                Preparing...
                                             </div>
                                         ) : (
                                             <>
                                                 <Download className="w-4 h-4 mr-2" />
-                                                Скачать PDF
+                                                Download PDF
                                             </>
                                         )}
                                     </Button>
@@ -868,7 +868,7 @@ export default function CoursePlayer() {
                                             void handlePreviewPdf({
                                                 materialKey: mainPdfKey,
                                                 fileUrl: course.file_url,
-                                                title: `${course.title} - Основной PDF`,
+                                                title: `${course.title} - Main PDF`,
                                                 materialId: courseId,
                                                 materialType: 'main_pdf',
                                                 description: course.main_pdf_description || undefined
@@ -877,13 +877,13 @@ export default function CoursePlayer() {
                                         size="sm"
                                         variant="ghost"
                                     >
-                                        Предпросмотр
+                                        Preview
                                     </Button>
                                     <Button
                                         onClick={() => updateMaterialProgress(
                                             courseId,
                                             'main_pdf',
-                                            `${course.title} - Основной PDF`,
+                                            `${course.title} - Main PDF`,
                                             isMaterialCompleted(courseId, 'main_pdf') ? 'not_started' : 'completed',
                                             100,
                                             0
@@ -895,19 +895,19 @@ export default function CoursePlayer() {
                                         {updatingProgress === `main_pdf_${courseId}` ? (
                                             <div className="flex items-center gap-2">
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                                Сохранение...
+                                                Saving...
                                             </div>
                                         ) : (
                                             <>
                                                 {isMaterialCompleted(courseId, 'main_pdf') ? (
                                                     <>
                                                         <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                                                        Изучено
+                                                        Completed
                                                     </>
                                                 ) : (
                                                     <>
                                                         <Zap className="w-4 h-4 mr-2" />
-                                                        Отметить как изученное
+                                                        Mark as completed
                                                     </>
                                                 )}
                                             </>
@@ -917,13 +917,13 @@ export default function CoursePlayer() {
                                 {renderLinkStatus(mainPdfKey)}
                             </div>
 
-                            {/* Рабочие тетради */}
+                            {/* Workbooks */}
                             {course.has_workbook && course.workbooks && course.workbooks.length > 0 && (
                                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                                     <div className="flex items-center gap-3 mb-4">
                                         <FileText className="w-6 h-6 text-green-600" />
                                         <h2 className="text-xl font-semibold text-gray-900">
-                                            Рабочие тетради ({course.workbook_count})
+                                            Workbooks ({course.workbook_count})
                                         </h2>
                                     </div>
                                     <div className="space-y-4">
@@ -959,12 +959,12 @@ export default function CoursePlayer() {
                                                             {linkLoading[workbookKey] ? (
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                                    Подготавливаем...
+                                                                    Preparing...
                                                                 </div>
                                                             ) : (
                                                                 <>
                                                                     <Download className="w-4 h-4 mr-1" />
-                                                                    Скачать
+                                                                    Download
                                                                 </>
                                                             )}
                                                         </Button>
@@ -983,7 +983,7 @@ export default function CoursePlayer() {
                                                             size="sm"
                                                             variant="ghost"
                                                         >
-                                                            Предпросмотр
+                                                            Preview
                                                         </Button>
                                                         <Button
                                                             onClick={() => updateMaterialProgress(
@@ -1004,18 +1004,18 @@ export default function CoursePlayer() {
                                                             ) : isMaterialCompleted(workbook.id, 'workbook') ? (
                                                                 <>
                                                                     <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
-                                                                    Изучено
+                                                                    Completed
                                                                 </>
                                                             ) : (
                                                                 <>
                                                                     <Zap className="w-4 h-4 mr-1" />
-                                                                    Изучено
+                                                                    Completed
                                                                 </>
                                                             )}
                                                         </Button>
                                                         <Button
                                                             onClick={() => openIssueDialog({
-                                                                subject: `Проблема с рабочей тетрадью: ${workbook.title}`,
+                                                                subject: `Issue with workbook: ${workbook.title}`,
                                                                 courseId,
                                                                 courseTitle: course.title,
                                                                 materialId: workbook.id,
@@ -1028,7 +1028,7 @@ export default function CoursePlayer() {
                                                             size="sm"
                                                             variant="ghost"
                                                         >
-                                                            Сообщить о проблеме
+                                                            Report an issue
                                                         </Button>
                                                     </div>
                                                         {renderLinkStatus(workbookKey)}
@@ -1040,13 +1040,13 @@ export default function CoursePlayer() {
                                 </div>
                             )}
 
-                            {/* Видео-уроки */}
+                            {/* Video lessons */}
                             {course.has_videos && course.videos && course.videos.length > 0 && (
                                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                                     <div className="flex items-center gap-3 mb-4">
                                         <Video className="w-6 h-6 text-purple-600" />
                                         <h2 className="text-xl font-semibold text-gray-900">
-                                            Видео-уроки ({course.video_count})
+                                            Video lessons ({course.video_count})
                                         </h2>
                                     </div>
                                     <div className="space-y-4">
@@ -1076,12 +1076,12 @@ export default function CoursePlayer() {
                                                             {linkLoading[videoKey] ? (
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                                    Ожидайте...
+                                                                    Please wait...
                                                                 </div>
                                                             ) : (
                                                                 <>
                                                                     <Play className="w-4 h-4 mr-1" />
-                                                                    Смотреть
+                                                                    Watch
                                                                 </>
                                                             )}
                                                         </Button>
@@ -1095,7 +1095,7 @@ export default function CoursePlayer() {
                                                             variant="outline"
                                                         >
                                                             <Download className="w-4 h-4 mr-1" />
-                                                            Скачать
+                                                            Download
                                                         </Button>
                                                         <Button
                                                             onClick={() => updateMaterialProgress(
@@ -1116,18 +1116,18 @@ export default function CoursePlayer() {
                                                             ) : isMaterialCompleted(video.id, 'video') ? (
                                                                 <>
                                                                     <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
-                                                                    Изучено
+                                                                    Completed
                                                                 </>
                                                             ) : (
                                                                 <>
                                                                     <Zap className="w-4 h-4 mr-1" />
-                                                                    Изучено
+                                                                    Completed
                                                                 </>
                                                             )}
                                                         </Button>
                                                         <Button
                                                             onClick={() => openIssueDialog({
-                                                                subject: `Проблема с видео: ${video.title}`,
+                                                                subject: `Issue with video: ${video.title}`,
                                                                 courseId,
                                                                 courseTitle: course.title,
                                                                 materialId: video.id,
@@ -1140,7 +1140,7 @@ export default function CoursePlayer() {
                                                             size="sm"
                                                             variant="ghost"
                                                         >
-                                                            Сообщить о проблеме
+                                                            Report an issue
                                                         </Button>
                                                     </div>
                                                     {renderLinkStatus(videoKey)}
@@ -1151,13 +1151,13 @@ export default function CoursePlayer() {
                                 </div>
                             )}
 
-                            {/* Аудио-настройки */}
+                            {/* Audio tracks */}
                             {course.has_audio && course.audio && course.audio.length > 0 && (
                                 <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                                     <div className="flex items-center gap-3 mb-4">
                                         <Volume2 className="w-6 h-6 text-orange-600" />
                                         <h2 className="text-xl font-semibold text-gray-900">
-                                            Аудио-настройки ({course.audio_count})
+                                            Audio tracks ({course.audio_count})
                                         </h2>
                                     </div>
                                     <div className="space-y-4">
@@ -1187,12 +1187,12 @@ export default function CoursePlayer() {
                                                             {linkLoading[audioKey] ? (
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                                    Ожидайте...
+                                                                    Please wait...
                                                                 </div>
                                                             ) : (
                                                                 <>
                                                                     <Play className="w-4 h-4 mr-1" />
-                                                                    Слушать
+                                                                    Listen
                                                                 </>
                                                             )}
                                                         </Button>
@@ -1206,7 +1206,7 @@ export default function CoursePlayer() {
                                                             variant="outline"
                                                         >
                                                             <Download className="w-4 h-4 mr-1" />
-                                                            Скачать
+                                                            Download
                                                         </Button>
                                                         <Button
                                                             onClick={() => updateMaterialProgress(
@@ -1227,18 +1227,18 @@ export default function CoursePlayer() {
                                                             ) : isMaterialCompleted(audioItem.id, 'audio') ? (
                                                                 <>
                                                                     <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
-                                                                    Изучено
+                                                                    Completed
                                                                 </>
                                                             ) : (
                                                                 <>
                                                                     <Zap className="w-4 h-4 mr-1" />
-                                                                    Изучено
+                                                                    Completed
                                                                 </>
                                                             )}
                                                         </Button>
                                                         <Button
                                                             onClick={() => openIssueDialog({
-                                                                subject: `Проблема с аудио: ${audioItem.title}`,
+                                                                subject: `Issue with audio: ${audioItem.title}`,
                                                                 courseId,
                                                                 courseTitle: course.title,
                                                                 materialId: audioItem.id,
@@ -1251,7 +1251,7 @@ export default function CoursePlayer() {
                                                             size="sm"
                                                             variant="ghost"
                                                         >
-                                                            Сообщить о проблеме
+                                                            Report an issue
                                                         </Button>
                                                     </div>
                                                     {renderLinkStatus(audioKey)}
@@ -1263,16 +1263,16 @@ export default function CoursePlayer() {
                             )}
                         </div>
 
-                        {/* Боковая панель */}
+                        {/* Sidebar */}
                         <div className="space-y-6">
-                            {/* Прогресс */}
+                            {/* Progress */}
                             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Прогресс курса</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Course progress</h3>
 
-                                {/* Прогресс-бар */}
+                                {/* Progress bar */}
                                 <div className="mb-4">
                                     <div className="flex justify-between text-sm mb-2">
-                                        <span>Общий прогресс</span>
+                                        <span>Total progress</span>
                                         <span>{getCompletionPercentage()}%</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2">
@@ -1283,22 +1283,22 @@ export default function CoursePlayer() {
                                     </div>
                                 </div>
 
-                                {/* Статистика */}
+                                {/* Stats */}
                                 <div className="grid grid-cols-2 gap-4 mb-4 text-center">
                                     <div className="bg-blue-50 rounded-lg p-3">
                                         <div className="text-lg font-bold text-blue-600">{getCompletedItems()}</div>
-                                        <div className="text-xs text-blue-500">Завершено</div>
+                                        <div className="text-xs text-blue-500">Completed</div>
                                     </div>
                                     <div className="bg-green-50 rounded-lg p-3">
                                         <div className="text-lg font-bold text-green-600">{getTotalStudyTime()}</div>
-                                        <div className="text-xs text-green-500">Время изучения</div>
+                                        <div className="text-xs text-green-500">Study time</div>
                                     </div>
                                 </div>
 
-                                {/* Детальный прогресс */}
+                                {/* Detailed progress */}
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-sm">
-                                        <span>Основной материал</span>
+                                        <span>Main material</span>
                                         <span className={isMaterialCompleted(courseId, 'main_pdf') ? 'text-green-500' : 'text-gray-400'}>
                                             {isMaterialCompleted(courseId, 'main_pdf') ? '✓' : '○'}
                                         </span>
@@ -1330,24 +1330,24 @@ export default function CoursePlayer() {
                                 </div>
                             </div>
 
-                            {/* Баллы и достижения */}
+                            {/* Points and achievements */}
                             {userPoints && (
                                 <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                         <Star className="w-5 h-5 text-yellow-500" />
-                                        Ваши баллы
+                                        Your points
                                     </h3>
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-600">Всего баллов:</span>
+                                            <span className="text-sm text-gray-600">Total points:</span>
                                             <span className="font-bold text-yellow-600">{userPoints.total_points}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-600">Уровень:</span>
+                                            <span className="text-sm text-gray-600">Level:</span>
                                             <span className="font-bold text-blue-600">{userPoints.current_level}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-600">Серия дней:</span>
+                                            <span className="text-sm text-gray-600">Streak days:</span>
                                             <span className="font-bold text-green-600">{userPoints.streak_days}</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
@@ -1357,30 +1357,30 @@ export default function CoursePlayer() {
                                             ></div>
                                         </div>
                                         <div className="text-xs text-center text-gray-500">
-                                            До следующего уровня: {userPoints.points_to_next_level} баллов
+                                            To next level: {userPoints.points_to_next_level} points
                                         </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Информация о курсе */}
+                            {/* Course info */}
                             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Информация о курсе</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Course info</h3>
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Продолжительность:</span>
-                                        <span className="font-medium">{course.course_duration_minutes || 25} мин</span>
+                                        <span className="text-gray-600">Duration:</span>
+                                        <span className="font-medium">{course.course_duration_minutes || 25} min</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Видео:</span>
+                                        <span className="text-gray-600">Videos:</span>
                                         <span className="font-medium">{course.video_count || 0}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Тетради:</span>
+                                        <span className="text-gray-600">Workbooks:</span>
                                         <span className="font-medium">{course.workbook_count || 0}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Аудио:</span>
+                                        <span className="text-gray-600">Audio:</span>
                                         <span className="font-medium">{course.audio_count || 0}</span>
                                     </div>
                                 </div>
@@ -1389,12 +1389,12 @@ export default function CoursePlayer() {
                     </div>
                 </div>
 
-                {/* Модальное окно для видео */}
+                {/* Video modal */}
                 {activeVideo && (
                     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
                         <div className="bg-white rounded-lg p-4 max-w-4xl w-full mx-4">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-semibold">Видео-урок</h3>
+                                <h3 className="text-lg font-semibold">Video lesson</h3>
                                 <Button
                                     onClick={() => setActiveVideo(null)}
                                     variant="ghost"
@@ -1413,12 +1413,12 @@ export default function CoursePlayer() {
                     </div>
                 )}
 
-                {/* Модальное окно для аудио */}
+                {/* Audio modal */}
                 {activeAudio && (
                     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
                         <div className="bg-white rounded-lg p-4 max-w-md w-full mx-4">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-semibold">Аудио-настройка</h3>
+                                <h3 className="text-lg font-semibold">Audio track</h3>
                                 <Button
                                     onClick={() => setActiveAudio(null)}
                                     variant="ghost"
@@ -1437,14 +1437,14 @@ export default function CoursePlayer() {
                     </div>
                 )}
 
-                {/* Уведомление о достижении */}
+                {/* Achievement notification */}
                 {showAchievement && (
                     <div className="fixed top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl shadow-2xl p-6 max-w-sm z-50 animate-bounce">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="text-3xl">{showAchievement.icon}</div>
                             <div>
-                                <h4 className="font-bold text-white text-lg">Достижение получено!</h4>
-                                <p className="text-yellow-100 text-sm">+{showAchievement.points_awarded} баллов</p>
+                                <h4 className="font-bold text-white text-lg">Achievement unlocked!</h4>
+                                <p className="text-yellow-100 text-sm">+{showAchievement.points_awarded} points</p>
                             </div>
                             <Button
                                 onClick={() => setShowAchievement(null)}

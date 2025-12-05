@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const validation = await validateSessionToken(sessionToken, { supabase, touch: false })
 
   if (!validation.session || !validation.user) {
-    const response = NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 })
+    const response = NextResponse.json({ error: 'Authorization required' }, { status: 401 })
     if (sessionToken) {
       clearSessionCookie(response)
     }
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('Session list error:', error)
-    return NextResponse.json({ error: 'Не удалось получить список сессий' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch sessions' }, { status: 500 })
   }
 
   const response = NextResponse.json({
@@ -64,7 +64,7 @@ export async function DELETE(request: NextRequest) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 403 })
     }
-    return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+    return NextResponse.json({ error: 'Request rejected' }, { status: 403 })
   }
 
   const cookieStore = await cookies()
@@ -73,7 +73,7 @@ export async function DELETE(request: NextRequest) {
   const validation = await validateSessionToken(currentToken, { supabase, touch: false })
 
   if (!validation.session || !validation.user) {
-    const response = NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 })
+    const response = NextResponse.json({ error: 'Authorization required' }, { status: 401 })
     if (currentToken) {
       clearSessionCookie(response)
     }
@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest) {
       .maybeSingle()
 
     if (!targetSession) {
-      return NextResponse.json({ error: 'Сессия не найдена' }, { status: 404 })
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
     await revokeSessionToken(targetToken, { supabase })

@@ -20,24 +20,24 @@ export function CheckoutContent({ document }: CheckoutContentProps) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'stripe' | 'cryptomus'>('stripe')
   const [isLoadingGeo, setIsLoadingGeo] = useState(true)
 
-  // Определяем страну пользователя при загрузке
+  // Detect user country on load
   useEffect(() => {
     const detectLocation = async () => {
       try {
         const country = await getCountryByIP()
         setUserCountry(country)
         
-        // Получаем IP отдельно для логирования
+        // Fetch IP separately for logging
         const ipResponse = await fetch('https://api.ipify.org?format=json')
         const ipData = await ipResponse.json()
         setUserIP(ipData.ip)
         
-        // Устанавливаем рекомендуемый способ оплаты
+        // Set recommended payment method
         const recommended = getRecommendedPaymentMethod(country)
         setSelectedPaymentMethod(recommended)
       } catch (error) {
         console.error('Error detecting location:', error)
-        // Если не удалось определить страну, оставляем Stripe по умолчанию
+        // If country detection fails, keep Stripe as default
       } finally {
         setIsLoadingGeo(false)
       }
@@ -56,20 +56,20 @@ export function CheckoutContent({ document }: CheckoutContentProps) {
             className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Вернуться к каталогу
+            Back to catalog
           </Link>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Оформление покупки
+            Checkout
           </h1>
           <p className="text-lg text-gray-600">
-            Выберите удобный способ оплаты для получения доступа к документу
+            Choose a payment method to access the document
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Левая колонка - информация о документе */}
+          {/* Left column - document info */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Информация о товаре */}
+            {/* Product info */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
@@ -88,18 +88,18 @@ export function CheckoutContent({ document }: CheckoutContentProps) {
                   </p>
                   <div className="flex items-center justify-between">
                     <div className="text-2xl font-bold text-gray-900">
-                      {document.price_rub.toLocaleString('ru-RU')} ₽
+                      {document.price_rub.toLocaleString('en-US')} ₽
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <ShoppingCart className="w-4 h-4 mr-1" />
-                      PDF документ
+                      PDF document
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Селектор способа оплаты */}
+            {/* Payment selector */}
             {!isLoadingGeo && (
               <PaymentSelector
                 recommendedMethod={getRecommendedPaymentMethod(userCountry)}
@@ -108,21 +108,21 @@ export function CheckoutContent({ document }: CheckoutContentProps) {
               />
             )}
 
-            {/* Загрузка геолокации */}
+            {/* Geolocation loading */}
             {isLoadingGeo && (
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
-                  <span className="text-gray-600">Определяем ваше местоположение...</span>
+                  <span className="text-gray-600">Detecting your location...</span>
                 </div>
               </div>
             )}
 
-            {/* Компонент оплаты */}
+            {/* Payment component */}
             {!isLoadingGeo && (
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Оплата через {selectedPaymentMethod === 'stripe' ? 'банковскую карту' : 'Cryptomus'}
+                  Pay via {selectedPaymentMethod === 'stripe' ? 'bank card' : 'Cryptomus'}
                 </h3>
                 
                 {selectedPaymentMethod === 'stripe' ? (
@@ -142,57 +142,57 @@ export function CheckoutContent({ document }: CheckoutContentProps) {
             )}
           </div>
 
-          {/* Правая колонка - статистика и дополнительная информация */}
+          {/* Right column - stats and extras */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Статистика покупок */}
+            {/* Purchase stats */}
             <PurchaseStats documentId={document.id} createdAt={document.created_at} />
 
-            {/* Гарантии */}
+            {/* Guarantees */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Гарантии безопасности
+                Security guarantees
               </h3>
               <ul className="space-y-3 text-sm text-gray-600">
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span>256-битное SSL шифрование</span>
+                  <span>256-bit SSL encryption</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span>Мгновенный доступ после оплаты</span>
+                  <span>Instant access after payment</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span>Возврат средств в течение 14 дней</span>
+                  <span>Refunds within 14 days</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span>Техническая поддержка 24/7</span>
+                  <span>24/7 technical support</span>
                 </li>
               </ul>
             </div>
 
-            {/* Что вы получаете */}
+            {/* What you get */}
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                После оплаты вы получите:
+                After payment you get:
               </h3>
               <ul className="space-y-2 text-sm text-gray-700">
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">📄</span>
-                  <span>Прямую ссылку на скачивание PDF</span>
+                  <span>Direct link to download PDF</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">💾</span>
-                  <span>Возможность сохранения на любое устройство</span>
+                  <span>Ability to save to any device</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">🖨️</span>
-                  <span>Право печати для личного использования</span>
+                  <span>Print rights for personal use</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">🔄</span>
-                  <span>Пожизненный доступ для повторного скачивания</span>
+                  <span>Lifetime access for re-downloads</span>
                 </li>
               </ul>
             </div>

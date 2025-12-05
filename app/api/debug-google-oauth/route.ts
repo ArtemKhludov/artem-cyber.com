@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
             recommendations: [] as string[]
         }
 
-        // Тест 1: Проверяем переменные окружения
+        // Test 1: Check environment variables
         console.log('📡 Test 1: Environment variables...')
         const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
         const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
             results.tests.env_variables = '✅ Success'
         }
 
-        // Тест 2: Проверяем redirect URI
+        // Test 2: Validate redirect URI
         console.log('📡 Test 2: Redirect URI validation...')
         const expectedRedirectUri = 'https://www.energylogic-ai.com/api/auth/oauth/google/callback'
         
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
             results.tests.redirect_uri = '✅ Success'
         }
 
-        // Тест 3: Проверяем Google OAuth endpoint
+        // Test 3: Check Google OAuth callback endpoint
         console.log('📡 Test 3: Google OAuth endpoint...')
         try {
             const response = await fetch('https://www.energylogic-ai.com/api/auth/oauth/google/callback', {
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
             results.errors.push(`OAuth endpoint error: ${error}`)
         }
 
-        // Тест 4: Проверяем Google OAuth route
+        // Test 4: Check Google OAuth route
         console.log('📡 Test 4: Google OAuth route...')
         try {
             const response = await fetch('https://www.energylogic-ai.com/api/auth/oauth/google', {
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
             results.errors.push(`OAuth route error: ${error}`)
         }
 
-        // Тест 5: Проверяем Google Cloud Console настройки
+        // Test 5: Remind Google Cloud Console settings
         console.log('📡 Test 5: Google Cloud Console settings...')
         results.tests.google_console = '⚠️ Manual Check Required'
         results.warnings.push('Please verify Google Cloud Console settings:')
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
         results.warnings.push('3. OAuth consent screen is configured')
         results.warnings.push('4. Client ID and Secret are correct')
 
-        // Итоговая оценка
+        // Summary
         const totalTests = Object.keys(results.tests).length
         const passedTests = Object.values(results.tests).filter(test => test === '✅ Success').length
         const failedTests = Object.values(results.tests).filter(test => test === '❌ Failed').length
@@ -117,23 +117,23 @@ export async function GET(request: NextRequest) {
             success_rate: Math.round((passedTests / totalTests) * 100)
         }
 
-        // Рекомендации
+        // Recommendations
         results.recommendations = []
         
         if (failedTests > 0) {
-            results.recommendations.push('❌ Критические ошибки требуют немедленного исправления')
+            results.recommendations.push('❌ Critical errors require immediate fixes')
         }
         
         if (warningTests > 0) {
-            results.recommendations.push('⚠️ Предупреждения следует исправить для стабильной работы')
+            results.recommendations.push('⚠️ Warnings should be resolved for stability')
         }
         
         if (results.errors.some(error => error.includes('Redirect URI'))) {
-            results.recommendations.push('🔧 Проверьте GOOGLE_OAUTH_REDIRECT_URI в Vercel')
+            results.recommendations.push('🔧 Verify GOOGLE_OAUTH_REDIRECT_URI in Vercel')
         }
         
         if (results.errors.some(error => error.includes('not set'))) {
-            results.recommendations.push('🔧 Добавьте недостающие переменные окружения в Vercel')
+            results.recommendations.push('🔧 Add missing env variables in Vercel')
         }
 
         console.log('✅ Google OAuth debug completed')

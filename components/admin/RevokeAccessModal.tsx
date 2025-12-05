@@ -59,11 +59,11 @@ export default function RevokeAccessModal({
     const reasonHint = useMemo(() => {
         switch (reason) {
             case 'refund':
-                return 'Возврат платежа: доступ будет отозван, причина зафиксируется в журнале.'
+                return 'Payment refund: access will be revoked, reason will be recorded in the log.'
             case 'chargeback':
-                return 'Чарджбэк банка: доступ будет отозван; возможны блокировки повторных продаж.'
+                return 'Bank chargeback: access will be revoked; repeat sales may be blocked.'
             case 'manual':
-                return 'Ручной отзыв без связи с оплатой: уточните детали в комментарии.'
+                return 'Manual revocation unrelated to payment: specify details in the comment.'
             default:
                 return ''
         }
@@ -91,12 +91,12 @@ export default function RevokeAccessModal({
         e.preventDefault()
         setError(null)
         if (!userId) {
-            setError('Укажите пользователя (ID)')
+            setError('Specify user (ID)')
             return
         }
 
         if (!documentId) {
-            setError('Выберите курс')
+            setError('Select course')
             return
         }
         setLoading(true)
@@ -118,13 +118,13 @@ export default function RevokeAccessModal({
             })
             const json = await res.json().catch(() => ({}))
             if (!res.ok || json.error) {
-                setError(json.error || 'Ошибка отзыва доступа')
+                setError(json.error || 'Error revoking access')
                 return
             }
             setDone(true)
             onSuccess()
         } catch (e: any) {
-            setError(e?.message || 'Ошибка сети')
+            setError(e?.message || 'Network error')
         } finally {
             setLoading(false)
         }
@@ -138,7 +138,7 @@ export default function RevokeAccessModal({
                 <div className="flex items-center justify-between border-b px-6 py-4">
                     <div className="flex items-center gap-2">
                         <ShieldOff className="h-5 w-5 text-red-600" />
-                        <h2 className="text-lg font-semibold">Отозвать доступ к курсу</h2>
+                        <h2 className="text-lg font-semibold">Revoke Course Access</h2>
                     </div>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
                         <X className="h-5 w-5" />
@@ -148,22 +148,22 @@ export default function RevokeAccessModal({
                 <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
                     {userId ? (
                         <div className="rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-700">
-                            Доступ будет отозван у пользователя ID <span className="font-mono">{userId}</span>
+                            Access will be revoked for user ID <span className="font-mono">{userId}</span>
                             {email && <span className="ml-2">(email: {email})</span>}
                         </div>
                     ) : (
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">ID пользователя</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">User ID</label>
                             <input
                                 type="text"
                                 value={userId}
                                 onChange={(e) => setUserId(e.target.value)}
                                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="UUID пользователя"
+                                placeholder="User UUID"
                             />
-                            {/* Поиск пользователя по email (подстановка ID) */}
+                            {/* Search user by email (fill ID) */}
                             <div className="mt-3">
-                                <label className="mb-1 block text-xs font-medium text-gray-600">Найти пользователя по email</label>
+                                <label className="mb-1 block text-xs font-medium text-gray-600">Find user by email</label>
                                 <div className="flex gap-2">
                                     <input
                                         type="email"
@@ -191,7 +191,7 @@ export default function RevokeAccessModal({
                                             }
                                         }}
                                     >
-                                        Найти
+                                        Search
                                     </button>
                                 </div>
                                 {userSuggestions.length > 0 && (
@@ -218,13 +218,13 @@ export default function RevokeAccessModal({
                     )}
 
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Курс (документ)</label>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Course (document)</label>
                         <input
                             type="text"
                             value={docFilter}
                             onChange={(e) => setDocFilter(e.target.value)}
                             className="mb-2 w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Фильтр по названию"
+                            placeholder="Filter by title"
                         />
                         <select
                             value={documentId}
@@ -232,7 +232,7 @@ export default function RevokeAccessModal({
                             className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                         >
-                            <option value="">Выберите курс</option>
+                            <option value="">Select a course</option>
                             {filteredDocuments.map((d) => (
                                 <option key={d.id} value={d.id}>
                                     {d.title}{d.price_rub ? ` - ${d.price_rub} ₽` : ''}
@@ -242,15 +242,15 @@ export default function RevokeAccessModal({
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Причина</label>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Reason</label>
                         <select
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="refund">Возврат</option>
-                            <option value="chargeback">Чарджбэк</option>
-                            <option value="manual">Ручной отзыв</option>
+                            <option value="refund">Refund</option>
+                            <option value="chargeback">Chargeback</option>
+                            <option value="manual">Manual revoke</option>
                         </select>
                         {reasonHint && (
                             <p className="mt-1 text-xs text-gray-500">{reasonHint}</p>
@@ -258,13 +258,13 @@ export default function RevokeAccessModal({
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Комментарий (опционально)</label>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Comment (optional)</label>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             rows={3}
-                            placeholder="Причина или заметка для audit_logs"
+                            placeholder="Reason or note for audit_logs"
                         />
                     </div>
 
@@ -278,14 +278,14 @@ export default function RevokeAccessModal({
                     {done && (
                         <div className="flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
                             <CheckCircle2 className="h-4 w-4" />
-                            <span>Доступ отозван</span>
+                            <span>Access revoked</span>
                         </div>
                     )}
 
                     <div className="flex items-center justify-end gap-3 pt-2">
-                        <Button type="button" variant="outline" onClick={onClose}>Отмена</Button>
+                        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
                         <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700">
-                            {loading ? 'Отзыв...' : 'Отозвать доступ'}
+                            {loading ? 'Revoking...' : 'Revoke access'}
                         </Button>
                     </div>
                 </form>

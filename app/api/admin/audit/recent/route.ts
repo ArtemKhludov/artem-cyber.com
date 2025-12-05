@@ -6,7 +6,7 @@ export const runtime = 'nodejs'
 export async function GET(_request: NextRequest) {
     try {
         const supabase = getSupabaseAdmin()
-        // Best-effort: последние события grant/revoke из audit_logs
+        // Best-effort: recent grant/revoke events from audit_logs
         const { data, error } = await supabase
             .from('audit_logs')
             .select('id, action, created_at, actor_email, target_table, target_id')

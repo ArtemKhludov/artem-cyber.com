@@ -70,13 +70,13 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                 const data = await response.json()
                 const workbooksList = data.workbooks || []
                 setWorkbooks(workbooksList)
-                // Уведомляем родительский компонент об изменении количества
+                // Notify parent component about quantity change
                 onWorkbooksChange?.(workbooksList.length)
             } else {
-                console.error('Ошибка загрузки рабочих тетрадей')
+                console.error('Error loading workbooks')
             }
         } catch (error) {
-            console.error('Ошибка загрузки рабочих тетрадей:', error)
+            console.error('Error loading workbooks:', error)
         } finally {
             setLoading(false)
         }
@@ -90,7 +90,7 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
             const formData = new FormData()
             formData.append('file', file)
 
-            // Определяем путь и расширение файла
+            // Determine file path and extension
             const fileExtension = fileType === 'pdf' ? '.pdf' : '.mp4'
             const fileName = fileType === 'pdf' ? 'workbook' : 'video'
             const path = `courses/${documentTitle.toLowerCase().replace(/[^a-z0-9]/g, '-')}/workbooks/${fileName}-${workbooks.length + 1}${fileExtension}`
@@ -121,11 +121,11 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                     }
                 }
             } else {
-                alert('Ошибка загрузки файла')
+                alert('Error loading file')
             }
         } catch (error) {
-            console.error('Ошибка загрузки файла:', error)
-            alert('Ошибка загрузки файла')
+            console.error('Error uploading file:', error)
+            alert('Error loading file')
         } finally {
             setUploading(prev => ({ ...prev, [uploadKey]: false }))
         }
@@ -159,11 +159,11 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                 setIsAddDialogOpen(false)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка добавления рабочей тетради:', error)
-            alert('Ошибка добавления рабочей тетради')
+            console.error('Error adding workbook:', error)
+            alert('Error adding workbook')
         }
     }
 
@@ -185,16 +185,16 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                 setEditingWorkbook(null)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка обновления рабочей тетради:', error)
-            alert('Ошибка обновления рабочей тетради')
+            console.error('Error updating workbook:', error)
+            alert('Error updating workbook')
         }
     }
 
     const handleDeleteWorkbook = async (id: string) => {
-        if (!confirm('Вы уверены, что хотите удалить эту рабочую тетрадь?')) {
+        if (!confirm('Are you sure you want to delete this workbook?')) {
             return
         }
 
@@ -209,11 +209,11 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                 onWorkbooksChange?.(newWorkbooksList.length)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка удаления рабочей тетради:', error)
-            alert('Ошибка удаления рабочей тетради')
+            console.error('Error deleting workbook:', error)
+            alert('Error deleting workbook')
         }
     }
 
@@ -237,11 +237,11 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                 ))
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка обновления статуса:', error)
-            alert('Ошибка обновления статуса')
+            console.error('Error updating status:', error)
+            alert('Error updating status')
         }
     }
 
@@ -255,7 +255,7 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
         const targetWorkbook = workbooks[newIndex]
 
         try {
-            // Обновляем порядок обеих рабочих тетрадей
+            // Swap order for both workbooks
             await Promise.all([
                 fetch('/api/admin/workbooks', {
                     method: 'PUT',
@@ -269,15 +269,15 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                 })
             ])
 
-            // Обновляем локальное состояние
+            // Update local state
             const newWorkbooks = [...workbooks]
             newWorkbooks[currentIndex] = { ...workbook, order_index: targetWorkbook.order_index }
             newWorkbooks[newIndex] = { ...targetWorkbook, order_index: workbook.order_index }
             setWorkbooks(newWorkbooks.sort((a, b) => a.order_index - b.order_index))
 
         } catch (error) {
-            console.error('Ошибка изменения порядка:', error)
-            alert('Ошибка изменения порядка')
+            console.error('Error reordering:', error)
+            alert('Error reordering')
         }
     }
 
@@ -293,52 +293,52 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-lg font-semibold">Рабочие тетради</h3>
-                    <p className="text-sm text-gray-600">Управление рабочими тетрадями для курса</p>
+                    <h3 className="text-lg font-semibold">Workbooks</h3>
+                    <p className="text-sm text-gray-600">Manage course workbooks</p>
                 </div>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>
                         <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                             <Plus className="h-4 w-4 mr-2" />
-                            Добавить тетрадь
+                            Add workbook
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                            <DialogTitle>Добавить рабочую тетрадь</DialogTitle>
+                            <DialogTitle>Add workbook</DialogTitle>
                             <DialogDescription>
-                                Создайте новую рабочую тетрадь для курса
+                                Create a new workbook for the course
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="workbook-title">Название *</Label>
+                                <Label htmlFor="workbook-title">Title *</Label>
                                 <Input
                                     id="workbook-title"
                                     value={newWorkbook.title}
                                     onChange={(e) => setNewWorkbook({ ...newWorkbook, title: e.target.value })}
-                                    placeholder="Название рабочей тетради"
+                                    placeholder="Workbook title"
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="workbook-description">Описание</Label>
+                                <Label htmlFor="workbook-description">Description</Label>
                                 <Textarea
                                     id="workbook-description"
                                     value={newWorkbook.description}
                                     onChange={(e) => setNewWorkbook({ ...newWorkbook, description: e.target.value })}
-                                    placeholder="Описание рабочей тетради"
+                                    placeholder="Workbook description"
                                     rows={3}
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label>Файл рабочей тетради *</Label>
+                                <Label>Workbook file *</Label>
                                 <div className="flex gap-2">
                                     <Input
                                         value={newWorkbook.file_url}
                                         onChange={(e) => setNewWorkbook({ ...newWorkbook, file_url: e.target.value })}
-                                        placeholder="URL файла рабочей тетради"
+                                        placeholder="Workbook file URL"
                                     />
                                     <input
                                         type="file"
@@ -368,12 +368,12 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                             </div>
 
                             <div className="grid gap-2">
-                                <Label>Видео-объяснение (опционально)</Label>
+                                <Label>Video explanation (optional)</Label>
                                 <div className="flex gap-2">
                                     <Input
                                         value={newWorkbook.video_url}
                                         onChange={(e) => setNewWorkbook({ ...newWorkbook, video_url: e.target.value })}
-                                        placeholder="URL видео-объяснения"
+                                        placeholder="Video explanation URL"
                                     />
                                     <input
                                         type="file"
@@ -401,17 +401,17 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                                     </Button>
                                 </div>
                                 <p className="text-xs text-gray-500">
-                                    Видео будет отображаться перед рабочей тетрадью для пользователей
+                                    The video will appear before the workbook for users
                                 </p>
                             </div>
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                                Отмена
+                                Cancel
                             </Button>
                             <Button onClick={handleAddWorkbook}>
                                 <Save className="h-4 w-4 mr-2" />
-                                Сохранить
+                                Save
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -421,20 +421,20 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
             {workbooks.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                     <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Рабочие тетради не добавлены</p>
-                    <p className="text-sm">Добавьте первую рабочую тетрадь для курса</p>
+                    <p>No workbooks added</p>
+                    <p className="text-sm">Add the first workbook for the course</p>
                 </div>
             ) : (
                 <div className="border rounded-lg">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Порядок</TableHead>
-                                <TableHead>Название</TableHead>
-                                <TableHead>Описание</TableHead>
-                                <TableHead>Материалы</TableHead>
-                                <TableHead>Статус</TableHead>
-                                <TableHead>Действия</TableHead>
+                                <TableHead>Order</TableHead>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead>Materials</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -465,7 +465,7 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                                     </TableCell>
                                     <TableCell>
                                         <div className="text-sm text-gray-600 max-w-xs truncate">
-                                            {workbook.description || 'Без описания'}
+                                            {workbook.description || 'No description'}
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -475,15 +475,15 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                                                 {workbook.file_url ? (
                                                     <span className="text-xs text-green-600">PDF</span>
                                                 ) : (
-                                                    <span className="text-xs text-gray-400">Нет PDF</span>
+                                                    <span className="text-xs text-gray-400">No PDF</span>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <PlayCircle className="h-4 w-4 text-blue-600" />
                                                 {workbook.video_url ? (
-                                                    <span className="text-xs text-blue-600">Видео</span>
+                                                    <span className="text-xs text-blue-600">Video</span>
                                                 ) : (
-                                                    <span className="text-xs text-gray-400">Нет видео</span>
+                                                    <span className="text-xs text-gray-400">No video</span>
                                                 )}
                                             </div>
                                         </div>
@@ -497,12 +497,12 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                                             {workbook.is_active ? (
                                                 <>
                                                     <Eye className="h-3 w-3 mr-1" />
-                                                    Активна
+                                                    Active
                                                 </>
                                             ) : (
                                                 <>
                                                     <EyeOff className="h-3 w-3 mr-1" />
-                                                    Скрыта
+                                                    Hidden
                                                 </>
                                             )}
                                         </Button>
@@ -533,19 +533,19 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                 </div>
             )}
 
-            {/* Диалог редактирования */}
+            {/* Edit dialog */}
             {editingWorkbook && (
                 <Dialog open={!!editingWorkbook} onOpenChange={() => setEditingWorkbook(null)}>
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                            <DialogTitle>Редактировать рабочую тетрадь</DialogTitle>
+                            <DialogTitle>Edit workbook</DialogTitle>
                             <DialogDescription>
-                                Измените информацию о рабочей тетради
+                                Update workbook information
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-workbook-title">Название</Label>
+                                <Label htmlFor="edit-workbook-title">Title</Label>
                                 <Input
                                     id="edit-workbook-title"
                                     value={editingWorkbook.title}
@@ -554,7 +554,7 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-workbook-description">Описание</Label>
+                                <Label htmlFor="edit-workbook-description">Description</Label>
                                 <Textarea
                                     id="edit-workbook-description"
                                     value={editingWorkbook.description || ''}
@@ -564,12 +564,12 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                             </div>
 
                             <div className="grid gap-2">
-                                <Label>Файл рабочей тетради</Label>
+                                <Label>Workbook file</Label>
                                 <div className="flex gap-2">
                                     <Input
                                         value={editingWorkbook.file_url}
                                         onChange={(e) => setEditingWorkbook({ ...editingWorkbook, file_url: e.target.value })}
-                                        placeholder="URL файла рабочей тетради"
+                                        placeholder="Workbook file URL"
                                     />
                                     <input
                                         type="file"
@@ -599,12 +599,12 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                             </div>
 
                             <div className="grid gap-2">
-                                <Label>Видео-объяснение</Label>
+                                <Label>Video explanation</Label>
                                 <div className="flex gap-2">
                                     <Input
                                         value={editingWorkbook.video_url || ''}
                                         onChange={(e) => setEditingWorkbook({ ...editingWorkbook, video_url: e.target.value })}
-                                        placeholder="URL видео-объяснения"
+                                        placeholder="Video explanation URL"
                                     />
                                     <input
                                         type="file"
@@ -632,17 +632,17 @@ export function WorkbooksManager({ documentId, documentTitle, onWorkbooksChange 
                                     </Button>
                                 </div>
                                 <p className="text-xs text-gray-500">
-                                    Видео будет отображаться перед рабочей тетрадью для пользователей
+                                    The video will appear before the workbook for users
                                 </p>
                             </div>
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setEditingWorkbook(null)}>
-                                Отмена
+                                Cancel
                             </Button>
                             <Button onClick={() => handleUpdateWorkbook(editingWorkbook)}>
                                 <Save className="h-4 w-4 mr-2" />
-                                Сохранить
+                                Save
                             </Button>
                         </DialogFooter>
                     </DialogContent>

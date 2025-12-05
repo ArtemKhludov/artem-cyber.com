@@ -39,13 +39,13 @@ export async function POST(request: NextRequest) {
             if (error instanceof Error) {
                 return NextResponse.json({ error: error.message }, { status: 403 })
             }
-            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+            return NextResponse.json({ error: 'Request rejected' }, { status: 403 })
         }
 
         const { email, password, remember = false, recaptchaToken } = await request.json()
 
         if (!email || !password) {
-            return NextResponse.json({ error: 'Email и пароль обязательны' }, { status: 400 })
+            return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
         }
 
         userLimiter.cleanup()
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
                 ipCheck.blockedUntil ?? 0
             )
             return NextResponse.json({
-                error: 'Слишком много попыток входа. Попробуйте позже.',
+                error: 'Too many login attempts. Please try again later.',
                 lockedUntil: blockedUntil ? new Date(blockedUntil).toISOString() : undefined
             }, { status: 429 })
         }
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
                 ipLimiter.recordFailure(ipKey)
                 userLimiter.recordFailure(userKey)
                 return NextResponse.json({
-                    error: 'Подтвердите, что вы не робот',
+                    error: 'Please confirm you are not a robot',
                     captchaRequired: true
                 }, { status: 403 })
             }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 
         const supabase = getSupabaseAdmin()
 
-        // Получаем пользователя по email
+        // Fetch user by email
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -96,15 +96,15 @@ export async function POST(request: NextRequest) {
         if (userError || !user) {
             ipLimiter.recordFailure(ipKey)
             userLimiter.recordFailure(userKey)
-            return NextResponse.json({ error: 'Пользователь с таким email не зарегистрирован' }, { status: 401 })
+            return NextResponse.json({ error: 'User with this email is not registered' }, { status: 401 })
         }
 
-        // Проверяем пароль
+        // Validate password
         const isValidPassword = await bcrypt.compare(password, user.password_hash)
         if (!isValidPassword) {
             ipLimiter.recordFailure(ipKey)
             userLimiter.recordFailure(userKey)
-            return NextResponse.json({ error: 'Неверный пароль' }, { status: 401 })
+            return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
         }
 
         userLimiter.recordSuccess(userKey)
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
         if (sessionError) {
             console.error('Session creation error:', sessionError)
-            return NextResponse.json({ error: 'Ошибка создания сессии' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
         }
 
         const cookieStore = await cookies()
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
 
         const cookieMaxAgeSeconds = Math.max(1, Math.floor((expiresAt.getTime() - now.getTime()) / 1000))
 
-        // Возвращаем данные пользователя без пароля
+        // Return user data without password
         const { password_hash, ...userWithoutPassword } = user
         const response = NextResponse.json({
             user: userWithoutPassword,
@@ -164,6 +164,6 @@ export async function POST(request: NextRequest) {
         return response
     } catch (error) {
         console.error('Login error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

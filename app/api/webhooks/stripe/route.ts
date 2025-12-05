@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     console.log('💳 Stripe webhook received:', event.type)
 
-    // Обрабатываем разные типы событий
+    // Handle different event types
     switch (event.type) {
       case 'payment_intent.succeeded':
         await handlePaymentSucceeded(event.data.object as Stripe.PaymentIntent)
@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
 
 async function handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
   console.log('✅ Payment succeeded:', paymentIntent.id)
-  
+
   const supabase = getSupabaseAdmin()
-  
-  // Обновляем статус покупки в базе данных
+
+  // Update purchase status in DB
   const { error } = await supabase
     .from('purchases')
-    .update({ 
+    .update({
       status: 'completed',
       stripe_payment_intent_id: paymentIntent.id,
       updated_at: new Date().toISOString()
@@ -66,12 +66,12 @@ async function handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
     console.error('❌ Failed to update purchase:', error)
   }
 
-  // Уведомляем в Telegram
+  // Notify via Telegram
   await notifyTelegram(
-    `💳 Платеж успешно обработан!\n` +
+    `💳 Payment processed successfully!\n` +
     `🆔 Payment Intent: ${paymentIntent.id}\n` +
-    `💰 Сумма: ${paymentIntent.amount / 100} ${paymentIntent.currency?.toUpperCase()}\n` +
-    `📧 Email: ${paymentIntent.receipt_email || 'Не указан'}`,
+    `💰 Amount: ${paymentIntent.amount / 100} ${paymentIntent.currency?.toUpperCase()}\n` +
+    `📧 Email: ${paymentIntent.receipt_email || 'Not provided'}`,
     {
       botToken: process.env.TELEGRAM_BOT_TOKEN,
       chatId: process.env.TELEGRAM_CHAT_ID,
@@ -83,13 +83,13 @@ async function handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
 
 async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
   console.log('❌ Payment failed:', paymentIntent.id)
-  
+
   const supabase = getSupabaseAdmin()
-  
-  // Обновляем статус покупки
+
+  // Update purchase status
   const { error } = await supabase
     .from('purchases')
-    .update({ 
+    .update({
       status: 'failed',
       updated_at: new Date().toISOString()
     })
@@ -99,13 +99,13 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
     console.error('❌ Failed to update purchase:', error)
   }
 
-  // Уведомляем в Telegram
+  // Notify via Telegram
   await notifyTelegram(
-    `❌ Платеж не прошел!\n` +
+    `❌ Payment failed!\n` +
     `🆔 Payment Intent: ${paymentIntent.id}\n` +
-    `💰 Сумма: ${paymentIntent.amount / 100} ${paymentIntent.currency?.toUpperCase()}\n` +
-    `📧 Email: ${paymentIntent.receipt_email || 'Не указан'}\n` +
-    `⚠️ Причина: ${paymentIntent.last_payment_error?.message || 'Неизвестно'}`,
+    `💰 Amount: ${paymentIntent.amount / 100} ${paymentIntent.currency?.toUpperCase()}\n` +
+    `📧 Email: ${paymentIntent.receipt_email || 'Not provided'}\n` +
+    `⚠️ Reason: ${paymentIntent.last_payment_error?.message || 'Unknown'}`,
     {
       botToken: process.env.TELEGRAM_BOT_TOKEN,
       chatId: process.env.TELEGRAM_CHAT_ID,
@@ -117,14 +117,14 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log('🛒 Checkout completed:', session.id)
-  
-  // Уведомляем в Telegram
+
+  // Notify via Telegram
   await notifyTelegram(
-    `🛒 Заказ завершен!\n` +
+    `🛒 Order completed!\n` +
     `🆔 Session ID: ${session.id}\n` +
-    `💰 Сумма: ${session.amount_total ? session.amount_total / 100 : 0} ${session.currency?.toUpperCase()}\n` +
-    `📧 Email: ${session.customer_email || 'Не указан'}\n` +
-    `📦 Товары: ${session.metadata?.products || 'Не указаны'}`,
+    `💰 Amount: ${session.amount_total ? session.amount_total / 100 : 0} ${session.currency?.toUpperCase()}\n` +
+    `📧 Email: ${session.customer_email || 'Not provided'}\n` +
+    `📦 Products: ${session.metadata?.products || 'Not provided'}`,
     {
       botToken: process.env.TELEGRAM_BOT_TOKEN,
       chatId: process.env.TELEGRAM_CHAT_ID,

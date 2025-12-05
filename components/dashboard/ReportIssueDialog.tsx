@@ -56,7 +56,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
       if (context) {
         setSubject(context.subject)
       }
-      // Автоматически заполняем email из авторизованного пользователя
+      // Auto-fill email from authenticated user
       if (user?.email) {
         setEmail(user.email)
       }
@@ -67,20 +67,20 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
   const handleSubmit = async () => {
     if (!context) return
     if (!details.trim()) {
-      setErrorMessage('Опишите проблему, чтобы мы могли помочь.')
+      setErrorMessage('Describe the issue so we can help.')
       return
     }
     if (details.trim().length < 30) {
-      setErrorMessage('Описание должно содержать минимум 30 символов.')
+      setErrorMessage('Description must be at least 30 characters.')
       return
     }
     if (!email.trim()) {
-      setErrorMessage('Укажите email для получения ответа.')
+      setErrorMessage('Provide an email to receive a reply.')
       return
     }
 
     if (wantTelegramNotifications && !telegram.trim()) {
-      setErrorMessage('Для получения уведомлений в Telegram укажите ваш Telegram username (без @).')
+      setErrorMessage('To receive Telegram notifications, provide your Telegram username (without @).')
       return
     }
 
@@ -115,7 +115,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({}))
-        throw new Error(body.error || 'Не удалось отправить сообщение')
+        throw new Error(body.error || 'Failed to send message')
       }
 
       setState('success')
@@ -130,7 +130,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
     } catch (error) {
       console.error('Report issue submit error:', error)
       setState('error')
-      setErrorMessage(error instanceof Error ? error.message : 'Неизвестная ошибка')
+      setErrorMessage(error instanceof Error ? error.message : 'Unknown error')
       track?.('issue_report_failed', {
         purchaseId: context.purchaseId,
         courseId: context.courseId,
@@ -160,39 +160,39 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Сообщить о проблеме</DialogTitle>
+          <DialogTitle>Report an issue</DialogTitle>
           <DialogDescription>
-            Расскажите, что пошло не так - мы передадим запрос команде поддержки.
+            Tell us what went wrong — we’ll send it to the support team.
           </DialogDescription>
         </DialogHeader>
 
 
         <div className="space-y-4">
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700" htmlFor="issue-subject">Тема</label>
+            <label className="text-sm font-medium text-gray-700" htmlFor="issue-subject">Subject</label>
             <Input
               id="issue-subject"
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              placeholder="Например: Не открывается курс"
+              placeholder="e.g., Course does not open"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700" htmlFor="issue-description">Что случилось?</label>
+            <label className="text-sm font-medium text-gray-700" htmlFor="issue-description">What happened?</label>
             <Textarea
               id="issue-description"
               value={details}
               onChange={(event) => setDetails(event.target.value)}
-              placeholder="Опишите шаги, которые привели к проблеме, и что вы ожидали увидеть."
+              placeholder="Describe the steps that led to the issue and what you expected to see."
               rows={4}
             />
-            <p className="text-xs text-gray-500">Мы автоматически приложим технический контекст из карточки.</p>
+            <p className="text-xs text-gray-500">We will attach technical context from the card automatically.</p>
           </div>
 
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700" htmlFor="issue-email">Контактный email для ответа *</label>
+            <label className="text-sm font-medium text-gray-700" htmlFor="issue-email">Contact email for reply *</label>
             <Input
               id="issue-email"
               type="email"
@@ -201,11 +201,11 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
               onChange={(event) => setEmail(event.target.value)}
               required
             />
-            <p className="text-xs text-gray-500">На этот email мы отправим ответ на ваше обращение</p>
+            <p className="text-xs text-gray-500">We will send the response to this email</p>
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700" htmlFor="issue-phone">Телефон (необязательно)</label>
+            <label className="text-sm font-medium text-gray-700" htmlFor="issue-phone">Phone (optional)</label>
             <Input
               id="issue-phone"
               type="tel"
@@ -213,7 +213,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
               placeholder="+7 (999) 123-45-67"
               onChange={(event) => setPhone(event.target.value)}
             />
-            <p className="text-xs text-gray-500">Для экстренной связи, если другие способы недоступны</p>
+            <p className="text-xs text-gray-500">For urgent contact if other methods are unavailable</p>
           </div>
 
           <div className="space-y-3">
@@ -226,7 +226,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="want-email-notifications" className="text-sm font-medium text-gray-700">
-                Получать уведомления на email
+                Receive email notifications
               </label>
             </div>
 
@@ -239,7 +239,7 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="want-telegram-notifications" className="text-sm font-medium text-gray-700">
-                Получать уведомления в Telegram
+                Receive Telegram notifications
               </label>
             </div>
 
@@ -249,11 +249,11 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
                 <Input
                   id="issue-telegram"
                   value={telegram}
-                  placeholder="username (без @)"
+                  placeholder="username (without @)"
                   onChange={(event) => setTelegram(event.target.value)}
                 />
                 <p className="text-xs text-gray-500">
-                  Укажите ваш Telegram username без @. Мы будем отправлять уведомления о статусе обращения и ответах.
+                  Provide your Telegram username without @. We will send status updates and replies there.
                 </p>
               </div>
             )}
@@ -265,15 +265,15 @@ export function ReportIssueDialog({ open, onOpenChange, context, onSubmitted, tr
 
           {state === 'success' && (
             <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
-              Спасибо! Мы получили сообщение и свяжемся с вами при необходимости.
+              Thanks! We received your message and will reach out if needed.
             </div>
           )}
         </div>
 
         <DialogFooter className="flex items-center justify-between gap-2">
-          <Button variant="outline" onClick={() => handleClose(false)}>Закрыть</Button>
+          <Button variant="outline" onClick={() => handleClose(false)}>Close</Button>
           <Button onClick={handleSubmit} disabled={state === 'submitting' || state === 'success'}>
-            {state === 'submitting' ? 'Отправка...' : state === 'success' ? 'Отправлено' : 'Отправить'}
+            {state === 'submitting' ? 'Sending...' : state === 'success' ? 'Sent' : 'Send'}
           </Button>
         </DialogFooter>
       </DialogContent>

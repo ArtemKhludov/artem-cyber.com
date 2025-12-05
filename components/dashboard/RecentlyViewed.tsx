@@ -34,7 +34,7 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
       setRecentActivity(activity)
     } catch (err) {
       console.error('Failed to load recent activity:', err)
-      setError('Не удалось загрузить историю активности')
+      setError('Failed to load activity history')
     } finally {
       setLoading(false)
     }
@@ -68,30 +68,30 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
 
   const getActivityLabel = (activity: RecentActivityRecord) => {
     if (activity.action === 'download') {
-      return 'Скачивание'
+      return 'Download'
     }
 
     const normalizedType = activity.materialType?.toLowerCase?.() ?? ''
 
     if (normalizedType.includes('video')) {
-      return 'Видео'
+      return 'Video'
     }
 
     if (normalizedType.includes('document') || normalizedType.includes('pdf')) {
-      return 'Документ'
+      return 'Document'
     }
 
     if (normalizedType.includes('course')) {
-      return 'Курс'
+      return 'Course'
     }
 
-    return 'Просмотр'
+    return 'View'
   }
 
   const formatTimeAgo = (occurredAt: string) => {
     const timestamp = Date.parse(occurredAt)
     if (Number.isNaN(timestamp)) {
-      return 'Недавно'
+      return 'Recently'
     }
 
     const now = Date.now()
@@ -101,14 +101,14 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
     const days = Math.floor(diff / 86400000)
 
     if (minutes < 60) {
-      return `${minutes} мин назад`
+      return `${minutes} min ago`
     }
 
     if (hours < 24) {
-      return `${hours} ч назад`
+      return `${hours} h ago`
     }
 
-    return `${days} дн назад`
+    return `${days} days ago`
   }
 
   const formatDate = (occurredAt: string) => {
@@ -116,7 +116,7 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
     if (Number.isNaN(date.getTime())) {
       return '-'
     }
-    return date.toLocaleDateString('ru-RU')
+    return date.toLocaleDateString('en-US')
   }
 
   if (loading) {
@@ -125,10 +125,10 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Недавно просмотренные
+            Recently viewed
           </CardTitle>
           <CardDescription>
-            История вашей активности на платформе
+            Your activity history on the platform
           </CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center py-8">
@@ -144,17 +144,17 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Недавно просмотренные
+            Recently viewed
           </CardTitle>
           <CardDescription>
-            История вашей активности на платформе
+            Your activity history on the platform
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-8 text-red-600">
           <AlertCircle className="h-12 w-12 mb-4" />
           <p className="text-center mb-4">{error}</p>
           <Button onClick={loadActivity} variant="outline">
-            Повторить
+            Retry
           </Button>
         </CardContent>
       </Card>
@@ -167,17 +167,17 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Недавно просмотренные
+            Recently viewed
           </CardTitle>
           <CardDescription>
-            История вашей активности на платформе
+            Your activity history on the platform
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-8 text-gray-500">
           <Clock className="h-12 w-12 mb-4" />
-          <p className="text-center">У вас пока нет активности</p>
+          <p className="text-center">No activity yet</p>
           <p className="text-center text-sm mt-2">
-            Начните изучать курсы, чтобы увидеть историю здесь
+            Start learning to see your history here
           </p>
         </CardContent>
       </Card>
@@ -189,10 +189,10 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Недавно просмотренные
+          Recently viewed
         </CardTitle>
         <CardDescription>
-          История вашей активности на платформе
+          Your activity history on the platform
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -238,7 +238,7 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
                 {activity.url && (
                   <Button size="sm" variant="outline" asChild>
                     <a href={activity.url} target="_blank" rel="noopener noreferrer">
-                      Открыть
+                      Open
                     </a>
                   </Button>
                 )}
@@ -258,7 +258,7 @@ export function RecentlyViewed({ onReportIssue }: RecentlyViewedProps) {
               }}
               className="w-full"
             >
-              Очистить историю
+              Clear History
             </Button>
           </div>
         )}

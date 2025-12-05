@@ -75,14 +75,14 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Ошибка загрузки пользователей')
+                throw new Error(data.error || 'Error loading users')
             }
 
             setUsers(data.data)
             setTotalPages(data.totalPages)
         } catch (err) {
             console.error('Error fetching users:', err)
-            setError(err instanceof Error ? err.message : 'Ошибка загрузки пользователей')
+            setError(err instanceof Error ? err.message : 'Error loading users')
         } finally {
             setLoading(false)
         }
@@ -120,14 +120,14 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
             const data = await response.json()
 
             if (response.ok) {
-                alert(`Очищено ${data.data?.length || 0} дубликатов`)
-                fetchUsers() // Обновляем список
+                alert(`Cleaned ${data.data?.length || 0} duplicates`)
+                fetchUsers() // Refresh list
             } else {
-                alert('Ошибка очистки дубликатов: ' + data.error)
+                alert('Error cleaning duplicates: ' + data.error)
             }
         } catch (err) {
             console.error('Error cleaning duplicates:', err)
-            alert('Ошибка очистки дубликатов')
+            alert('Error cleaning duplicates')
         } finally {
             setCleaningDuplicates(false)
         }
@@ -144,9 +144,9 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
 
     const getActivityStatusText = (status: string) => {
         switch (status) {
-            case 'active': return 'Активный'
-            case 'inactive': return 'Неактивный'
-            case 'dormant': return 'Неактивный'
+        case 'active': return 'Active'
+        case 'inactive': return 'Inactive'
+            case 'dormant': return 'Inactive'
             default: return status
         }
     }
@@ -181,7 +181,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
         return (
             <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-2 text-gray-600">Загрузка пользователей...</span>
+                <span className="ml-2 text-gray-600">Loading users...</span>
             </div>
         )
     }
@@ -191,7 +191,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-red-600">{error}</p>
                 <Button onClick={fetchUsers} className="mt-2" variant="outline">
-                    Попробовать снова
+                    Try Again
                 </Button>
             </div>
         )
@@ -199,13 +199,13 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
 
     return (
         <div className="space-y-4">
-            {/* Поиск и фильтры */}
+            {/* Search and Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                         type="text"
-                        placeholder="Поиск по имени, телефону или email..."
+                        placeholder="Search by name, phone or email..."
                         value={searchTerm}
                         onChange={(e) => handleSearch(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -217,10 +217,10 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                     onChange={(e) => handleActivityFilter(e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                    <option value="">Все статусы</option>
-                    <option value="active">Активные</option>
-                    <option value="inactive">Неактивные</option>
-                    <option value="dormant">Неактивные</option>
+                    <option value="">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="dormant">Inactive</option>
                 </select>
 
                 <Button
@@ -234,17 +234,17 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                     ) : (
                         <AlertTriangle className="w-4 h-4 mr-2" />
                     )}
-                    Очистить дубликаты
+                    Clean duplicates
                 </Button>
             </div>
 
-            {/* Статистика */}
+            {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-blue-50 rounded-lg p-4">
                     <div className="flex items-center">
                         <User className="w-8 h-8 text-blue-600 mr-3" />
                         <div>
-                            <p className="text-sm text-gray-600">Всего пользователей</p>
+                            <p className="text-sm text-gray-600">Total users</p>
                             <p className="text-2xl font-bold text-blue-600">{users.length}</p>
                         </div>
                     </div>
@@ -253,7 +253,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                     <div className="flex items-center">
                         <CheckCircle className="w-8 h-8 text-green-600 mr-3" />
                         <div>
-                            <p className="text-sm text-gray-600">Активные</p>
+                            <p className="text-sm text-gray-600">Active</p>
                             <p className="text-2xl font-bold text-green-600">
                                 {users.filter(u => u.activity_status === 'active').length}
                             </p>
@@ -264,7 +264,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                     <div className="flex items-center">
                         <Clock className="w-8 h-8 text-yellow-600 mr-3" />
                         <div>
-                            <p className="text-sm text-gray-600">Неактивные</p>
+                            <p className="text-sm text-gray-600">Inactive</p>
                             <p className="text-2xl font-bold text-yellow-600">
                                 {users.filter(u => u.activity_status === 'inactive').length}
                             </p>
@@ -275,7 +275,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                     <div className="flex items-center">
                         <AlertTriangle className="w-8 h-8 text-gray-600 mr-3" />
                         <div>
-                            <p className="text-sm text-gray-600">Неактивные</p>
+                            <p className="text-sm text-gray-600">Inactive</p>
                             <p className="text-2xl font-bold text-gray-600">
                                 {users.filter(u => u.activity_status === 'dormant').length}
                             </p>
@@ -284,7 +284,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                 </div>
             </div>
 
-            {/* Таблица пользователей */}
+            {/* Users table */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -295,7 +295,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                                     onClick={() => handleSort('name')}
                                 >
                                     <div className="flex items-center space-x-1">
-                                        <span>Пользователь</span>
+                                        <span>User</span>
                                         {sortBy === 'name' && (
                                             <span className="text-blue-600">
                                                 {sortOrder === 'asc' ? '↑' : '↓'}
@@ -308,7 +308,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                                     onClick={() => handleSort('activity_status')}
                                 >
                                     <div className="flex items-center space-x-1">
-                                        <span>Статус активности</span>
+                                        <span>Activity status</span>
                                         {sortBy === 'activity_status' && (
                                             <span className="text-blue-600">
                                                 {sortOrder === 'asc' ? '↑' : '↓'}
@@ -317,17 +317,17 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                                     </div>
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Заявки
+                                    Requests
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Покупки
+                                    Purchases
                                 </th>
                                 <th
                                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                     onClick={() => handleSort('total_spent')}
                                 >
                                     <div className="flex items-center space-x-1">
-                                        <span>Потрачено</span>
+                                        <span>Spent</span>
                                         {sortBy === 'total_spent' && (
                                             <span className="text-blue-600">
                                                 {sortOrder === 'asc' ? '↑' : '↓'}
@@ -340,7 +340,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                                     onClick={() => handleSort('last_activity')}
                                 >
                                     <div className="flex items-center space-x-1">
-                                        <span>Последняя активность</span>
+                                        <span>Last activity</span>
                                         {sortBy === 'last_activity' && (
                                             <span className="text-blue-600">
                                                 {sortOrder === 'asc' ? '↑' : '↓'}
@@ -349,7 +349,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                                     </div>
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Действия
+                                    Actions
                                 </th>
                             </tr>
                         </thead>
@@ -452,7 +452,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                     </table>
                 </div>
 
-                {/* Пагинация */}
+                {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                         <div className="flex-1 flex justify-between sm:hidden">
@@ -461,20 +461,20 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(currentPage - 1)}
                             >
-                                Предыдущая
+                                Previous
                             </Button>
                             <Button
                                 variant="outline"
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage(currentPage + 1)}
                             >
-                                Следующая
+                                Next
                             </Button>
                         </div>
                         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div>
                                 <p className="text-sm text-gray-700">
-                                    Страница <span className="font-medium">{currentPage}</span> из{' '}
+                                    Page <span className="font-medium">{currentPage}</span> of{' '}
                                     <span className="font-medium">{totalPages}</span>
                                 </p>
                             </div>
@@ -486,7 +486,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                                         disabled={currentPage === 1}
                                         onClick={() => setCurrentPage(currentPage - 1)}
                                     >
-                                        Предыдущая
+                                        Previous
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -494,7 +494,7 @@ export function EnhancedUsersList({ onUserSelect, onUserEdit, onUserDelete }: En
                                         disabled={currentPage === totalPages}
                                         onClick={() => setCurrentPage(currentPage + 1)}
                                     >
-                                        Следующая
+                                        Next
                                     </Button>
                                 </nav>
                             </div>

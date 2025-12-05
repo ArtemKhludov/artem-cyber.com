@@ -222,10 +222,10 @@ EnergyLogic Team`
 
         return NextResponse.json({
             success: true,
-            message: 'Заявка успешно отправлена',
+            message: 'Request submitted successfully',
             data: {
                 ...data,
-                // Не возвращаем временный пароль в ответе
+                // Don't return temporary password in response
                 users: data.users ? {
                     ...data.users,
                     temp_password: undefined
@@ -236,7 +236,7 @@ EnergyLogic Team`
     } catch (error) {
         console.error('Enhanced callback server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
@@ -260,7 +260,7 @@ export async function PATCH(request: NextRequest) {
 
         if (!id) {
             return NextResponse.json(
-                { error: 'ID заявки обязателен' },
+                { error: 'Request ID is required' },
                 { status: 400 }
             )
         }
@@ -272,7 +272,7 @@ export async function PATCH(request: NextRequest) {
             updateData.status = status
             if (status === 'contacted') {
                 updateData.last_contacted_at = new Date().toISOString()
-                // Увеличиваем счетчик попыток через отдельный запрос
+                // Increment contact attempts counter via separate query
                 const { data: currentCallback } = await supabase
                     .from('callback_requests')
                     .select('contact_attempts')
@@ -313,23 +313,23 @@ export async function PATCH(request: NextRequest) {
         if (error) {
             console.error('Enhanced callback update error:', error)
             return NextResponse.json(
-                { error: 'Ошибка обновления заявки' },
+                { error: 'Failed to update request' },
                 { status: 500 }
             )
         }
 
-        // Отправляем уведомление пользователю об изменении статуса
+        // Send notification to user about status change
         if (data.users && status) {
             const statusMessages = {
-                'contacted': 'Мы связались с вами по вашей заявке',
-                'in_progress': 'Ваша заявка находится в обработке',
-                'completed': 'Ваша заявка завершена',
-                'cancelled': 'Ваша заявка отменена'
+                'contacted': 'We have contacted you regarding your request',
+                'in_progress': 'Your request is being processed',
+                'completed': 'Your request has been completed',
+                'cancelled': 'Your request has been cancelled'
             }
 
             const message = statusMessages[status as keyof typeof statusMessages]
             if (message) {
-                // Создаем запись уведомления
+                // Create notification record
                 await supabase
                     .from('callback_notifications')
                     .insert({
@@ -351,7 +351,7 @@ export async function PATCH(request: NextRequest) {
     } catch (error) {
         console.error('Enhanced callback PATCH error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

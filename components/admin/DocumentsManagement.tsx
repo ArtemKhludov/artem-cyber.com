@@ -71,10 +71,10 @@ export function DocumentsManagement() {
                 const data = await response.json()
                 setDocuments(data.documents)
             } else {
-                console.error('Ошибка загрузки документов')
+                console.error('Error loading documents')
             }
         } catch (error) {
-            console.error('Ошибка загрузки документов:', error)
+            console.error('Error loading documents:', error)
         } finally {
             setLoading(false)
         }
@@ -104,11 +104,11 @@ export function DocumentsManagement() {
                 setIsAddDialogOpen(false)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка добавления документа:', error)
-            alert('Ошибка добавления документа')
+            console.error('Error adding document:', error)
+            alert('Error adding document')
         }
     }
 
@@ -130,16 +130,16 @@ export function DocumentsManagement() {
                 setEditingDocument(null)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка обновления документа:', error)
-            alert('Ошибка обновления документа')
+            console.error('Error updating document:', error)
+            alert('Error updating document')
         }
     }
 
     const handleDeleteDocument = async (id: string) => {
-        if (!confirm('Вы уверены, что хотите удалить этот документ?')) {
+        if (!confirm('Are you sure you want to delete this document?')) {
             return
         }
 
@@ -152,20 +152,23 @@ export function DocumentsManagement() {
                 setDocuments(documents.filter(doc => doc.id !== id))
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка удаления документа:', error)
-            alert('Ошибка удаления документа')
+            console.error('Error deleting document:', error)
+            alert('Error deleting document')
         }
     }
 
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('ru-RU').format(price) + ' ₽'
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(price)
     }
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('ru-RU')
+        return new Date(dateString).toLocaleDateString('en-US')
     }
 
     if (loading) {
@@ -180,46 +183,46 @@ export function DocumentsManagement() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Управление документами</h2>
-                    <p className="text-gray-600">Добавляйте, редактируйте и удаляйте PDF документы</p>
+                    <h2 className="text-2xl font-bold text-gray-900">Document management</h2>
+                    <p className="text-gray-600">Add, edit, and delete PDF documents</p>
                 </div>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>
                         <Button className="bg-blue-600 hover:bg-blue-700">
                             <Plus className="h-4 w-4 mr-2" />
-                            Добавить документ
+                            Add document
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                            <DialogTitle>Добавить новый документ</DialogTitle>
+                            <DialogTitle>Add new document</DialogTitle>
                             <DialogDescription>
-                                Заполните информацию о новом PDF документе
+                                Fill in the details for the new PDF document
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="title">Название *</Label>
+                                <Label htmlFor="title">Title *</Label>
                                 <Input
                                     id="title"
                                     value={newDocument.title}
                                     onChange={(e) => setNewDocument({ ...newDocument, title: e.target.value })}
-                                    placeholder="Название документа"
+                                    placeholder="Document title"
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="description">Описание</Label>
+                                <Label htmlFor="description">Description</Label>
                                 <Textarea
                                     id="description"
                                     value={newDocument.description}
                                     onChange={(e) => setNewDocument({ ...newDocument, description: e.target.value })}
-                                    placeholder="Описание документа"
+                                    placeholder="Document description"
                                     rows={3}
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="price_rub">Цена (₽) *</Label>
+                                    <Label htmlFor="price_rub">Price (₽) *</Label>
                                     <Input
                                         id="price_rub"
                                         type="number"
@@ -229,7 +232,7 @@ export function DocumentsManagement() {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="page_count">Количество страниц</Label>
+                                    <Label htmlFor="page_count">Page count</Label>
                                     <Input
                                         id="page_count"
                                         type="number"
@@ -240,7 +243,7 @@ export function DocumentsManagement() {
                                 </div>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="file_url">URL файла PDF *</Label>
+                                <Label htmlFor="file_url">PDF file URL *</Label>
                                 <Input
                                     id="file_url"
                                     value={newDocument.file_url}
@@ -249,7 +252,7 @@ export function DocumentsManagement() {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="cover_url">URL обложки</Label>
+                                <Label htmlFor="cover_url">Cover URL</Label>
                                 <Input
                                     id="cover_url"
                                     value={newDocument.cover_url}
@@ -260,11 +263,11 @@ export function DocumentsManagement() {
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                                Отмена
+                                Cancel
                             </Button>
                             <Button onClick={handleAddDocument}>
                                 <Save className="h-4 w-4 mr-2" />
-                                Сохранить
+                                Save
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -275,18 +278,18 @@ export function DocumentsManagement() {
                 <CardHeader>
                     <CardTitle className="flex items-center">
                         <FileText className="h-5 w-5 mr-2" />
-                        Список документов ({documents.length})
+                        Documents list ({documents.length})
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Название</TableHead>
-                                <TableHead>Цена</TableHead>
-                                <TableHead>Страниц</TableHead>
-                                <TableHead>Создан</TableHead>
-                                <TableHead>Действия</TableHead>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Pages</TableHead>
+                                <TableHead>Created</TableHead>
+                                <TableHead>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -335,19 +338,19 @@ export function DocumentsManagement() {
                 </CardContent>
             </Card>
 
-            {/* Диалог редактирования */}
+            {/* Edit dialog */}
             {editingDocument && (
                 <Dialog open={!!editingDocument} onOpenChange={() => setEditingDocument(null)}>
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                            <DialogTitle>Редактировать документ</DialogTitle>
+                            <DialogTitle>Edit document</DialogTitle>
                             <DialogDescription>
-                                Измените информацию о документе
+                                Update document information
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-title">Название</Label>
+                                <Label htmlFor="edit-title">Title</Label>
                                 <Input
                                     id="edit-title"
                                     value={editingDocument.title}
@@ -355,7 +358,7 @@ export function DocumentsManagement() {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-description">Описание</Label>
+                                <Label htmlFor="edit-description">Description</Label>
                                 <Textarea
                                     id="edit-description"
                                     value={editingDocument.description}
@@ -365,7 +368,7 @@ export function DocumentsManagement() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-price_rub">Цена (₽)</Label>
+                                    <Label htmlFor="edit-price_rub">Price (₽)</Label>
                                     <Input
                                         id="edit-price_rub"
                                         type="number"
@@ -374,7 +377,7 @@ export function DocumentsManagement() {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-page_count">Количество страниц</Label>
+                                    <Label htmlFor="edit-page_count">Page count</Label>
                                     <Input
                                         id="edit-page_count"
                                         type="number"
@@ -384,7 +387,7 @@ export function DocumentsManagement() {
                                 </div>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-file_url">URL файла PDF</Label>
+                                <Label htmlFor="edit-file_url">PDF file URL</Label>
                                 <Input
                                     id="edit-file_url"
                                     value={editingDocument.file_url}
@@ -392,7 +395,7 @@ export function DocumentsManagement() {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-cover_url">URL обложки</Label>
+                                <Label htmlFor="edit-cover_url">Cover URL</Label>
                                 <Input
                                     id="edit-cover_url"
                                     value={editingDocument.cover_url}
@@ -402,11 +405,11 @@ export function DocumentsManagement() {
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setEditingDocument(null)}>
-                                Отмена
+                                Cancel
                             </Button>
                             <Button onClick={() => handleUpdateDocument(editingDocument)}>
                                 <Save className="h-4 w-4 mr-2" />
-                                Сохранить
+                                Save
                             </Button>
                         </DialogFooter>
                     </DialogContent>

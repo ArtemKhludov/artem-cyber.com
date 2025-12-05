@@ -399,7 +399,7 @@ export default function SessionPage() {
                       <div className="font-medium text-gray-900">
                         {participant.user_name || 'Specialist'}
                       </div>
-                      <div className="text-xs text-gray-500">Консультант</div>
+                      <div className="text-xs text-gray-500">Consultant</div>
                     </div>
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   </div>
@@ -410,32 +410,32 @@ export default function SessionPage() {
             {/* Technical Requirements */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Технические требования
+                Technical requirements
               </h3>
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start space-x-2">
                   <svg className="w-4 h-4 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span>Микрофон (обязательно)</span>
+                  <span>Microphone (required)</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <svg className="w-4 h-4 text-green-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span>Стабильное интернет-соединение</span>
+                  <span>Stable internet connection</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <svg className="w-4 h-4 text-blue-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
-                  <span>Камера (рекомендуется)</span>
+                  <span>Camera (recommended)</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <svg className="w-4 h-4 text-blue-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
-                  <span>Тихое помещение</span>
+                  <span>Quiet environment</span>
                 </div>
               </div>
             </div>
@@ -443,17 +443,17 @@ export default function SessionPage() {
             {/* Support */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Нужна помощь?
+                Need help?
               </h3>
               <div className="space-y-3">
                 <Button variant="outline" size="sm" className="w-full" asChild>
                   <a href="mailto:support@energylogic.com">
-                    Написать в поддержку
+                    Email support
                   </a>
                 </Button>
                 <Button variant="outline" size="sm" className="w-full" asChild>
                   <a href="tel:+7-999-123-45-67">
-                    Позвонить
+                    Call support
                   </a>
                 </Button>
               </div>

@@ -9,14 +9,14 @@ export async function GET(request: NextRequest) {
 
         if (!path) {
             return NextResponse.json(
-                { error: 'Путь к файлу обязателен' },
+                { error: 'File path is required' },
                 { status: 400 }
             )
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Получаем публичный URL файла
+        // Get public URL of the file
         const { data } = supabase.storage
             .from(bucket)
             .getPublicUrl(path)
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Storage URL API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

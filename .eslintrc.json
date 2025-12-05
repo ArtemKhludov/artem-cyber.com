@@ -3,12 +3,12 @@
     "next"
   ],
   "rules": {
-    // React правила
+    // React rules
     "react/no-unescaped-entities": "error",
     "react-hooks/exhaustive-deps": "warn",
-    // Next.js правила
+    // Next.js rules
     "@next/next/no-img-element": "warn",
-    // Общие правила
+    // General rules
     "no-console": "warn",
     "prefer-const": "error",
     "no-var": "error",

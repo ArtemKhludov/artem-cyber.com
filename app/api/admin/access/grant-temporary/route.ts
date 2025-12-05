@@ -29,7 +29,7 @@ async function requireAdmin(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        // Проверяем права администратора
+        // Check admin permissions
         const adminResult = await requireAdmin(request)
         if (!adminResult.success) {
             return NextResponse.json({ error: adminResult.error }, { status: adminResult.status })
@@ -38,12 +38,12 @@ export async function POST(request: NextRequest) {
         const { userId, courseId, gracePeriodMinutes = 30 } = await request.json()
 
         if (!userId || !courseId) {
-            return NextResponse.json({ error: 'userId и courseId обязательны' }, { status: 400 })
+            return NextResponse.json({ error: 'userId and courseId are required' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем, что пользователь существует
+        // Check that user exists
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('id, email, name')
@@ -51,10 +51,10 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (userError || !user) {
-            return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
+            return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
-        // Проверяем, что курс существует
+        // Check that course exists
         const { data: course, error: courseError } = await supabase
             .from('documents')
             .select('id, title')
@@ -62,13 +62,13 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (courseError || !course) {
-            return NextResponse.json({ error: 'Курс не найден' }, { status: 404 })
+            return NextResponse.json({ error: 'Course not found' }, { status: 404 })
         }
 
-        // Вычисляем время окончания grace period
+        // Calculate grace period end time
         const gracePeriodUntil = new Date(Date.now() + gracePeriodMinutes * 60 * 1000)
 
-        // Создаем временную покупку (для отслеживания)
+        // Create temporary purchase (for tracking)
         const { data: purchase, error: purchaseError } = await supabase
             .from('purchases')
             .insert({
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
                 user_email: user.email,
                 product_name: course.title,
                 product_type: 'course',
-                amount_paid: 0, // Временный доступ бесплатный
+                amount_paid: 0, // Temporary access is free
                 currency: 'RUB',
                 payment_method: 'grace_period',
                 status: 'pending_verification',
@@ -89,11 +89,11 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (purchaseError) {
-            console.error('Ошибка создания временной покупки:', purchaseError)
-            return NextResponse.json({ error: 'Ошибка создания временной покупки' }, { status: 500 })
+            console.error('Error creating temporary purchase:', purchaseError)
+            return NextResponse.json({ error: 'Failed to create temporary purchase' }, { status: 500 })
         }
 
-        // Выдаем временный доступ
+        // Grant temporary access
         const { data: access, error: accessError } = await supabase
             .from('user_course_access')
             .insert({
@@ -116,15 +116,15 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (accessError) {
-            console.error('Ошибка выдачи временного доступа:', accessError)
+            console.error('Error granting temporary access:', accessError)
 
-            // Откатываем создание покупки
+            // Rollback purchase creation
             await supabase.from('purchases').delete().eq('id', purchase.id)
 
-            return NextResponse.json({ error: 'Ошибка выдачи временного доступа' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to grant temporary access' }, { status: 500 })
         }
 
-        // Логируем действие
+        // Log action
         await supabase.from('audit_logs').insert({
             user_id: adminResult.userId,
             action: 'grant_temporary_access',
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: `Временный доступ выдан на ${gracePeriodMinutes} минут`,
+            message: `Temporary access granted for ${gracePeriodMinutes} minutes`,
             data: {
                 access,
                 purchase,
@@ -159,6 +159,6 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('Grant temporary access error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

@@ -11,17 +11,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, phone, email, product_type, product_name, product_id, amount, currency = 'RUB', status = 'completed', payment_method = 'manual' } = body
 
-    // Валидация обязательных полей
+    // Validate required fields
     if (!name || !phone || !product_type || !product_name || !amount) {
       return NextResponse.json(
-        { error: 'Имя, телефон, тип товара, название товара и сумма обязательны' },
+        { error: 'Name, phone, product type, product name, and amount are required' },
         { status: 400 }
       )
     }
 
 
 
-    // Сохранение покупки в базу данных
+    // Save purchase request to DB
     const { data, error } = await supabase
       .from('purchase_requests')
       .insert([
@@ -44,21 +44,21 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Database error:', error)
       return NextResponse.json(
-        { error: 'Ошибка сохранения покупки', details: error },
+        { error: 'Failed to save purchase', details: error },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Покупка успешно добавлена',
+      message: 'Purchase saved successfully',
       data
     })
 
   } catch (error) {
     console.error('Purchase creation error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

@@ -1,4 +1,4 @@
-// API для пользователей для получения ответов на свои заявки
+// API for users to get replies to their requests
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
@@ -11,7 +11,7 @@ export async function GET(
   try {
     const { id } = await params
 
-    // Проверяем права пользователя
+    // Check user permissions
     const validation = await requireUser(request)
     if (validation.response) {
       return validation.response
@@ -19,7 +19,7 @@ export async function GET(
 
     const supabase = getSupabaseAdmin()
 
-    // Проверяем, что заявка принадлежит пользователю
+    // Check that request belongs to user
     const { data: callback, error: callbackError } = await supabase
       .from('callback_requests')
       .select('id, user_id')
@@ -29,12 +29,12 @@ export async function GET(
 
     if (callbackError || !callback) {
       return NextResponse.json(
-        { error: 'Заявка не найдена или доступ запрещен' },
+        { error: 'Request not found or access denied' },
         { status: 404 }
       )
     }
 
-    // Получаем все ответы по заявке
+    // Get all replies for the request
     const { data: replies, error } = await supabase
       .from('callback_replies')
       .select(`
@@ -51,12 +51,12 @@ export async function GET(
     if (error) {
       console.error('Error fetching replies:', error)
       return NextResponse.json(
-        { error: 'Ошибка получения ответов' },
+        { error: 'Failed to fetch replies' },
         { status: 500 }
       )
     }
 
-    // Помечаем ответы как прочитанные
+    // Mark replies as read
     if (replies && replies.length > 0) {
       const unreadReplies = replies.filter(reply => 
         reply.is_from_admin && !reply.read_by?.includes(validation.validation.user.id)
@@ -82,13 +82,13 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching user replies:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-// POST endpoint для ответа пользователя на заявку
+// POST endpoint for user reply to request
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -98,7 +98,7 @@ export async function POST(
     const body = await request.json()
     const { message } = body
 
-    // Проверяем права пользователя
+    // Check user permissions
     const validation = await requireUser(request)
     if (validation.response) {
       return validation.response
@@ -106,14 +106,14 @@ export async function POST(
 
     if (!message || !message.trim()) {
       return NextResponse.json(
-        { error: 'Сообщение не может быть пустым' },
+        { error: 'Message cannot be empty' },
         { status: 400 }
       )
     }
 
     const supabase = getSupabaseAdmin()
 
-    // Проверяем, что заявка принадлежит пользователю
+    // Check that request belongs to user
     const { data: callback, error: callbackError } = await supabase
       .from('callback_requests')
       .select('id, user_id, status')
@@ -123,12 +123,12 @@ export async function POST(
 
     if (callbackError || !callback) {
       return NextResponse.json(
-        { error: 'Заявка не найдена или доступ запрещен' },
+        { error: 'Request not found or access denied' },
         { status: 404 }
       )
     }
 
-    // Создаем ответ пользователя
+    // Create user reply
     const { data: reply, error: replyError } = await supabase
       .from('callback_replies')
       .insert([
@@ -145,12 +145,12 @@ export async function POST(
     if (replyError) {
       console.error('Error creating user reply:', replyError)
       return NextResponse.json(
-        { error: 'Ошибка создания ответа' },
+        { error: 'Failed to create reply' },
         { status: 500 }
       )
     }
 
-    // Обновляем статус заявки на "ожидает ответа"
+    // Update request status to "waiting for response"
     await supabase
       .from('callback_requests')
       .update({ 
@@ -159,7 +159,7 @@ export async function POST(
       })
       .eq('id', id)
 
-    // Создаем уведомление для администраторов
+    // Create notification for administrators
     await supabase
       .from('callback_notifications')
       .insert([
@@ -185,7 +185,7 @@ export async function POST(
   } catch (error) {
     console.error('Error creating user reply:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

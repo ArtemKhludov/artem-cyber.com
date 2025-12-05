@@ -21,7 +21,7 @@ interface SessionItem {
 const formatDateTime = (value: string | null, fallback = '-') => {
   if (!value) return fallback
   try {
-    return new Date(value).toLocaleString('ru-RU')
+    return new Date(value).toLocaleString('en-US')
   } catch {
     return fallback
   }
@@ -39,8 +39,8 @@ export function SessionDevices() {
       const response = await fetch('/api/auth/sessions', { credentials: 'include' })
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: 'Не удалось получить список сессий' }))
-        setError(data.error || 'Не удалось получить список сессий')
+        const data = await response.json().catch(() => ({ error: 'Failed to fetch sessions' }))
+        setError(data.error || 'Failed to fetch sessions')
         setSessions([])
         return
       }
@@ -50,7 +50,7 @@ export function SessionDevices() {
       setError('')
     } catch (err) {
       console.error('Failed to load sessions', err)
-      setError('Ошибка загрузки сессий')
+      setError('Failed to load sessions')
     } finally {
       setLoading(false)
       setBusyToken(null)
@@ -76,14 +76,14 @@ export function SessionDevices() {
       })
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: 'Не удалось завершить сессию' }))
-        setError(data.error || 'Не удалось завершить сессию')
+        const data = await response.json().catch(() => ({ error: 'Failed to terminate session' }))
+        setError(data.error || 'Failed to terminate session')
       }
 
       await loadSessions()
     } catch (err) {
       console.error('Failed to revoke session', err)
-      setError('Ошибка завершения сессии')
+      setError('Failed to terminate session')
       setBusyToken(null)
     }
   }
@@ -92,8 +92,8 @@ export function SessionDevices() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Устройства</CardTitle>
-          <CardDescription>Подождите, загружаем активные сессии...</CardDescription>
+          <CardTitle>Devices</CardTitle>
+          <CardDescription>Please wait, loading active sessions...</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-6">
           <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
@@ -106,8 +106,8 @@ export function SessionDevices() {
     <Card>
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <CardTitle>Активные сессии</CardTitle>
-          <CardDescription>Завершите доступ на устройствах, которые вам не знакомы</CardDescription>
+          <CardTitle>Active sessions</CardTitle>
+          <CardDescription>End access on devices you do not recognize</CardDescription>
         </div>
         <div className="flex gap-2">
           <Button
@@ -116,7 +116,7 @@ export function SessionDevices() {
             disabled={busyToken === 'others' || loading || sessions.length <= 1}
             onClick={() => revoke({ scope: 'others' })}
           >
-            Завершить другие
+            End others
           </Button>
           <Button
             variant="destructive"
@@ -124,7 +124,7 @@ export function SessionDevices() {
             disabled={busyToken === 'all' || loading}
             onClick={() => revoke({ scope: 'all' })}
           >
-            Завершить все
+            End all
           </Button>
         </div>
       </CardHeader>
@@ -136,7 +136,7 @@ export function SessionDevices() {
         )}
 
         {sessions.length === 0 && !loading ? (
-          <p className="text-sm text-gray-500">Активных сессий не найдено.</p>
+          <p className="text-sm text-gray-500">No active sessions found.</p>
         ) : (
           sessions.map(session => {
             const isBusy = busyToken === session.token
@@ -148,12 +148,12 @@ export function SessionDevices() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-900">
-                      {session.isCurrent ? 'Текущая сессия' : 'Сессия'}
+                      {session.isCurrent ? 'Current session' : 'Session'}
                     </span>
                     {session.isCurrent ? (
-                      <Badge variant="secondary">Активно</Badge>
+                      <Badge variant="secondary">Active</Badge>
                     ) : session.rememberMe ? (
-                      <Badge variant="outline">Запомнить меня</Badge>
+                      <Badge variant="outline">Remember me</Badge>
                     ) : null}
                   </div>
                   <div className="text-xs text-gray-500">
@@ -161,14 +161,14 @@ export function SessionDevices() {
                     {session.userAgent ? ` · ${session.userAgent.slice(0, 80)}` : ''}
                   </div>
                   <div className="text-xs text-gray-500">
-                    Последняя активность: {formatDateTime(session.lastActivity, 'нет данных')}
+                    Last activity: {formatDateTime(session.lastActivity, 'no data')}
                   </div>
                   <div className="text-xs text-gray-500">
-                    Истекает: {formatDateTime(session.expiresAt)}
+                    Expires: {formatDateTime(session.expiresAt)}
                   </div>
                   {session.revokedAt && (
                     <div className="text-xs text-red-500">
-                      Завершена: {formatDateTime(session.revokedAt)}
+                      Ended: {formatDateTime(session.revokedAt)}
                     </div>
                   )}
                 </div>
@@ -182,11 +182,11 @@ export function SessionDevices() {
                   >
                     {isBusy ? (
                       <>
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" /> Завершение...
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" /> Ending...
                       </>
                     ) : (
                       <>
-                        <LogOut className="mr-2 h-3 w-3" /> Завершить
+                        <LogOut className="mr-2 h-3 w-3" /> End session
                       </>
                     )}
                   </Button>

@@ -9,14 +9,14 @@ export async function POST(request: NextRequest) {
 
     console.log('📡 Supabase webhook received:', { type, table })
 
-    // Проверяем подпись webhook (рекомендуется для продакшена)
+    // Verify webhook signature (recommended in production)
     const signature = request.headers.get('x-supabase-signature')
     if (!signature) {
       console.warn('⚠️ No signature provided')
-      // В продакшене здесь должна быть проверка подписи
+      // In production you should validate the signature here
     }
 
-    // Обрабатываем разные типы событий
+    // Handle different table events
     switch (table) {
       case 'documents':
         await handleDocumentChange(type, record, old_record)
@@ -45,10 +45,10 @@ async function handleDocumentChange(type: string, record: any, old_record: any) 
   console.log(`📄 Document ${type}:`, record?.title || record?.id)
   
   if (type === 'INSERT') {
-    // Новый документ добавлен
+    // New document added
     await notifyTelegram(
-      `📚 Новый документ добавлен: ${record.title}\n` +
-      `📝 Описание: ${record.description || 'Без описания'}\n` +
+      `📚 New document added: ${record.title}\n` +
+      `📝 Description: ${record.description || 'No description'}\n` +
       `🔗 ID: ${record.id}`,
       {
         botToken: process.env.TELEGRAM_BOT_TOKEN,
@@ -63,12 +63,12 @@ async function handlePurchaseChange(type: string, record: any, old_record: any) 
   console.log(`💳 Purchase ${type}:`, record?.product_name || record?.id)
   
   if (type === 'INSERT') {
-    // Новая покупка
+    // New purchase
     await notifyTelegram(
-      `🛒 Новая покупка!\n` +
-      `📦 Товар: ${record.product_name}\n` +
-      `💰 Сумма: ${record.amount_paid} ${record.currency}\n` +
-      `👤 Покупатель: ${record.user_email}\n` +
+      `🛒 New purchase!\n` +
+      `📦 Item: ${record.product_name}\n` +
+      `💰 Amount: ${record.amount_paid} ${record.currency}\n` +
+      `👤 Buyer: ${record.user_email}\n` +
       `🆔 ID: ${record.id}`,
       {
         botToken: process.env.TELEGRAM_BOT_TOKEN,
@@ -83,12 +83,12 @@ async function handleUserChange(type: string, record: any, old_record: any) {
   console.log(`👤 User ${type}:`, record?.email || record?.id)
   
   if (type === 'INSERT') {
-    // Новый пользователь зарегистрировался
+    // New user registered
     await notifyTelegram(
-      `👋 Новый пользователь!\n` +
+      `👋 New user!\n` +
       `📧 Email: ${record.email}\n` +
-      `👤 Имя: ${record.name || 'Не указано'}\n` +
-      `📱 Телефон: ${record.phone || 'Не указан'}\n` +
+      `👤 Name: ${record.name || 'Not provided'}\n` +
+      `📱 Phone: ${record.phone || 'Not provided'}\n` +
       `🆔 ID: ${record.id}`,
       {
         botToken: process.env.TELEGRAM_BOT_TOKEN,
@@ -103,12 +103,12 @@ async function handleIssueChange(type: string, record: any, old_record: any) {
   console.log(`🎫 Issue ${type}:`, record?.title || record?.id)
   
   if (type === 'INSERT') {
-    // Новое обращение в поддержку
+    // New support ticket
     await notifyTelegram(
-      `🎫 Новое обращение в поддержку!\n` +
-      `📝 Тема: ${record.title}\n` +
-      `👤 Пользователь: ${record.user_email}\n` +
-      `📊 Статус: ${record.status}\n` +
+      `🎫 New support ticket!\n` +
+      `📝 Subject: ${record.title}\n` +
+      `👤 User: ${record.user_email}\n` +
+      `📊 Status: ${record.status}\n` +
       `🆔 ID: ${record.id}`,
       {
         botToken: process.env.TELEGRAM_BOT_TOKEN,

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       return response
     }
 
-    // Получаем обращения пользователя с ответами
+    // Fetch user issues with replies
     const { data: issues, error: issuesError } = await supabase
       .from('issue_reports')
       .select(`
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     if (issuesError) {
       console.error('Issues fetch error:', issuesError)
-      return NextResponse.json({ error: 'Не удалось загрузить обращения' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to load issues' }, { status: 500 })
     }
 
     const response = NextResponse.json({ success: true, issues })
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Issues GET error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}))
     const rawSubject = parseString(body?.subject)
-    const subject = rawSubject || 'Сообщение пользователя'
+    const subject = rawSubject || 'User message'
     const description = parseString(body?.description)
     const type = ALLOWED_TYPES.has(body?.type) ? body.type : 'other'
     const severity = ALLOWED_SEVERITIES.has(body?.severity) ? body.severity : 'normal'
@@ -102,14 +102,14 @@ export async function POST(request: NextRequest) {
     const url = parseOptionalString(body?.url)
     const context = typeof body?.context === 'object' && body.context ? body.context : {}
 
-    // Извлекаем контактные данные из context
+    // Pull contact info from context
     const userPhone = context?.phone || ''
     const userTelegram = context?.telegram || ''
     const wantTelegramNotifications = Boolean(context?.wantTelegramNotifications)
     const wantEmailNotifications = Boolean(context?.wantEmailNotifications ?? true)
 
     if (description.length < 10) {
-      return NextResponse.json({ error: 'Опишите проблему подробнее (минимум 10 символов).' }, { status: 400 })
+      return NextResponse.json({ error: 'Describe the issue in more detail (minimum 10 characters).' }, { status: 400 })
     }
 
     const windowStart = new Date(Date.now() - 5 * 60 * 1000).toISOString()
@@ -121,18 +121,18 @@ export async function POST(request: NextRequest) {
 
     if (recentError) {
       console.error('Issue rate-limit check failed:', recentError)
-      return NextResponse.json({ error: 'Не удалось создать обращение' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to create issue' }, { status: 500 })
     }
 
     if ((recentIssues?.length ?? 0) >= 3) {
-      return NextResponse.json({ error: 'Слишком много обращений. Попробуйте через несколько минут.' }, { status: 429 })
+      return NextResponse.json({ error: 'Too many requests. Please try again in a few minutes.' }, { status: 429 })
     }
 
     const sanitizedContext = Object.fromEntries(
       Object.entries(context).filter(([_, value]) => value !== undefined)
     )
 
-    // Обновляем контактные данные пользователя
+    // Update user contact preferences
     if (userPhone || userTelegram) {
       const updateData: Record<string, any> = {}
       if (userPhone) updateData.phone = userPhone
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('Issue insert error:', insertError)
-      return NextResponse.json({ error: 'Не удалось сохранить обращение' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to save issue' }, { status: 500 })
     }
 
     await supabase.from('audit_logs').insert({
@@ -224,6 +224,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Issues POST error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

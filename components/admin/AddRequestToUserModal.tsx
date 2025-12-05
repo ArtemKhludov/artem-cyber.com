@@ -25,32 +25,32 @@ export default function AddRequestToUserModal({
 }: AddRequestToUserModalProps) {
     const [loading, setLoading] = useState(false)
     const [productType, setProductType] = useState<string>('callback')
-    const [productName, setProductName] = useState<string>('Заказ обратного звонка')
+    const [productName, setProductName] = useState<string>('Callback Request')
     const [message, setMessage] = useState<string>('')
     const [sourcePage, setSourcePage] = useState<string>('manual')
 
     const productTypes = [
-        { value: 'callback', label: 'Заказ обратного звонка', name: 'Заказ обратного звонка' },
-        { value: 'consultation', label: 'Консультация', name: 'Консультация по энергетике' },
-        { value: 'pdf', label: 'PDF файл', name: 'PDF файл по энергетике' },
-        { value: 'program', label: 'Программа', name: 'Программа 21 день' },
-        { value: 'course', label: 'Онлайн-курс', name: 'Онлайн-курс по энергетике' }
+        { value: 'callback', label: 'Callback Request', name: 'Callback Request' },
+        { value: 'consultation', label: 'Consultation', name: 'Energy Consultation' },
+        { value: 'pdf', label: 'PDF File', name: 'Energy PDF File' },
+        { value: 'program', label: 'Program', name: '21 Days Program' },
+        { value: 'course', label: 'Online Course', name: 'Energy Online Course' }
     ]
 
     const sourcePages = [
-        { value: 'manual', label: 'Ручное добавление' },
-        { value: '/', label: 'Главная страница' },
-        { value: '/about', label: 'О проекте' },
-        { value: '/contacts', label: 'Контакты' },
-        { value: '/catalog', label: 'Каталог' },
-        { value: '/book', label: 'Программы' }
+        { value: 'manual', label: 'Manual Entry' },
+        { value: '/', label: 'Home Page' },
+        { value: '/about', label: 'About' },
+        { value: '/contacts', label: 'Contacts' },
+        { value: '/catalog', label: 'Catalog' },
+        { value: '/book', label: 'Programs' }
     ]
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         if (!productType) {
-            alert('Пожалуйста, выберите тип заявки')
+            alert('Please select request type')
             return
         }
 
@@ -83,11 +83,11 @@ export default function AddRequestToUserModal({
                 onSuccess()
                 onClose()
             } else {
-                alert('Ошибка добавления заявки: ' + result.error)
+                alert('Error adding request: ' + result.error)
             }
         } catch (error) {
             console.error('Error adding request:', error)
-            alert('Ошибка добавления заявки')
+            alert('Error adding request')
         } finally {
             setLoading(false)
         }
@@ -110,7 +110,7 @@ export default function AddRequestToUserModal({
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
                             <MessageSquare className="w-6 h-6" />
-                            <h2 className="text-xl font-bold">Добавить заявку</h2>
+                            <h2 className="text-xl font-bold">Add Request</h2>
                         </div>
                         <Button
                             onClick={onClose}
@@ -121,13 +121,13 @@ export default function AddRequestToUserModal({
                             <X className="w-5 h-5" />
                         </Button>
                     </div>
-                    <p className="text-blue-100 mt-1">Пользователь: {userName}</p>
+                    <p className="text-blue-100 mt-1">User: {userName}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Тип заявки
+                            Request Type
                         </label>
                         <select
                             value={productType}
@@ -145,7 +145,7 @@ export default function AddRequestToUserModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Название продукта/услуги
+                            Product/Service Name
                         </label>
                         <input
                             type="text"
@@ -158,20 +158,20 @@ export default function AddRequestToUserModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Сообщение
+                            Message
                         </label>
                         <textarea
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             rows={3}
-                            placeholder="Дополнительная информация..."
+                            placeholder="Additional information..."
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Источник
+                            Source
                         </label>
                         <select
                             value={sourcePage}
@@ -193,7 +193,7 @@ export default function AddRequestToUserModal({
                             variant="outline"
                             className="flex-1"
                         >
-                            Отмена
+                            Cancel
                         </Button>
                         <Button
                             type="submit"
@@ -203,12 +203,12 @@ export default function AddRequestToUserModal({
                             {loading ? (
                                 <div className="flex items-center space-x-2">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    <span>Добавление...</span>
+                                    <span>Adding...</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center space-x-2">
                                     <Plus className="w-4 h-4" />
-                                    <span>Добавить заявку</span>
+                                    <span>Add Request</span>
                                 </div>
                             )}
                         </Button>

@@ -55,12 +55,12 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-    new: 'Новая',
-    contacted: 'Связались',
-    in_progress: 'В работе',
-    waiting_admin: 'Ожидает ответа',
-    completed: 'Завершена',
-    cancelled: 'Отменена'
+    new: 'New',
+    contacted: 'Contacted',
+    in_progress: 'In Progress',
+    waiting_admin: 'Waiting for Reply',
+    completed: 'Completed',
+    cancelled: 'Cancelled'
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -71,10 +71,10 @@ const PRIORITY_COLORS: Record<string, string> = {
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
-    low: 'Низкий',
-    medium: 'Средний',
-    high: 'Высокий',
-    urgent: 'Срочный'
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    urgent: 'Urgent'
 }
 
 export function UserCallbacksList() {
@@ -96,13 +96,13 @@ export function UserCallbacksList() {
             })
 
             if (!response.ok) {
-                throw new Error('Не удалось загрузить заявки')
+                throw new Error('Failed to load requests')
             }
 
             const data = await response.json()
             setCallbacks(data.callbacks || [])
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Произошла ошибка')
+            setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
             setLoading(false)
         }
@@ -114,7 +114,7 @@ export function UserCallbacksList() {
 
     const handleCreateCallback = async () => {
         if (!newMessage.trim() || newMessage.trim().length < 10) {
-            setError('Сообщение должно содержать минимум 10 символов')
+            setError('Message must contain at least 10 characters')
             return
         }
 
@@ -137,21 +137,21 @@ export function UserCallbacksList() {
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Ошибка создания заявки')
+                throw new Error(data.error || 'Error creating request')
             }
 
             setNewMessage('')
             setNewPriority('medium')
             await fetchCallbacks()
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Произошла ошибка')
+            setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
             setSubmitting(false)
         }
     }
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleString('ru-RU', {
+        return new Date(dateString).toLocaleString('en-US', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -162,11 +162,11 @@ export function UserCallbacksList() {
 
     const getSourceLabel = (source: string) => {
         const sources: Record<string, string> = {
-            'dashboard': 'Личный кабинет',
-            'website': 'Сайт',
-            'catalog': 'Каталог',
-            'contacts': 'Контакты',
-            'unknown': 'Неизвестно'
+  'dashboard': 'Dashboard',
+  'website': 'Website',
+  'catalog': 'Catalog',
+  'contacts': 'Contacts',
+  'unknown': 'Unknown'
         }
         return sources[source] || source
     }
@@ -177,13 +177,13 @@ export function UserCallbacksList() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />
-                        Мои заявки
+                        My Requests
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center justify-center py-8">
                         <RefreshCcw className="h-6 w-6 animate-spin text-gray-400" />
-                        <span className="ml-2 text-gray-600">Загрузка...</span>
+                        <span className="ml-2 text-gray-600">Loading...</span>
                     </div>
                 </CardContent>
             </Card>
@@ -192,15 +192,15 @@ export function UserCallbacksList() {
 
     return (
         <div className="space-y-6">
-            {/* Форма создания новой заявки */}
+            {/* New Request Form */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />
-                        Создать новую заявку
+                        Create New Request
                     </CardTitle>
                     <CardDescription>
-                        Опишите вашу проблему или вопрос, и мы свяжемся с вами
+                        Describe your problem or question, and we will contact you
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -212,33 +212,33 @@ export function UserCallbacksList() {
 
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">
-                            Приоритет
+                            Priority
                         </label>
                         <select
                             value={newPriority}
                             onChange={(e) => setNewPriority(e.target.value)}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                            <option value="low">Низкий</option>
-                            <option value="medium">Средний</option>
-                            <option value="high">Высокий</option>
-                            <option value="urgent">Срочный</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+        <option value="urgent">Urgent</option>
                         </select>
                     </div>
 
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">
-                            Сообщение *
+                            Message *
                         </label>
                         <Textarea
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder="Опишите вашу проблему или вопрос подробно..."
+                            placeholder="Describe your problem or question in detail..."
                             rows={4}
                             className="resize-none"
                         />
                         <p className="text-xs text-gray-500">
-                            Минимум 10 символов. Осталось: {Math.max(0, 10 - newMessage.length)}
+                            Minimum 10 characters. Remaining: {Math.max(0, 10 - newMessage.length)}
                         </p>
                     </div>
 
@@ -250,25 +250,25 @@ export function UserCallbacksList() {
                         {submitting ? (
                             <>
                                 <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
-                                Создание заявки...
+                                Creating request...
                             </>
                         ) : (
                             <>
                                 <Send className="h-4 w-4 mr-2" />
-                                Создать заявку
+                                Create request
                             </>
                         )}
                     </Button>
                 </CardContent>
             </Card>
 
-            {/* Список заявок */}
+            {/* Requests list */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <MessageSquare className="h-5 w-5" />
-                            Мои заявки ({callbacks.length})
+                            My Requests ({callbacks.length})
                         </div>
                         <Button
                             variant="outline"
@@ -277,32 +277,32 @@ export function UserCallbacksList() {
                             className="flex items-center gap-2"
                         >
                             <RefreshCcw className="h-4 w-4" />
-                            Обновить
+                            Refresh
                         </Button>
                     </CardTitle>
                     <CardDescription>
-                        История ваших заявок и переписка с поддержкой
+                        Your request history and support conversations
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {callbacks.length === 0 ? (
                         <div className="text-center py-8 text-gray-500">
                             <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                            <p>У вас пока нет заявок</p>
-                            <p className="text-sm">Создайте первую заявку выше</p>
+                            <p>You have no requests yet</p>
+                            <p className="text-sm">Create your first request above</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             {callbacks.map((callback) => (
                                 <div key={callback.id} className="border rounded-lg p-4 space-y-3">
-                                    {/* Заголовок заявки */}
+                                    {/* Request header */}
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <h3 className="font-medium text-gray-900">
                                                 {callback.product_name}
                                             </h3>
                                             <p className="text-sm text-gray-600 mt-1">
-                                                {callback.message || 'Заявка на обратный звонок'}
+                                                {callback.message || 'Callback request'}
                                             </p>
                                             <div className="flex items-center gap-2 mt-2">
                                                 <span className="text-xs text-gray-500">
@@ -329,27 +329,27 @@ export function UserCallbacksList() {
                                         </div>
                                     </div>
 
-                                    {/* Метаинформация */}
+                                    {/* Meta info */}
                                     <div className="flex items-center gap-4 text-xs text-gray-500">
                                         <span className="flex items-center gap-1">
                                             <Clock className="h-3 w-3" />
-                                            Создано: {formatDate(callback.created_at)}
+                                            Created: {formatDate(callback.created_at)}
                                         </span>
                                         {callback.last_contacted_at && (
                                             <span className="flex items-center gap-1">
                                                 <Phone className="h-3 w-3" />
-                                                Связались: {formatDate(callback.last_contacted_at)}
+                                                Contacted: {formatDate(callback.last_contacted_at)}
                                             </span>
                                         )}
                                         {callback.contact_attempts > 0 && (
                                             <span className="flex items-center gap-1">
                                                 <MessageSquare className="h-3 w-3" />
-                                                Попыток: {callback.contact_attempts}
+                                                Attempts: {callback.contact_attempts}
                                             </span>
                                         )}
                                     </div>
 
-                                    {/* Теги */}
+                                    {/* Tags */}
                                     {callback.tags && callback.tags.length > 0 && (
                                         <div className="flex items-center gap-2">
                                             <Tag className="h-3 w-3 text-gray-400" />
@@ -363,11 +363,11 @@ export function UserCallbacksList() {
                                         </div>
                                     )}
 
-                                    {/* Связанное обращение */}
+                                    {/* Linked support ticket */}
                                     {callback.issue_reports && callback.issue_reports.length > 0 && (
                                         <div className="bg-blue-50 rounded-lg p-3">
                                             <p className="text-sm font-medium text-blue-900 mb-1">
-                                                Связанное обращение в поддержку:
+                                                Linked support ticket:
                                             </p>
                                             <p className="text-sm text-blue-800">
                                                 {callback.issue_reports[0].title}
@@ -375,7 +375,7 @@ export function UserCallbacksList() {
                                         </div>
                                     )}
 
-                                    {/* Ответы */}
+                                    {/* Replies */}
                                     {callback.callback_replies && callback.callback_replies.length > 0 && (
                                         <div className="space-y-2">
                                             <Button
@@ -386,7 +386,7 @@ export function UserCallbacksList() {
                                                 )}
                                                 className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                             >
-                                                {expandedCallback === callback.id ? 'Скрыть' : 'Показать'} ответы ({callback.callback_replies.length})
+                                                {expandedCallback === callback.id ? 'Hide' : 'Show'} replies ({callback.callback_replies.length})
                                             </Button>
 
                                             {expandedCallback === callback.id && (
@@ -398,7 +398,7 @@ export function UserCallbacksList() {
                                                             }`}>
                                                             <div className="flex items-center gap-2 mb-2">
                                                                 <span className="text-sm font-medium">
-                                                                    {reply.author_type === 'admin' ? 'Поддержка' : 'Вы'}
+                                                                    {reply.author_type === 'admin' ? 'Support' : 'You'}
                                                                 </span>
                                                                 <span className="text-xs text-gray-600">
                                                                     {formatDate(reply.created_at)}

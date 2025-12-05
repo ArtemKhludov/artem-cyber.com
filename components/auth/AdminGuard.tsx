@@ -27,7 +27,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Проверка доступа...</p>
+          <p className="text-gray-600">Checking access...</p>
         </div>
       </div>
     )
@@ -37,8 +37,8 @@ export function AdminGuard({ children }: AdminGuardProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Доступ запрещен</h1>
-          <p className="text-gray-600">У вас нет прав для доступа к этой странице.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">You do not have permission to access this page.</p>
         </div>
       </div>
     )

@@ -46,12 +46,12 @@ interface CourseModalTabsProps {
     uploading: { [key: string]: boolean }
 }
 
-export function CourseModalTabs({ 
-    isEditing, 
-    formData, 
-    setFormData, 
-    onFileUpload, 
-    uploading 
+export function CourseModalTabs({
+    isEditing,
+    formData,
+    setFormData,
+    onFileUpload,
+    uploading
 }: CourseModalTabsProps) {
     const [activeTab, setActiveTab] = useState<'basic' | 'files' | 'settings'>('basic')
 
@@ -67,83 +67,80 @@ export function CourseModalTabs({
 
     return (
         <div className="space-y-4">
-            {/* Табы */}
+            {/* Tabs */}
             <div className="flex border-b border-gray-200">
                 <button
                     onClick={() => setActiveTab('basic')}
-                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                        activeTab === 'basic'
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'basic'
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
+                        }`}
                 >
                     <Info className="w-4 h-4 inline mr-2" />
-                    Основная информация
+                    Basic Information
                 </button>
                 <button
                     onClick={() => setActiveTab('files')}
-                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                        activeTab === 'files'
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'files'
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
+                        }`}
                 >
                     <FileText className="w-4 h-4 inline mr-2" />
-                    Файлы курса
+                    Course Files
                 </button>
                 <button
                     onClick={() => setActiveTab('settings')}
-                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                        activeTab === 'settings'
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'settings'
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
+                        }`}
                 >
                     <Settings className="w-4 h-4 inline mr-2" />
-                    Настройки
+                    Settings
                 </button>
             </div>
 
-            {/* Контент табов */}
+            {/* Tab Content */}
             <div className="max-h-96 overflow-y-auto">
                 {activeTab === 'basic' && (
                     <div className="space-y-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="title">Название *</Label>
+                            <Label htmlFor="title">Title *</Label>
                             <Input
                                 id="title"
                                 value={isEditing ? (formData as Document).title : (formData as CourseFormData).title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                placeholder="Название курса"
+                                placeholder="Course title"
                             />
                         </div>
-                        
+
                         <div className="grid gap-2">
-                            <Label htmlFor="description">Описание</Label>
+                            <Label htmlFor="description">Description</Label>
                             <Textarea
                                 id="description"
                                 value={isEditing ? (formData as Document).description : (formData as CourseFormData).description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="Описание курса"
+                                placeholder="Course description"
                                 rows={3}
                             />
                         </div>
 
                         <div className="grid grid-cols-3 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="course_type">Тип курса</Label>
+                                <Label htmlFor="course_type">Course type</Label>
                                 <select
                                     id="course_type"
                                     value={isEditing ? (formData as Document).course_type || 'pdf' : (formData as CourseFormData).course_type}
                                     onChange={(e) => setFormData({ ...formData, course_type: e.target.value as 'pdf' | 'mini_course' })}
                                     className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option value="mini_course">Мини-курс</option>
+                                    <option value="mini_course">Mini course</option>
                                     <option value="pdf">PDF</option>
                                 </select>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="price_rub">Цена (₽) *</Label>
+                                <Label htmlFor="price_rub">Price (₽) *</Label>
                                 <Input
                                     id="price_rub"
                                     type="number"
@@ -153,7 +150,7 @@ export function CourseModalTabs({
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="page_count">Количество страниц</Label>
+                                <Label htmlFor="page_count">Page count</Label>
                                 <Input
                                     id="page_count"
                                     type="number"
@@ -168,17 +165,17 @@ export function CourseModalTabs({
 
                 {activeTab === 'files' && (
                     <div className="space-y-4">
-                        {/* Обложка */}
+                        {/* Cover */}
                         <div className="grid gap-2">
                             <Label className="flex items-center gap-2">
                                 <Image className="w-4 h-4" />
-                                Обложка курса
+                                Course cover
                             </Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={isEditing ? (formData as Document).cover_url || '' : (formData as CourseFormData).cover_url}
                                     onChange={(e) => setFormData({ ...formData, cover_url: e.target.value })}
-                                    placeholder="URL обложки"
+                                    placeholder="Cover image URL"
                                 />
                                 <input
                                     type="file"
@@ -207,17 +204,17 @@ export function CourseModalTabs({
                             </div>
                         </div>
 
-                        {/* Основной PDF */}
+                        {/* Main PDF */}
                         <div className="grid gap-2">
                             <Label className="flex items-center gap-2">
                                 <FileText className="w-4 h-4" />
-                                Основной PDF
+                                Main PDF
                             </Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={isEditing ? (formData as Document).file_url || '' : (formData as CourseFormData).file_url}
                                     onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
-                                    placeholder="URL основного PDF"
+                                    placeholder="Main PDF URL"
                                 />
                                 <input
                                     type="file"
@@ -246,17 +243,17 @@ export function CourseModalTabs({
                             </div>
                         </div>
 
-                        {/* Превью видео */}
+                        {/* Preview video */}
                         <div className="grid gap-2">
                             <Label className="flex items-center gap-2">
                                 <Play className="w-4 h-4" />
-                                Превью видео
+                                Video preview
                             </Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={isEditing ? (formData as Document).video_preview_url || '' : (formData as CourseFormData).video_preview_url}
                                     onChange={(e) => setFormData({ ...formData, video_preview_url: e.target.value })}
-                                    placeholder="URL превью видео"
+                                    placeholder="Preview video URL"
                                 />
                                 <input
                                     type="file"
@@ -285,17 +282,17 @@ export function CourseModalTabs({
                             </div>
                         </div>
 
-                        {/* Рабочая тетрадь */}
+                        {/* Workbook */}
                         <div className="grid gap-2">
                             <Label className="flex items-center gap-2">
                                 <BookOpen className="w-4 h-4" />
-                                Рабочая тетрадь
+                                Workbook
                             </Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={isEditing ? (formData as Document).workbook_url || '' : (formData as CourseFormData).workbook_url}
                                     onChange={(e) => setFormData({ ...formData, workbook_url: e.target.value })}
-                                    placeholder="URL рабочей тетради"
+                                    placeholder="Workbook URL"
                                 />
                                 <input
                                     type="file"
@@ -324,17 +321,17 @@ export function CourseModalTabs({
                             </div>
                         </div>
 
-                        {/* Аудио */}
+                        {/* Audio */}
                         <div className="grid gap-2">
                             <Label className="flex items-center gap-2">
                                 <Volume2 className="w-4 h-4" />
-                                Аудио-настройка
+                                Audio track
                             </Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={isEditing ? (formData as Document).audio_url || '' : (formData as CourseFormData).audio_url}
                                     onChange={(e) => setFormData({ ...formData, audio_url: e.target.value })}
-                                    placeholder="URL аудио файла"
+                                    placeholder="Audio file URL"
                                 />
                                 <input
                                     type="file"
@@ -363,11 +360,11 @@ export function CourseModalTabs({
                             </div>
                         </div>
 
-                        {/* Видео уроки */}
+                        {/* Video lessons */}
                         <div className="grid gap-2">
                             <Label className="flex items-center gap-2">
                                 <Video className="w-4 h-4" />
-                                Видео уроки
+                                Video lessons
                             </Label>
                             {(isEditing ? (formData as Document).video_urls || ['', '', ''] : (formData as CourseFormData).video_urls).map((url, index) => (
                                 <div key={index} className="flex gap-2">
@@ -384,7 +381,7 @@ export function CourseModalTabs({
                                                 setFormData({ ...formData, video_urls: newVideoUrls })
                                             }
                                         }}
-                                        placeholder={`URL видео урока ${index + 1}`}
+                                        placeholder={`Video lesson URL ${index + 1}`}
                                     />
                                     <input
                                         type="file"
@@ -420,7 +417,7 @@ export function CourseModalTabs({
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="course_duration_minutes">Продолжительность (минуты)</Label>
+                                <Label htmlFor="course_duration_minutes">Duration (minutes)</Label>
                                 <Input
                                     id="course_duration_minutes"
                                     type="number"
@@ -430,7 +427,7 @@ export function CourseModalTabs({
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="video_count">Количество видео</Label>
+                                <Label htmlFor="video_count">Video count</Label>
                                 <Input
                                     id="video_count"
                                     type="number"
@@ -449,7 +446,7 @@ export function CourseModalTabs({
                                     onChange={(e) => setFormData({ ...formData, has_workbook: e.target.checked })}
                                     className="rounded"
                                 />
-                                <span className="text-sm">Есть рабочая тетрадь</span>
+                                <span className="text-sm">Has workbook</span>
                             </label>
                             <label className="flex items-center space-x-2">
                                 <input
@@ -458,7 +455,7 @@ export function CourseModalTabs({
                                     onChange={(e) => setFormData({ ...formData, has_audio: e.target.checked })}
                                     className="rounded"
                                 />
-                                <span className="text-sm">Есть аудио</span>
+                                <span className="text-sm">Has audio</span>
                             </label>
                             <label className="flex items-center space-x-2">
                                 <input
@@ -467,7 +464,7 @@ export function CourseModalTabs({
                                     onChange={(e) => setFormData({ ...formData, has_videos: e.target.checked })}
                                     className="rounded"
                                 />
-                                <span className="text-sm">Есть видео</span>
+                                <span className="text-sm">Has video</span>
                             </label>
                         </div>
                     </div>

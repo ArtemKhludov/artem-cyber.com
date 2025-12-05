@@ -222,7 +222,7 @@ EnergyLogic Team`
             }
         }
 
-        // Создаем запись в audit_logs
+        // Create audit_logs entry
         await supabase
             .from('audit_logs')
             .insert({
@@ -251,7 +251,7 @@ EnergyLogic Team`
     } catch (error) {
         console.error('Callback replies POST error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

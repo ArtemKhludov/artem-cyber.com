@@ -46,17 +46,17 @@ export function PricingManagement() {
             if (response.ok) {
                 const data = await response.json()
                 setDocuments(data.documents)
-                // Инициализируем редактируемые цены
+                // Initialize editable prices
                 const initialPrices: { [key: string]: number } = {}
                 data.documents.forEach((doc: Document) => {
                     initialPrices[doc.id] = doc.price_rub
                 })
                 setEditingPrices(initialPrices)
             } else {
-                console.error('Ошибка загрузки цен')
+                console.error('Failed to load prices')
             }
         } catch (error) {
-            console.error('Ошибка загрузки цен:', error)
+            console.error('Failed to load prices:', error)
         } finally {
             setLoading(false)
         }
@@ -68,7 +68,7 @@ export function PricingManagement() {
             [documentId]: newPrice
         }))
 
-        // Проверяем, есть ли изменения
+        // Check if there are changes
         const originalPrice = documents.find(doc => doc.id === documentId)?.price_rub
         setHasChanges(originalPrice !== newPrice)
     }
@@ -77,7 +77,7 @@ export function PricingManagement() {
         setSaving(true)
 
         try {
-            // Подготавливаем обновления только для измененных цен
+            // Prepare updates only for changed prices
             const updates = documents
                 .filter(doc => editingPrices[doc.id] !== doc.price_rub)
                 .map(doc => ({
@@ -86,7 +86,7 @@ export function PricingManagement() {
                 }))
 
             if (updates.length === 0) {
-                alert('Нет изменений для сохранения')
+                alert('No changes to save')
                 setSaving(false)
                 return
             }
@@ -102,7 +102,7 @@ export function PricingManagement() {
             if (response.ok) {
                 const data = await response.json()
 
-                // Обновляем локальное состояние
+                // Update local state
                 setDocuments(prev => prev.map(doc => {
                     const newPrice = editingPrices[doc.id]
                     return newPrice !== doc.price_rub
@@ -111,14 +111,14 @@ export function PricingManagement() {
                 }))
 
                 setHasChanges(false)
-                alert(`Успешно обновлено ${updates.length} цен`)
+                alert(`Successfully updated ${updates.length} prices`)
             } else {
                 const error = await response.json()
-                alert(`Ошибка: ${error.error}`)
+                alert(`Error: ${error.error}`)
             }
         } catch (error) {
-            console.error('Ошибка сохранения цен:', error)
-            alert('Ошибка сохранения цен')
+            console.error('Error saving prices:', error)
+            alert('Failed to save prices')
         } finally {
             setSaving(false)
         }
@@ -134,7 +134,10 @@ export function PricingManagement() {
     }
 
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('ru-RU').format(price) + ' ₽'
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(price)
     }
 
     const getPriceChangeIndicator = (documentId: string) => {
@@ -162,8 +165,8 @@ export function PricingManagement() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Управление ценами</h2>
-                    <p className="text-gray-600">Редактируйте цены на PDF документы</p>
+                    <h2 className="text-2xl font-bold text-gray-900">Pricing management</h2>
+                    <p className="text-gray-600">Edit prices for PDF documents</p>
                 </div>
                 <div className="flex gap-2">
                     {hasChanges && (
@@ -173,7 +176,7 @@ export function PricingManagement() {
                             className="text-gray-600"
                         >
                             <X className="h-4 w-4 mr-2" />
-                            Отменить
+                            Reset
                         </Button>
                     )}
                     <Button
@@ -186,7 +189,7 @@ export function PricingManagement() {
                         ) : (
                             <Save className="h-4 w-4 mr-2" />
                         )}
-                        Сохранить изменения
+                        Save changes
                     </Button>
                 </div>
             </div>
@@ -196,7 +199,7 @@ export function PricingManagement() {
                     <div className="flex items-center">
                         <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
                         <span className="text-yellow-800">
-                            У вас есть несохраненные изменения. Не забудьте сохранить их.
+                            You have unsaved changes. Don’t forget to save them.
                         </span>
                     </div>
                 </div>
@@ -206,20 +209,20 @@ export function PricingManagement() {
                 <CardHeader>
                     <CardTitle className="flex items-center">
                         <DollarSign className="h-5 w-5 mr-2" />
-                        Цены документов ({documents.length})
+                        Document prices ({documents.length})
                     </CardTitle>
                     <CardDescription>
-                        Нажмите на цену для редактирования. Изменения сохраняются только после нажатия &laquo;Сохранить изменения&raquo;
+                        Click a price to edit it. Changes are saved only after pressing “Save changes.”
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Название документа</TableHead>
-                                <TableHead>Текущая цена</TableHead>
-                                <TableHead>Новая цена</TableHead>
-                                <TableHead>Изменение</TableHead>
+                                <TableHead>Document title</TableHead>
+                                <TableHead>Current price</TableHead>
+                                <TableHead>New price</TableHead>
+                                <TableHead>Change</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -259,9 +262,9 @@ export function PricingManagement() {
                 <Card>
                     <CardContent className="text-center py-8">
                         <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Нет документов</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No documents</h3>
                         <p className="text-gray-600">
-                            Сначала добавьте документы в разделе &laquo;Управление документами&raquo;
+                            Add documents first in the “Document management” section.
                         </p>
                     </CardContent>
                 </Card>

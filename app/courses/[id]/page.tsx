@@ -142,9 +142,9 @@ export default function PDFPage({ params }: PDFPageProps) {
                 </p>
               </div>
 
-              {/* БЕСКОНЕЧНАЯ КАРУСЕЛЬ СО СТРЕЛКАМИ */}
+              {/* Infinite carousel with arrows */}
               <div className="relative overflow-hidden group">
-                {/* Стрелки управления */}
+                {/* Controls */}
                 <button
                   onClick={() => {
                     const carousel = pdfCarouselRef.current;
@@ -156,9 +156,10 @@ export default function PDFPage({ params }: PDFPageProps) {
                       const matrix = new DOMMatrix(currentTransform);
                       currentX = matrix.m41;
                     }
-                    const newX = currentX + 320; // Один слайд влево                    carousel.style.transform = `translateX(${newX}px)`;
+                    const newX = currentX + 320; // Move one slide left
+                    carousel.style.transform = `translateX(${newX}px)`;
                     carousel.style.transition = "transform 0.5s ease";
-                    setTimeout(() => { // Возобновляем автопрокрутку
+                    setTimeout(() => { // Resume auto-scroll
                       carousel.style.transition = "";
                       carousel.style.animation = "infiniteScroll 45s linear infinite";
                     }, 600);
@@ -181,7 +182,7 @@ export default function PDFPage({ params }: PDFPageProps) {
                     const newX = currentX - 320;
                     carousel.style.transform = `translateX(${newX}px)`;
                     carousel.style.transition = "transform 0.5s ease";
-                    setTimeout(() => { // Возобновляем автопрокрутку
+                    setTimeout(() => { // Resume auto-scroll
                       carousel.style.transition = "";
                       carousel.style.animation = "infiniteScroll 45s linear infinite";
                     }, 600);
@@ -209,7 +210,7 @@ export default function PDFPage({ params }: PDFPageProps) {
               <div className="text-center mt-8">
                 <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
                   <Link href="/catalog">
-                    Посмотреть все материалы
+                    View all materials
                   </Link>
                 </Button>
               </div>

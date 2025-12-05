@@ -2,10 +2,10 @@ import { supabase } from './supabase'
 import type { Document } from '@/types'
 
 
-// Универсальный сервис для работы с документами
+// Generic service for working with documents
 export class DocumentService {
 
-  // Получить все документы с автоматической дедупликацией и валидацией
+  // Fetch all documents with deduplication and validation
   static async getAllDocuments(): Promise<Document[]> {
     try {
       const { data, error } = await supabase
@@ -23,7 +23,7 @@ export class DocumentService {
         return fallbackDocuments
       }
 
-      // Валидация и очистка данных
+      // Validate and sanitize data
       const validDocuments = data
         .filter(this.validateDocument)
         .map(this.sanitizeDocument)
@@ -37,12 +37,12 @@ export class DocumentService {
     }
   }
 
-  // Получить уникальные документы (автоматическое удаление дубликатов)
+  // Fetch unique documents (automatically remove duplicates)
   static async getUniqueDocuments(limit?: number): Promise<Document[]> {
     try {
       const documents = await this.getAllDocuments()
 
-      // Удаляем дубликаты по title (берем самый новый)
+      // Remove duplicates by title (keep the newest)
       const uniqueMap = new Map<string, Document>()
 
       documents.forEach(doc => {
@@ -56,14 +56,14 @@ export class DocumentService {
 
       let uniqueDocuments = Array.from(uniqueMap.values())
 
-      // Сортируем по актуальности
+      // Sort by recency
       uniqueDocuments.sort((a, b) => {
         const dateA = new Date(a.updated_at).getTime()
         const dateB = new Date(b.updated_at).getTime()
         return dateB - dateA
       })
 
-      // Применяем лимит если указан
+      // Apply limit if provided
       if (limit && limit > 0) {
         uniqueDocuments = uniqueDocuments.slice(0, limit)
       }
@@ -77,7 +77,7 @@ export class DocumentService {
     }
   }
 
-  // Получить документ по ID с валидацией
+  // Fetch a document by ID with validation
   static async getDocumentById(id: string): Promise<Document | null> {
     try {
       if (!id || typeof id !== 'string') {
@@ -116,7 +116,7 @@ export class DocumentService {
     }
   }
 
-  // Получить другие документы (исключая текущий)
+  // Fetch other documents (excluding the current one)
   static async getOtherDocuments(currentId: string, limit: number = 5): Promise<Document[]> {
     try {
       const allDocuments = await this.getUniqueDocuments()
@@ -133,11 +133,11 @@ export class DocumentService {
     }
   }
 
-  // Валидация документа
+  // Validate document
   private static validateDocument(doc: any): boolean {
     if (!doc || typeof doc !== 'object') return false
 
-    // Обязательные поля
+    // Required fields
     const requiredFields = ['id', 'title', 'description', 'price_rub', 'file_url']
     for (const field of requiredFields) {
       if (!doc[field] || (typeof doc[field] === 'string' && doc[field].trim() === '')) {
@@ -146,13 +146,13 @@ export class DocumentService {
       }
     }
 
-    // Валидация типов
+    // Type validation
     if (typeof doc.price_rub !== 'number' || doc.price_rub <= 0) {
       console.warn(`⚠️ Invalid price for document: ${doc.title}`)
       return false
     }
 
-    // Валидация URL
+    // URL validation
     if (!this.isValidUrl(doc.file_url)) {
       console.warn(`⚠️ Invalid file_url for document: ${doc.title}`)
       return false
@@ -160,13 +160,13 @@ export class DocumentService {
 
     if (doc.cover_url && !this.isValidUrl(doc.cover_url)) {
       console.warn(`⚠️ Invalid cover_url for document: ${doc.title}`)
-      // Не возвращаем false, просто предупреждение
+      // Only warn, do not fail
     }
 
     return true
   }
 
-  // Очистка и нормализация данных документа
+  // Clean and normalize document data
   private static sanitizeDocument(doc: any): Document {
     return {
       id: doc.id.trim(),
@@ -180,7 +180,7 @@ export class DocumentService {
     }
   }
 
-  // Проверка валидности URL
+  // URL validity check
   private static isValidUrl(url: string): boolean {
     try {
       const urlObj = new URL(url)
@@ -190,14 +190,14 @@ export class DocumentService {
     }
   }
 
-  // Получить количество страниц с кешированием
+  // Get page count with caching
   static async getPageCount(document: Document): Promise<number> {
-    // Если есть сохраненное количество страниц (временно отключено)
+    // If page count is saved (temporarily disabled)
     // if (document.page_count && document.page_count > 0) {
     //   return document.page_count
     // }
 
-    // Запрашиваем через API
+    // Request via API
     try {
       const response = await fetch(`/api/pdf/pages?url=${encodeURIComponent(document.file_url)}`)
 
@@ -215,15 +215,15 @@ export class DocumentService {
       console.error(`❌ Error fetching page count for ${document.title}:`, error)
     }
 
-    // Fallback: консистентное число на основе ID
+    // Fallback: consistent number based on ID
     const seed = document.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
-    const fallbackPages = 15 + (seed % 26) // 15-40 страниц
+    const fallbackPages = 15 + (seed % 26) // 15-40 pages
     console.log(`🎲 Using fallback page count for ${document.title}: ${fallbackPages}`)
     return fallbackPages
   }
 }
 
-// Сервис для статистики покупок
+// Purchase stats service
 export class PurchaseStatsService {
 
   static calculatePurchaseStats(documentId: string, createdAt: string) {
@@ -231,17 +231,17 @@ export class PurchaseStatsService {
     const now = new Date()
     const daysSinceLaunch = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
 
-    // Генерируем консистентную статистику на основе ID
+    // Generate consistent stats based on ID
     const seed = documentId.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
     const basePurchases = 20 + (seed % 81) // 20-100
 
-    // Рост 1% в день
+    // 1% daily growth
     const totalPurchases = Math.floor(basePurchases * Math.pow(1.01, Math.max(0, daysSinceLaunch)))
 
-    // Покупки за сегодня
+    // Purchases today
     const todayPurchases = Math.max(0, (seed + daysSinceLaunch) % 6)
 
-    // Активные пользователи
+    // Active users
     const activeUsers = Math.max(1, 1 + ((seed * daysSinceLaunch) % 8))
 
     return {
@@ -252,12 +252,12 @@ export class PurchaseStatsService {
   }
 }
 
-// Fallback данные для надежности
+// Fallback data for resilience
 export const fallbackDocuments: Document[] = [
   {
     id: "fallback-1",
-    title: "EnergyLogic: Искусство Перекалибровки Реальности",
-    description: "Исследование глубинных механизмов трансформации восприятия и многоуровневой работы с слоями реальности",
+    title: "EnergyLogic: The Art of Reality Recalibration",
+    description: "An exploration of deep mechanisms for transforming perception and multi-level work with layers of reality",
     price_rub: 199,
     file_url: "#",
     cover_url: "/images/fallback-cover-1.jpg",
@@ -266,8 +266,8 @@ export const fallbackDocuments: Document[] = [
   },
   {
     id: "fallback-2",
-    title: "Карта Самопознания: Когда Я Ничего Не Понимаю",
-    description: "Путешествие к истинному пониманию себя - это непрерывный процесс трансформации",
+    title: "Self-Knowledge Map: When I Understand Nothing",
+    description: "The journey toward true self-understanding is a continuous process of transformation",
     price_rub: 199,
     file_url: "#",
     cover_url: "/images/fallback-cover-2.jpg",
@@ -276,10 +276,10 @@ export const fallbackDocuments: Document[] = [
   }
 ]
 
-// Утилиты для проверки доступности изображений
+// Utilities for checking image availability
 export class ImageValidationService {
 
-  // Проверить доступность изображения
+  // Validate image availability
   static async validateImageUrl(url: string): Promise<boolean> {
     if (!url) return false
 
@@ -291,7 +291,7 @@ export class ImageValidationService {
     }
   }
 
-  // Получить fallback изображение на основе title
+  // Get a fallback image style based on title hash
   static getFallbackImage(title: string): string {
     const hash = title.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
     const colors = [

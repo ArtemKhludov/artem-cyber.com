@@ -267,7 +267,7 @@ export async function POST(request: NextRequest) {
         console.log('Charge refunded:', charge.id)
         notifyPaymentTelegram(`↩️ Stripe charge.refunded\nCharge: ${charge.id}\nPI: ${paymentIntentId || '-'}`).catch(() => { })
 
-        // При возврате блокируем доступ к курсу
+        // On refund, block course access
         await syncCourseAccessByStatus(supabase, refundedPurchases, 'refunded', {
           source: 'stripe',
           reason: 'charge_refunded',

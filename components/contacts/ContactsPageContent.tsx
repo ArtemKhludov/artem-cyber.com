@@ -59,41 +59,41 @@ export function ContactsPageContent() {
   const contactInfo = [
     {
       icon: Phone,
-      title: 'Телефон',
+      title: 'Phone',
       details: '+7 (999) 123-45-67',
       link: 'tel:+79991234567',
-      description: 'Звоните с 9:00 до 21:00 (МСК)'
+      description: 'Call us from 9:00 to 21:00 (MSK)'
     },
     {
       icon: Mail,
       title: 'Email',
       details: 'energylogic@project.ai',
       link: 'mailto:energylogic@project.ai',
-      description: 'Ответим в течение 2 часов'
+      description: 'We respond within 2 hours'
     },
     {
       icon: MessageCircle,
       title: 'Telegram',
       details: '@energylogic_support',
       link: 'https://t.me/energylogic_support',
-      description: 'Быстрая поддержка в мессенджере'
+      description: 'Fast support in the messenger'
     },
     {
       icon: MapPin,
-      title: 'Адрес',
-      details: 'Москва, ул. Примерная, 123',
+      title: 'Address',
+      details: 'Moscow, Example st. 123',
       link: '#',
-      description: 'Офис открыт пн-пт 10:00-18:00'
+      description: 'Office hours Mon–Fri 10:00–18:00'
     }
   ]
 
   const subjects = [
-    'Общие вопросы',
-    'Техническая поддержка',
-    'Вопросы по программам',
-    'Сотрудничество',
-    'Пресса и СМИ',
-    'Другое'
+    'General questions',
+    'Technical support',
+    'Program questions',
+    'Partnership',
+    'Press & Media',
+    'Other'
   ]
 
   return (
@@ -102,10 +102,10 @@ export function ContactsPageContent() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Свяжитесь <span className="text-blue-600">с нами</span>
+            Get in <span className="text-blue-600">touch</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Мы всегда готовы ответить на ваши вопросы и помочь в выборе подходящей программы
+            We are ready to answer your questions and help you choose the right program
           </p>
         </div>
 
@@ -132,7 +132,7 @@ export function ContactsPageContent() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Form */}
           <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Написать нам</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Write to us</h2>
 
             {isSubmitted ? (
               <div className="text-center py-8">
@@ -140,10 +140,10 @@ export function ContactsPageContent() {
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Сообщение отправлено!
+                  Message sent!
                 </h3>
                 <p className="text-gray-600">
-                  Мы свяжемся с вами в ближайшее время
+                  We will contact you shortly
                 </p>
               </div>
             ) : (
@@ -151,7 +151,7 @@ export function ContactsPageContent() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Ваше имя *
+                      Your name *
                     </label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -163,14 +163,14 @@ export function ContactsPageContent() {
                         onChange={handleChange}
                         required
                         className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="Введите ваше имя"
+                        placeholder="Enter your name"
                       />
                     </div>
                   </div>
 
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                      Телефон
+                      Phone
                     </label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -208,7 +208,7 @@ export function ContactsPageContent() {
 
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                    Тема обращения
+                    Subject
                   </label>
                   <select
                     id="subject"
@@ -217,7 +217,7 @@ export function ContactsPageContent() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
-                    <option value="">Выберите тему</option>
+                    <option value="">Select a subject</option>
                     {subjects.map(subject => (
                       <option key={subject} value={subject}>{subject}</option>
                     ))}
@@ -226,7 +226,7 @@ export function ContactsPageContent() {
 
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                    Сообщение *
+                    Message *
                   </label>
                   <div className="relative">
                     <MessageSquare className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
@@ -238,7 +238,7 @@ export function ContactsPageContent() {
                       required
                       rows={4}
                       className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                      placeholder="Опишите ваш вопрос подробнее..."
+                      placeholder="Describe your question in detail..."
                     />
                   </div>
                 </div>
@@ -251,24 +251,24 @@ export function ContactsPageContent() {
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Отправка...
+                      Sending...
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      Отправить сообщение
+                      Send message
                     </>
                   )}
                 </Button>
 
                 <p className="text-xs text-gray-500 text-center">
-                  Нажимая кнопку, вы соглашаетесь с{' '}
+                  By clicking the button, you agree to our{' '}
                   <Link href="/privacy" className="text-blue-600 hover:underline">
-                    политикой конфиденциальности
+                    Privacy Policy
                   </Link>
-                  {' '}и{' '}
+                  {' '}and{' '}
                   <Link href="/terms" className="text-blue-600 hover:underline">
-                    пользовательским соглашением
+                    Terms of Use
                   </Link>
                 </p>
               </form>
@@ -279,19 +279,19 @@ export function ContactsPageContent() {
           <div className="space-y-8">
             {/* FAQ */}
             <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Часто задаваемые вопросы</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">FAQ</h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Как быстро вы отвечаете?</h3>
-                  <p className="text-gray-600 text-sm">Мы стараемся отвечать на все обращения в течение 2 часов в рабочее время.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">How fast do you respond?</h3>
+                  <p className="text-gray-600 text-sm">We usually reply within 2 hours during business hours.</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Можно ли получить консультацию бесплатно?</h3>
-                  <p className="text-gray-600 text-sm">Да, мы предоставляем бесплатную 15-минутную консультацию для новых клиентов.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">Is there a free consultation?</h3>
+                  <p className="text-gray-600 text-sm">Yes, we provide a free 15-minute consultation for new clients.</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Работаете ли вы в выходные?</h3>
-                  <p className="text-gray-600 text-sm">Техническая поддержка доступна 24/7, консультации - с понедельника по пятницу.</p>
+                  <h3 className="font-semibold text-gray-900 mb-2">Do you work on weekends?</h3>
+                  <p className="text-gray-600 text-sm">Technical support is available 24/7; consultations run Monday–Friday.</p>
                 </div>
               </div>
             </div>
@@ -300,45 +300,45 @@ export function ContactsPageContent() {
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8">
               <div className="flex items-center mb-4">
                 <Clock className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-xl font-bold text-gray-900">Время работы</h2>
+                <h2 className="text-xl font-bold text-gray-900">Business hours</h2>
               </div>
               <div className="space-y-2 text-gray-700">
                 <div className="flex justify-between">
-                  <span>Понедельник - Пятница:</span>
+                  <span>Monday – Friday:</span>
                   <span className="font-medium">9:00 - 21:00</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Суббота:</span>
+                  <span>Saturday:</span>
                   <span className="font-medium">10:00 - 18:00</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Воскресенье:</span>
+                  <span>Sunday:</span>
                   <span className="font-medium">12:00 - 16:00</span>
                 </div>
               </div>
               <p className="text-sm text-gray-600 mt-4">
-                * Время указано для московского часового пояса (МСК)
+                * Times shown for Moscow time zone (MSK)
               </p>
             </div>
 
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Быстрые действия</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Quick actions</h2>
               <div className="space-y-3">
                 <Button asChild className="w-full bg-green-600 hover:bg-green-700">
                   <a href="https://t.me/energylogic_support" target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    Написать в Telegram
+                    Message on Telegram
                   </a>
                 </Button>
                 <Button asChild variant="outline" className="w-full">
                   <Link href="/book">
-                    Записаться на консультацию
+                    Book a consultation
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="w-full">
                   <Link href="/catalog">
-                    Посмотреть каталог
+                    View catalog
                   </Link>
                 </Button>
               </div>

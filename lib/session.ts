@@ -281,13 +281,13 @@ export async function validateSessionToken(
 export function getSessionErrorMessage(reason?: SessionInvalidationReason) {
   switch (reason) {
     case 'inactive':
-      return 'Сессия истекла из-за неактивности'
+      return 'Session expired due to inactivity'
     case 'expired':
-      return 'Сессия истекла'
+      return 'Session expired'
     case 'revoked':
-      return 'Сессия недействительна'
+      return 'Session revoked'
     default:
-      return 'Необходима авторизация'
+      return 'Authorization required'
   }
 }
 

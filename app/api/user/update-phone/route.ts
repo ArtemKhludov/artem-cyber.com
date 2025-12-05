@@ -13,15 +13,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Phone is required' }, { status: 400 })
     }
 
-    // Валидация формата телефона
+    // Validate phone format
     const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/
     if (!phoneRegex.test(phone)) {
-      return NextResponse.json({ error: 'Неверный формат телефона' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid phone format' }, { status: 400 })
     }
 
     const supabase = getSupabaseAdmin()
     
-    // Проверяем нет ли уже такого телефона у другого пользователя
+    // Check if this phone is already used by another user
     const { data: existingPhone } = await supabase
       .from('users')
       .select('id, email')
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     if (existingPhone) {
       return NextResponse.json({ 
-        error: 'Этот номер телефона уже используется другим пользователем' 
+        error: 'This phone number is already used by another user' 
       }, { status: 400 })
     }
     

@@ -5,7 +5,7 @@ import crypto from 'crypto'
 
 const CRYPTOMUS_API_KEY = process.env.CRYPTOMUS_API_KEY!
 
-// Функция для проверки подписи от Cryptomus
+// Verify signature from Cryptomus
 function verifyCryptomusSignature(data: any, signature: string): boolean {
   const jsonString = JSON.stringify(data)
   const encoded = Buffer.from(jsonString).toString('base64')
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Проверяем подпись
+    // Verify signature
     if (!verifyCryptomusSignature(body, signature)) {
       console.error('Invalid Cryptomus signature')
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Cryptomus callback received:', { order_id, status, amount, currency })
 
-    // Определяем статус платежа
+    // Map payment status
     let paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded'
 
     switch (status) {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         paymentStatus = 'pending'
     }
 
-    // Обновляем статус покупки в базе данных
+    // Update purchase status in DB
     const { data: updatedPurchases, error } = await supabase
       .from('purchases')
       .update({
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`Payment ${order_id} status updated to: ${paymentStatus}`)
 
-    // Синхронизируем доступы в зависимости от статуса Cryptomus
+    // Sync course access based on Cryptomus status
     await syncCourseAccessByStatus(supabase, updatedPurchases, paymentStatus, {
       source: 'cryptomus',
       reason: paymentStatus === 'refunded' ? 'cryptomus_refund' : paymentStatus === 'failed' ? 'cryptomus_failed' : undefined,
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Возвращаем успешный ответ
+    // Return success
     return NextResponse.json({ status: 'ok' })
   } catch (error) {
     console.error('Cryptomus callback error:', error)

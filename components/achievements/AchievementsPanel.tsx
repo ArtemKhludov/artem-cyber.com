@@ -56,7 +56,7 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
             setLoading(true)
             setError(null)
 
-            // Загружаем достижения
+            // Load achievements
             const achievementsResponse = await fetch('/api/achievements', {
                 credentials: 'include'
             })
@@ -66,7 +66,7 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
                 setAchievements(achievementsData.achievements || [])
             }
 
-            // Загружаем статистику пользователя
+            // Load user stats
             const statsResponse = await fetch('/api/user/stats', {
                 credentials: 'include'
             })
@@ -77,8 +77,8 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
             }
 
         } catch (error) {
-            console.error('Ошибка загрузки достижений:', error)
-            setError('Ошибка загрузки данных')
+            console.error('Failed to load achievements:', error)
+            setError('Failed to load data')
         } finally {
             setLoading(false)
         }
@@ -108,7 +108,7 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
     }
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('ru-RU', {
+        return new Date(dateString).toLocaleDateString('en-US', {
             day: 'numeric',
             month: 'short',
             year: 'numeric'
@@ -120,9 +120,9 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
         const minutes = Math.floor((seconds % 3600) / 60)
         
         if (hours > 0) {
-            return `${hours}ч ${minutes}м`
+            return `${hours}h ${minutes}m`
         }
-        return `${minutes}м`
+        return `${minutes}m`
     }
 
     if (loading) {
@@ -150,7 +150,7 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
                         variant="outline"
                         className="mt-2"
                     >
-                        Попробовать снова
+                        Try again
                     </Button>
                 </div>
             </div>
@@ -159,41 +159,41 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
 
     return (
         <div className={`space-y-6 ${className}`}>
-            {/* Статистика пользователя */}
+            {/* User stats */}
             {userPoints && (
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 text-blue-500" />
-                        Ваша статистика
+                        Your stats
                     </h3>
                     
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="bg-white rounded-lg p-3 text-center">
                             <div className="text-2xl font-bold text-yellow-600">{userPoints.total_points}</div>
-                            <div className="text-xs text-gray-500">Баллов</div>
+                            <div className="text-xs text-gray-500">Points</div>
                         </div>
                         <div className="bg-white rounded-lg p-3 text-center">
                             <div className="text-2xl font-bold text-blue-600">{userPoints.current_level}</div>
-                            <div className="text-xs text-gray-500">Уровень</div>
+                            <div className="text-xs text-gray-500">Level</div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="bg-white rounded-lg p-3 text-center">
                             <div className="text-lg font-bold text-green-600">{userPoints.courses_completed}</div>
-                            <div className="text-xs text-gray-500">Курсов завершено</div>
+                            <div className="text-xs text-gray-500">Courses completed</div>
                         </div>
                         <div className="bg-white rounded-lg p-3 text-center">
                             <div className="text-lg font-bold text-orange-600">{userPoints.streak_days}</div>
-                            <div className="text-xs text-gray-500">Дней подряд</div>
+                            <div className="text-xs text-gray-500">Days in a row</div>
                         </div>
                     </div>
 
-                    {/* Прогресс до следующего уровня */}
+                    {/* Progress to next level */}
                     <div className="mb-3">
                         <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600">До следующего уровня</span>
-                            <span className="text-gray-600">{userPoints.points_to_next_level} баллов</span>
+                            <span className="text-gray-600">To next level</span>
+                            <span className="text-gray-600">{userPoints.points_to_next_level} points</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
@@ -204,23 +204,23 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
                     </div>
 
                     <div className="text-center text-sm text-gray-600">
-                        Время изучения: {formatStudyTime(userPoints.total_study_time)}
+                        Study time: {formatStudyTime(userPoints.total_study_time)}
                     </div>
                 </div>
             )}
 
-            {/* Достижения */}
+            {/* Achievements */}
             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-yellow-500" />
-                    Достижения ({achievements.length})
+                    Achievements ({achievements.length})
                 </h3>
 
                 {achievements.length === 0 ? (
                     <div className="text-center py-8">
                         <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500 mb-4">У вас пока нет достижений</p>
-                        <p className="text-sm text-gray-400">Начните изучать курсы, чтобы получить первые награды!</p>
+                        <p className="text-gray-500 mb-4">No achievements yet</p>
+                        <p className="text-sm text-gray-400">Start learning courses to earn your first rewards!</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -245,7 +245,7 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
                                         </p>
                                         <div className="flex items-center gap-2 text-xs text-white/70">
                                             <CheckCircle className="w-3 h-3" />
-                                            <span>Получено {formatDate(achievement.earned_at)}</span>
+                                            <span>Earned {formatDate(achievement.earned_at)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -255,11 +255,11 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
                 )}
             </div>
 
-            {/* Мотивационные элементы */}
+            {/* Motivation */}
             <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <Star className="w-5 h-5 text-green-500" />
-                    Мотивация
+                    Motivation
                 </h3>
                 
                 <div className="space-y-3">
@@ -269,9 +269,9 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
                                 <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
                                     <Flame className="w-5 h-5 text-orange-500" />
                                     <div>
-                                        <p className="font-medium text-gray-900">Отличная серия!</p>
+                                        <p className="font-medium text-gray-900">Great streak!</p>
                                         <p className="text-sm text-gray-600">
-                                            Вы занимаетесь {userPoints.streak_days} дней подряд
+                                            You have been learning for {userPoints.streak_days} days in a row
                                         </p>
                                     </div>
                                 </div>
@@ -281,9 +281,9 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
                                 <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
                                     <Trophy className="w-5 h-5 text-yellow-500" />
                                     <div>
-                                        <p className="font-medium text-gray-900">Поздравляем!</p>
+                                        <p className="font-medium text-gray-900">Congrats!</p>
                                         <p className="text-sm text-gray-600">
-                                            Вы завершили {userPoints.courses_completed} курс(ов)
+                                            You completed {userPoints.courses_completed} course(s)
                                         </p>
                                     </div>
                                 </div>
@@ -292,9 +292,9 @@ export function AchievementsPanel({ className = '' }: AchievementsPanelProps) {
                             <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
                                 <Target className="w-5 h-5 text-blue-500" />
                                 <div>
-                                    <p className="font-medium text-gray-900">Продолжайте в том же духе!</p>
+                                    <p className="font-medium text-gray-900">Keep going!</p>
                                     <p className="text-sm text-gray-600">
-                                        Каждый изученный материал приближает вас к цели
+                                        Every completed material brings you closer to your goal
                                     </p>
                                 </div>
                             </div>

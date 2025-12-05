@@ -33,7 +33,7 @@ async function resolveAdminContext(): Promise<AdminContext | NextResponse> {
   }
 
   if (validation.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
   }
 
   return { supabase, validation }
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Error fetching documents:', error)
-      return NextResponse.json({ error: 'Ошибка получения документов' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 })
     }
 
     const response = NextResponse.json({ documents })
@@ -70,25 +70,25 @@ export async function GET(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Documents API error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
+  try {
     try {
-        try {
-            verifyRequestOrigin(request)
-        } catch (error) {
-            if (error instanceof Error) {
-                return NextResponse.json({ error: error.message }, { status: 403 })
-            }
-            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
-        }
+      verifyRequestOrigin(request)
+    } catch (error) {
+      if (error instanceof Error) {
+        return NextResponse.json({ error: error.message }, { status: 403 })
+      }
+      return NextResponse.json({ error: 'Request rejected' }, { status: 403 })
+    }
 
-        const context = await resolveAdminContext()
-        if (context instanceof NextResponse) {
-            return context
-        }
+    const context = await resolveAdminContext()
+    if (context instanceof NextResponse) {
+      return context
+    }
 
     const { supabase, validation } = context
 
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!title || !price_rub || !file_url) {
-      return NextResponse.json({ error: 'Необходимы поля: title, price_rub, file_url' }, { status: 400 })
+      return NextResponse.json({ error: 'Required fields: title, price_rub, file_url' }, { status: 400 })
     }
 
     const { data: document, error } = await supabase
@@ -142,15 +142,15 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error creating document:', error)
-      return NextResponse.json({ error: 'Ошибка создания документа' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to create document' }, { status: 500 })
     }
 
     try {
-      const telegramMessage = `📄 Новый документ добавлен в систему:
-📋 Название: ${document?.title}
-💰 Цена: ${document?.price_rub} ₽
-📊 Страниц: ${document?.page_count ?? '-'}
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`
+      const telegramMessage = `📄 New document added to system:
+📋 Title: ${document?.title}
+💰 Price: $${document?.price_rub}
+📊 Pages: ${document?.page_count ?? '-'}
+📅 Date: ${new Date().toLocaleString('en-US')}`
 
       const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
       if (!response.ok) {
         console.error('Telegram notification failed:', await response.text())
       } else {
-        console.log('✅ Telegram уведомление отправлено')
+        console.log('✅ Telegram notification sent')
       }
     } catch (telegramError) {
       console.error('Telegram error:', telegramError)
@@ -179,6 +179,6 @@ export async function POST(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Create document API error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

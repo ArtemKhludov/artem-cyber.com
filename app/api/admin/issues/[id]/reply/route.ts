@@ -48,7 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const assignee = body?.assignee ? String(body.assignee).trim() : undefined
 
     if (message.length < 3) {
-      return NextResponse.json({ error: 'Сообщение должно содержать минимум 3 символа' }, { status: 400 })
+      return NextResponse.json({ error: 'Message must be at least 3 characters' }, { status: 400 })
     }
 
     const { data: issue, error: issueError } = await supabase
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .maybeSingle()
 
     if (issueError || !issue) {
-      return NextResponse.json({ error: 'Обращение не найдено' }, { status: 404 })
+      return NextResponse.json({ error: 'Issue not found' }, { status: 404 })
     }
 
     const { data: replyData, error: replyError } = await supabase.rpc('issue_admin_add_reply', {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (replyError) {
       console.error('Issue reply insert error:', replyError)
-      return NextResponse.json({ error: 'Не удалось добавить ответ' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to add reply' }, { status: 500 })
     }
 
     const reply = Array.isArray(replyData) ? replyData[0] : replyData
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const mergedIssue = fullIssue ?? updatedIssue
 
-    // Отправляем уведомления пользователю (Telegram + Email)
+    // Send user notifications (Telegram + Email)
     if (reply?.id && validation.user?.email) {
       notifyUserOnReply(issueId, reply.id, validation.user.email, message)
         .catch((error) => console.error('User notification error:', error))
@@ -133,6 +133,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ success: true, reply, issue: mergedIssue })
   } catch (error) {
     console.error('Admin issue reply error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

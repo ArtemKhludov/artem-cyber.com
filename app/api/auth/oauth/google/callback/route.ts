@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
         let userId: string
 
         if (existingUser) {
-            console.log(`✅ Пользователь уже существует: ${existingUser.email}`)
+            console.log(`✅ User already exists: ${existingUser.email}`)
             
             // Update existing user with Google ID
             const { data: updatedUser, error: updateError } = await supabase
@@ -124,9 +124,9 @@ export async function GET(request: NextRequest) {
             }
 
             userId = updatedUser.id
-            console.log(`✅ Пользователь обновлен, ID: ${userId}`)
+            console.log(`✅ User updated, ID: ${userId}`)
         } else {
-            console.log(`🆕 Создаем нового пользователя: ${email}`)
+            console.log(`🆕 Creating new user: ${email}`)
             
             // Create new user
             const userName = stateData?.name || name || email.split('@')[0]
@@ -154,15 +154,15 @@ export async function GET(request: NextRequest) {
 
             userId = newUser.id
             
-            // Отправляем уведомление в Telegram о новой регистрации
+            // Send Telegram notification about new registration
             try {
-                const telegramMessage = `🆕 Новый пользователь зарегистрирован через Google OAuth:
-👤 Имя: ${newUser.name}
+                const telegramMessage = `🆕 New user registered via Google OAuth:
+👤 Name: ${newUser.name}
 📧 Email: ${newUser.email}
-📞 Телефон: ${newUser.phone || 'Не указан'}
-🔐 Тип регистрации: Google OAuth
-✅ Email верифицирован: Да
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`
+📞 Phone: ${newUser.phone || 'Not provided'}
+🔐 Registration type: Google OAuth
+✅ Email verified: Yes
+📅 Date: ${new Date().toLocaleString('en-US')}`
 
                 const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
                 if (!response.ok) {
                     console.error('Telegram notification failed:', await response.text())
                 } else {
-                    console.log('✅ Telegram уведомление отправлено')
+                    console.log('✅ Telegram notification sent')
                 }
             } catch (telegramError) {
                 console.error('Telegram error:', telegramError)
@@ -187,9 +187,9 @@ export async function GET(request: NextRequest) {
         }
 
         // Create session
-        console.log(`🔐 Создаем сессию для пользователя ID: ${userId}`)
+        console.log(`🔐 Creating session for user ID: ${userId}`)
         const { sessionToken, expiresAt } = await createSession(userId, request)
-        console.log(`✅ Сессия создана: ${sessionToken}`)
+        console.log(`✅ Session created: ${sessionToken}`)
 
         // Set session cookie
         const cookieStore = await cookies()
@@ -208,7 +208,7 @@ export async function GET(request: NextRequest) {
             domain: isProduction ? '.energylogic-ai.com' : undefined
         }
         
-        console.log(`🍪 Устанавливаем cookie: ${SESSION_COOKIE_NAME}=${sessionToken}`)
+        console.log(`🍪 Setting cookie: ${SESSION_COOKIE_NAME}=${sessionToken}`)
         console.log(`🍪 Cookie options:`, cookieOptions)
         
         cookieStore.set(SESSION_COOKIE_NAME, sessionToken, cookieOptions)
@@ -221,18 +221,18 @@ export async function GET(request: NextRequest) {
             redirectUrl = '/dashboard'
         }
         
-        console.log(`🔄 Перенаправляем на: ${redirectUrl}`)
+        console.log(`🔄 Redirecting to: ${redirectUrl}`)
         console.log(`🔄 State data:`, stateData)
-        console.log(`🔄 Cookie установлен: ${SESSION_COOKIE_NAME}=${sessionToken}`)
+        console.log(`🔄 Cookie set: ${SESSION_COOKIE_NAME}=${sessionToken}`)
         console.log(`🔄 Cookie options:`, cookieOptions)
         
-        // Создаем response с редиректом
+        // Build redirect response
         const response = NextResponse.redirect(new URL(redirectUrl, request.url))
         
-        // Устанавливаем cookie в response
+        // Set cookie in response
         response.cookies.set(SESSION_COOKIE_NAME, sessionToken, cookieOptions)
         
-        console.log(`✅ Google OAuth callback завершен успешно`)
+        console.log(`✅ Google OAuth callback completed successfully`)
         
         return response
 

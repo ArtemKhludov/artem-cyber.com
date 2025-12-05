@@ -44,8 +44,8 @@ export async function GET(request: NextRequest) {
     const { data: achievements, error: achievementsError } = await query
 
     if (achievementsError) {
-      console.error('Ошибка получения достижений:', achievementsError)
-      return NextResponse.json({ error: 'Ошибка получения достижений' }, { status: 500 })
+      console.error('Error fetching achievements:', achievementsError)
+      return NextResponse.json({ error: 'Failed to fetch achievements' }, { status: 500 })
     }
 
     const { data: notifications, error: notificationsError } = await supabase
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (notificationsError) {
-      console.error('Ошибка получения уведомлений о достижениях:', notificationsError)
+      console.error('Error fetching achievement notifications:', notificationsError)
     }
 
     const response = NextResponse.json({
@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
 
     return response
   } catch (error) {
-    console.error('Ошибка API достижений:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    console.error('Achievements API error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       if (error instanceof Error) {
         return NextResponse.json({ error: error.message }, { status: 403 })
       }
-      return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+      return NextResponse.json({ error: 'Request rejected' }, { status: 403 })
     }
 
     const supabase = getSupabaseAdmin()
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     if (action === 'markAsRead') {
       if (!notificationIds || !Array.isArray(notificationIds)) {
-        return NextResponse.json({ error: 'Неверные данные для отметки как прочитанные' }, { status: 400 })
+        return NextResponse.json({ error: 'Invalid data for marking as read' }, { status: 400 })
       }
 
       const { error: updateError } = await supabase
@@ -116,8 +116,8 @@ export async function POST(request: NextRequest) {
         .in('id', notificationIds)
 
       if (updateError) {
-        console.error('Ошибка обновления уведомлений:', updateError)
-        return NextResponse.json({ error: 'Ошибка обновления уведомлений' }, { status: 500 })
+        console.error('Notification update error:', updateError)
+        return NextResponse.json({ error: 'Failed to update notifications' }, { status: 500 })
       }
 
       const response = NextResponse.json({ success: true })
@@ -137,8 +137,8 @@ export async function POST(request: NextRequest) {
         .eq('is_read', false)
 
       if (updateError) {
-        console.error('Ошибка обновления всех уведомлений:', updateError)
-        return NextResponse.json({ error: 'Ошибка обновления уведомлений' }, { status: 500 })
+        console.error('Mark-all notification update error:', updateError)
+        return NextResponse.json({ error: 'Failed to update notifications' }, { status: 500 })
       }
 
       const response = NextResponse.json({ success: true })
@@ -150,9 +150,9 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    return NextResponse.json({ error: 'Неверное действие' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
-    console.error('Ошибка API обновления достижений:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    console.error('Achievements update API error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

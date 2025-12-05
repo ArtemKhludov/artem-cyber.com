@@ -34,7 +34,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
     try {
-        // Проверяем права администратора
+        // Check admin permissions
         const adminResult = await requireAdmin(request)
         if (!adminResult.success) {
             return NextResponse.json({ error: adminResult.error }, { status: adminResult.status })
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
         const supabase = getSupabaseAdmin()
 
-        // Находим все grace period покупки, которые нужно проверить
+        // Find all grace period purchases that need to be verified
         const { data: gracePeriodPurchases, error: fetchError } = await supabase
             .from('purchases')
             .select(`
@@ -64,18 +64,18 @@ export async function POST(request: NextRequest) {
       `)
             .eq('grace_period_verified', false)
             .not('grace_period_until', 'is', null)
-            .lt('grace_period_until', new Date().toISOString()) // Время истекло
-            .lt('verification_attempts', 3) // Максимум 3 попытки
+            .lt('grace_period_until', new Date().toISOString()) // Time expired
+            .lt('verification_attempts', 3) // Maximum 3 attempts
 
         if (fetchError) {
-            console.error('Ошибка получения grace period покупок:', fetchError)
-            return NextResponse.json({ error: 'Ошибка получения данных' }, { status: 500 })
+            console.error('Error fetching grace period purchases:', fetchError)
+            return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
         }
 
         if (!gracePeriodPurchases || gracePeriodPurchases.length === 0) {
             return NextResponse.json({
                 success: true,
-                message: 'Нет grace period покупок для проверки',
+                message: 'No grace period purchases to verify',
                 processed: 0,
                 results: []
             })
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
                 let realPaymentStatus = 'unknown'
                 let shouldRevokeAccess = true
 
-                // Если есть stripe_payment_intent_id, проверяем в Stripe
+                // If stripe_payment_intent_id exists, check in Stripe
                 if (purchase.stripe_payment_intent_id) {
                     try {
                         const paymentIntent = await stripe.paymentIntents.retrieve(
@@ -96,11 +96,11 @@ export async function POST(request: NextRequest) {
                         )
                         realPaymentStatus = paymentIntent.status
 
-                        // Если платеж успешен, не отзываем доступ
+                        // If payment succeeded, don't revoke access
                         if (paymentIntent.status === 'succeeded') {
                             shouldRevokeAccess = false
 
-                            // Обновляем статус покупки
+                            // Update purchase status
                             await supabase
                                 .from('purchases')
                                 .update({
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
                                 })
                                 .eq('id', purchase.id)
 
-                            // Обновляем доступ - делаем его постоянным
+                            // Update access - make it permanent
                             await supabase
                                 .from('user_course_access')
                                 .update({
@@ -131,14 +131,14 @@ export async function POST(request: NextRequest) {
                         realPaymentStatus = 'stripe_error'
                     }
                 } else {
-                    // Нет Stripe ID - вероятно, это ручная выдача доступа
+                    // No Stripe ID - likely manual access grant
                     realPaymentStatus = 'no_payment_method'
                     shouldRevokeAccess = true
                 }
 
-                // Если нужно отозвать доступ
+                // If access needs to be revoked
                 if (shouldRevokeAccess) {
-                    // Обновляем статус покупки
+                    // Update purchase status
                     await supabase
                         .from('purchases')
                         .update({
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
                         })
                         .eq('id', purchase.id)
 
-                    // Отзываем доступ
+                    // Revoke access
                     await supabase
                         .from('user_course_access')
                         .update({
@@ -165,9 +165,9 @@ export async function POST(request: NextRequest) {
                         })
                         .eq('id', purchase.user_course_access[0].id)
 
-                    // Логируем отзыв доступа
+                    // Log access revocation
                     await supabase.from('audit_logs').insert({
-                        user_id: null, // Системное действие
+                        user_id: null, // System action
                         action: 'revoke_access_grace_period_expired',
                         target_type: 'user_course_access',
                         target_id: purchase.user_course_access[0].id,
@@ -192,9 +192,9 @@ export async function POST(request: NextRequest) {
                 })
 
             } catch (error) {
-                console.error(`Ошибка обработки покупки ${purchase.id}:`, error)
+                console.error(`Error processing purchase ${purchase.id}:`, error)
 
-                // Увеличиваем счетчик попыток
+                // Increment attempt counter
                 await supabase
                     .from('purchases')
                     .update({
@@ -216,13 +216,13 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: `Обработано ${results.length} grace period покупок`,
+            message: `Processed ${results.length} grace period purchases`,
             processed: results.length,
             results
         })
 
     } catch (error) {
         console.error('Verify grace period error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

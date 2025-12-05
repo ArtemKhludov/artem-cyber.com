@@ -7,7 +7,7 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET - получить все рабочие тетради для курса
+// GET - get all workbooks for a course
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST - создать новую рабочую тетрадь
+// POST - create a new workbook
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
@@ -59,10 +59,10 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Если file_url не указан, используем заглушку
+        // If file_url is not specified, use a placeholder
         const finalFileUrl = file_url || 'https://placeholder.com/workbook.pdf'
 
-        // Проверяем, что документ существует
+        // Check that the document exists
         const { data: document, error: docError } = await supabase
             .from('documents')
             .select('id')
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Если order_index не указан, получаем следующий доступный
+        // If order_index is not specified, get the next available one
         let finalOrderIndex = order_index
         if (!finalOrderIndex) {
             const { data: maxOrder } = await supabase
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// PUT - обновить рабочую тетрадь
+// PUT - update workbook
 export async function PUT(request: NextRequest) {
     try {
         const body = await request.json()
@@ -170,7 +170,7 @@ export async function PUT(request: NextRequest) {
     }
 }
 
-// DELETE - удалить рабочую тетрадь
+// DELETE - delete workbook
 export async function DELETE(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
