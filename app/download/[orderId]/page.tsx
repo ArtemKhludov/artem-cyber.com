@@ -307,7 +307,7 @@ export default function DownloadPage() {
             {/* What's Inside */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                What's inside the report
+                What&apos;s inside the report
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {[

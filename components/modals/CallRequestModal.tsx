@@ -234,7 +234,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                   Request a Call
                 </h2>
-                <p className="text-sm text-gray-300">We'll contact you within 15 minutes</p>
+                <p className="text-sm text-gray-300">We&apos;ll contact you within 15 minutes</p>
               </div>
             </div>
             <button
@@ -429,7 +429,7 @@ export function CallRequestModal({ isOpen, onClose, sourcePage }: CallRequestMod
                   </h3>
 
                   <p className="text-gray-600 mb-6 text-lg">
-                    Your request has been received, we'll contact you soon
+                    Your request has been received, we&apos;ll contact you soon
                   </p>
 
                   {/* Sparkles animation */}

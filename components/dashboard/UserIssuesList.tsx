@@ -153,7 +153,7 @@ export function UserIssuesList() {
                 <CardContent>
                     <div className="text-center py-8 text-gray-500">
                         <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>You don't have any support requests yet</p>
+                        <p>You don&apos;t have any support requests yet</p>
                     </div>
                 </CardContent>
             </Card>

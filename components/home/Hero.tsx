@@ -96,7 +96,7 @@ export function Hero() {
             Psychoanalysis. Without masks. <br />
             <span className="text-blue-300 font-semibold">20 minutes → PDF report</span>
             <span className="text-gray-300 mx-4">•</span>
-            <span className="text-purple-300 font-semibold">21 days → new "You"</span>
+            <span className="text-purple-300 font-semibold">21 days → new &quot;You&quot;</span>
           </p>
 
           {/* Buttons */}

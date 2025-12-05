@@ -325,7 +325,7 @@ export default function BookPage() {
                 <div className="space-y-6">
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-100">
                     <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                      What's included
+                      What&apos;s included
                     </h3>
                     <div className="space-y-4">
                       {programs.find(p => p.id === activeProgram)?.features.map((feature, index) => (
@@ -348,7 +348,7 @@ export default function BookPage() {
                           Results guarantee
                         </h4>
                         <p className="text-green-700 text-sm">
-                          If within 7 days of starting you don't see value, we'll refund 100% of the price.
+                          If within 7 days of starting you don&apos;t see value, we&apos;ll refund 100% of the price.
                         </p>
                       </div>
                     </div>

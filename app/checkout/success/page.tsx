@@ -56,11 +56,11 @@ function SuccessPageContent() {
                 Check your email
               </h3>
               <p className="text-gray-600 mb-4">
-                We've sent the download link and receipt to your email
+                We&apos;ve sent the download link and receipt to your email
               </p>
               <Button variant="outline" className="w-full border-purple-500 text-purple-600 hover:bg-purple-50">
                 <Mail className="w-4 h-4 mr-2" />
-                Didn't get the email?
+                Didn&apos;t get the email?
               </Button>
             </div>
           </div>
@@ -68,7 +68,7 @@ function SuccessPageContent() {
           {/* Additional Information */}
           <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              What's next?
+              What&apos;s next?
             </h3>
             <div className="grid md:grid-cols-3 gap-6 text-sm">
               <div className="text-center">
@@ -117,15 +117,15 @@ function SuccessPageContent() {
               If you have issues with the download or any questions, contact us:
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
-                href="mailto:energylogic@project.ai" 
+              <a
+                href="mailto:energylogic@project.ai"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
                 energylogic@project.ai
               </a>
               <span className="hidden sm:inline text-gray-400">•</span>
-              <a 
-                href="tel:+15551234567" 
+              <a
+                href="tel:+15551234567"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
                 +1 (555) 123-4567

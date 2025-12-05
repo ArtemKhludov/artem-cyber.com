@@ -62,7 +62,7 @@ export function AboutSection({ onCallRequest }: AboutSectionProps) {
             <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
               <p>
                 <strong className="text-gray-900">EnergyLogic</strong> is a unique platform that uses
-                artificial intelligence for deep psychological analysis. We've created a system
+                artificial intelligence for deep psychological analysis. We&apos;ve created a system
                 capable of understanding your true essence through analysis of speech, intonation, and emotional responses.
               </p>
 
@@ -74,7 +74,7 @@ export function AboutSection({ onCallRequest }: AboutSectionProps) {
               </p>
 
               <p>
-                We don't just offer analysis - we provide a path to transformation.
+                We don&apos;t just offer analysis - we provide a path to transformation.
                 Each client receives a personalized development program based on
                 their unique characteristics and needs.
               </p>

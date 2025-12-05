@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Phone, User, Mail, Clock, MessageSquare, Eye, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Phone, User, Mail, Clock, MessageSquare, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 
 interface CallbackRequest {
   id: string
@@ -34,7 +34,7 @@ export default function CallbacksAdminPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -57,11 +57,11 @@ export default function CallbacksAdminPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter, currentPage])
 
   useEffect(() => {
     fetchRequests()
-  }, [statusFilter, currentPage])
+  }, [fetchRequests])
 
   const updateStatus = async (id: string, status: string) => {
     try {
@@ -78,11 +78,11 @@ export default function CallbacksAdminPage() {
       }
 
       // Update local state
-      setRequests(prev => prev.map(req => 
+      setRequests(prev => prev.map(req =>
         req.id === id ? { ...req, status: status as any } : req
       ))
-    } catch (err) {
-      console.error('Error updating status:', err)
+    } catch {
+      // Error updating status
     }
   }
 

@@ -219,8 +219,8 @@ export function ProductCarousel({ onCallRequest }: ProductCarouselProps) {
                 key={index}
                 onClick={() => setActiveSlide(index)}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${activeSlide === index
-                    ? 'bg-blue-600 scale-125'
-                    : 'bg-gray-300 hover:bg-gray-400'
+                  ? 'bg-blue-600 scale-125'
+                  : 'bg-gray-300 hover:bg-gray-400'
                   }`}
               />
             ))}
@@ -235,14 +235,14 @@ export function ProductCarousel({ onCallRequest }: ProductCarouselProps) {
               Not sure which program to choose?
             </h3>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Take our free readiness test, and we'll select
+              Take our free readiness test, and we&apos;ll select
               the optimal program for you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="outline" className="border-blue-500 text-blue-600 hover:bg-blue-50">
                 Take Test
               </Button>
-              <Button 
+              <Button
                 onClick={handleCallRequest}
                 className="bg-blue-600 hover:bg-blue-700"
               >

@@ -91,7 +91,7 @@ export default function UserNotFoundModal({
                     {/* Help Text */}
                     <div className="text-center">
                         <p className="text-xs text-gray-500">
-                            If you're sure the account exists, try resetting the password
+                            If you&apos;re sure the account exists, try resetting the password
                         </p>
                     </div>
                 </div>

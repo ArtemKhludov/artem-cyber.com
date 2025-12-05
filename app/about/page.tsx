@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Phone, Calendar, Brain, Zap, Heart, Target, Users, Award, Shield } from 'lucide-react'
+import { Phone, Calendar, Brain, Zap, Heart, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
@@ -11,7 +11,6 @@ import { Legal } from '@/components/home/Legal'
 
 export default function AboutPage() {
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
 
   const handleCallRequest = () => {
@@ -24,10 +23,8 @@ export default function AboutPage() {
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
+      () => {
+        // Observer for future animations if needed
       },
       { threshold: 0.1 }
     )

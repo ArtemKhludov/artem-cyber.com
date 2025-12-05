@@ -1263,7 +1263,7 @@ export default function DashboardPage() {
 
                   {purchases.length === 0 && !errorMessage && (
                     <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-600">
-                      <p className="text-lg font-semibold mb-2">You don't have any purchases yet</p>
+                      <p className="text-lg font-semibold mb-2">You don&apos;t have any purchases yet</p>
                       <p className="mb-4">Start by choosing a suitable course or contact us for recommendations.</p>
                       <div className="flex justify-center gap-3">
                         <Button asChild>
@@ -1327,7 +1327,7 @@ export default function DashboardPage() {
 
                     {!recentActivityLoading && !recentActivityError && recentActivity.length === 0 && (
                       <p className="text-sm text-gray-500">
-                        Materials you've viewed or downloaded will appear here.
+                        Materials you&apos;ve viewed or downloaded will appear here.
                       </p>
                     )}
 
@@ -1538,7 +1538,7 @@ export default function DashboardPage() {
                     <CardHeader>
                       <CardTitle>Support</CardTitle>
                       <CardDescription>
-                        Contact us if you've encountered a problem or have a question.
+                        Contact us if you&apos;ve encountered a problem or have a question.
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
