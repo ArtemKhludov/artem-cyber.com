@@ -27,7 +27,7 @@ const loadDismissedIds = (): string[] => {
     if (!Array.isArray(parsed)) return []
     return parsed.filter((value) => typeof value === 'string')
   } catch (error) {
-    console.warn('Не удалось прочитать отклонённые записи активности', error)
+    console.warn('Could not read dismissed activity records', error)
     return []
   }
 }
@@ -37,7 +37,7 @@ const persistDismissedIds = (ids: string[]) => {
   try {
     localStorage.setItem(DISMISSED_KEY, JSON.stringify(ids))
   } catch (error) {
-    console.warn('Не удалось сохранить отклонённые записи активности', error)
+    console.warn('Could not persist dismissed activity records', error)
   }
 }
 
@@ -67,7 +67,7 @@ export const loadRecentActivity = (): RecentActivityRecord[] => {
     const dismissedIds = new Set(loadDismissedIds())
     return parsed.filter((item) => !!item && typeof item === 'object' && !dismissedIds.has(item.id))
   } catch (error) {
-    console.warn('Не удалось прочитать историю активности', error)
+    console.warn('Could not read activity history', error)
     return []
   }
 }
@@ -77,7 +77,7 @@ const persistRecentActivity = (items: RecentActivityRecord[]) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   } catch (error) {
-    console.warn('Не удалось сохранить историю активности', error)
+    console.warn('Could not save activity history', error)
   }
 }
 

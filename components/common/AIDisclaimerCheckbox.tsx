@@ -30,10 +30,10 @@ export function AIDisclaimerCheckbox({ onAgree, required = true, className = '' 
                     className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="ai-disclaimer" className="text-sm text-gray-700 leading-relaxed">
-                    <span className="font-medium text-yellow-800">⚠️ Важно:</span>{' '}
-                    Я подтверждаю, что понимаю, что результаты не являются диагнозом, и принимаю ответственность за использование материалов.{' '}
+                    <span className="font-medium text-yellow-800">⚠️ Important:</span>{' '}
+                    I confirm that I understand the results are not a diagnosis and accept responsibility for using the materials.{' '}
                     <Link href="/disclaimer" className="text-blue-600 hover:underline font-medium">
-                        Отказ от ответственности
+                        Disclaimer
                     </Link>
                 </label>
             </div>

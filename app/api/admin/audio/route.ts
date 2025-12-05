@@ -7,7 +7,7 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET - получить все аудио для курса
+// GET - get all audio for a course
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST - создать новое аудио
+// POST - create new audio
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Определяем порядок, если не указан
+        // Determine order if not specified
         let finalOrderIndex = order_index
         if (!finalOrderIndex) {
             const { data: maxOrder } = await supabase
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// PUT - обновить аудио
+// PUT - update audio
 export async function PUT(request: NextRequest) {
     try {
         const body = await request.json()
@@ -158,7 +158,7 @@ export async function PUT(request: NextRequest) {
     }
 }
 
-// DELETE - удалить аудио
+// DELETE - delete audio
 export async function DELETE(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)

@@ -22,7 +22,7 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
     const [saving, setSaving] = useState(false)
     const [uploading, setUploading] = useState<string | null>(null)
 
-    // Форма для редактирования
+    // Form for editing
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -104,20 +104,20 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                 .eq('id', editingDocument.id)
 
             if (error) {
-                console.error('Error updating document:', error)
-                alert('Ошибка при сохранении документа')
-                return
-            }
-
-            alert('Документ успешно обновлен!')
-            setEditingDocument(null)
-            loadDocuments()
-        } catch (error) {
-            console.error('Error saving document:', error)
-            alert('Ошибка при сохранении документа')
-        } finally {
-            setSaving(false)
+            console.error('Error updating document:', error)
+            alert('Error saving document')
+            return
         }
+
+        alert('Document updated successfully!')
+        setEditingDocument(null)
+        loadDocuments()
+    } catch (error) {
+        console.error('Error saving document:', error)
+        alert('Error saving document')
+    } finally {
+        setSaving(false)
+    }
     }
 
     const handleAddVideoUrl = () => {
@@ -141,14 +141,14 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
         }))
     }
 
-    // Функция для загрузки файла в Supabase Storage
+    // Function to upload file to Supabase Storage
     const handleFileUpload = async (file: File, type: 'main' | 'workbook' | 'video' | 'audio' | 'preview', videoIndex?: number) => {
         if (!editingDocument) return
 
         try {
             setUploading(`${type}-${videoIndex || ''}`)
 
-            // Определяем путь для файла
+            // Determine file path
             let filePath = ''
             const courseSlug = editingDocument.title.toLowerCase().replace(/[^a-z0-9]/g, '-')
 
@@ -170,13 +170,13 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                     break
             }
 
-            // Создаем FormData для загрузки
+            // Create FormData for upload
             const formData = new FormData()
             formData.append('file', file)
             formData.append('path', filePath)
             formData.append('bucket', 'course-materials')
 
-            // Загружаем файл
+            // Upload file
             const response = await fetch('/api/storage/upload', {
                 method: 'POST',
                 body: formData
@@ -185,10 +185,10 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
             const result = await response.json()
 
             if (!result.success) {
-                throw new Error(result.error || 'Ошибка загрузки файла')
+                throw new Error(result.error || 'File upload error')
             }
 
-            // Обновляем форму с новым URL
+            // Update form with new URL
             switch (type) {
                 case 'main':
                     setFormData(prev => ({ ...prev, file_url: result.url }))
@@ -212,17 +212,17 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                     break
             }
 
-            alert('Файл успешно загружен!')
+            alert('File uploaded successfully!')
 
         } catch (error) {
             console.error('Upload error:', error)
-            alert('Ошибка загрузки файла: ' + (error as Error).message)
+            alert('File upload error: ' + (error as Error).message)
         } finally {
             setUploading(null)
         }
     }
 
-    // Функция для получения URL файла из Storage
+    // Function to get file URL from Storage
     const getStorageUrl = async (path: string) => {
         try {
             const response = await fetch(`/api/storage/url?path=${encodeURIComponent(path)}`)
@@ -245,19 +245,19 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Управление мини-курсами</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Mini Course Management</h2>
                 {onClose && (
                     <Button variant="outline" onClick={onClose}>
-                        Закрыть
+                        Close
                     </Button>
                 )}
             </div>
 
             <Tabs defaultValue="list" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="list">Список документов</TabsTrigger>
+                    <TabsTrigger value="list">Documents List</TabsTrigger>
                     <TabsTrigger value="edit" disabled={!editingDocument}>
-                        Редактирование
+                        Edit
                     </TabsTrigger>
                 </TabsList>
 
@@ -273,17 +273,17 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                                 ? 'bg-purple-100 text-purple-800'
                                                 : 'bg-blue-100 text-blue-800'
                                                 }`}>
-                                                {doc.course_type === 'mini_course' ? 'Мини-курс' : 'PDF'}
+                                                {doc.course_type === 'mini_course' ? 'Mini Course' : 'PDF'}
                                             </span>
                                         </div>
                                         <p className="text-gray-600 text-sm mb-2">{doc.description}</p>
                                         <div className="flex items-center gap-4 text-sm text-gray-500">
-                                            <span>Цена: {doc.price_rub.toLocaleString()} ₽</span>
+                                            <span>Price: {doc.price_rub.toLocaleString()} ₽</span>
                                             {doc.course_type === 'mini_course' && (
                                                 <>
-                                                    {doc.has_videos && <span>📹 {doc.video_count || 0} видео</span>}
-                                                    {doc.has_workbook && <span>📄 Рабочая тетрадь</span>}
-                                                    {doc.has_audio && <span>🎵 Аудио</span>}
+                                                    {doc.has_videos && <span>📹 {doc.video_count || 0} videos</span>}
+                                                    {doc.has_workbook && <span>📄 Workbook</span>}
+                                                    {doc.has_audio && <span>🎵 Audio</span>}
                                                 </>
                                             )}
                                         </div>
@@ -294,7 +294,7 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         onClick={() => handleEdit(doc)}
                                     >
                                         <Edit className="w-4 h-4 mr-2" />
-                                        Редактировать
+                                        Edit
                                     </Button>
                                 </div>
                             </Card>
@@ -305,15 +305,15 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                 <TabsContent value="edit" className="space-y-6">
                     {editingDocument && (
                         <div className="space-y-6">
-                            {/* Основная информация */}
+                            {/* Basic Information */}
                             <Card className="p-6">
                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                     <FileText className="w-5 h-5" />
-                                    Основная информация
+                                    Basic Information
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <Label htmlFor="title">Название</Label>
+                                        <Label htmlFor="title">Title</Label>
                                         <Input
                                             id="title"
                                             value={formData.title}
@@ -321,7 +321,7 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="price_rub">Цена (₽)</Label>
+                                        <Label htmlFor="price_rub">Price (₽)</Label>
                                         <Input
                                             id="price_rub"
                                             type="number"
@@ -330,7 +330,7 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <Label htmlFor="description">Описание</Label>
+                                        <Label htmlFor="description">Description</Label>
                                         <Textarea
                                             id="description"
                                             value={formData.description}
@@ -339,13 +339,13 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="file_url">URL основного PDF</Label>
+                                        <Label htmlFor="file_url">Main PDF URL</Label>
                                         <div className="flex gap-2">
                                             <Input
                                                 id="file_url"
                                                 value={formData.file_url}
                                                 onChange={(e) => setFormData(prev => ({ ...prev, file_url: e.target.value }))}
-                                                placeholder="Или загрузите файл"
+                                                placeholder="Or upload file"
                                             />
                                             <input
                                                 type="file"
@@ -373,7 +373,7 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         </div>
                                     </div>
                                     <div>
-                                        <Label htmlFor="cover_url">URL обложки</Label>
+                                        <Label htmlFor="cover_url">Cover URL</Label>
                                         <Input
                                             id="cover_url"
                                             value={formData.cover_url}
@@ -381,28 +381,28 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="course_type">Тип контента</Label>
+                                        <Label htmlFor="course_type">Content Type</Label>
                                         <select
                                             id="course_type"
                                             value={formData.course_type}
                                             onChange={(e) => setFormData(prev => ({ ...prev, course_type: e.target.value as 'pdf' | 'mini_course' }))}
                                             className="w-full p-2 border border-gray-300 rounded-md"
                                         >
-                                            <option value="pdf">PDF документ</option>
-                                            <option value="mini_course">Мини-курс</option>
+                                            <option value="pdf">PDF Document</option>
+                                            <option value="mini_course">Mini Course</option>
                                         </select>
                                     </div>
                                 </div>
                             </Card>
 
-                            {/* Контент мини-курса */}
+                            {/* Mini Course Content */}
                             {formData.course_type === 'mini_course' && (
                                 <>
-                                    {/* Рабочая тетрадь */}
+                                    {/* Workbook */}
                                     <Card className="p-6">
                                         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                             <FileText className="w-5 h-5" />
-                                            Рабочая тетрадь
+                                            Workbook
                                         </h3>
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-2">
@@ -412,17 +412,17 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                                     checked={formData.has_workbook}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, has_workbook: e.target.checked }))}
                                                 />
-                                                <Label htmlFor="has_workbook">Включить рабочую тетрадь</Label>
+                                                <Label htmlFor="has_workbook">Include workbook</Label>
                                             </div>
                                             {formData.has_workbook && (
                                                 <div>
-                                                    <Label htmlFor="workbook_url">URL рабочей тетради</Label>
+                                                    <Label htmlFor="workbook_url">Workbook URL</Label>
                                                     <div className="flex gap-2">
                                                         <Input
                                                             id="workbook_url"
                                                             value={formData.workbook_url}
                                                             onChange={(e) => setFormData(prev => ({ ...prev, workbook_url: e.target.value }))}
-                                                            placeholder="Или загрузите файл"
+                                                            placeholder="Or upload file"
                                                         />
                                                         <input
                                                             type="file"
@@ -453,11 +453,11 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         </div>
                                     </Card>
 
-                                    {/* Видео */}
+                                    {/* Videos */}
                                     <Card className="p-6">
                                         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                             <Video className="w-5 h-5" />
-                                            Видео-уроки
+                                            Video Lessons
                                         </h3>
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-2">
@@ -467,12 +467,12 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                                     checked={formData.has_videos}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, has_videos: e.target.checked }))}
                                                 />
-                                                <Label htmlFor="has_videos">Включить видео-уроки</Label>
+                                                <Label htmlFor="has_videos">Include video lessons</Label>
                                             </div>
                                             {formData.has_videos && (
                                                 <div className="space-y-3">
                                                     <div>
-                                                        <Label htmlFor="video_count">Количество видео</Label>
+                                                        <Label htmlFor="video_count">Video Count</Label>
                                                         <Input
                                                             id="video_count"
                                                             type="number"
@@ -481,13 +481,13 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label htmlFor="video_preview_url">URL превью видео</Label>
+                                                        <Label htmlFor="video_preview_url">Video Preview URL</Label>
                                                         <div className="flex gap-2">
                                                             <Input
                                                                 id="video_preview_url"
                                                                 value={formData.video_preview_url}
                                                                 onChange={(e) => setFormData(prev => ({ ...prev, video_preview_url: e.target.value }))}
-                                                                placeholder="Или загрузите файл"
+                                                                placeholder="Or upload file"
                                                             />
                                                             <input
                                                                 type="file"
@@ -515,13 +515,13 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <Label>URL видео-файлов</Label>
+                                                        <Label>Video File URLs</Label>
                                                         {formData.video_urls.map((url, index) => (
                                                             <div key={index} className="flex gap-2 mb-2">
                                                                 <Input
                                                                     value={url}
                                                                     onChange={(e) => handleVideoUrlChange(index, e.target.value)}
-                                                                    placeholder={`URL видео ${index + 1} или загрузите файл`}
+                                                                    placeholder={`Video ${index + 1} URL or upload file`}
                                                                 />
                                                                 <input
                                                                     type="file"
@@ -561,7 +561,7 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                                             onClick={handleAddVideoUrl}
                                                         >
                                                             <Plus className="w-4 h-4 mr-2" />
-                                                            Добавить видео
+                                                            Add Video
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -569,11 +569,11 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         </div>
                                     </Card>
 
-                                    {/* Аудио */}
+                                    {/* Audio */}
                                     <Card className="p-6">
                                         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                                             <Volume2 className="w-5 h-5" />
-                                            Аудио-настройка
+                                            Audio Setup
                                         </h3>
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-2">
@@ -583,17 +583,17 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                                     checked={formData.has_audio}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, has_audio: e.target.checked }))}
                                                 />
-                                                <Label htmlFor="has_audio">Включить аудио-настройку</Label>
+                                                <Label htmlFor="has_audio">Include audio setup</Label>
                                             </div>
                                             {formData.has_audio && (
                                                 <div>
-                                                    <Label htmlFor="audio_url">URL аудио-файла</Label>
+                                                    <Label htmlFor="audio_url">Audio File URL</Label>
                                                     <div className="flex gap-2">
                                                         <Input
                                                             id="audio_url"
                                                             value={formData.audio_url}
                                                             onChange={(e) => setFormData(prev => ({ ...prev, audio_url: e.target.value }))}
-                                                            placeholder="Или загрузите файл"
+                                                            placeholder="Or upload file"
                                                         />
                                                         <input
                                                             type="file"
@@ -624,12 +624,12 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                         </div>
                                     </Card>
 
-                                    {/* Метаданные курса */}
+                                    {/* Course Metadata */}
                                     <Card className="p-6">
-                                        <h3 className="text-lg font-semibold mb-4">Метаданные курса</h3>
+                                        <h3 className="text-lg font-semibold mb-4">Course Metadata</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <Label htmlFor="course_duration_minutes">Продолжительность (минуты)</Label>
+                                                <Label htmlFor="course_duration_minutes">Duration (minutes)</Label>
                                                 <Input
                                                     id="course_duration_minutes"
                                                     type="number"
@@ -642,7 +642,7 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                 </>
                             )}
 
-                            {/* Кнопки действий */}
+                            {/* Action Buttons */}
                             <div className="flex gap-4">
                                 <Button
                                     onClick={handleSave}
@@ -650,13 +650,13 @@ export function MiniCourseManagement({ onClose }: MiniCourseManagementProps) {
                                     className="flex items-center gap-2"
                                 >
                                     <Save className="w-4 h-4" />
-                                    {saving ? 'Сохранение...' : 'Сохранить изменения'}
+                                    {saving ? 'Saving...' : 'Save Changes'}
                                 </Button>
                                 <Button
                                     variant="outline"
                                     onClick={() => setEditingDocument(null)}
                                 >
-                                    Отмена
+                                    Cancel
                                 </Button>
                             </div>
                         </div>

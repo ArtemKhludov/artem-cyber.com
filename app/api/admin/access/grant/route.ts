@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Access sync error', details: accessResult.error.message }, { status: 500 })
         }
 
-        // Если используется grace period, обновляем доступ
+        // If grace period is used, update access
         if (useGracePeriod && accessResult.data?.[0]) {
             await supabase
                 .from('user_course_access')

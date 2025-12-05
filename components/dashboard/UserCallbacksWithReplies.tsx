@@ -75,7 +75,7 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
         const data = await response.json()
         setCallbacks(data.data || [])
         
-        // Загружаем ответы для каждой заявки
+        // Load replies for each request
         for (const callback of data.data || []) {
           await fetchReplies(callback.id)
         }
@@ -129,7 +129,7 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
 
       if (response.ok) {
         setNewReplies(prev => ({ ...prev, [callbackId]: '' }))
-        await fetchReplies(callbackId) // Обновляем ответы
+        await fetchReplies(callbackId) // Refresh replies
       } else {
         const error = await response.json()
         console.error('Error submitting reply:', error)
@@ -143,10 +143,10 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      new: { label: 'Новая', variant: 'default' as const, icon: AlertCircle },
-      replied: { label: 'Отвечено', variant: 'secondary' as const, icon: CheckCircle },
-      waiting_response: { label: 'Ожидает ответа', variant: 'outline' as const, icon: Clock },
-      closed: { label: 'Закрыта', variant: 'destructive' as const, icon: CheckCircle }
+      new: { label: 'New', variant: 'default' as const, icon: AlertCircle },
+      replied: { label: 'Replied', variant: 'secondary' as const, icon: CheckCircle },
+      waiting_response: { label: 'Waiting for Reply', variant: 'outline' as const, icon: Clock },
+      closed: { label: 'Closed', variant: 'destructive' as const, icon: CheckCircle }
     }
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.new
@@ -161,7 +161,7 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ru-RU', {
+    return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -176,13 +176,13 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
-            Мои заявки
+            My Requests
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Загрузка заявок...</p>
+            <p className="mt-2 text-gray-600">Loading requests...</p>
           </div>
         </CardContent>
       </Card>
@@ -195,15 +195,15 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
-            Мои заявки
+            My Requests
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Заявок пока нет</h3>
-            <p className="text-gray-600">
-              Когда вы отправите заявку через форму на сайте, она появится здесь.
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">No requests yet</h3>
+        <p className="text-gray-600">
+          When you submit a request through the website form, it will appear here.
             </p>
           </div>
         </CardContent>
@@ -216,7 +216,7 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="w-5 h-5" />
-          Мои заявки ({callbacks.length})
+          My Requests ({callbacks.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -229,7 +229,7 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
 
           return (
             <div key={callback.id} className="border rounded-lg p-4 space-y-4">
-              {/* Заголовок заявки */}
+              {/* Request header */}
               <div 
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() => toggleExpanded(callback.id)}
@@ -242,13 +242,13 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
                       <ChevronDown className="w-4 h-4 text-gray-500" />
                     )}
                     <span className="font-semibold">
-                      {callback.product_name || 'Заявка на обратный звонок'}
+                      {callback.product_name || 'Callback request'}
                     </span>
                   </div>
                   {getStatusBadge(callback.status)}
                   {unreadReplies.length > 0 && (
                     <Badge variant="destructive" className="animate-pulse">
-                      {unreadReplies.length} новых
+                      {unreadReplies.length} new
                     </Badge>
                   )}
                 </div>
@@ -257,19 +257,19 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
                 </div>
               </div>
 
-              {/* Детали заявки */}
+              {/* Request details */}
               {isExpanded && (
                 <div className="space-y-4 pl-6 border-l-2 border-gray-200">
-                  {/* Информация о заявке */}
+                  {/* Request info */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-gray-500" />
-                      <span className="font-medium">Имя:</span>
+                      <span className="font-medium">Name:</span>
                       <span>{callback.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-500" />
-                      <span className="font-medium">Телефон:</span>
+                      <span className="font-medium">Phone:</span>
                       <span>{callback.phone}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -280,7 +280,7 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
                     {callback.preferred_time && (
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-gray-500" />
-                        <span className="font-medium">Удобное время:</span>
+                        <span className="font-medium">Convenient time:</span>
                         <span>{callback.preferred_time}</span>
                       </div>
                     )}
@@ -288,17 +288,17 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
 
                   {callback.message && (
                     <div>
-                      <span className="font-medium text-sm">Сообщение:</span>
+                      <span className="font-medium text-sm">Message:</span>
                       <p className="text-sm text-gray-700 mt-1 p-3 bg-gray-50 rounded-lg">
                         {callback.message}
                       </p>
                     </div>
                   )}
 
-                  {/* Ответы */}
+                  {/* Replies */}
                   {callbackReplies.length > 0 && (
                     <div className="space-y-3">
-                      <h4 className="font-semibold text-sm">Переписка:</h4>
+                      <h4 className="font-semibold text-sm">Conversation:</h4>
                       <div className="space-y-3">
                         {callbackReplies.map((reply) => (
                           <div
@@ -313,13 +313,13 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-sm">
                                   {reply.is_from_admin 
-                                    ? (reply.admin?.name || 'Администратор')
-                                    : 'Вы'
+                                    ? (reply.admin?.name || 'Admin')
+                                    : 'You'
                                   }
                                 </span>
                                 {reply.is_from_admin && unreadReplies.some(r => r.id === reply.id) && (
                                   <Badge variant="destructive" className="text-xs">
-                                    Новое
+                                    New
                                   </Badge>
                                 )}
                               </div>
@@ -334,12 +334,12 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
                     </div>
                   )}
 
-                  {/* Форма для ответа */}
+                  {/* Reply form */}
                   <div className="space-y-3">
-                    <h4 className="font-semibold text-sm">Ответить:</h4>
+                    <h4 className="font-semibold text-sm">Reply:</h4>
                     <div className="space-y-2">
                       <Textarea
-                        placeholder="Введите ваш ответ..."
+                        placeholder="Enter your reply..."
                         value={newReplies[callback.id] || ''}
                         onChange={(e) => setNewReplies(prev => ({
                           ...prev,
@@ -357,12 +357,12 @@ export function UserCallbacksWithReplies({ userId }: UserCallbacksWithRepliesPro
                           {submitting[callback.id] ? (
                             <>
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              Отправка...
+                              Sending...
                             </>
                           ) : (
                             <>
                               <Send className="w-4 h-4 mr-2" />
-                              Отправить
+                              Send
                             </>
                           )}
                         </Button>

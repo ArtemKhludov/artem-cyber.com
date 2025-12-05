@@ -30,7 +30,7 @@ async function requireAdmin(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        // Проверяем права администратора
+        // Validate admin permissions
         const adminResult = await requireAdmin(request)
         if (!adminResult.success) {
             return NextResponse.json({ error: adminResult.error }, { status: adminResult.status })
@@ -39,12 +39,12 @@ export async function POST(request: NextRequest) {
         const { userId, purchaseId, customMessage } = await request.json()
 
         if (!userId && !purchaseId) {
-            return NextResponse.json({ error: 'userId или purchaseId обязательны' }, { status: 400 })
+            return NextResponse.json({ error: 'userId or purchaseId is required' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Получаем информацию о покупке
+        // Fetch purchase info
         let purchase
         if (purchaseId) {
             const { data: purchaseData, error: purchaseError } = await supabase
@@ -68,12 +68,12 @@ export async function POST(request: NextRequest) {
                 .single()
 
             if (purchaseError || !purchaseData) {
-                return NextResponse.json({ error: 'Покупка не найдена' }, { status: 404 })
+                return NextResponse.json({ error: 'Purchase not found' }, { status: 404 })
             }
 
             purchase = purchaseData
         } else {
-            // Получаем последнюю grace period покупку пользователя
+            // Fetch latest grace-period purchase for user
             const { data: purchaseData, error: purchaseError } = await supabase
                 .from('purchases')
                 .select(`
@@ -99,13 +99,13 @@ export async function POST(request: NextRequest) {
                 .single()
 
             if (purchaseError || !purchaseData) {
-                return NextResponse.json({ error: 'Grace period покупка не найдена' }, { status: 404 })
+                return NextResponse.json({ error: 'Grace period purchase not found' }, { status: 404 })
             }
 
             purchase = purchaseData
         }
 
-        // Получаем информацию о пользователе
+        // Fetch user info
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('id, email, name, phone')
@@ -113,80 +113,80 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (userError || !user) {
-            return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
+            return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
-        // Вычисляем оставшееся время grace period
+        // Calculate remaining grace period time
         const gracePeriodEnd = new Date(purchase.grace_period_until)
         const now = new Date()
         const timeRemaining = Math.max(0, gracePeriodEnd.getTime() - now.getTime())
         const minutesRemaining = Math.ceil(timeRemaining / (1000 * 60))
 
-        // Формируем сообщение
+        // Build message
         const defaultMessage = customMessage || `
-Ваш доступ к курсу "${purchase.product_name}" находится в процессе проверки оплаты.
+Your access to the course "${purchase.product_name}" is being verified for payment.
 
-⏰ Время проверки: ${minutesRemaining} минут
-💳 Сумма: ${purchase.amount_paid} ${purchase.currency}
-📧 Email для связи: ${user.email}
+⏰ Verification time: ${minutesRemaining} minutes
+💳 Amount: ${purchase.amount_paid} ${purchase.currency}
+📧 Contact email: ${user.email}
 
-Мы проверяем ваш платеж и в ближайшее время подтвердим доступ.
-Если у вас есть вопросы, обратитесь в поддержку.
+We are checking your payment and will confirm access soon.
+If you have questions, please contact support.
     `.trim()
 
-        // Отправляем email
+        // Send email
         const emailResult = await sendEmail({
             to: user.email,
-            subject: `Проверка оплаты: ${purchase.product_name}`,
+            subject: `Payment verification: ${purchase.product_name}`,
             html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Проверка оплаты</h2>
-          <p>Здравствуйте, ${user.name || 'пользователь'}!</p>
+          <h2 style="color: #333;">Payment verification</h2>
+          <p>Hello, ${user.name || 'customer'}!</p>
           
           <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #856404;">Ваш доступ проверяется</h3>
+            <h3 style="margin-top: 0; color: #856404;">Your access is being verified</h3>
             <p style="color: #856404; white-space: pre-wrap;">${defaultMessage}</p>
           </div>
           
           <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h4>Детали заказа:</h4>
+            <h4>Order details:</h4>
             <ul style="list-style: none; padding: 0;">
-              <li><strong>Курс:</strong> ${purchase.product_name}</li>
-              <li><strong>Сумма:</strong> ${purchase.amount_paid} ${purchase.currency}</li>
-              <li><strong>Время проверки:</strong> ${minutesRemaining} минут</li>
+              <li><strong>Course:</strong> ${purchase.product_name}</li>
+              <li><strong>Amount:</strong> ${purchase.amount_paid} ${purchase.currency}</li>
+              <li><strong>Verification window:</strong> ${minutesRemaining} minutes</li>
             </ul>
           </div>
           
-          <p>Если у вас есть вопросы по поводу оплаты, пожалуйста, обратитесь в нашу службу поддержки.</p>
+          <p>If you have any questions about payment, please reach out to our support team.</p>
           
           <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
           <p style="color: #666; font-size: 12px;">
-            Это автоматическое сообщение. Пожалуйста, не отвечайте на него напрямую.
+            This is an automated message. Please do not reply directly.
           </p>
         </div>
       `,
             text: `
-Проверка оплаты
+Payment verification
 
-Здравствуйте, ${user.name || 'пользователь'}!
+Hello, ${user.name || 'customer'}!
 
-Ваш доступ проверяется
+Your access is being verified
 
 ${defaultMessage}
 
-Детали заказа:
-- Курс: ${purchase.product_name}
-- Сумма: ${purchase.amount_paid} ${purchase.currency}
-- Время проверки: ${minutesRemaining} минут
+Order details:
+- Course: ${purchase.product_name}
+- Amount: ${purchase.amount_paid} ${purchase.currency}
+- Verification window: ${minutesRemaining} minutes
 
-Если у вас есть вопросы по поводу оплаты, пожалуйста, обратитесь в нашу службу поддержки.
+If you have questions about your payment, please contact our support team.
 
 ---
-Это автоматическое сообщение.
+This is an automated message.
       `
         })
 
-        // Логируем отправку уведомления
+        // Log notification dispatch
         await supabase.from('audit_logs').insert({
             user_id: adminResult.userId,
             action: 'send_pending_payment_notification',
@@ -204,7 +204,7 @@ ${defaultMessage}
 
         return NextResponse.json({
             success: true,
-            message: `Уведомление отправлено пользователю ${user.email}`,
+            message: `Notification sent to ${user.email}`,
             data: {
                 user: {
                     id: user.id,
@@ -227,6 +227,6 @@ ${defaultMessage}
 
     } catch (error) {
         console.error('Send pending payment notification error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

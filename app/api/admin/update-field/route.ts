@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     if (!id || field === undefined || !type) {
       return NextResponse.json(
-        { error: 'Неверные параметры' },
+        { error: 'Invalid parameters' },
         { status: 400 }
       )
     }
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       tableName = 'purchase_requests'
     } else {
       return NextResponse.json(
-        { error: 'Неверный тип' },
+        { error: 'Invalid type' },
         { status: 400 }
       )
     }
@@ -40,20 +40,20 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Update field error:', error)
       return NextResponse.json(
-        { error: 'Ошибка обновления поля' },
+        { error: 'Failed to update field' },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Поле обновлено успешно'
+      message: 'Field updated successfully'
     })
 
   } catch (error) {
     console.error('Update field error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

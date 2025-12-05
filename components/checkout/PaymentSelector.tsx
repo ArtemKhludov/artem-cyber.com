@@ -22,17 +22,17 @@ export function PaymentSelector({
   }
 
   const getCountryName = (code: string | null) => {
-    if (!code) return 'Неизвестная страна'
+    if (!code) return 'Unknown country'
     
     const countryNames: Record<string, string> = {
-      'RU': 'Россия',
-      'BY': 'Беларусь',
-      'KZ': 'Казахстан',
-      'US': 'США',
-      'GB': 'Великобритания',
-      'DE': 'Германия',
-      'FR': 'Франция',
-      'UA': 'Украина'
+      'RU': 'Russia',
+      'BY': 'Belarus',
+      'KZ': 'Kazakhstan',
+      'US': 'United States',
+      'GB': 'United Kingdom',
+      'DE': 'Germany',
+      'FR': 'France',
+      'UA': 'Ukraine'
     }
     
     return countryNames[code] || code
@@ -43,12 +43,12 @@ export function PaymentSelector({
       <div className="flex items-center mb-4">
         <MapPin className="w-5 h-5 text-gray-600 mr-2" />
         <span className="text-sm text-gray-600">
-          Ваше местоположение: <span className="font-medium">{getCountryName(userCountry)}</span>
+          Your location: <span className="font-medium">{getCountryName(userCountry)}</span>
         </span>
       </div>
 
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Выберите способ оплаты
+        Choose payment method
       </h3>
 
       <div className="space-y-3">
@@ -81,10 +81,10 @@ export function PaymentSelector({
             
             <div className="flex-1">
               <div className="flex items-center">
-                <span className="font-medium text-gray-900">Банковская карта</span>
+                <span className="font-medium text-gray-900">Bank card</span>
                 {recommendedMethod === 'stripe' && (
                   <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
-                    Рекомендуется
+                    Recommended
                   </span>
                 )}
               </div>
@@ -124,15 +124,15 @@ export function PaymentSelector({
             
             <div className="flex-1">
               <div className="flex items-center">
-                <span className="font-medium text-gray-900">Криптовалюта & СБП</span>
+                <span className="font-medium text-gray-900">Crypto & SBP</span>
                 {recommendedMethod === 'cryptomus' && (
                   <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
-                    Рекомендуется
+                    Recommended
                   </span>
                 )}
               </div>
               <p className="text-sm text-gray-600">
-                Bitcoin, USDT, СБП, карты РФ
+                Bitcoin, USDT, SBP, Russian cards
               </p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export function PaymentSelector({
       {/* Info about recommended method */}
       <div className="mt-4 p-3 bg-gray-50 rounded-lg">
         <p className="text-xs text-gray-600">
-          💡 Рекомендация основана на вашем местоположении для удобства оплаты
+          💡 Recommendation is based on your location for convenience
         </p>
       </div>
     </div>

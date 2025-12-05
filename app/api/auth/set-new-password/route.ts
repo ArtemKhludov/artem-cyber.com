@@ -12,17 +12,17 @@ export async function POST(request: NextRequest) {
             if (error instanceof Error) {
                 return NextResponse.json({ error: error.message }, { status: 403 })
             }
-            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+            return NextResponse.json({ error: 'Request rejected' }, { status: 403 })
         }
 
         const { token, password } = await request.json()
 
         if (!token || !password) {
-            return NextResponse.json({ error: 'Токен и пароль обязательны' }, { status: 400 })
+            return NextResponse.json({ error: 'Token and password are required' }, { status: 400 })
         }
 
         if (password.length < 6) {
-            return NextResponse.json({ error: 'Пароль должен содержать минимум 6 символов' }, { status: 400 })
+            return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
@@ -34,14 +34,14 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (userError || !user) {
-            return NextResponse.json({ error: 'Недействительный или истекший токен' }, { status: 400 })
+            return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 })
         }
 
         const now = new Date()
         const expiresAt = new Date(user.reset_password_expires)
 
         if (now > expiresAt) {
-            return NextResponse.json({ error: 'Токен истек. Запросите новый сброс пароля' }, { status: 400 })
+            return NextResponse.json({ error: 'Token expired. Request a new password reset' }, { status: 400 })
         }
 
         const passwordHash = await bcrypt.hash(password, 12)
@@ -58,17 +58,17 @@ export async function POST(request: NextRequest) {
 
         if (updateError) {
             console.error('Password update error:', updateError)
-            return NextResponse.json({ error: 'Ошибка обновления пароля' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to update password' }, { status: 500 })
         }
 
         await revokeUserSessions(user.id, { supabase })
 
         return NextResponse.json({
-            message: 'Пароль успешно изменен. Теперь вы можете войти в систему с новым паролем'
+            message: 'Password updated. You can now sign in with the new password.'
         })
 
     } catch (error) {
         console.error('Set new password error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

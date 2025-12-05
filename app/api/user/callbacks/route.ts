@@ -15,14 +15,14 @@ export async function GET(request: NextRequest) {
 
         if (!validation.session || !validation.user) {
             return NextResponse.json(
-                { error: 'Необходима авторизация' },
+                { error: 'Authentication required' },
                 { status: 401 }
             )
         }
 
         const user = validation.user
 
-        // Получаем обращения пользователя через функцию
+        // Get user callbacks via function
         const { data: callbacks, error } = await supabase
             .rpc('get_user_callbacks', {
                 user_uuid: user.id
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Error fetching user callbacks:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения обращений' },
+                { error: 'Failed to fetch callbacks' },
                 { status: 500 }
             )
         }
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

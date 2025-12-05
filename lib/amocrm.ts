@@ -50,7 +50,7 @@ class AmoCRM {
     this.refreshToken = config.refreshToken || null
   }
 
-  // Получение токена доступа
+  // Retrieve access token
   async getAccessToken(): Promise<string> {
     if (!this.accessToken) {
       throw new Error('Access token not available. Please authenticate first.')
@@ -58,7 +58,7 @@ class AmoCRM {
     return this.accessToken
   }
 
-  // Обновление токена
+  // Refresh token
   async refreshAccessToken(): Promise<void> {
     if (!this.refreshToken) {
       throw new Error('Refresh token not available')
@@ -86,18 +86,17 @@ class AmoCRM {
     this.accessToken = data.access_token
     this.refreshToken = data.refresh_token
 
-    // Сохраняем токены в базу данных или переменные окружения
+    // Save tokens to a datastore or environment
     await this.saveTokens(data.access_token, data.refresh_token)
   }
 
-  // Сохранение токенов
+  // Persist tokens
   private async saveTokens(accessToken: string, refreshToken: string): Promise<void> {
-    // Здесь можно сохранить токены в базу данных
-    // или обновить переменные окружения
+    // Persist tokens to DB or update env vars as needed
     console.log('Tokens saved:', { accessToken, refreshToken })
   }
 
-  // Создание контакта
+  // Create contact
   async createContact(contact: AmoContact): Promise<number> {
     const token = await this.getAccessToken()
 
@@ -112,7 +111,7 @@ class AmoCRM {
           name: contact.name,
           custom_fields_values: [
             {
-              field_id: 123456, // ID поля телефона (нужно настроить под вашу AmoCRM)
+              field_id: 123456, // Phone field ID (configure for your AmoCRM)
               values: [
                 {
                   value: contact.phone,
@@ -120,15 +119,17 @@ class AmoCRM {
                 }
               ]
             },
-            ...(contact.email ? [{
-              field_id: 123457, // ID поля email (нужно настроить под вашу AmoCRM)
-              values: [
-                {
-                  value: contact.email,
-                  enum_code: 'WORK'
-                }
-              ]
-            }] : [])
+            ...(contact.email
+              ? [{
+                  field_id: 123457, // Email field ID (configure for your AmoCRM)
+                  values: [
+                    {
+                      value: contact.email,
+                      enum_code: 'WORK'
+                    }
+                  ]
+                }]
+              : [])
           ]
         }
       ])
@@ -143,7 +144,7 @@ class AmoCRM {
     return data[0].id
   }
 
-  // Создание сделки
+  // Create lead
   async createLead(lead: AmoLead, contactId?: number): Promise<number> {
     const token = await this.getAccessToken()
 
@@ -152,29 +153,35 @@ class AmoCRM {
       price: lead.price || 0,
       custom_fields_values: [
         {
-          field_id: 123458, // ID поля источника (нужно настроить)
+          field_id: 123458, // Source field ID (configure)
           values: [
             {
               value: lead.source || 'Website'
             }
           ]
         },
-        ...(lead.utm_source ? [{
-          field_id: 123459, // ID поля UTM Source
-          values: [{ value: lead.utm_source }]
-        }] : []),
-        ...(lead.utm_medium ? [{
-          field_id: 123460, // ID поля UTM Medium
-          values: [{ value: lead.utm_medium }]
-        }] : []),
-        ...(lead.utm_campaign ? [{
-          field_id: 123461, // ID поля UTM Campaign
-          values: [{ value: lead.utm_campaign }]
-        }] : [])
+        ...(lead.utm_source
+          ? [{
+              field_id: 123459, // UTM Source field ID
+              values: [{ value: lead.utm_source }]
+            }]
+          : []),
+        ...(lead.utm_medium
+          ? [{
+              field_id: 123460, // UTM Medium field ID
+              values: [{ value: lead.utm_medium }]
+            }]
+          : []),
+        ...(lead.utm_campaign
+          ? [{
+              field_id: 123461, // UTM Campaign field ID
+              values: [{ value: lead.utm_campaign }]
+            }]
+          : [])
       ]
     }
 
-    // Добавляем связанный контакт
+    // Link contact to the lead
     if (contactId) {
       leadData._embedded = {
         contacts: [{ id: contactId }]
@@ -199,37 +206,37 @@ class AmoCRM {
     return data[0].id
   }
 
-  // Обработка заявки на обратный звонок
+  // Process callback request
   async processCallbackRequest(request: CallbackRequest): Promise<{
     contactId: number
     leadId: number
   }> {
     try {
-      // 1. Создаем контакт
+      // 1. Create contact
       const contactId = await this.createContact({
         name: request.name,
         phone: request.phone,
         email: request.email
       })
 
-      // 2. Создаем сделку
-      const leadName = `Заявка на обратный звонок - ${request.name}`
+      // 2. Create lead
+      const leadName = `Callback request - ${request.name}`
       const leadId = await this.createLead({
         name: leadName,
         source: request.source_page,
         custom_fields: [
           {
-            id: 123462, // ID поля "Удобное время"
+            id: 123462, // Field ID for "Preferred time"
             values: request.preferred_time ? [{ value: request.preferred_time }] : []
           },
           {
-            id: 123463, // ID поля "Сообщение"
+            id: 123463, // Field ID for "Message"
             values: request.message ? [{ value: request.message }] : []
           }
         ]
       }, contactId)
 
-      // 3. Добавляем задачи (опционально)
+      // 3. Add tasks (optional)
       await this.createTask(leadId, contactId, request)
 
       return { contactId, leadId }
@@ -240,20 +247,20 @@ class AmoCRM {
     }
   }
 
-  // Создание задачи
+  // Create task
   async createTask(leadId: number, contactId: number, request: CallbackRequest): Promise<void> {
     const token = await this.getAccessToken()
 
     const taskData = {
-      text: `Позвонить клиенту ${request.name} по номеру ${request.phone}`,
+      text: `Call client ${request.name} at ${request.phone}`,
       entity_id: leadId,
       entity_type: 'leads',
-      complete_till: Math.floor(Date.now() / 1000) + 3600, // Через час
-      task_type_id: 1, // ID типа задачи "Звонок"
-      responsible_user_id: null, // Будет назначен автоматически
+      complete_till: Math.floor(Date.now() / 1000) + 3600, // In one hour
+      task_type_id: 1, // Task type ID "Call"
+      responsible_user_id: null, // Assigned automatically
       custom_fields_values: [
         {
-          field_id: 123464, // ID поля "Приоритет"
+          field_id: 123464, // Field ID "Priority"
           values: [{ value: 'high' }]
         }
       ]
@@ -273,7 +280,7 @@ class AmoCRM {
     }
   }
 
-  // Получение информации о сделке
+  // Get lead info
   async getLead(leadId: number): Promise<any> {
     const token = await this.getAccessToken()
 
@@ -290,7 +297,7 @@ class AmoCRM {
     return response.json()
   }
 
-  // Обновление статуса сделки
+  // Update lead status
   async updateLeadStatus(leadId: number, statusId: number): Promise<void> {
     const token = await this.getAccessToken()
 
@@ -310,7 +317,7 @@ class AmoCRM {
     }
   }
 
-  // Получение воронок
+  // Get pipelines
   async getPipelines(): Promise<any[]> {
     const token = await this.getAccessToken()
 
@@ -327,7 +334,7 @@ class AmoCRM {
     return response.json()
   }
 
-  // Получение полей
+  // Get custom fields
   async getCustomFields(entity: 'contacts' | 'leads'): Promise<any[]> {
     const token = await this.getAccessToken()
 
@@ -345,7 +352,7 @@ class AmoCRM {
   }
 }
 
-// Создание экземпляра AmoCRM
+// Create AmoCRM instance
 export const amocrm = new AmoCRM({
   domain: process.env.AMOCRM_DOMAIN || '',
   clientId: process.env.AMOCRM_CLIENT_ID || '',

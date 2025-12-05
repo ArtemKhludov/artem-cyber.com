@@ -32,7 +32,7 @@ export default function LogsViewer() {
             if (!res.ok || json.error) throw new Error(json.error || 'Load failed')
             setItems(json.data || [])
         } catch (e: any) {
-            setError(e?.message || 'Ошибка загрузки логов')
+            setError(e?.message || 'Error loading logs')
         } finally {
             setLoading(false)
         }
@@ -45,14 +45,14 @@ export default function LogsViewer() {
             <div className="mb-4 flex gap-2">
                 <input value={actor} onChange={(e) => setActor(e.target.value)} placeholder="actor email" className="px-3 py-2 rounded bg-white/20 border border-white/30 text-white placeholder-white/50" />
                 <input value={action} onChange={(e) => setAction(e.target.value)} placeholder="action" className="px-3 py-2 rounded bg-white/20 border border-white/30 text-white placeholder-white/50" />
-                <button onClick={load} className="px-3 py-2 rounded bg-blue-600 text-white">Обновить</button>
+                <button onClick={load} className="px-3 py-2 rounded bg-blue-600 text-white">Refresh</button>
             </div>
-            {loading ? <div className="text-white/80 text-sm">Загрузка...</div> : error ? <div className="text-red-300 text-sm">{error}</div> : (
+            {loading ? <div className="text-white/80 text-sm">Loading...</div> : error ? <div className="text-red-300 text-sm">{error}</div> : (
                 <div className="max-h-96 overflow-auto">
                     <table className="w-full text-sm">
                         <thead className="text-white/60">
                             <tr>
-                                <th className="px-2 py-1 text-left">Время</th>
+                                <th className="px-2 py-1 text-left">Time</th>
                                 <th className="px-2 py-1 text-left">Action</th>
                                 <th className="px-2 py-1 text-left">Actor</th>
                                 <th className="px-2 py-1 text-left">Target</th>

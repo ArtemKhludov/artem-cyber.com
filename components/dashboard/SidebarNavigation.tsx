@@ -20,70 +20,70 @@ interface SidebarNavigationProps {
 const navigationItems = [
   {
     id: 'purchases',
-    label: 'Мои покупки',
+    label: 'My Purchases',
     icon: ShoppingBag,
-    description: 'Ваши приобретения'
+    description: 'Your purchases'
   },
   {
     id: 'courses',
-    label: 'Курсы',
+    label: 'Courses',
     icon: BookOpen,
-    description: 'Доступные курсы'
+    description: 'Available courses'
   },
   {
     id: 'achievements',
-    label: 'Достижения',
+    label: 'Achievements',
     icon: Trophy,
-    description: 'Ваши награды'
+    description: 'Your rewards'
   },
   {
     id: 'gifts',
-    label: 'Подарки',
+    label: 'Gifts',
     icon: Gift,
-    description: 'Бонусы и подарки'
+    description: 'Bonuses and gifts'
   },
   {
     id: 'recent',
-    label: 'Недавно просмотренные',
+    label: 'Recently Viewed',
     icon: History,
-    description: 'История активности'
+    description: 'Activity history'
   },
   {
     id: 'sessions',
-    label: 'Активные сессии',
+    label: 'Active Sessions',
     icon: Monitor,
-    description: 'Ваши устройства'
+    description: 'Your devices'
   },
   {
     id: 'issues',
-    label: 'Обращения',
+    label: 'Issues',
     icon: MessageSquare,
-    description: 'Поддержка'
+    description: 'Support'
   }
 ]
 
 export function SidebarNavigation({ activeTab, onTabChange }: SidebarNavigationProps) {
   return (
     <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
-      {/* Логотип/Заголовок */}
+      {/* Logo/Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <Home className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-900">Личный кабинет</h2>
-            <p className="text-xs text-gray-500">Добро пожаловать!</p>
+            <h2 className="font-semibold text-gray-900">Personal Dashboard</h2>
+            <p className="text-xs text-gray-500">Welcome!</p>
           </div>
         </div>
       </div>
 
-      {/* Навигация */}
+      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
         {navigationItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id
-          
+
           return (
             <button
               key={item.id}
@@ -91,16 +91,16 @@ export function SidebarNavigation({ activeTab, onTabChange }: SidebarNavigationP
               className={cn(
                 'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all duration-200',
                 'hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                isActive 
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                isActive
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'text-gray-700 hover:text-gray-900'
               )}
             >
-              <Icon 
+              <Icon
                 className={cn(
                   'h-5 w-5 shrink-0',
                   isActive ? 'text-blue-600' : 'text-gray-400'
-                )} 
+                )}
               />
               <div className="flex-1 min-w-0">
                 <div className={cn(
@@ -124,7 +124,7 @@ export function SidebarNavigation({ activeTab, onTabChange }: SidebarNavigationP
         })}
       </nav>
 
-      {/* Футер */}
+      {/* Footer */}
       <div className="p-4 border-t border-gray-200">
         <div className="text-xs text-gray-500 text-center">
           EnergyLogic Platform

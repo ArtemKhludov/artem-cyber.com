@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       if (error instanceof Error) {
         return NextResponse.json({ error: error.message }, { status: 403 })
       }
-      return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+      return NextResponse.json({ error: 'Request rejected' }, { status: 403 })
     }
 
     const supabase = getSupabaseAdmin()
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     const { course_item_id, event_type, progress_data, metadata } = body
 
     if (!course_item_id || !event_type) {
-      return NextResponse.json({ error: 'Недостаточно данных' }, { status: 400 })
+      return NextResponse.json({ error: 'Not enough data' }, { status: 400 })
     }
 
     const { data: courseItem, error: itemError } = await supabase
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (itemError || !courseItem) {
-      return NextResponse.json({ error: 'Элемент курса не найден' }, { status: 404 })
+      return NextResponse.json({ error: 'Course item not found' }, { status: 404 })
     }
 
     const { data: purchase, error: purchaseError } = await supabase
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (purchaseError || !purchase) {
-      return NextResponse.json({ error: 'Нет доступа к курсу' }, { status: 403 })
+      return NextResponse.json({ error: 'No course access' }, { status: 403 })
     }
 
     let newStatus: 'not_started' | 'in_progress' | 'done' = 'in_progress'
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
 
     if (upsertError) {
       console.error('Error upserting progress:', upsertError)
-      return NextResponse.json({ error: 'Ошибка сохранения прогресса' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to save progress' }, { status: 500 })
     }
 
     await checkAchievements(supabase, userEmail, courseItem.course_id, event_type, newStatus)
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Error processing progress event:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 

@@ -28,7 +28,7 @@ export async function PUT(
         } = body
 
         if (!id) {
-            return NextResponse.json({ error: 'ID документа обязателен' }, { status: 400 })
+            return NextResponse.json({ error: 'Document ID is required' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
@@ -41,7 +41,7 @@ export async function PUT(
         if (main_pdf_description !== undefined) updateData.main_pdf_description = main_pdf_description
         if (price_rub) {
             updateData.price_rub = parseInt(price_rub)
-            updateData.price = parseInt(price_rub) // дублирование для совместимости
+            updateData.price = parseInt(price_rub) // duplicate for compatibility
         }
         if (file_url) updateData.file_url = file_url
         if (cover_url !== undefined) updateData.cover_url = cover_url
@@ -63,20 +63,20 @@ export async function PUT(
 
         if (error) {
             console.error('Error updating document:', error)
-            return NextResponse.json({ error: 'Ошибка обновления документа' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to update document' }, { status: 500 })
         }
 
         if (!document) {
-            return NextResponse.json({ error: 'Документ не найден' }, { status: 404 })
+            return NextResponse.json({ error: 'Document not found' }, { status: 404 })
         }
 
-        // Отправка уведомления в Telegram
+        // Send Telegram notification
         try {
-            const telegramMessage = `📝 Документ обновлен:
-📋 Название: ${document.title}
-💰 Цена: ${document.price_rub} ₽
-📊 Страниц: ${document.page_count}
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`
+            const telegramMessage = `📝 Document updated:
+📋 Title: ${document.title}
+💰 Price: $${document.price_rub}
+📊 Pages: ${document.page_count}
+📅 Date: ${new Date().toLocaleString('en-US')}`
 
             const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
@@ -93,7 +93,7 @@ export async function PUT(
             if (!response.ok) {
                 console.error('Telegram notification failed:', await response.text())
             } else {
-                console.log('✅ Telegram уведомление отправлено')
+                console.log('✅ Telegram notification sent')
             }
         } catch (telegramError) {
             console.error('Telegram error:', telegramError)
@@ -102,7 +102,7 @@ export async function PUT(
         return NextResponse.json({ document })
     } catch (error) {
         console.error('Update document API error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
 
@@ -114,12 +114,12 @@ export async function DELETE(
         const { id } = await context.params
 
         if (!id) {
-            return NextResponse.json({ error: 'ID документа обязателен' }, { status: 400 })
+            return NextResponse.json({ error: 'Document ID is required' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Сначала получаем информацию о документе для уведомления
+        // First get document information for notification
         const { data: document, error: fetchError } = await supabase
             .from('documents')
             .select('title, price_rub')
@@ -128,10 +128,10 @@ export async function DELETE(
 
         if (fetchError) {
             console.error('Error fetching document for deletion:', fetchError)
-            return NextResponse.json({ error: 'Документ не найден' }, { status: 404 })
+            return NextResponse.json({ error: 'Document not found' }, { status: 404 })
         }
 
-        // Удаляем документ
+        // Delete document
         const { error } = await supabase
             .from('documents')
             .delete()
@@ -139,15 +139,15 @@ export async function DELETE(
 
         if (error) {
             console.error('Error deleting document:', error)
-            return NextResponse.json({ error: 'Ошибка удаления документа' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to delete document' }, { status: 500 })
         }
 
-        // Отправка уведомления в Telegram
+        // Send Telegram notification
         try {
-            const telegramMessage = `🗑️ Документ удален из системы:
-📋 Название: ${document.title}
-💰 Цена была: ${document.price_rub} ₽
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`
+            const telegramMessage = `🗑️ Document deleted from system:
+📋 Title: ${document.title}
+💰 Price was: $${document.price_rub}
+📅 Date: ${new Date().toLocaleString('en-US')}`
 
             const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
@@ -164,15 +164,15 @@ export async function DELETE(
             if (!response.ok) {
                 console.error('Telegram notification failed:', await response.text())
             } else {
-                console.log('✅ Telegram уведомление отправлено')
+                console.log('✅ Telegram notification sent')
             }
         } catch (telegramError) {
             console.error('Telegram error:', telegramError)
         }
 
-        return NextResponse.json({ message: 'Документ успешно удален' })
+        return NextResponse.json({ message: 'Document deleted successfully' })
     } catch (error) {
         console.error('Delete document API error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

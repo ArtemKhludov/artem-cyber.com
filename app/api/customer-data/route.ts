@@ -13,13 +13,13 @@ export async function POST(request: NextRequest) {
         if (!name || !email || !phone || !country) {
             return NextResponse.json({
                 success: false,
-                error: 'Все поля обязательны'
+                error: 'All fields are required'
             }, { status: 400 })
         }
 
-        console.log('💾 Сохраняем данные покупателя:', email)
+        console.log('💾 Saving customer data:', email)
 
-        // Проверяем, существует ли пользователь с таким email
+        // Check if user exists by email
         const { data: existingUser, error: userCheckError } = await supabase
             .from('users')
             .select('id')
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         let userId: string
 
         if (userCheckError && userCheckError.code === 'PGRST116') {
-            // Пользователь не существует, создаем нового
+            // User does not exist, create a new one
             const { data: newUser, error: createUserError } = await supabase
                 .from('users')
                 .insert({
@@ -44,24 +44,24 @@ export async function POST(request: NextRequest) {
                 .single()
 
             if (createUserError) {
-                console.error('❌ Ошибка создания пользователя:', createUserError)
+                console.error('❌ User creation error:', createUserError)
                 return NextResponse.json({
                     success: false,
-                    error: 'Ошибка создания пользователя',
+                    error: 'Failed to create user',
                     details: createUserError.message
                 }, { status: 500 })
             }
 
             userId = newUser.id
-            console.log('✅ Создан новый пользователь:', email)
+            console.log('✅ Created new user:', email)
         } else if (userCheckError) {
-            console.error('❌ Ошибка проверки пользователя:', userCheckError)
+            console.error('❌ User check error:', userCheckError)
             return NextResponse.json({
                 success: false,
-                error: 'Ошибка проверки пользователя'
+                error: 'User check failed'
             }, { status: 500 })
         } else {
-            // Пользователь существует, обновляем данные
+            // User exists, update data
             userId = existingUser.id
 
             const { error: updateUserError } = await supabase
@@ -73,17 +73,17 @@ export async function POST(request: NextRequest) {
                 .eq('id', userId)
 
             if (updateUserError) {
-                console.error('❌ Ошибка обновления пользователя:', updateUserError)
+                console.error('❌ User update error:', updateUserError)
                 return NextResponse.json({
                     success: false,
-                    error: 'Ошибка обновления пользователя'
+                    error: 'Failed to update user'
                 }, { status: 500 })
             }
 
-            console.log('✅ Обновлены данные пользователя:', email)
+            console.log('✅ Updated user data:', email)
         }
 
-        // Сохраняем данные заказа в purchase_requests
+        // Save order data into purchase_requests
         if (orderData) {
             const { error: purchaseError } = await supabase
                 .from('purchase_requests')
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
                     email: email.toLowerCase(),
                     phone: phone.trim(),
                     product_type: orderData.productType || 'pdf',
-                    product_name: orderData.productName || 'PDF документ',
+                    product_name: orderData.productName || 'PDF document',
                     product_id: orderData.productId || null,
                     amount: orderData.amount || 0,
                     currency: orderData.currency || 'RUB',
@@ -100,32 +100,32 @@ export async function POST(request: NextRequest) {
                     payment_method: orderData.paymentMethod || 'stripe',
                     priority: 'medium',
                     source: 'website',
-                    notes: `Страна: ${country}`
+                    notes: `Country: ${country}`
                 })
 
             if (purchaseError) {
-                console.error('❌ Ошибка сохранения заказа:', purchaseError)
+                console.error('❌ Order save error:', purchaseError)
                 return NextResponse.json({
                     success: false,
-                    error: 'Ошибка сохранения заказа',
+                    error: 'Failed to save order',
                     details: purchaseError.message
                 }, { status: 500 })
             }
 
-            console.log('✅ Сохранен заказ для пользователя:', email)
+            console.log('✅ Saved order for user:', email)
         }
 
         return NextResponse.json({
             success: true,
-            message: 'Данные покупателя сохранены успешно',
+            message: 'Customer data saved successfully',
             userId: userId
         })
 
     } catch (error) {
-        console.error('❌ Ошибка сохранения данных покупателя:', error)
+        console.error('❌ Error saving customer data:', error)
         return NextResponse.json({
             success: false,
-            error: 'Внутренняя ошибка сервера'
+            error: 'Internal server error'
         }, { status: 500 })
     }
 }

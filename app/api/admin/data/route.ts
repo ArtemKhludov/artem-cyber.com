@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 
-// Функция для отправки уведомлений в Telegram
+// Function to send Telegram notifications
 async function sendTelegramNotification(message: string) {
   try {
     const telegramResponse = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -41,30 +41,30 @@ export async function POST(request: NextRequest) {
       if (error) {
         console.error('Error adding purchase:', error)
         return NextResponse.json(
-          { error: 'Ошибка добавления покупки', details: error.message },
+          { error: 'Failed to add purchase', details: error.message },
           { status: 500 }
         )
       }
 
-      // Отправка уведомления в Telegram
-      const telegramMessage = `🛒 Новая покупка из CRM-системы:
-👤 Имя: ${data.name}
-📧 Email: ${data.email || 'Не указан'}
-📞 Телефон: ${data.phone}
-📦 Тип товара: ${data.product_type}
-🛍️ Название: ${data.product_name}
-💰 Сумма: ${data.amount} ${data.currency}
-💳 Способ оплаты: ${data.payment_method}
-📝 Статус: ${data.status}
-📝 Заметки: ${data.notes || 'Нет'}
-🌐 Источник: ${data.source}`
+      // Send Telegram notification
+      const telegramMessage = `🛒 New purchase from CRM system:
+👤 Name: ${data.name}
+📧 Email: ${data.email || 'Not specified'}
+📞 Phone: ${data.phone}
+📦 Product type: ${data.product_type}
+🛍️ Name: ${data.product_name}
+💰 Amount: ${data.amount} ${data.currency}
+💳 Payment method: ${data.payment_method}
+📝 Status: ${data.status}
+📝 Notes: ${data.notes || 'None'}
+🌐 Source: ${data.source}`
 
       await sendTelegramNotification(telegramMessage)
 
       return NextResponse.json({
         success: true,
         data: result,
-        message: 'Покупка добавлена успешно'
+        message: 'Purchase added successfully'
       })
     } else if (type === 'request') {
       const { data: result, error } = await supabase
@@ -76,41 +76,41 @@ export async function POST(request: NextRequest) {
       if (error) {
         console.error('Error adding request:', error)
         return NextResponse.json(
-          { error: 'Ошибка добавления заявки', details: error.message },
+          { error: 'Failed to add request', details: error.message },
           { status: 500 }
         )
       }
 
-      // Отправка уведомления в Telegram
-      const telegramMessage = `🆕 Новая заявка из CRM-системы:
-👤 Имя: ${data.name}
-📧 Email: ${data.email || 'Не указан'}
-📞 Телефон: ${data.phone}
-📦 Тип: ${data.product_type || 'callback'}
-🛍️ Товар/Услуга: ${data.product_name || 'Заказ звонка'}
-📝 Заметки: ${data.notes || 'Нет'}
-🌐 Источник: ${data.source_page || 'unknown'}
-📊 Статус: ${data.status}
-⭐ Приоритет: ${data.priority}`
+      // Send Telegram notification
+      const telegramMessage = `🆕 New request from CRM system:
+👤 Name: ${data.name}
+📧 Email: ${data.email || 'Not specified'}
+📞 Phone: ${data.phone}
+📦 Type: ${data.product_type || 'callback'}
+🛍️ Product/Service: ${data.product_name || 'Call request'}
+📝 Notes: ${data.notes || 'None'}
+🌐 Source: ${data.source_page || 'unknown'}
+📊 Status: ${data.status}
+⭐ Priority: ${data.priority}`
 
       await sendTelegramNotification(telegramMessage)
 
       return NextResponse.json({
         success: true,
         data: result,
-        message: 'Заявка добавлена успешно'
+        message: 'Request added successfully'
       })
     }
 
     return NextResponse.json(
-      { error: 'Неверный тип данных' },
+      { error: 'Invalid data type' },
       { status: 400 }
     )
 
   } catch (error) {
     console.error('Admin data POST error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabaseAdmin()
 
     if (type === 'requests') {
-      // Заявки (лиды) - из callback_requests
+      // Requests (leads) - from callback_requests
       const { data, error } = await supabase
         .from('callback_requests')
         .select('*')
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
       if (error) {
         console.error('Error fetching requests:', error)
         return NextResponse.json(
-          { error: 'Ошибка загрузки заявок' },
+          { error: 'Failed to load requests' },
           { status: 500 }
         )
       }
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
         count: data?.length || 0
       })
     } else if (type === 'purchases') {
-      // Покупки - из purchase_requests
+      // Purchases - from purchase_requests
       const { data, error } = await supabase
         .from('purchase_requests')
         .select('*')
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
       if (error) {
         console.error('Error fetching purchases:', error)
         return NextResponse.json(
-          { error: 'Ошибка загрузки покупок' },
+          { error: 'Failed to load purchases' },
           { status: 500 }
         )
       }
@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
       if (error) {
         console.error('Error fetching documents:', error)
         return NextResponse.json(
-          { error: 'Ошибка загрузки документов' },
+          { error: 'Failed to load documents' },
           { status: 500 }
         )
       }
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
         count: data?.length || 0
       })
     } else if (type === 'payments') {
-      // Реальные платежи: таблица purchases
+      // Real payments: purchases table
       const { data, error } = await supabase
         .from('purchases')
         .select('id, user_id, user_email, document_id, payment_status, payment_method, amount_paid, currency, stripe_payment_intent_id, created_at, updated_at')
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
       if (error) {
         console.error('Error fetching payments:', error)
         return NextResponse.json(
-          { error: 'Ошибка загрузки платежей' },
+          { error: 'Failed to load payments' },
           { status: 500 }
         )
       }
@@ -204,20 +204,20 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Неверный тип данных' },
+      { error: 'Invalid data type' },
       { status: 400 }
     )
 
   } catch (error) {
     console.error('Admin data error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-// PUT - Обновление заявки или покупки
+// PUT - Update request or purchase
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
@@ -226,7 +226,7 @@ export async function PUT(request: NextRequest) {
     const supabase = getSupabaseAdmin()
 
     if (type === 'purchase') {
-      // Получаем старые данные для сравнения
+      // Get old data for comparison
       const { data: oldData, error: fetchError } = await supabase
         .from('purchase_requests')
         .select('*')
@@ -236,12 +236,12 @@ export async function PUT(request: NextRequest) {
       if (fetchError) {
         console.error('Error fetching old purchase data:', fetchError)
         return NextResponse.json(
-          { error: 'Ошибка получения данных покупки' },
+          { error: 'Failed to fetch purchase data' },
           { status: 500 }
         )
       }
 
-      // Обновляем данные
+      // Update data
       const { data: result, error } = await supabase
         .from('purchase_requests')
         .update({
@@ -256,43 +256,43 @@ export async function PUT(request: NextRequest) {
       if (error) {
         console.error('Error updating purchase:', error)
         return NextResponse.json(
-          { error: 'Ошибка обновления покупки', details: error.message },
+          { error: 'Failed to update purchase', details: error.message },
           { status: 500 }
         )
       }
 
-      // Отправка уведомления в Telegram
-      const telegramMessage = `✏️ Покупка обновлена в CRM-системе:
+      // Send Telegram notification
+      const telegramMessage = `✏️ Purchase updated in CRM system:
 🆔 ID: ${id}
-👤 Имя: ${result.name}
-📧 Email: ${result.email || 'Не указан'}
-📞 Телефон: ${result.phone}
-📦 Тип товара: ${result.product_type}
-🛍️ Название: ${result.product_name}
-💰 Сумма: ${result.amount} ${result.currency}
-💳 Способ оплаты: ${result.payment_method}
-📝 Статус: ${result.status}
-📝 Заметки: ${result.notes || 'Нет'}
-🌐 Источник: ${result.source}
+👤 Name: ${result.name}
+📧 Email: ${result.email || 'Not specified'}
+📞 Phone: ${result.phone}
+📦 Product type: ${result.product_type}
+🛍️ Name: ${result.product_name}
+💰 Amount: ${result.amount} ${result.currency}
+💳 Payment method: ${result.payment_method}
+📝 Status: ${result.status}
+📝 Notes: ${result.notes || 'None'}
+🌐 Source: ${result.source}
 
-📊 Изменения:
+📊 Changes:
 ${Object.keys(data).map(key => {
         if (oldData[key] !== data[key]) {
           return `• ${key}: "${oldData[key]}" → "${data[key]}"`
         }
         return null
-      }).filter(Boolean).join('\n') || '• Нет изменений'}`
+      }).filter(Boolean).join('\n') || '• No changes'}`
 
       await sendTelegramNotification(telegramMessage)
 
       return NextResponse.json({
         success: true,
         data: result,
-        message: 'Покупка обновлена успешно'
+        message: 'Purchase updated successfully'
       })
 
     } else if (type === 'request') {
-      // Получаем старые данные для сравнения
+      // Get old data for comparison
       const { data: oldData, error: fetchError } = await supabase
         .from('callback_requests')
         .select('*')
@@ -302,12 +302,12 @@ ${Object.keys(data).map(key => {
       if (fetchError) {
         console.error('Error fetching old request data:', fetchError)
         return NextResponse.json(
-          { error: 'Ошибка получения данных заявки' },
+          { error: 'Failed to fetch request data' },
           { status: 500 }
         )
       }
 
-      // Обновляем данные
+      // Update data
       const { data: result, error } = await supabase
         .from('callback_requests')
         .update({
@@ -322,57 +322,57 @@ ${Object.keys(data).map(key => {
       if (error) {
         console.error('Error updating request:', error)
         return NextResponse.json(
-          { error: 'Ошибка обновления заявки', details: error.message },
+          { error: 'Failed to update request', details: error.message },
           { status: 500 }
         )
       }
 
-      // Отправка уведомления в Telegram
-      const telegramMessage = `✏️ Заявка обновлена в CRM-системе:
+      // Send Telegram notification
+      const telegramMessage = `✏️ Request updated in CRM system:
 🆔 ID: ${id}
-👤 Имя: ${result.name}
-📧 Email: ${result.email || 'Не указан'}
-📞 Телефон: ${result.phone}
-📝 Сообщение: ${result.message}
-📅 Предпочтительное время: ${result.preferred_time || 'Не указано'}
-📊 Статус: ${result.status}
-📝 Заметки админа: ${result.admin_notes || 'Нет'}
-🌐 Источник: ${result.source}
-📦 Тип продукта: ${result.product_type}
-🛍️ Название продукта: ${result.product_name}
+👤 Name: ${result.name}
+📧 Email: ${result.email || 'Not specified'}
+📞 Phone: ${result.phone}
+📝 Message: ${result.message}
+📅 Preferred time: ${result.preferred_time || 'Not specified'}
+📊 Status: ${result.status}
+📝 Admin notes: ${result.admin_notes || 'None'}
+🌐 Source: ${result.source}
+📦 Product type: ${result.product_type}
+🛍️ Product name: ${result.product_name}
 
-📊 Изменения:
+📊 Changes:
 ${Object.keys(data).map(key => {
         if (oldData[key] !== data[key]) {
           return `• ${key}: "${oldData[key]}" → "${data[key]}"`
         }
         return null
-      }).filter(Boolean).join('\n') || '• Нет изменений'}`
+      }).filter(Boolean).join('\n') || '• No changes'}`
 
       await sendTelegramNotification(telegramMessage)
 
       return NextResponse.json({
         success: true,
         data: result,
-        message: 'Заявка обновлена успешно'
+        message: 'Request updated successfully'
       })
     }
 
     return NextResponse.json(
-      { error: 'Неверный тип данных' },
+      { error: 'Invalid data type' },
       { status: 400 }
     )
 
   } catch (error) {
     console.error('Admin update error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-// DELETE - Удаление заявки или покупки
+// DELETE - Delete request or purchase
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -381,7 +381,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!type || !id) {
       return NextResponse.json(
-        { error: 'Не указан тип или ID' },
+        { error: 'Type or ID not specified' },
         { status: 400 }
       )
     }
@@ -389,7 +389,7 @@ export async function DELETE(request: NextRequest) {
     const supabase = getSupabaseAdmin()
 
     if (type === 'purchase') {
-      // Получаем данные перед удалением
+      // Get data before deletion
       const { data: oldData, error: fetchError } = await supabase
         .from('purchase_requests')
         .select('*')
@@ -399,12 +399,12 @@ export async function DELETE(request: NextRequest) {
       if (fetchError) {
         console.error('Error fetching purchase data:', fetchError)
         return NextResponse.json(
-          { error: 'Ошибка получения данных покупки' },
+          { error: 'Failed to fetch purchase data' },
           { status: 500 }
         )
       }
 
-      // Удаляем данные
+      // Delete data
       const { error } = await supabase
         .from('purchase_requests')
         .delete()
@@ -413,35 +413,35 @@ export async function DELETE(request: NextRequest) {
       if (error) {
         console.error('Error deleting purchase:', error)
         return NextResponse.json(
-          { error: 'Ошибка удаления покупки', details: error.message },
+          { error: 'Failed to delete purchase', details: error.message },
           { status: 500 }
         )
       }
 
-      // Отправка уведомления в Telegram
-      const telegramMessage = `🗑️ Покупка удалена из CRM-системы:
+      // Send Telegram notification
+      const telegramMessage = `🗑️ Purchase deleted from CRM system:
 🆔 ID: ${id}
-👤 Имя: ${oldData.name}
-📧 Email: ${oldData.email || 'Не указан'}
-📞 Телефон: ${oldData.phone}
-📦 Тип товара: ${oldData.product_type}
-🛍️ Название: ${oldData.product_name}
-💰 Сумма: ${oldData.amount} ${oldData.currency}
-💳 Способ оплаты: ${oldData.payment_method}
-📝 Статус: ${oldData.status}
-📝 Заметки: ${oldData.notes || 'Нет'}
-🌐 Источник: ${oldData.source}
-📅 Дата создания: ${new Date(oldData.created_at).toLocaleString('ru-RU')}`
+👤 Name: ${oldData.name}
+📧 Email: ${oldData.email || 'Not specified'}
+📞 Phone: ${oldData.phone}
+📦 Product type: ${oldData.product_type}
+🛍️ Name: ${oldData.product_name}
+💰 Amount: ${oldData.amount} ${oldData.currency}
+💳 Payment method: ${oldData.payment_method}
+📝 Status: ${oldData.status}
+📝 Notes: ${oldData.notes || 'None'}
+🌐 Source: ${oldData.source}
+📅 Created: ${new Date(oldData.created_at).toLocaleString('en-US')}`
 
       await sendTelegramNotification(telegramMessage)
 
       return NextResponse.json({
         success: true,
-        message: 'Покупка удалена успешно'
+        message: 'Purchase deleted successfully'
       })
 
     } else if (type === 'request') {
-      // Получаем данные перед удалением
+      // Get data before deletion
       const { data: oldData, error: fetchError } = await supabase
         .from('callback_requests')
         .select('*')
@@ -451,12 +451,12 @@ export async function DELETE(request: NextRequest) {
       if (fetchError) {
         console.error('Error fetching request data:', fetchError)
         return NextResponse.json(
-          { error: 'Ошибка получения данных заявки' },
+          { error: 'Failed to fetch request data' },
           { status: 500 }
         )
       }
 
-      // Удаляем данные
+      // Delete data
       const { error } = await supabase
         .from('callback_requests')
         .delete()
@@ -465,43 +465,43 @@ export async function DELETE(request: NextRequest) {
       if (error) {
         console.error('Error deleting request:', error)
         return NextResponse.json(
-          { error: 'Ошибка удаления заявки', details: error.message },
+          { error: 'Failed to delete request', details: error.message },
           { status: 500 }
         )
       }
 
-      // Отправка уведомления в Telegram
-      const telegramMessage = `🗑️ Заявка удалена из CRM-системы:
+      // Send Telegram notification
+      const telegramMessage = `🗑️ Request deleted from CRM system:
 🆔 ID: ${id}
-👤 Имя: ${oldData.name}
-📧 Email: ${oldData.email || 'Не указан'}
-📞 Телефон: ${oldData.phone}
-📝 Сообщение: ${oldData.message}
-📅 Предпочтительное время: ${oldData.preferred_time || 'Не указано'}
-📊 Статус: ${oldData.status}
-📝 Заметки админа: ${oldData.admin_notes || 'Нет'}
-🌐 Источник: ${oldData.source}
-📦 Тип продукта: ${oldData.product_type}
-🛍️ Название продукта: ${oldData.product_name}
-📅 Дата создания: ${new Date(oldData.created_at).toLocaleString('ru-RU')}`
+👤 Name: ${oldData.name}
+📧 Email: ${oldData.email || 'Not specified'}
+📞 Phone: ${oldData.phone}
+📝 Message: ${oldData.message}
+📅 Preferred time: ${oldData.preferred_time || 'Not specified'}
+📊 Status: ${oldData.status}
+📝 Admin notes: ${oldData.admin_notes || 'None'}
+🌐 Source: ${oldData.source}
+📦 Product type: ${oldData.product_type}
+🛍️ Product name: ${oldData.product_name}
+📅 Created: ${new Date(oldData.created_at).toLocaleString('en-US')}`
 
       await sendTelegramNotification(telegramMessage)
 
       return NextResponse.json({
         success: true,
-        message: 'Заявка удалена успешно'
+        message: 'Request deleted successfully'
       })
     }
 
     return NextResponse.json(
-      { error: 'Неверный тип данных' },
+      { error: 'Invalid data type' },
       { status: 400 }
     )
 
   } catch (error) {
     console.error('Admin delete error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

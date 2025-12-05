@@ -39,17 +39,17 @@ export default function EditPurchaseModal({
     }, [isOpen, purchase])
 
     const statuses = [
-        { value: 'completed', label: 'Завершено' },
-        { value: 'pending', label: 'В ожидании' },
-        { value: 'cancelled', label: 'Отменено' },
-        { value: 'refunded', label: 'Возвращено' }
+        { value: 'completed', label: 'Completed' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'cancelled', label: 'Cancelled' },
+        { value: 'refunded', label: 'Refunded' }
     ]
 
     const paymentMethods = [
         { value: 'Stripe', label: 'Stripe' },
         { value: 'Cryptomus', label: 'Cryptomus' },
-        { value: 'Наличные', label: 'Наличные' },
-        { value: 'Банковский перевод', label: 'Банковский перевод' }
+        { value: 'Cash', label: 'Cash' },
+        { value: 'Bank Transfer', label: 'Bank Transfer' }
     ]
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -80,11 +80,11 @@ export default function EditPurchaseModal({
                 onSuccess()
                 onClose()
             } else {
-                alert('Ошибка обновления покупки: ' + result.error)
+                alert('Error updating purchase: ' + result.error)
             }
         } catch (error) {
             console.error('Error updating purchase:', error)
-            alert('Ошибка обновления покупки')
+            alert('Error updating purchase')
         } finally {
             setLoading(false)
         }
@@ -97,7 +97,7 @@ export default function EditPurchaseModal({
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                 <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6 rounded-t-lg">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-bold">Редактировать покупку</h2>
+                        <h2 className="text-xl font-bold">Edit Purchase</h2>
                         <Button
                             onClick={onClose}
                             variant="ghost"
@@ -112,7 +112,7 @@ export default function EditPurchaseModal({
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Название продукта
+                            Product Name
                         </label>
                         <input
                             type="text"
@@ -124,7 +124,7 @@ export default function EditPurchaseModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Сумма (₽)
+                            Amount (USD)
                         </label>
                         <input
                             type="number"
@@ -138,7 +138,7 @@ export default function EditPurchaseModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Способ оплаты
+                            Payment Method
                         </label>
                         <select
                             value={paymentMethod}
@@ -155,7 +155,7 @@ export default function EditPurchaseModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Статус
+                            Status
                         </label>
                         <select
                             value={status}
@@ -177,7 +177,7 @@ export default function EditPurchaseModal({
                             variant="outline"
                             className="flex-1"
                         >
-                            Отмена
+                            Cancel
                         </Button>
                         <Button
                             type="submit"
@@ -187,12 +187,12 @@ export default function EditPurchaseModal({
                             {loading ? (
                                 <div className="flex items-center space-x-2">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    <span>Сохранение...</span>
+                                    <span>Saving...</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center space-x-2">
                                     <Save className="w-4 h-4" />
-                                    <span>Сохранить</span>
+                                    <span>Save</span>
                                 </div>
                             )}
                         </Button>

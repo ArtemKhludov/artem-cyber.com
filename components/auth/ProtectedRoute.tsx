@@ -14,7 +14,7 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
 
-  // Показываем загрузку пока проверяем аутентификацию
+  // Show loading while checking authentication
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -23,13 +23,13 @@ export function ProtectedRoute({
     )
   }
 
-  // Если пользователь не авторизован или нет прав, не показываем контент
+  // If user is not authenticated or lacks permissions, don't show content
   if (!user || (requiredRole && user.role !== requiredRole)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Доступ запрещен</h2>
-          <p className="text-gray-600">У вас нет прав для просмотра этой страницы</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
+          <p className="text-gray-600">You do not have permission to view this page</p>
         </div>
       </div>
     )

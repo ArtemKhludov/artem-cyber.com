@@ -45,14 +45,14 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
       return (
         <div className="p-6">
           <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            Произошла ошибка. Попробуйте обновить страницу.
+            An error occurred. Please try reloading the page.
           </div>
           <button
             type="button"
             className="mt-3 rounded-md border px-3 py-2 text-sm"
             onClick={() => (typeof window !== 'undefined' ? window.location.reload() : undefined)}
           >
-            Обновить
+            Refresh
           </button>
         </div>
       )
@@ -60,4 +60,3 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     return this.props.children
   }
 }
-

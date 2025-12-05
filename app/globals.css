@@ -77,7 +77,7 @@ body {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
-/* Стили для бесконечной карусели "Другие полезные материалы" */
+/* Styles for the infinite carousel "Other useful materials" */
 @keyframes infiniteScroll {
   0% {
     transform: translateX(0);

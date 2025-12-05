@@ -22,7 +22,7 @@ export function StripePayment({ document, userEmail, userCountry, userIP }: Stri
       setIsLoading(true)
       setError(null)
 
-      // Создаем checkout session на бэкенде
+      // Create checkout session on the backend
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -42,16 +42,16 @@ export function StripePayment({ document, userEmail, userCountry, userIP }: Stri
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Ошибка при создании сессии оплаты')
+        throw new Error(errorData.error || 'Failed to create checkout session')
       }
 
       const { sessionUrl } = await response.json()
 
-      // Перенаправляем на Stripe Checkout
+      // Redirect to Stripe Checkout
       window.location.href = sessionUrl
     } catch (error) {
       console.error('Stripe payment error:', error)
-      setError(error instanceof Error ? error.message : 'Произошла ошибка при оплате')
+      setError(error instanceof Error ? error.message : 'Payment error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -73,30 +73,30 @@ export function StripePayment({ document, userEmail, userCountry, userIP }: Stri
         {isLoading ? (
           <>
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Обработка...
+            Processing...
           </>
         ) : (
           <>
             <CreditCard className="w-5 h-5 mr-2" />
-            Оплатить {document.price_rub.toLocaleString('ru-RU')} ₽
+            Pay {document.price_rub.toLocaleString('en-US')} ₽
           </>
         )}
       </Button>
 
       <div className="text-center">
         <p className="text-xs text-gray-500 mb-2">
-          Оплачивая, вы автоматически соглашаетесь с{' '}
+          By paying, you agree to our{' '}
           <Link href="/refund" className="text-blue-600 hover:underline font-medium">
-            Условиями возврата
+            Refund Policy
           </Link>
         </p>
         <p className="text-xs text-gray-500">
-          Безопасная оплата через Stripe
+          Secure payment via Stripe
         </p>
         <div className="flex items-center justify-center mt-2 space-x-2">
           <img src="/stripe-badge.png" alt="Stripe" className="h-6" onError={(e) => e.currentTarget.style.display = 'none'} />
           <span className="text-xs text-gray-400">•</span>
-          <span className="text-xs text-gray-500">256-bit SSL шифрование</span>
+          <span className="text-xs text-gray-500">256-bit SSL encryption</span>
         </div>
       </div>
     </div>

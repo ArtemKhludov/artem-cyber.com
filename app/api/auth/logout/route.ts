@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
             if (error instanceof Error) {
                 return NextResponse.json({ error: error.message }, { status: 403 })
             }
-            return NextResponse.json({ error: 'Запрос отклонен' }, { status: 403 })
+            return NextResponse.json({ error: 'Request rejected' }, { status: 403 })
         }
 
         const cookieStore = await cookies()
@@ -23,12 +23,12 @@ export async function POST(request: NextRequest) {
             await revokeSessionToken(sessionToken, { supabase })
         }
 
-        const response = NextResponse.json({ message: 'Выход выполнен успешно' })
+        const response = NextResponse.json({ message: 'Logout successful' })
         clearSessionCookie(response)
 
         return response
     } catch (error) {
         console.error('Logout error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

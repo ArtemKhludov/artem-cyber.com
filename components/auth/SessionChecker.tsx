@@ -8,14 +8,14 @@ export function SessionChecker() {
   const hasCheckedRef = useRef(false)
 
   useEffect(() => {
-    // Проверяем сессию только один раз при загрузке
+    // Check session only once on load
     if (!loading && !user && !hasCheckedRef.current) {
       hasCheckedRef.current = true
-      // Проверяем сессию без перенаправления
+      // Check session without redirect
       refreshSession()
     }
   }, [loading, user, refreshSession])
 
-  // Этот компонент не рендерит ничего, только проверяет сессию
+  // This component doesn't render anything, only checks session
   return null
 }

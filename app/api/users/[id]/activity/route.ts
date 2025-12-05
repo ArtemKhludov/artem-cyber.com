@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 
-// GET /api/users/[id]/activity - Получить историю активности пользователя
+// GET /api/users/[id]/activity - Get user activity history
 export async function GET(
     request: NextRequest,
     context: { params: Promise<{ id: string }> }
@@ -19,18 +19,18 @@ export async function GET(
 
         const offset = (page - 1) * limit
 
-        // Базовый запрос для активности
+        // Base query for activity
         let query = supabase
             .from('user_activity')
             .select('*')
             .eq('user_id', userId)
 
-        // Фильтр по типу активности
+        // Filter by activity type
         if (type && type !== 'all') {
             query = query.eq('activity_type', type)
         }
 
-        // Фильтр по датам
+        // Filter by dates
         if (startDate) {
             query = query.gte('created_at', startDate)
         }
@@ -38,7 +38,7 @@ export async function GET(
             query = query.lte('created_at', endDate)
         }
 
-        // Сортировка и пагинация
+        // Sorting and pagination
         query = query
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1)
@@ -47,10 +47,10 @@ export async function GET(
 
         if (error) {
             console.error('Error fetching user activity:', error)
-            return NextResponse.json({ error: 'Ошибка получения активности пользователя' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to fetch user activity' }, { status: 500 })
         }
 
-        // Получаем общее количество записей для пагинации
+        // Get total count for pagination
         let countQuery = supabase
             .from('user_activity')
             .select('*', { count: 'exact', head: true })
@@ -68,7 +68,7 @@ export async function GET(
 
         const { count: totalCount } = await countQuery
 
-        // Группируем активность по дням для удобства отображения
+        // Group activity by days for easier display
         const groupedActivity = activity?.reduce((acc, item) => {
             const date = new Date(item.created_at).toISOString().split('T')[0]
             if (!acc[date]) {
@@ -91,6 +91,6 @@ export async function GET(
 
     } catch (error) {
         console.error('Error in GET /api/users/[id]/activity:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

@@ -17,7 +17,7 @@ export async function GET(
   try {
     const { id } = await context.params
 
-    // Получаем токен сессии из cookies
+    // Get session token from cookies
     const supabase = getSupabaseAdmin()
     const cookieStore = await cookies()
     const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
@@ -38,7 +38,7 @@ export async function GET(
 
     const user = validation.user
 
-    // Проверяем, существует ли курс
+    // Check if course exists
     const { data: course, error: courseError } = await supabase
       .from('documents')
       .select('*')
@@ -47,14 +47,14 @@ export async function GET(
 
     if (courseError || !course) {
       return NextResponse.json(
-        { error: 'Курс не найден' },
+        { error: 'Course not found' },
         { status: 404 }
       )
     }
 
     const userId = validation.session.user_id
 
-    // Проверяем доступ через таблицу user_course_access
+    // Check access through user_course_access table
     let { data: courseAccess } = await supabase
       .from('user_course_access')
       .select('id, expires_at, revoked_at, granted_at')
@@ -66,7 +66,7 @@ export async function GET(
     const now = new Date()
 
     if (!courseAccess || (courseAccess.expires_at && new Date(courseAccess.expires_at) <= now)) {
-      // Если доступа нет - пробуем восстановить его из завершенных покупок
+      // If no access - try to restore it from completed purchases
       try {
         await ensureCourseAccessForUser(supabase, userId, id)
       } catch (ensureError) {
@@ -113,14 +113,14 @@ export async function GET(
           }
         } else {
           return NextResponse.json(
-            { error: 'Курс не приобретен' },
+            { error: 'Course not purchased' },
             { status: 403 }
           )
         }
       }
     }
 
-    // Получаем данные о материалах курса (допускаем отсутствие таблиц)
+    // Get course materials data (allow missing tables)
     const documentIds = [id]
 
     let workbooks: any[] | null = null
@@ -162,7 +162,7 @@ export async function GET(
       audio = []
     }
 
-    // Формируем ответ с данными курса
+    // Form response with course data
     const courseData = {
       ...course,
       workbooks: workbooks || [],
@@ -195,7 +195,7 @@ export async function GET(
   } catch (error) {
     console.error('Course access API error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

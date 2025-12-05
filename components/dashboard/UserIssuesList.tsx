@@ -36,19 +36,19 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-    open: 'Открыто',
-    in_progress: 'В работе',
-    waiting_user: 'Ожидает ответа',
-    resolved: 'Решено',
-    closed: 'Закрыто'
+    open: 'Open',
+    in_progress: 'In Progress',
+    waiting_user: 'Waiting for Reply',
+    resolved: 'Resolved',
+    closed: 'Closed'
 }
 
 const TYPE_LABELS: Record<string, string> = {
-    access: 'Доступ',
-    payment: 'Оплата',
-    content: 'Контент',
-    bug: 'Ошибка',
-    other: 'Другое'
+    access: 'Access',
+    payment: 'Payment',
+    content: 'Content',
+    bug: 'Bug',
+    other: 'Other'
 }
 
 export function UserIssuesList() {
@@ -66,13 +66,13 @@ export function UserIssuesList() {
             })
 
             if (!response.ok) {
-                throw new Error('Не удалось загрузить обращения')
+                throw new Error('Failed to load issues')
             }
 
             const data = await response.json()
             setIssues(data.issues || [])
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Произошла ошибка')
+            setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
             setLoading(false)
         }
@@ -98,13 +98,13 @@ export function UserIssuesList() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />
-                        Мои обращения
+                        My Issues
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center justify-center py-8">
                         <RefreshCcw className="h-6 w-6 animate-spin text-gray-400" />
-                        <span className="ml-2 text-gray-600">Загрузка...</span>
+                        <span className="ml-2 text-gray-600">Loading...</span>
                     </div>
                 </CardContent>
             </Card>
@@ -117,7 +117,7 @@ export function UserIssuesList() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />
-                        Мои обращения
+                        My Issues
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -130,7 +130,7 @@ export function UserIssuesList() {
                             onClick={fetchIssues}
                             className="ml-4"
                         >
-                            Повторить
+                            Retry
                         </Button>
                     </div>
                 </CardContent>
@@ -144,16 +144,16 @@ export function UserIssuesList() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />
-                        Мои обращения
+                        My Issues
                     </CardTitle>
                     <CardDescription>
-                        Здесь будут отображаться ваши обращения в поддержку и ответы
+                        Your support requests and replies will be displayed here
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="text-center py-8 text-gray-500">
                         <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>У вас пока нет обращений в поддержку</p>
+                        <p>You don't have any support requests yet</p>
                     </div>
                 </CardContent>
             </Card>
@@ -166,7 +166,7 @@ export function UserIssuesList() {
                 <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />
-                        Мои обращения
+                        My Issues
                     </div>
                     <Button
                         variant="outline"
@@ -175,18 +175,18 @@ export function UserIssuesList() {
                         className="flex items-center gap-2"
                     >
                         <RefreshCcw className="h-4 w-4" />
-                        Обновить
+                        Refresh
                     </Button>
                 </CardTitle>
                 <CardDescription>
-                    История ваших обращений в поддержку и ответов
+                    History of your support requests and replies
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
                     {issues.map((issue) => (
                         <div key={issue.id} className="border rounded-lg p-4 space-y-3">
-                            {/* Заголовок обращения */}
+                            {/* Issue Header */}
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                     <h3 className="font-medium text-gray-900">{issue.title}</h3>
@@ -202,29 +202,29 @@ export function UserIssuesList() {
                                 </div>
                             </div>
 
-                            {/* Метаинформация */}
+                            {/* Metadata */}
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                                 <span className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
-                                    Создано: {formatDate(issue.created_at)}
+                                    Created: {formatDate(issue.created_at)}
                                 </span>
                                 {issue.first_reply_at && (
                                     <span className="flex items-center gap-1">
                                         <MessageSquare className="h-3 w-3" />
-                                        Ответ: {formatDate(issue.first_reply_at)}
+                                        Reply: {formatDate(issue.first_reply_at)}
                                     </span>
                                 )}
                             </div>
 
-                            {/* Ответы */}
+                            {/* Replies */}
                             {issue.issue_replies && issue.issue_replies.length > 0 && (
                                 <div className="space-y-2">
-                                    <h4 className="text-sm font-medium text-gray-700">Ответы поддержки:</h4>
+                                    <h4 className="text-sm font-medium text-gray-700">Support Replies:</h4>
                                     {issue.issue_replies.map((reply) => (
                                         <div key={reply.id} className="bg-blue-50 rounded-lg p-3">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <span className="text-sm font-medium text-blue-900">
-                                                    {reply.author_email || 'Поддержка'}
+                                                    {reply.author_email || 'Support'}
                                                 </span>
                                                 <span className="text-xs text-blue-600">
                                                     {formatDate(reply.created_at)}

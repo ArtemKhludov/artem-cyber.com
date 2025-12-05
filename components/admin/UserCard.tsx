@@ -145,7 +145,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
     }
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('ru-RU', {
+        return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -155,19 +155,19 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
     }
 
     const handleAddPurchaseSuccess = () => {
-        fetchUserData() // Обновляем данные пользователя
+        fetchUserData() // Update user data
     }
 
     const handleAddRequestSuccess = () => {
-        fetchUserData() // Обновляем данные пользователя
+        fetchUserData() // Update user data
     }
 
     const handleEditRequestSuccess = () => {
-        fetchUserData() // Обновляем данные пользователя
+        fetchUserData() // Update user data
     }
 
     const handleEditPurchaseSuccess = () => {
-        fetchUserData() // Обновляем данные пользователя
+        fetchUserData() // Update user data
     }
 
     if (!isOpen) return null
@@ -184,7 +184,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold">
-                                    {userData?.user.name || 'Загрузка...'}
+                                    {userData?.user.name || 'Loading...'}
                                 </h2>
                                 <p className="text-blue-100">
                                     {userData?.user.phone || ''}
@@ -211,10 +211,10 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                 <div className="border-b border-gray-200">
                     <nav className="flex space-x-8 px-6">
                         {[
-                            { id: 'overview', label: 'Обзор', icon: User },
-                            { id: 'requests', label: `Заявки (${userData?.requests.length || 0})`, icon: MessageSquare },
-                            { id: 'purchases', label: `Покупки (${userData?.purchases.length || 0})`, icon: ShoppingCart },
-                            { id: 'access', label: `Доступ (${activeAccessCount})`, icon: ShieldCheck }
+                            { id: 'overview', label: 'Overview', icon: User },
+                            { id: 'requests', label: `Requests (${userData?.requests.length || 0})`, icon: MessageSquare },
+                            { id: 'purchases', label: `Purchases (${userData?.purchases.length || 0})`, icon: ShoppingCart },
+                            { id: 'access', label: `Access (${activeAccessCount})`, icon: ShieldCheck }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -236,19 +236,19 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                            <span className="ml-2 text-gray-600">Загрузка данных пользователя...</span>
+                            <span className="ml-2 text-gray-600">Loading user data...</span>
                         </div>
                     ) : (
                         <>
                             {activeTab === 'overview' && userData && (
                                 <div className="space-y-6">
-                                    {/* Статистика */}
+                                    {/* Statistics */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="bg-blue-50 rounded-lg p-4">
                                             <div className="flex items-center">
                                                 <MessageSquare className="w-8 h-8 text-blue-600 mr-3" />
                                                 <div>
-                                                    <p className="text-sm text-gray-600">Всего заявок</p>
+                                                    <p className="text-sm text-gray-600">Total Requests</p>
                                                     <p className="text-2xl font-bold text-blue-600">
                                                         {userData.user.total_requests}
                                                     </p>
@@ -259,7 +259,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                             <div className="flex items-center">
                                                 <ShoppingCart className="w-8 h-8 text-green-600 mr-3" />
                                                 <div>
-                                                    <p className="text-sm text-gray-600">Всего покупок</p>
+                                                    <p className="text-sm text-gray-600">Total Purchases</p>
                                                     <p className="text-2xl font-bold text-green-600">
                                                         {userData.user.total_purchases}
                                                     </p>
@@ -270,7 +270,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                             <div className="flex items-center">
                                                 <DollarSign className="w-8 h-8 text-purple-600 mr-3" />
                                                 <div>
-                                                    <p className="text-sm text-gray-600">Потрачено</p>
+                                                    <p className="text-sm text-gray-600">Spent</p>
                                                     <p className="text-2xl font-bold text-purple-600">
                                                         {userData.user.total_spent} ₽
                                                     </p>
@@ -279,30 +279,30 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                         </div>
                                     </div>
 
-                                    {/* Информация о пользователе */}
+                                    {/* User Information */}
                                     <div className="bg-gray-50 rounded-lg p-6">
-                                        <h3 className="text-lg font-semibold mb-4">Информация о пользователе</h3>
+                                        <h3 className="text-lg font-semibold mb-4">User Information</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="flex items-center space-x-3">
                                                 <Calendar className="w-5 h-5 text-gray-400" />
                                                 <div>
-                                                    <p className="text-sm text-gray-600">Дата регистрации</p>
+                                                    <p className="text-sm text-gray-600">Registration Date</p>
                                                     <p className="font-medium">{formatDate(userData.user.created_at)}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-3">
                                                 <Clock className="w-5 h-5 text-gray-400" />
                                                 <div>
-                                                    <p className="text-sm text-gray-600">Последняя активность</p>
+                                                    <p className="text-sm text-gray-600">Last Activity</p>
                                                     <p className="font-medium">{formatDate(userData.user.last_activity)}</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Последние активности */}
+                                    {/* Recent Activity */}
                                     <div className="bg-white border rounded-lg p-6">
-                                        <h3 className="text-lg font-semibold mb-4">Последние активности</h3>
+                                        <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
                                         <div className="space-y-3">
                                             {[...userData.requests, ...userData.purchases]
                                                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -313,12 +313,12 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                             <>
                                                                 <ShoppingCart className="w-5 h-5 text-green-600" />
                                                                 <div className="flex-1">
-                                                                    <p className="font-medium">Покупка: {activity.product_name}</p>
+                                                                    <p className="font-medium">Purchase: {activity.product_name}</p>
                                                                     <p className="text-sm text-gray-600">
                                                                         {formatDate(activity.created_at)} • {activity.amount} ₽ • {activity.payment_method}
                                                                     </p>
                                                                     <p className="text-xs text-gray-500">
-                                                                        Статус: {activity.status}
+                                                                        Status: {activity.status}
                                                                     </p>
                                                                 </div>
                                                             </>
@@ -327,18 +327,18 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                                 <MessageSquare className="w-5 h-5 text-blue-600" />
                                                                 <div className="flex-1">
                                                                     <p className="font-medium">
-                                                                        {activity.product_type === 'callback' ? 'Заявка на звонок' : `Заявка: ${activity.product_name}`}
+                                                                        {activity.product_type === 'callback' ? 'Callback Request' : `Request: ${activity.product_name}`}
                                                                     </p>
                                                                     <p className="text-sm text-gray-600">
                                                                         {formatDate(activity.created_at)} • {activity.source_page}
                                                                     </p>
                                                                     {activity.message && (
                                                                         <p className="text-xs text-gray-500">
-                                                                            Сообщение: {activity.message}
+                                                                            Message: {activity.message}
                                                                         </p>
                                                                     )}
                                                                     <p className="text-xs text-gray-500">
-                                                                        Статус: {activity.status}
+                                                                        Status: {activity.status}
                                                                     </p>
                                                                 </div>
                                                             </>
@@ -353,16 +353,16 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                             {activeTab === 'requests' && userData && (
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-semibold">История заявок</h3>
+                                        <h3 className="text-lg font-semibold">Request History</h3>
                                         <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                                             <Plus className="w-4 h-4 mr-2" />
-                                            Добавить заявку
+                                            Add Request
                                         </Button>
                                     </div>
                                     {userData.requests.length === 0 ? (
                                         <div className="text-center py-8 text-gray-500">
                                             <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                            <p>У пользователя пока нет заявок</p>
+                                            <p>User has no requests yet</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
@@ -373,7 +373,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                             {getProductIcon(request.product_type)}
                                                             <div className="flex-1">
                                                                 <p className="font-medium">
-                                                                    {request.product_type === 'callback' ? 'Заявка на звонок' : request.product_name}
+                                                                    {request.product_type === 'callback' ? 'Callback Request' : request.product_name}
                                                                 </p>
                                                                 <p className="text-sm text-gray-600">
                                                                     {formatDate(request.created_at)} • {request.source_page}
@@ -382,7 +382,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                                     <p className="text-sm text-gray-500 mt-1">{request.message}</p>
                                                                 )}
                                                                 <p className="text-xs text-gray-400 mt-1">
-                                                                    Тип: {request.product_type} • Продукт: {request.product_name}
+                                                                    Type: {request.product_type} • Product: {request.product_name}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -400,7 +400,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                                 }}
                                                             >
                                                                 <Edit className="w-3 h-3 mr-1" />
-                                                                Редактировать
+                                                                Edit
                                                             </Button>
                                                         </div>
                                                     </div>
@@ -414,16 +414,16 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                             {activeTab === 'purchases' && userData && (
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-semibold">История покупок</h3>
+                                        <h3 className="text-lg font-semibold">Purchase History</h3>
                                         <Button size="sm" className="bg-green-600 hover:bg-green-700">
                                             <Plus className="w-4 h-4 mr-2" />
-                                            Добавить покупку
+                                            Add Purchase
                                         </Button>
                                     </div>
                                     {userData.purchases.length === 0 ? (
                                         <div className="text-center py-8 text-gray-500">
                                             <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                            <p>У пользователя пока нет покупок</p>
+                                            <p>User has no purchases yet</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
@@ -457,7 +457,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                                 }}
                                                             >
                                                                 <Edit className="w-3 h-3 mr-1" />
-                                                                Редактировать
+                                                                Edit
                                                             </Button>
                                                         </div>
                                                     </div>
@@ -471,7 +471,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                             {activeTab === 'access' && userData && (
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-semibold">Доступ к курсам</h3>
+                                        <h3 className="text-lg font-semibold">Course Access</h3>
                                         <Button
                                             size="sm"
                                             className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -481,18 +481,18 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                             }}
                                         >
                                             <ShieldCheck className="w-4 h-4 mr-2" />
-                                            Выдать доступ
+                                            Grant Access
                                         </Button>
                                     </div>
 
-                                    {/* Экспорт CSV */}
+                                    {/* CSV Export */}
                                     <div>
                                         <Button
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
                                                 try {
-                                                    const headers = ['ID', 'Курс', 'Выдан', 'Отозван', 'Источник', 'Причина', 'Комментарий']
+                                                    const headers = ['ID', 'Course', 'Granted', 'Revoked', 'Source', 'Reason', 'Comment']
                                                     const rows = (userData.accesses || []).map((a) => {
                                                         const meta = (a.metadata || {}) as Record<string, unknown>
                                                         const reason = (meta.reason as string) || ''
@@ -500,8 +500,8 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                         return [
                                                             a.id,
                                                             a.document_title || a.document_id,
-                                                            new Date(a.granted_at).toLocaleString('ru-RU'),
-                                                            a.revoked_at ? new Date(a.revoked_at).toLocaleString('ru-RU') : '',
+                                                            new Date(a.granted_at).toLocaleString('en-US'),
+                                                            a.revoked_at ? new Date(a.revoked_at).toLocaleString('en-US') : '',
                                                             a.source || '',
                                                             reason,
                                                             (notes || '').replace(/\n|\r/g, ' ')
@@ -522,14 +522,14 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                 }
                                             }}
                                         >
-                                            Экспорт CSV
+                                            Export CSV
                                         </Button>
                                     </div>
 
                                     {userData.accesses.length === 0 ? (
                                         <div className="text-center py-8 text-gray-500">
                                             <ShieldOff className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                            <p>Активных доступов нет</p>
+                                            <p>No active access</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
@@ -548,34 +548,34 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                                     <ShieldOff className="w-5 h-5 text-red-500" />
                                                                 )}
                                                                 <div className="flex-1">
-                                                                    <p className="font-medium">{access.document_title || 'Курс'}</p>
+                                                                    <p className="font-medium">{access.document_title || 'Course'}</p>
                                                                     <p className="text-sm text-gray-600">
-                                                                        Выдан: {formatDate(access.granted_at)}
+                                                                        Granted: {formatDate(access.granted_at)}
                                                                         {access.source ? ` • ${access.source}` : ''}
                                                                     </p>
                                                                     {access.revoked_at && (
                                                                         <p className="text-sm text-red-500">
-                                                                            Отозван: {formatDate(access.revoked_at)}
+                                                                            Revoked: {formatDate(access.revoked_at)}
                                                                         </p>
                                                                     )}
                                                                     {(reason || notes) && (
                                                                         <p className="text-xs text-gray-500 mt-1">
-                                                                            {reason ? `Причина: ${reason}` : ''}
+                                                                            {reason ? `Reason: ${reason}` : ''}
                                                                             {reason && notes ? ' • ' : ''}
-                                                                            {notes ? `Комментарий: ${notes}` : ''}
+                                                                            {notes ? `Comment: ${notes}` : ''}
                                                                         </p>
                                                                     )}
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-col items-end space-y-2">
                                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
-                                                                    {isActive ? 'Активен' : 'Отозван'}
+                                                                    {isActive ? 'Active' : 'Revoked'}
                                                                 </span>
                                                                 <Link
                                                                     href={`/courses/${access.document_id}`}
                                                                     className="text-xs px-2 py-1 border rounded-md text-blue-600 border-blue-200 hover:bg-blue-50"
                                                                 >
-                                                                    Открыть курс
+                                                                    Open Course
                                                                 </Link>
                                                                 {isActive ? (
                                                                     <Button
@@ -587,7 +587,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                                         }}
                                                                     >
                                                                         <ShieldOff className="w-3 h-3 mr-1" />
-                                                                        Отозвать
+                                                                        Revoke
                                                                     </Button>
                                                                 ) : (
                                                                     <Button
@@ -600,7 +600,7 @@ export default function UserCard({ userId, isOpen, onClose }: UserCardProps) {
                                                                         }}
                                                                     >
                                                                         <ShieldCheck className="w-3 h-3 mr-1" />
-                                                                        Выдать снова
+                                                                        Grant Again
                                                                     </Button>
                                                                 )}
                                                             </div>

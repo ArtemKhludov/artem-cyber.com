@@ -65,13 +65,13 @@ export async function GET(request: NextRequest) {
         return response
     } catch (error) {
         console.error('Session check error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
 
 export async function POST(request: NextRequest) {
     try {
-        // Умная проверка origin для session ping
+        // Smart origin check for session ping
         try {
             verifyRequestOriginSmart(request, {
                 allowSessionPing: true,
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             })
         } catch (error) {
             console.error('Origin verification failed for session ping:', error)
-            return NextResponse.json({ error: 'Недопустимый источник запроса' }, { status: 403 })
+            return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 })
         }
 
         const cookieStore = await cookies()
@@ -105,6 +105,6 @@ export async function POST(request: NextRequest) {
         return response
     } catch (error) {
         console.error('Session ping error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

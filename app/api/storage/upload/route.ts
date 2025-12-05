@@ -10,14 +10,14 @@ export async function POST(request: NextRequest) {
 
         if (!file || !path) {
             return NextResponse.json(
-                { error: 'Файл и путь обязательны' },
+                { error: 'File and path are required' },
                 { status: 400 }
             )
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Загружаем файл в Supabase Storage
+        // Upload file to Supabase Storage
         const { data, error } = await supabase.storage
             .from(bucket)
             .upload(path, file, {
@@ -28,12 +28,12 @@ export async function POST(request: NextRequest) {
         if (error) {
             console.error('Storage upload error:', error)
             return NextResponse.json(
-                { error: 'Ошибка загрузки файла', details: error.message },
+                { error: 'File upload failed', details: error.message },
                 { status: 500 }
             )
         }
 
-        // Получаем публичный URL
+        // Get public URL
         const { data: urlData } = supabase.storage
             .from(bucket)
             .getPublicUrl(path)
@@ -42,13 +42,13 @@ export async function POST(request: NextRequest) {
             success: true,
             path: data.path,
             url: urlData.publicUrl,
-            message: 'Файл успешно загружен'
+            message: 'File uploaded successfully'
         })
 
     } catch (error) {
         console.error('Upload API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

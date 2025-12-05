@@ -23,7 +23,7 @@ export function CryptomusPayment({ document, userEmail, userCountry, userIP }: C
       setIsLoading(true)
       setError(null)
 
-      // Создаем платеж через Cryptomus API
+      // Create payment via Cryptomus API
       const response = await fetch('/api/cryptomus/create-payment', {
         method: 'POST',
         headers: {
@@ -41,17 +41,17 @@ export function CryptomusPayment({ document, userEmail, userCountry, userIP }: C
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Ошибка при создании платежа')
+        throw new Error(errorData.error || 'Failed to create payment')
       }
 
       const { paymentUrl: url } = await response.json()
       setPaymentUrl(url)
 
-      // Автоматически открываем ссылку для оплаты
+      // Auto-open payment link
       window.open(url, '_blank')
     } catch (error) {
       console.error('Cryptomus payment error:', error)
-      setError(error instanceof Error ? error.message : 'Произошла ошибка при создании платежа')
+      setError(error instanceof Error ? error.message : 'Payment creation error')
     } finally {
       setIsLoading(false)
     }
@@ -68,7 +68,7 @@ export function CryptomusPayment({ document, userEmail, userCountry, userIP }: C
       {paymentUrl && (
         <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
           <p className="text-green-700 text-sm mb-3">
-            ✅ Ссылка для оплаты создана! Если окно не открылось автоматически, используйте кнопку ниже:
+            ✅ Payment link created! If a window did not open automatically, use the button below:
           </p>
           <Button
             asChild
@@ -77,7 +77,7 @@ export function CryptomusPayment({ document, userEmail, userCountry, userIP }: C
           >
             <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="w-4 h-4 mr-2" />
-              Открыть страницу оплаты
+              Open payment page
             </a>
           </Button>
         </div>
@@ -91,17 +91,17 @@ export function CryptomusPayment({ document, userEmail, userCountry, userIP }: C
         {isLoading ? (
           <>
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Создание платежа...
+            Creating payment...
           </>
         ) : paymentUrl ? (
           <>
             <ExternalLink className="w-5 h-5 mr-2" />
-            Ссылка создана
+            Link created
           </>
         ) : (
           <>
             <Coins className="w-5 h-5 mr-2" />
-            Создать платеж {document.price_rub.toLocaleString('ru-RU')} ₽
+            Create payment {document.price_rub.toLocaleString('en-US')} ₽
           </>
         )}
       </Button>
@@ -109,40 +109,40 @@ export function CryptomusPayment({ document, userEmail, userCountry, userIP }: C
       <div className="space-y-3">
         <div className="text-center">
           <p className="text-xs text-gray-500 mb-2">
-            Доступные способы оплаты:
+            Available payment methods:
           </p>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-gray-50 rounded p-2">
-              <div className="font-medium text-gray-700">🏦 СБП</div>
-              <div className="text-gray-500">Система быстрых платежей</div>
+              <div className="font-medium text-gray-700">🏦 SBP</div>
+              <div className="text-gray-500">Fast payment system</div>
             </div>
             <div className="bg-gray-50 rounded p-2">
-              <div className="font-medium text-gray-700">💳 Карты РФ</div>
-              <div className="text-gray-500">Visa, MasterCard, МИР</div>
+              <div className="font-medium text-gray-700">💳 Russian cards</div>
+              <div className="text-gray-500">Visa, MasterCard, MIR</div>
             </div>
             <div className="bg-gray-50 rounded p-2">
               <div className="font-medium text-gray-700">₿ Bitcoin</div>
-              <div className="text-gray-500">Криптовалюта</div>
+              <div className="text-gray-500">Cryptocurrency</div>
             </div>
             <div className="bg-gray-50 rounded p-2">
               <div className="font-medium text-gray-700">💰 USDT</div>
-              <div className="text-gray-500">Стейблкоин</div>
+              <div className="text-gray-500">Stablecoin</div>
             </div>
           </div>
         </div>
 
         <div className="text-center">
           <p className="text-xs text-gray-500 mb-2">
-            Оплачивая, вы автоматически соглашаетесь с{' '}
+            By paying, you agree to our{' '}
             <Link href="/refund" className="text-blue-600 hover:underline font-medium">
-              Условиями возврата
+              Refund Policy
             </Link>
           </p>
           <p className="text-xs text-gray-500">
-            Безопасная оплата через Cryptomus
+            Secure payment via Cryptomus
           </p>
           <div className="flex items-center justify-center mt-1">
-            <span className="text-xs text-gray-400">Комиссия платежной системы включена</span>
+            <span className="text-xs text-gray-400">Payment system fee included</span>
           </div>
         </div>
       </div>

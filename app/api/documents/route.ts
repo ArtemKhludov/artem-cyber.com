@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
     try {
-        // Получаем документы из базы данных
+        // Fetch documents from database
         const { data: dbDocuments, error } = await supabase
             .from('documents')
             .select('*')
@@ -12,19 +12,19 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Error fetching documents:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения документов' },
+                { error: 'Failed to fetch documents' },
                 { status: 500 }
             )
         }
 
-        // Получаем информацию о рабочих тетрадях, видео и аудио для каждого документа
+        // Fetch workbooks, videos, and audio for each document
         const documentIds = dbDocuments?.map(doc => doc.id) || []
         let workbooksData: Record<string, any[]> = {}
         let videosData: Record<string, any[]> = {}
         let audioData: Record<string, any[]> = {}
 
         if (documentIds.length > 0) {
-            // Получаем рабочие тетради
+            // Fetch workbooks
             const { data: workbooks, error: workbooksError } = await supabase
                 .from('course_workbooks')
                 .select('*')
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
                 }, {})
             }
 
-            // Получаем видео
+            // Fetch videos
             const { data: videos, error: videosError } = await supabase
                 .from('course_videos')
                 .select('*')
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
                 }, {})
             }
 
-            // Получаем аудио
+            // Fetch audio
             const { data: audio, error: audioError } = await supabase
                 .from('course_audio')
                 .select('*')
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Объединяем данные из базы данных (цены берутся из админ панели)
+        // Merge DB data (prices managed via admin panel)
         const documentsWithPricing = (dbDocuments || []).map(dbDoc => {
             const workbooks = workbooksData[dbDoc.id] || []
             const videos = videosData[dbDoc.id] || []
@@ -106,18 +106,18 @@ export async function GET(request: NextRequest) {
 
             return {
                 ...dbDoc,
-                // Используем цены из базы данных (управляются через админ панель)
+                // Use prices from DB (admin-managed)
                 price: dbDoc.price_rub || dbDoc.price,
                 price_rub: dbDoc.price_rub || dbDoc.price,
-                // Добавляем информацию о рабочих тетрадях
+                // Add workbook info
                 workbook_count: workbooks.length,
                 has_workbook: workbooks.length > 0,
                 workbooks: workbooks,
-                // Добавляем информацию о видео
+                // Add video info
                 video_count: videos.length,
                 has_videos: videos.length > 0,
                 videos: videos,
-                // Добавляем информацию об аудио
+                // Add audio info
                 audio_count: audio.length,
                 has_audio: audio.length > 0,
                 audio: audio
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Documents API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

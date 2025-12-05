@@ -28,13 +28,13 @@ export function TelegramLink() {
             })
 
             if (!response.ok) {
-                throw new Error('Не удалось получить статус Telegram')
+                throw new Error('Failed to get Telegram status')
             }
 
             const data = await response.json()
             setStatus(data)
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Произошла ошибка')
+            setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
             setLoading(false)
         }
@@ -52,21 +52,21 @@ export function TelegramLink() {
 
             if (!response.ok) {
                 const body = await response.json()
-                throw new Error(body.error || 'Не удалось создать ссылку для связывания')
+                throw new Error(body.error || 'Failed to create linking link')
             }
 
             const data = await response.json()
 
-            // Открываем Telegram с deep-link
+            // Open Telegram with deep-link
             window.open(data.deepLink, '_blank')
 
-            // Обновляем статус через 3 секунды
+            // Update status after 3 seconds
             setTimeout(() => {
                 fetchStatus()
             }, 3000)
 
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Произошла ошибка')
+            setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
             setLinking(false)
         }
@@ -82,13 +82,13 @@ export function TelegramLink() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />
-                        Telegram уведомления
+                        Telegram Notifications
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center justify-center py-4">
                         <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                        <span className="ml-2 text-gray-600">Загрузка...</span>
+                        <span className="ml-2 text-gray-600">Loading...</span>
                     </div>
                 </CardContent>
             </Card>
@@ -101,7 +101,7 @@ export function TelegramLink() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />
-                        Telegram уведомления
+                        Telegram Notifications
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -114,7 +114,7 @@ export function TelegramLink() {
                             onClick={fetchStatus}
                             className="ml-auto"
                         >
-                            Повторить
+                            Retry
                         </Button>
                     </div>
                 </CardContent>
@@ -127,10 +127,10 @@ export function TelegramLink() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" />
-                    Telegram уведомления
+                    Telegram Notifications
                 </CardTitle>
                 <CardDescription>
-                    Получайте мгновенные уведомления о новых ответах на ваши обращения
+                    Get instant notifications about new replies to your requests
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -138,7 +138,7 @@ export function TelegramLink() {
                     <div className="space-y-3">
                         <div className="flex items-center gap-2">
                             <CheckCircle className="h-5 w-5 text-green-500" />
-                            <span className="text-green-700 font-medium">Telegram аккаунт связан</span>
+                            <span className="text-green-700 font-medium">Telegram account linked</span>
                         </div>
 
                         {status.telegramUsername && (
@@ -150,13 +150,13 @@ export function TelegramLink() {
                         <div className="flex items-center gap-2">
                             <Settings className="h-4 w-4 text-gray-500" />
                             <span className="text-sm text-gray-600">
-                                Уведомления: {status.notifyEnabled ? 'Включены' : 'Отключены'}
+                                Notifications: {status.notifyEnabled ? 'Enabled' : 'Disabled'}
                             </span>
                         </div>
 
                         <div className="bg-blue-50 rounded-lg p-3">
                             <p className="text-sm text-blue-800">
-                                💡 <strong>Совет:</strong> Для отключения уведомлений напишите боту команду /unlink
+                                💡 <strong>Tip:</strong> To disable notifications, send the bot the /unlink command
                             </p>
                         </div>
                     </div>
@@ -164,11 +164,11 @@ export function TelegramLink() {
                     <div className="space-y-3">
                         <div className="flex items-center gap-2">
                             <AlertCircle className="h-5 w-5 text-amber-500" />
-                            <span className="text-amber-700 font-medium">Telegram аккаунт не связан</span>
+                            <span className="text-amber-700 font-medium">Telegram account not linked</span>
                         </div>
 
                         <p className="text-sm text-gray-600">
-                            Свяжите ваш Telegram аккаунт, чтобы получать мгновенные уведомления о новых ответах на ваши обращения в поддержку.
+                            Link your Telegram account to receive instant notifications about new replies to your support requests.
                         </p>
 
                         <Button
@@ -179,23 +179,23 @@ export function TelegramLink() {
                             {linking ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Создание ссылки...
+                                    Creating link...
                                 </>
                             ) : (
                                 <>
                                     <ExternalLink className="mr-2 h-4 w-4" />
-                                    Подключить Telegram
+                                    Connect Telegram
                                 </>
                             )}
                         </Button>
 
                         <div className="bg-gray-50 rounded-lg p-3">
                             <p className="text-xs text-gray-600">
-                                <strong>Как это работает:</strong><br />
-                                1. Нажмите &quot;Подключить Telegram&quot;<br />
-                                2. Откроется Telegram с ссылкой на бота<br />
-                                3. Нажмите &quot;Start&quot; в боте<br />
-                                4. Готово! Вы будете получать уведомления
+                                <strong>How it works:</strong><br />
+                                1. Click &quot;Connect Telegram&quot;<br />
+                                2. Telegram will open with a link to the bot<br />
+                                3. Click &quot;Start&quot; in the bot<br />
+                                4. Done! You will receive notifications
                             </p>
                         </div>
                     </div>

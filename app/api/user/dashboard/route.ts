@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (purchasesError) {
-      console.error('Ошибка получения покупок:', purchasesError)
+      console.error('Error fetching purchases:', purchasesError)
     }
 
     const courseIds = purchases?.map(p => p.document_id) || []
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (ordersError) {
-      console.error('Ошибка получения заказов:', ordersError)
+      console.error('Error fetching orders:', ordersError)
     }
 
     const { data: rawAccesses, error: accessesError } = await supabase
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
       .eq('user_id', validation.session.user_id)
 
     if (accessesError) {
-      console.error('Ошибка получения доступов:', accessesError)
+      console.error('Error fetching access:', accessesError)
     }
 
     const accessByDocument = (rawAccesses || []).reduce<Record<string, AccessRow>>((acc, access) => {
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: purchase.id,
-        product_name: document?.title || 'Курс',
+        product_name: document?.title || 'Course',
         product_type: document?.course_type === 'mini_course' ? 'mini_course' : 'pdf',
         price: purchase.amount_paid,
         status: accessStatus ?? (purchase.payment_status === 'completed' ? 'completed' : 'pending'),
@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
 
     const formattedOrders = orders?.map(order => ({
       id: order.id,
-      product_name: 'Энергетическая диагностика',
+      product_name: 'Energy Diagnosis',
       product_type: 'session',
       price: order.amount,
       status: order.status === 'completed' ? 'completed' : 'pending',
@@ -229,7 +229,7 @@ export async function GET(request: NextRequest) {
 
     return response
   } catch (error) {
-    console.error('Ошибка API dashboard пользователя:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    console.error('User dashboard API error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

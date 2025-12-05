@@ -39,10 +39,10 @@ export function CatalogContent({ documents }: CatalogContentProps) {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Каталог <span className="text-blue-600">курсов</span>
+            Course <span className="text-blue-600">catalog</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Полная библиотека материалов для самостоятельной работы и глубокого самопознания
+            A full library of materials for self-work and deep self-discovery
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export function CatalogContent({ documents }: CatalogContentProps) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Поиск по названию или описанию..."
+              placeholder="Search by title or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -65,9 +65,9 @@ export function CatalogContent({ documents }: CatalogContentProps) {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="created_at">По дате</option>
-              <option value="title">По названию</option>
-              <option value="price_rub">По цене</option>
+              <option value="created_at">By date</option>
+              <option value="title">By title</option>
+              <option value="price_rub">By price</option>
             </select>
           </div>
         </div>
@@ -75,7 +75,7 @@ export function CatalogContent({ documents }: CatalogContentProps) {
         {/* Results count */}
         <div className="mb-6">
           <p className="text-gray-600">
-            Найдено документов: <span className="font-semibold">{sortedDocuments.length}</span>
+            Documents found: <span className="font-semibold">{sortedDocuments.length}</span>
           </p>
         </div>
 
@@ -83,8 +83,8 @@ export function CatalogContent({ documents }: CatalogContentProps) {
         {sortedDocuments.length === 0 ? (
           <div className="text-center py-16">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Документы не найдены</h3>
-            <p className="text-gray-600">Попробуйте изменить параметры поиска</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No documents found</h3>
+            <p className="text-gray-600">Try adjusting your search filters</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -109,7 +109,7 @@ export function CatalogContent({ documents }: CatalogContentProps) {
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <div className="text-center">
                       <Eye className="w-8 h-8 text-white mx-auto mb-2" />
-                      <p className="text-white text-sm">Предпросмотр</p>
+                      <p className="text-white text-sm">Preview</p>
                     </div>
                   </div>
                 </div>
@@ -123,14 +123,13 @@ export function CatalogContent({ documents }: CatalogContentProps) {
                     {doc.description}
                   </p>
 
-                  {/* Информация о рабочих тетрадях */}
+                  {/* Workbook info */}
                   {doc.has_workbook && (doc.workbook_count || 0) > 0 && (
                     <div className="mb-4">
                       <div className="flex items-center text-sm text-orange-600 bg-orange-50 rounded-lg px-3 py-2">
                         <FileText className="w-4 h-4 mr-2" />
                         <span className="font-medium">
-                          {doc.workbook_count || 0} рабоч{(doc.workbook_count || 0) === 1 ? 'ая тетрадь' :
-                            (doc.workbook_count || 0) < 5 ? 'ие тетради' : 'ых тетрадей'}
+                          {doc.workbook_count || 0} workbook{(doc.workbook_count || 0) === 1 ? '' : 's'}
                         </span>
                       </div>
                       {doc.workbooks && doc.workbooks.length > 0 && (
@@ -153,7 +152,7 @@ export function CatalogContent({ documents }: CatalogContentProps) {
                   {/* Price */}
                   <div className="mb-4">
                     <span className="text-2xl font-bold text-gray-900">
-                      {doc.price_rub.toLocaleString('ru-RU')} ₽
+                      {doc.price_rub.toLocaleString('en-US')} ₽
                     </span>
                   </div>
 
@@ -162,13 +161,13 @@ export function CatalogContent({ documents }: CatalogContentProps) {
                     <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
                       <Link href={`/courses/${doc.id}`}>
                         <Eye className="mr-2 w-4 h-4" />
-                        Предпросмотр
+                        Preview
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="w-full border-blue-200 text-blue-600 hover:bg-blue-50">
                       <Link href={`/checkout?product=pdf&id=${doc.id}`}>
                         <ShoppingCart className="mr-2 w-4 h-4" />
-                        Купить сейчас
+                        Buy now
                       </Link>
                     </Button>
                   </div>
@@ -181,17 +180,17 @@ export function CatalogContent({ documents }: CatalogContentProps) {
         {/* Bottom CTA */}
         <div className="mt-16 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 text-center">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            Нужна персональная консультация?
+            Need a personal consultation?
           </h3>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Наши специалисты помогут выбрать подходящие материалы и составить индивидуальную программу развития
+            Our specialists will help you choose the right materials and build a tailored development plan
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild className="bg-blue-600 hover:bg-blue-700">
-              <Link href="/book">Записаться на консультацию</Link>
+              <Link href="/book">Book a consultation</Link>
             </Button>
             <Button asChild variant="outline" className="border-blue-500 text-blue-600 hover:bg-blue-50">
-              <Link href="/contacts">Связаться с нами</Link>
+              <Link href="/contacts">Contact us</Link>
             </Button>
           </div>
         </div>

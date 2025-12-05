@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { DocumentService, ImageValidationService } from '@/lib/documents'
 import type { Document } from '@/types'
 
-// Универсальный хук для работы с документами
+// Generic hook for working with documents
 export function useDocuments(options: {
   limit?: number
   excludeId?: string
@@ -16,7 +16,7 @@ export function useDocuments(options: {
     limit,
     excludeId,
     autoRefresh = false,
-    refreshInterval = 30000 // 30 секунд
+    refreshInterval = 30000 // 30 seconds
   } = options
 
   const [documents, setDocuments] = useState<Document[]>([])
@@ -24,7 +24,7 @@ export function useDocuments(options: {
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
-  // Загрузка документов
+  // Load documents
   const loadDocuments = useCallback(async () => {
     try {
       setError(null)
@@ -37,7 +37,7 @@ export function useDocuments(options: {
         docs = await DocumentService.getUniqueDocuments(limit)
       }
 
-      // Валидация изображений для каждого документа
+      // Validate images for each document
       const validatedDocs = await Promise.all(
         docs.map(async (doc) => {
           if (doc.cover_url) {
@@ -55,29 +55,29 @@ export function useDocuments(options: {
       setLastUpdated(new Date())
       
       if (validatedDocs.length === 0) {
-        setError('Документы не найдены')
+        setError('Documents not found')
       }
       
     } catch (err) {
       console.error('❌ Error loading documents:', err)
-      setError('Ошибка загрузки документов')
+      setError('Failed to load documents')
     } finally {
       setLoading(false)
     }
   }, [limit, excludeId])
 
-  // Принудительное обновление
+  // Force refresh
   const refresh = useCallback(() => {
     setLoading(true)
     loadDocuments()
   }, [loadDocuments])
 
-  // Первоначальная загрузка
+  // Initial load
   useEffect(() => {
     loadDocuments()
   }, [loadDocuments])
 
-  // Автоматическое обновление
+  // Auto refresh
   useEffect(() => {
     if (!autoRefresh || refreshInterval <= 0) return
 
@@ -99,7 +99,7 @@ export function useDocuments(options: {
   }
 }
 
-// Хук для получения одного документа
+// Hook to fetch a single document
 export function useDocument(id: string) {
   const [document, setDocument] = useState<Document | null>(null)
   const [loading, setLoading] = useState(true)
@@ -107,7 +107,7 @@ export function useDocument(id: string) {
 
   const loadDocument = useCallback(async () => {
     if (!id) {
-      setError('ID документа не указан')
+      setError('Document ID is not provided')
       setLoading(false)
       return
     }
@@ -117,10 +117,10 @@ export function useDocument(id: string) {
       const doc = await DocumentService.getDocumentById(id)
       
       if (!doc) {
-        setError('Документ не найден')
+        setError('Document not found')
         setDocument(null)
       } else {
-        // Проверяем изображение
+        // Validate image
         if (doc.cover_url) {
           const isValidImage = await ImageValidationService.validateImageUrl(doc.cover_url)
           if (!isValidImage) {
@@ -131,7 +131,7 @@ export function useDocument(id: string) {
       }
     } catch (err) {
       console.error(`❌ Error loading document ${id}:`, err)
-      setError('Ошибка загрузки документа')
+      setError('Failed to load document')
       setDocument(null)
     } finally {
       setLoading(false)
@@ -156,7 +156,7 @@ export function useDocument(id: string) {
   }
 }
 
-// Хук для получения количества страниц PDF
+// Hook to get PDF page count
 export function usePageCount(document: Document | null) {
   const [pageCount, setPageCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)

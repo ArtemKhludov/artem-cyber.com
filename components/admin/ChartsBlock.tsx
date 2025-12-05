@@ -15,10 +15,10 @@ export default function ChartsBlock() {
         try {
             const res = await fetch(`/api/admin/metrics?windowDays=${wd}`)
             const json = await res.json()
-            if (!res.ok) throw new Error(json.error || 'Ошибка загрузки метрик')
+            if (!res.ok) throw new Error(json.error || 'Error loading metrics')
             setData(json)
         } catch (e: any) {
-            setError(e?.message || 'Ошибка загрузки')
+            setError(e?.message || 'Loading error')
         } finally {
             setLoading(false)
         }
@@ -54,17 +54,17 @@ export default function ChartsBlock() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                 <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-white font-semibold">Выручка / Возвраты</h3>
+                    <h3 className="text-white font-semibold">Revenue / Refunds</h3>
                     <select
                         value={windowDays}
                         onChange={(e) => setWindowDays(Number(e.target.value))}
                         className="px-2 py-1 bg-white/10 border border-white/30 rounded text-white text-sm"
                     >
-                        {[7, 14, 30, 60, 90].map(n => (<option key={n} value={n}>{n} дней</option>))}
+                        {[7, 14, 30, 60, 90].map(n => (<option key={n} value={n}>{n} days</option>))}
                     </select>
                 </div>
                 {loading ? (
-                    <p className="text-white/70 text-sm">Загрузка...</p>
+                    <p className="text-white/70 text-sm">Loading...</p>
                 ) : error ? (
                     <p className="text-red-300 text-sm">{error}</p>
                 ) : (
@@ -76,9 +76,9 @@ export default function ChartsBlock() {
             </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-white font-semibold mb-3">Выдачи / Отзывы доступа</h3>
+                <h3 className="text-white font-semibold mb-3">Access Grants / Revocations</h3>
                 {loading ? (
-                    <p className="text-white/70 text-sm">Загрузка...</p>
+                    <p className="text-white/70 text-sm">Loading...</p>
                 ) : error ? (
                     <p className="text-red-300 text-sm">{error}</p>
                 ) : (
@@ -90,21 +90,21 @@ export default function ChartsBlock() {
             </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-white font-semibold mb-3">Воронка</h3>
+                <h3 className="text-white font-semibold mb-3">Funnel</h3>
                 {loading || !data ? (
-                    <p className="text-white/70 text-sm">Загрузка...</p>
+                    <p className="text-white/70 text-sm">Loading...</p>
                 ) : (
                     <div className="flex gap-4 text-white">
                         <div className="flex-1 bg-white/10 rounded p-3 text-center">
-                            <div className="text-xs text-white/60">Начали</div>
+                            <div className="text-xs text-white/60">Started</div>
                             <div className="text-2xl font-bold">{data.funnel?.started || 0}</div>
                         </div>
                         <div className="flex-1 bg-white/10 rounded p-3 text-center">
-                            <div className="text-xs text-white/60">Оплатили</div>
+                            <div className="text-xs text-white/60">Paid</div>
                             <div className="text-2xl font-bold">{data.funnel?.paid || 0}</div>
                         </div>
                         <div className="flex-1 bg-white/10 rounded p-3 text-center">
-                            <div className="text-xs text-white/60">Получили доступ</div>
+                            <div className="text-xs text-white/60">Got Access</div>
                             <div className="text-2xl font-bold">{data.funnel?.access || 0}</div>
                         </div>
                     </div>
@@ -112,21 +112,21 @@ export default function ChartsBlock() {
             </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-white font-semibold mb-3">Аномалии</h3>
+                <h3 className="text-white font-semibold mb-3">Anomalies</h3>
                 {loading || !data ? (
-                    <p className="text-white/70 text-sm">Загрузка...</p>
+                    <p className="text-white/70 text-sm">Loading...</p>
                 ) : (
                     <ul className="text-white/90 text-sm">
-                        <li>Застрявшие pending (&gt;24ч): {data.anomalies?.stuckPending || 0}</li>
-                        <li>Оплачено без активного доступа: {data.anomalies?.completedNoAccess || 0}</li>
+                        <li>Stuck pending (&gt;24h): {data.anomalies?.stuckPending || 0}</li>
+                        <li>Paid without active access: {data.anomalies?.completedNoAccess || 0}</li>
                     </ul>
                 )}
             </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-white font-semibold mb-3">Топ курсов (выручка)</h3>
+                <h3 className="text-white font-semibold mb-3">Top Courses (Revenue)</h3>
                 {loading || !data ? (
-                    <p className="text-white/70 text-sm">Загрузка...</p>
+                    <p className="text-white/70 text-sm">Loading...</p>
                 ) : (
                     <ul className="text-white/90 text-sm">
                         {(data.topRevenueCourses || []).map((c: any) => (
@@ -137,9 +137,9 @@ export default function ChartsBlock() {
             </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-white font-semibold mb-3">Топ курсов (активные доступы)</h3>
+                <h3 className="text-white font-semibold mb-3">Top Courses (Active Access)</h3>
                 {loading || !data ? (
-                    <p className="text-white/70 text-sm">Загрузка...</p>
+                    <p className="text-white/70 text-sm">Loading...</p>
                 ) : (
                     <ul className="text-white/90 text-sm">
                         {(data.topAccessCourses || []).map((c: any) => (

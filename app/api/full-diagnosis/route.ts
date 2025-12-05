@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     try {
         console.log('🔍 Starting full diagnosis...')
 
-        // Тест 1: Supabase подключение
+        // Test 1: Supabase connection
         console.log('📡 Test 1: Supabase connection...')
         try {
             const supabase = getSupabaseAdmin()
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
             results.errors.push(`Supabase connection error: ${error}`)
         }
 
-        // Тест 2: Доступ к user_sessions
+        // Test 2: Access to user_sessions
         console.log('📡 Test 2: User sessions table access...')
         try {
             const supabase = getSupabaseAdmin()
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
             results.errors.push(`User sessions access error: ${error}`)
         }
 
-        // Тест 3: Создание пользователя
+        // Test 3: User creation
         console.log('📡 Test 3: User creation...')
         try {
             const supabase = getSupabaseAdmin()
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
             } else {
                 results.tests.user_creation = '✅ Success'
                 
-                // Тест 4: Создание сессии
+                // Test 4: Session creation
                 console.log('📡 Test 4: Session creation...')
                 const testSessionToken = crypto.randomUUID()
                 
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
                 } else {
                     results.tests.session_creation = '✅ Success'
                     
-                    // Тест 5: Чтение сессии
+                    // Test 5: Session reading
                     console.log('📡 Test 5: Session reading...')
                     const { data: readData, error: readError } = await supabase
                         .from('user_sessions')
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
                     } else {
                         results.tests.session_reading = '✅ Success'
                         
-                        // Тест 6: Валидация сессии
+                        // Test 6: Session validation
                         console.log('📡 Test 6: Session validation...')
                         try {
                             const validation = await validateSessionToken(testSessionToken, { supabase })
@@ -144,11 +144,11 @@ export async function GET(request: NextRequest) {
                         }
                     }
                     
-                    // Очистка сессии
+                    // Cleanup session
                     await supabase.from('user_sessions').delete().eq('session_token', testSessionToken)
                 }
                 
-                // Очистка пользователя
+                // Cleanup user
                 await supabase.from('users').delete().eq('id', testUserId)
             }
         } catch (error) {
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
             results.errors.push(`User creation error: ${error}`)
         }
 
-        // Тест 7: Google OAuth настройки
+        // Test 7: Google OAuth configuration
         console.log('📡 Test 7: Google OAuth configuration...')
         const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
         const googleClientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
             results.tests.google_oauth = '✅ Success'
         }
 
-        // Тест 8: Telegram настройки
+        // Test 8: Telegram configuration
         console.log('📡 Test 8: Telegram configuration...')
         const telegramToken = process.env.TELEGRAM_BOT_TOKEN
         const telegramChatId = process.env.TELEGRAM_CHAT_ID
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest) {
             results.tests.telegram = '✅ Success'
         }
 
-        // Тест 9: URL настройки
+        // Test 9: URL configuration
         console.log('📡 Test 9: URL configuration...')
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
         const appUrl = process.env.NEXT_PUBLIC_APP_URL
@@ -208,12 +208,12 @@ export async function GET(request: NextRequest) {
             results.tests.url_config = '✅ Success'
         }
 
-        // Тест 10: Проверка RLS политик
+        // Test 10: RLS policies check
         console.log('📡 Test 10: RLS policies check...')
         try {
             const supabase = getSupabaseAdmin()
             
-            // Пытаемся создать сессию с service role
+            // Try to create session with service role
             const testUserId = crypto.randomUUID()
             const testSessionToken = crypto.randomUUID()
             
@@ -242,7 +242,7 @@ export async function GET(request: NextRequest) {
                 }
             } else {
                 results.tests.rls_policies = '✅ Success'
-                // Очистка
+                // Cleanup
                 await supabase.from('user_sessions').delete().eq('session_token', testSessionToken)
             }
         } catch (error) {
@@ -250,7 +250,7 @@ export async function GET(request: NextRequest) {
             results.errors.push(`RLS policies error: ${error}`)
         }
 
-        // Итоговая оценка
+        // Final assessment
         const totalTests = Object.keys(results.tests).length
         const passedTests = Object.values(results.tests).filter(test => test === '✅ Success').length
         const failedTests = Object.values(results.tests).filter(test => test === '❌ Failed').length
@@ -264,27 +264,27 @@ export async function GET(request: NextRequest) {
             success_rate: Math.round((passedTests / totalTests) * 100)
         }
 
-        // Рекомендации
+        // Recommendations
         results.recommendations = []
         
         if (failedTests > 0) {
-            results.recommendations.push('❌ Критические ошибки требуют немедленного исправления')
+            results.recommendations.push('❌ Critical errors require immediate fixing')
         }
         
         if (warningTests > 0) {
-            results.recommendations.push('⚠️ Предупреждения следует исправить для стабильной работы')
+            results.recommendations.push('⚠️ Warnings should be fixed for stable operation')
         }
         
         if (results.errors.some(error => error.includes('RLS'))) {
-            results.recommendations.push('🔧 Выполните SQL скрипт для исправления RLS политик в Supabase')
+            results.recommendations.push('🔧 Execute SQL script to fix RLS policies in Supabase')
         }
         
         if (results.errors.some(error => error.includes('Google'))) {
-            results.recommendations.push('🔧 Проверьте настройки Google Cloud Console')
+            results.recommendations.push('🔧 Check Google Cloud Console settings')
         }
         
         if (results.errors.some(error => error.includes('Telegram'))) {
-            results.recommendations.push('🔧 Проверьте настройки Telegram бота')
+            results.recommendations.push('🔧 Check Telegram bot settings')
         }
 
         console.log('✅ Full diagnosis completed')

@@ -6,7 +6,7 @@ const CRYPTOMUS_API_KEY = process.env.CRYPTOMUS_API_KEY!
 const CRYPTOMUS_MERCHANT_ID = process.env.CRYPTOMUS_MERCHANT_ID!
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://energylogic-ai.com'
 
-// Функция для создания подписи Cryptomus
+// Create Cryptomus signature
 function createCryptomusSignature(data: any): string {
   const jsonString = JSON.stringify(data)
   const encoded = Buffer.from(jsonString).toString('base64')
@@ -15,7 +15,7 @@ function createCryptomusSignature(data: any): string {
 
 export async function POST(request: NextRequest) {
   try {
-    // Проверяем наличие переменных окружения
+    // Ensure required env vars exist
     if (!CRYPTOMUS_API_KEY || !CRYPTOMUS_MERCHANT_ID) {
       console.error('Missing Cryptomus environment variables')
       return NextResponse.json(
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Получаем документ из базы данных
+    // Fetch document from DB
     const { data: document, error: docError } = await supabase
       .from('documents')
       .select('*')
@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Создаем уникальный ID заказа
+    // Create a unique order ID
     const orderId = `${documentId}-${Date.now()}`
 
-    // Подготавливаем данные для Cryptomus API
+    // Prepare data for Cryptomus API
     const paymentData = {
       amount: amount.toString(),
       currency,
@@ -65,14 +65,14 @@ export async function POST(request: NextRequest) {
       url_return: `${APP_URL}/checkout/success?order_id=${orderId}`,
       url_callback: `${APP_URL}/api/cryptomus/callback`,
       is_payment_multiple: false,
-      lifetime: 300, // 5 минут на оплату
-      to_currency: currency, // Валюта получения
+      lifetime: 300, // 5 minutes to pay
+      to_currency: currency, // Payout currency
     }
 
-    // Создаем подпись
+    // Create signature
     const sign = createCryptomusSignature(paymentData)
 
-    // Отправляем запрос к Cryptomus API
+    // Call Cryptomus API
     const response = await fetch('https://api.cryptomus.com/v1/payment', {
       method: 'POST',
       headers: {
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       throw new Error(responseData.message || 'Cryptomus API error')
     }
 
-    // Создаем запись о покупке в статусе pending
+    // Create pending purchase record
     const { error: purchaseError } = await supabase
       .from('purchases')
       .insert({
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     if (purchaseError) {
       console.error('Error creating purchase record:', purchaseError)
-      // Продолжаем выполнение, так как платеж в Cryptomus уже создан
+      // Continue: payment already created on Cryptomus side
     }
 
     return NextResponse.json({

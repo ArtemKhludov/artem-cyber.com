@@ -14,37 +14,37 @@ interface Review {
 const mockReviews: Review[] = [
   {
     id: 1,
-    name: "Анна К.",
+    name: "Anna K.",
     rating: 5,
-    text: "Невероятно точный анализ! Документ открыл мне глаза на многие аспекты моей личности, о которых я даже не подозревала. Рекомендую всем, кто готов к честному взгляду на себя.",
+    text: "Incredibly accurate analysis! The document opened my eyes to many aspects of my personality I never suspected. I recommend it to anyone ready for an honest look at themselves.",
     date: "2024-01-15"
   },
   {
     id: 2,
-    name: "Михаил Д.",
+    name: "Michael D.",
     rating: 5,
-    text: "Профессиональный подход и глубокий анализ. После прочтения понял многие причины своих поведенческих паттернов. Стоит каждого потраченного рубля.",
+    text: "Professional approach and deep analysis. After reading, I understood many reasons behind my behavior patterns. Worth every penny.",
     date: "2024-01-10"
   },
   {
     id: 3,
-    name: "Елена В.",
+    name: "Elena V.",
     rating: 5,
-    text: "Удивительно, как ИИ смог так точно описать мои внутренние конфликты и предложить пути решения. Документ стал для меня настоящим открытием.",
+    text: "Amazing how AI captured my inner conflicts so accurately and suggested solutions. The document was a real discovery for me.",
     date: "2024-01-08"
   },
   {
     id: 4,
-    name: "Дмитрий С.",
+    name: "Dmitry S.",
     rating: 4,
-    text: "Очень интересный и полезный материал. Помог лучше понять себя и свои отношения с окружающими. Некоторые моменты показались слишком категоричными, но в целом очень доволен.",
+    text: "Very interesting and useful material. Helped me better understand myself and my relationships. Some points felt too categorical, but overall very satisfied.",
     date: "2024-01-05"
   },
   {
     id: 5,
-    name: "Ольга Р.",
+    name: "Olga R.",
     rating: 5,
-    text: "Революционный подход к самопознанию! Никогда не думала, что анализ может быть настолько точным и персонализированным. Уже заказала дополнительные сессии.",
+    text: "A revolutionary approach to self-knowledge! I never thought analysis could be this accurate and personalized. Already booked additional sessions.",
     date: "2024-01-03"
   }
 ]
@@ -75,10 +75,10 @@ export function MockReviews() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Отзывы наших клиентов
+            What our clients say
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Узнайте, что говорят люди о наших PDF-документах и анализах
+            See what people say about our PDFs and analyses
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export function MockReviews() {
                       {renderStars(mockReviews[currentReviewIndex].rating)}
                     </div>
                     <span className="text-sm text-gray-500">
-                      {new Date(mockReviews[currentReviewIndex].date).toLocaleDateString('ru-RU')}
+                      {new Date(mockReviews[currentReviewIndex].date).toLocaleDateString('en-US')}
                     </span>
                   </div>
                 </div>
@@ -160,15 +160,15 @@ export function MockReviews() {
             <div className="grid grid-cols-3 gap-6">
               <div>
                 <p className="text-2xl font-bold text-blue-600">4.8</p>
-                <p className="text-sm text-gray-600">Средняя оценка</p>
+                <p className="text-sm text-gray-600">Average rating</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-blue-600">127</p>
-                <p className="text-sm text-gray-600">Всего отзывов</p>
+                <p className="text-sm text-gray-600">Total reviews</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-blue-600">96%</p>
-                <p className="text-sm text-gray-600">Рекомендуют</p>
+                <p className="text-sm text-gray-600">Recommend</p>
               </div>
             </div>
           </div>

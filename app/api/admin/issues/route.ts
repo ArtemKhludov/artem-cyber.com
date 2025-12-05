@@ -90,16 +90,16 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Admin issues fetch error:', error)
-      return NextResponse.json({ error: 'Не удалось загрузить обращения' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to load issues' }, { status: 500 })
     }
 
-    // Обрабатываем данные пользователей
+    // Normalize user fields for response
     const processedData = data?.map(issue => ({
       ...issue,
       user_name: issue.users?.name || null,
       user_phone: issue.users?.phone || null,
       user_telegram_username: issue.users?.telegram_username || null,
-      users: undefined // Убираем объект users из ответа
+      users: undefined // Remove nested users object from payload
     })) || []
 
     const { data: statusRows } = await supabase
@@ -122,6 +122,6 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Admin issues GET error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

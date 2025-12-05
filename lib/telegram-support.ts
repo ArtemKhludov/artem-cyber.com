@@ -1,4 +1,4 @@
-// Функции для работы с Telegram ботом поддержки
+// Utilities for working with the Telegram support bot
 
 import { getSupabaseAdmin } from '@/lib/supabase'
 
@@ -10,7 +10,7 @@ export interface TelegramSupportMessage {
 }
 
 /**
- * Отправляет сообщение пользователю через бота поддержки
+ * Send a message to a user via the support bot.
  */
 export async function sendSupportMessage(options: TelegramSupportMessage): Promise<{ ok: boolean; error?: string }> {
     try {
@@ -19,7 +19,7 @@ export async function sendSupportMessage(options: TelegramSupportMessage): Promi
             return { ok: false, error: 'USER_TELEGRAM_BOT_TOKEN not configured' }
         }
 
-        // Получаем информацию о пользователе
+        // Fetch user info
         const { getUserInfo } = await import('@/lib/supabase')
         const user = await getUserInfo(options.userId)
 
@@ -59,7 +59,7 @@ export async function sendSupportMessage(options: TelegramSupportMessage): Promi
 }
 
 /**
- * Отправляет документ пользователю через бота поддержки
+ * Send a document to the user via the support bot.
  */
 export async function sendSupportDocument(userId: string, documentUrl: string, caption?: string): Promise<{ ok: boolean; error?: string }> {
     try {
@@ -68,7 +68,7 @@ export async function sendSupportDocument(userId: string, documentUrl: string, c
             return { ok: false, error: 'USER_TELEGRAM_BOT_TOKEN not configured' }
         }
 
-        // Получаем информацию о пользователе
+        // Fetch user info
         const { getUserInfo } = await import('@/lib/supabase')
         const user = await getUserInfo(userId)
 
@@ -84,7 +84,7 @@ export async function sendSupportDocument(userId: string, documentUrl: string, c
             body: JSON.stringify({
                 chat_id: user.telegram_chat_id,
                 document: documentUrl,
-                caption: caption || 'Документ от поддержки EnergyLogic'
+                caption: caption || 'Document from EnergyLogic support'
             })
         })
 
@@ -100,13 +100,13 @@ export async function sendSupportDocument(userId: string, documentUrl: string, c
 }
 
 /**
- * Отправляет чек пользователю
+ * Send a receipt to the user.
  */
 export async function sendReceiptToUser(userId: string, purchaseId: string, receiptUrl: string): Promise<void> {
     try {
         const supabase = getSupabaseAdmin()
 
-        // Получаем информацию о покупке
+        // Fetch purchase details
         const { data: purchase, error: purchaseError } = await supabase
             .from('purchases')
             .select('product_name, price, currency, created_at')
@@ -118,11 +118,11 @@ export async function sendReceiptToUser(userId: string, purchaseId: string, rece
             return
         }
 
-        const message = `🧾 <b>Ваш чек готов!</b>\n\n` +
-            `📦 <b>Товар:</b> ${purchase.product_name}\n` +
-            `💰 <b>Сумма:</b> ${purchase.price} ${purchase.currency || 'RUB'}\n` +
-            `📅 <b>Дата:</b> ${new Date(purchase.created_at).toLocaleDateString('ru-RU')}\n\n` +
-            `Спасибо за покупку! Сохраните чек для отчетности.`
+        const message = `🧾 <b>Your receipt is ready!</b>\n\n` +
+            `📦 <b>Product:</b> ${purchase.product_name}\n` +
+            `💰 <b>Amount:</b> ${purchase.price} ${purchase.currency || 'RUB'}\n` +
+            `📅 <b>Date:</b> ${new Date(purchase.created_at).toLocaleDateString('en-US')}\n\n` +
+            `Thank you for your purchase! Save the receipt for your records.`
 
         await sendSupportDocument(userId, receiptUrl, message)
     } catch (error) {
@@ -131,13 +131,13 @@ export async function sendReceiptToUser(userId: string, purchaseId: string, rece
 }
 
 /**
- * Отправляет уведомление об изменении статуса покупки
+ * Send a purchase status update.
  */
 export async function sendPurchaseStatusUpdate(userId: string, purchaseId: string, newStatus: string): Promise<void> {
     try {
         const supabase = getSupabaseAdmin()
 
-        // Получаем информацию о покупке
+        // Fetch purchase details
         const { data: purchase, error: purchaseError } = await supabase
             .from('purchases')
             .select('product_name, price, currency')
@@ -160,26 +160,26 @@ export async function sendPurchaseStatusUpdate(userId: string, purchaseId: strin
         }[newStatus] || '❓'
 
         const statusText = {
-            'completed': 'Завершена',
-            'active': 'Активна',
-            'in_progress': 'В обработке',
-            'pending': 'Ожидает оплаты',
-            'expired': 'Истекла',
-            'revoked': 'Отозвана',
-            'failed': 'Не удалась'
+            'completed': 'Completed',
+            'active': 'Active',
+            'in_progress': 'Processing',
+            'pending': 'Awaiting payment',
+            'expired': 'Expired',
+            'revoked': 'Revoked',
+            'failed': 'Failed'
         }[newStatus] || newStatus
 
-        const message = `🔄 <b>Обновление статуса покупки</b>\n\n` +
-            `📦 <b>Товар:</b> ${purchase.product_name}\n` +
-            `💰 <b>Сумма:</b> ${purchase.price} ${purchase.currency || 'RUB'}\n\n` +
-            `${statusEmoji} <b>Новый статус:</b> ${statusText}`
+        const message = `🔄 <b>Purchase status update</b>\n\n` +
+            `📦 <b>Product:</b> ${purchase.product_name}\n` +
+            `💰 <b>Amount:</b> ${purchase.price} ${purchase.currency || 'RUB'}\n\n` +
+            `${statusEmoji} <b>New status:</b> ${statusText}`
 
         await sendSupportMessage({
             userId,
             message,
             inlineKeyboard: [[
                 {
-                    text: '🔗 Открыть в личном кабинете',
+                    text: '🔗 Open dashboard',
                     url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
                 }
             ]]
@@ -190,23 +190,23 @@ export async function sendPurchaseStatusUpdate(userId: string, purchaseId: strin
 }
 
 /**
- * Отправляет уведомление о новом курсе/материале
+ * Send notification about new course/material.
  */
 export async function sendNewContentNotification(userId: string, courseName: string, courseUrl: string): Promise<void> {
-    const message = `🎉 <b>Новый контент доступен!</b>\n\n` +
-        `📚 <b>Курс:</b> ${courseName}\n\n` +
-        `Теперь вы можете изучать новый материал в своем личном кабинете.`
+    const message = `🎉 <b>New content is live!</b>\n\n` +
+        `📚 <b>Course:</b> ${courseName}\n\n` +
+        `You can start learning the new material in your dashboard.`
 
     await sendSupportMessage({
         userId,
         message,
         inlineKeyboard: [[
             {
-                text: '📖 Открыть курс',
+                text: '📖 Open course',
                 url: courseUrl
             },
             {
-                text: '🏠 Личный кабинет',
+                text: '🏠 Dashboard',
                 url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
             }
         ]]
@@ -214,20 +214,20 @@ export async function sendNewContentNotification(userId: string, courseName: str
 }
 
 /**
- * Отправляет напоминание о неактивности
+ * Send inactivity reminder.
  */
 export async function sendInactivityReminder(userId: string, daysInactive: number): Promise<void> {
-    const message = `⏰ <b>Мы скучаем по вам!</b>\n\n` +
-        `Вы не заходили в личный кабинет уже ${daysInactive} дней.\n\n` +
-        `У вас есть неоконченные курсы и материалы, которые ждут изучения.\n\n` +
-        `Продолжите свое обучение прямо сейчас!`
+    const message = `⏰ <b>We miss you!</b>\n\n` +
+        `You haven’t visited your dashboard for ${daysInactive} days.\n\n` +
+        `You have unfinished courses and materials waiting for you.\n\n` +
+        `Continue your learning right now!`
 
     await sendSupportMessage({
         userId,
         message,
         inlineKeyboard: [[
             {
-                text: '🏠 Открыть личный кабинет',
+                text: '🏠 Open dashboard',
                 url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
             }
         ]]

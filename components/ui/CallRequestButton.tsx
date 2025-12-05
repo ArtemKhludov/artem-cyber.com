@@ -61,7 +61,7 @@ export function CallRequestButton({
         className={`${getButtonClasses()} ${getSizeClasses()} ${className}`}
       >
         <Phone className="w-4 h-4 mr-2" />
-        {children || 'Заказать звонок'}
+        {children || 'Request Call'}
       </Button>
 
       <CallRequestModal

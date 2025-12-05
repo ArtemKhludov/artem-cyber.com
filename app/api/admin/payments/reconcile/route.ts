@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         const supabase = getSupabaseAdmin()
         const stripe = getStripeInstance()
 
-        // Находим зависшие pending-покупки (без фильтра по created_at - текущая схема)
+        // Find stuck pending purchases (without created_at filter - current schema)
         const { data: pending, error: qErr } = await supabase
             .from('purchases')
             .select('id, stripe_payment_intent_id, stripe_session_id, payment_status, amount_paid, currency, document_id, user_id, user_email, payment_method')
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         for (const p of pending || []) {
             let finalStatus: 'completed' | 'failed' | 'pending' | 'refunded' = 'pending'
             try {
-                // Сверяемся со Stripe Payment Intent, если он сохранен
+                // Check with Stripe Payment Intent if it's saved
                 if (p.stripe_payment_intent_id) {
                     const pi = await stripe.paymentIntents.retrieve(p.stripe_payment_intent_id)
                     switch (pi.status) {
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
                     if (upErr) throw upErr
 
                     if (finalStatus === 'completed') {
-                        // Продублируем логику вебхука: выдаем доступ
+                        // Duplicate webhook logic: grant access
                         await syncCourseAccessByStatus(supabase, [p], 'completed', {
                             source: 'admin_reconcile',
                             metadata: {

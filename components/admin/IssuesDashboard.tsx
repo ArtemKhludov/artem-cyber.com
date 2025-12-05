@@ -109,7 +109,7 @@ export default function IssuesDashboard() {
       setPage(json.page || pageOverride)
     } catch (err) {
       console.error('Issues fetch failed', err)
-      setError('Не удалось загрузить обращения')
+      setError('Failed to load issues')
     } finally {
       setLoading(false)
     }
@@ -134,7 +134,7 @@ export default function IssuesDashboard() {
   const handleSubmitReply = async () => {
     if (!selectedIssue) return
     if (replyMessage.trim().length < 3) {
-      setError('Ответ должен содержать минимум 3 символа')
+      setError('Reply must contain at least 3 characters')
       return
     }
     setSubmittingReply(true)
@@ -150,7 +150,7 @@ export default function IssuesDashboard() {
       })
       const json = await res.json()
       if (!res.ok || json.error) {
-        throw new Error(json.error || 'Ошибка ответа')
+        throw new Error(json.error || 'Reply error')
       }
       setReplyMessage('')
       setSelectedIssue(json.issue)
@@ -158,7 +158,7 @@ export default function IssuesDashboard() {
       void fetchIssues()
     } catch (err) {
       console.error('Reply error', err)
-      setError('Не удалось отправить ответ')
+      setError('Failed to send reply')
     } finally {
       setSubmittingReply(false)
     }
@@ -174,7 +174,7 @@ export default function IssuesDashboard() {
       })
       const json = await res.json()
       if (!res.ok || json.error) {
-        throw new Error(json.error || 'Ошибка изменения статуса')
+        throw new Error(json.error || 'Error changing status')
       }
       setIssues((prev) => prev.map((item) => item.id === json.issue.id ? json.issue : item))
       if (selectedIssue?.id === json.issue.id) {
@@ -183,7 +183,7 @@ export default function IssuesDashboard() {
       void fetchIssues()
     } catch (err) {
       console.error('Status update error', err)
-      setError('Не удалось обновить статус')
+      setError('Failed to update status')
     } finally {
       setUpdatingStatus(false)
     }
@@ -207,15 +207,15 @@ export default function IssuesDashboard() {
       <Card>
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <CardTitle>Обращения пользователей</CardTitle>
-            <CardDescription>Управляйте статусами, назначениями и ответами.</CardDescription>
+            <CardTitle>User Issues</CardTitle>
+            <CardDescription>Manage statuses, assignments, and replies.</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => { setStatusFilter(''); setTypeFilter(''); setAssigneeFilter(''); setSearch(''); void fetchIssues(1) }}>
-              <Filter className="mr-2 h-4 w-4" /> Сбросить
+              <Filter className="mr-2 h-4 w-4" /> Reset
             </Button>
             <Button variant="outline" size="sm" onClick={() => void fetchIssues()}>
-              <RefreshCcw className="mr-2 h-4 w-4" /> Обновить
+              <RefreshCcw className="mr-2 h-4 w-4" /> Refresh
             </Button>
           </div>
         </CardHeader>
@@ -223,7 +223,7 @@ export default function IssuesDashboard() {
           <div className="grid gap-3 md:grid-cols-4">
             <div className="col-span-2 flex gap-2">
               <Input
-                placeholder="Поиск по теме, описанию или email"
+                placeholder="Search by subject, description or email"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 onKeyDown={(event) => {
@@ -239,7 +239,7 @@ export default function IssuesDashboard() {
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
-              <option value="">Все статусы</option>
+              <option value="">All Statuses</option>
               {STATUS_OPTIONS.map((status) => (
                 <option key={status} value={status}>{status.replace('_', ' ')}</option>
               ))}
@@ -249,7 +249,7 @@ export default function IssuesDashboard() {
               value={typeFilter}
               onChange={(event) => setTypeFilter(event.target.value)}
             >
-              <option value="">Все типы</option>
+              <option value="">All Types</option>
               {TYPE_OPTIONS.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
@@ -272,14 +272,14 @@ export default function IssuesDashboard() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead>Пользователь</TableHead>
-                  <TableHead>Тема</TableHead>
-                  <TableHead>Тип</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead>Серьёзность</TableHead>
-                  <TableHead>Назначен</TableHead>
-                  <TableHead>Создано</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Severity</TableHead>
+                  <TableHead>Assigned</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -287,14 +287,14 @@ export default function IssuesDashboard() {
                   <TableRow>
                     <TableCell colSpan={8} className="h-32 text-center text-sm text-gray-500">
                       <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" /> Загрузка обращений...
+                        <Loader2 className="h-4 w-4 animate-spin" /> Loading issues...
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : issues.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="py-6 text-center text-sm text-gray-500">
-                      Обращения не найдены.
+                      No issues found.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -326,7 +326,7 @@ export default function IssuesDashboard() {
                         <Badge className={SEVERITY_COLORS[issue.severity] || 'bg-gray-100 text-gray-700'}>{issue.severity}</Badge>
                       </TableCell>
                       <TableCell>{issue.assignee || '-'}</TableCell>
-                      <TableCell>{new Date(issue.created_at).toLocaleString('ru-RU')}</TableCell>
+                      <TableCell>{new Date(issue.created_at).toLocaleString('en-US')}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button size="sm" variant="ghost" onClick={() => openReply(issue)}>
@@ -338,7 +338,7 @@ export default function IssuesDashboard() {
                             disabled={updatingStatus}
                             onClick={() => handleUpdateStatus(issue, issue.status === 'resolved' ? 'closed' : 'resolved', issue.assignee || undefined)}
                           >
-                            {issue.status === 'resolved' ? 'Закрыть' : 'Решено'}
+                            {issue.status === 'resolved' ? 'Close' : 'Resolved'}
                           </Button>
                         </div>
                       </TableCell>
@@ -351,7 +351,7 @@ export default function IssuesDashboard() {
 
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>
-              Страница {page} из {totalPages}
+              Page {page} of {totalPages}
             </span>
             <div className="flex gap-2">
               <Button
@@ -360,7 +360,7 @@ export default function IssuesDashboard() {
                 disabled={page <= 1}
                 onClick={() => void fetchIssues(page - 1)}
               >
-                Назад
+                Previous
               </Button>
               <Button
                 size="sm"
@@ -368,7 +368,7 @@ export default function IssuesDashboard() {
                 disabled={page >= totalPages}
                 onClick={() => void fetchIssues(page + 1)}
               >
-                Вперёд
+                Next
               </Button>
             </div>
           </div>
@@ -382,7 +382,7 @@ export default function IssuesDashboard() {
               <DialogHeader>
                 <DialogTitle>{selectedIssue.title}</DialogTitle>
                 <DialogDescription>
-                  Создано {new Date(selectedIssue.created_at).toLocaleString('ru-RU')} • {selectedIssue.user_name || selectedIssue.user_email}
+                  Created {new Date(selectedIssue.created_at).toLocaleString('en-US')} • {selectedIssue.user_name || selectedIssue.user_email}
                 </DialogDescription>
               </DialogHeader>
 
@@ -400,13 +400,13 @@ export default function IssuesDashboard() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">Информация о пользователе</CardTitle>
+                    <CardTitle className="text-sm">User Information</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">Имя:</span>
-                        <span>{selectedIssue.user_name || 'Не указано'}</span>
+                        <span className="font-medium">Name:</span>
+                        <span>{selectedIssue.user_name || 'Not specified'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">Email:</span>
@@ -414,7 +414,7 @@ export default function IssuesDashboard() {
                       </div>
                       {selectedIssue.user_phone && (
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">Телефон:</span>
+                          <span className="font-medium">Phone:</span>
                           <span>{selectedIssue.user_phone}</span>
                         </div>
                       )}
@@ -430,13 +430,13 @@ export default function IssuesDashboard() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">Описание</CardTitle>
+                    <CardTitle className="text-sm">Description</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="whitespace-pre-wrap text-sm text-gray-700">{selectedIssue.description}</p>
                     {selectedIssue.url && (
                       <a className="mt-2 inline-flex items-center text-sm text-blue-600 hover:underline" href={selectedIssue.url} target="_blank" rel="noopener noreferrer">
-                        Перейти к проблеме
+                        Go to Issue
                       </a>
                     )}
                   </CardContent>
@@ -445,14 +445,14 @@ export default function IssuesDashboard() {
                 {selectedIssue.issue_replies && selectedIssue.issue_replies.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-sm">Ответы</CardTitle>
+                      <CardTitle className="text-sm">Replies</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {selectedIssue.issue_replies.map((reply) => (
                         <div key={reply.id} className="rounded-md border border-gray-200 bg-gray-50 p-3 text-sm">
                           <div className="mb-1 flex items-center justify-between text-xs text-gray-500">
-                            <span>{reply.author_email || 'Система'}</span>
-                            <span>{new Date(reply.created_at).toLocaleString('ru-RU')}</span>
+                            <span>{reply.author_email || 'System'}</span>
+                            <span>{new Date(reply.created_at).toLocaleString('en-US')}</span>
                           </div>
                           <p className="whitespace-pre-wrap text-gray-700">{reply.message}</p>
                         </div>
@@ -463,11 +463,11 @@ export default function IssuesDashboard() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">Ответ</CardTitle>
+                    <CardTitle className="text-sm">Reply</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Textarea
-                      placeholder="Введите ответ пользователю"
+                      placeholder="Enter reply to user"
                       value={replyMessage}
                       onChange={(event) => setReplyMessage(event.target.value)}
                       rows={4}
@@ -490,9 +490,9 @@ export default function IssuesDashboard() {
                     </div>
                   </CardContent>
                   <DialogFooter className="p-4">
-                    <Button variant="outline" onClick={() => setSelectedIssue(null)}>Закрыть</Button>
+                    <Button variant="outline" onClick={() => setSelectedIssue(null)}>Close</Button>
                     <Button onClick={handleSubmitReply} disabled={submittingReply}>
-                      {submittingReply ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquare className="mr-2 h-4 w-4" />} Отправить
+                      {submittingReply ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquare className="mr-2 h-4 w-4" />} Send
                     </Button>
                   </DialogFooter>
                 </Card>

@@ -1,10 +1,10 @@
 // Google Sheets integration functions
 import { google } from 'googleapis'
 
-// Функция для добавления одной записи в Google Sheets
+// Add a single record to Google Sheets
 export async function addToSheets(type: 'request' | 'purchase', data: any) {
     try {
-        const sheetName = type === 'request' ? 'Заявки' : 'Покупки'
+        const sheetName = type === 'request' ? 'Requests' : 'Purchases'
 
         let row: any[] = []
 
@@ -44,8 +44,7 @@ export async function addToSheets(type: 'request' | 'purchase', data: any) {
             ]
         }
 
-        // Здесь должна быть логика добавления в Google Sheets
-        // Пока что просто возвращаем true
+        // TODO: push row into Google Sheets (currently just logging)
         console.log(`Adding ${type} to ${sheetName}:`, row)
         return true
     } catch (error) {

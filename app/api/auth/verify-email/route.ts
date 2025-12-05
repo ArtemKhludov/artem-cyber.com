@@ -7,12 +7,12 @@ export async function POST(request: NextRequest) {
         const { email } = await request.json()
 
         if (!email) {
-            return NextResponse.json({ error: 'Email обязателен' }, { status: 400 })
+            return NextResponse.json({ error: 'Email is required' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Проверяем, существует ли пользователь
+        // Check if user exists
         const { data: user } = await supabase
             .from('users')
             .select('*')
@@ -20,18 +20,18 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (!user) {
-            return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
+            return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
         if (user.email_verified) {
-            return NextResponse.json({ error: 'Email уже подтвержден' }, { status: 400 })
+            return NextResponse.json({ error: 'Email already verified' }, { status: 400 })
         }
 
-        // Генерируем токен верификации
+        // Generate verification token
         const verificationToken = crypto.randomBytes(32).toString('hex')
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 часа
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
-        // Сохраняем токен в базе данных
+        // Save token in DB
         const { error: updateError } = await supabase
             .from('users')
             .update({
@@ -42,27 +42,27 @@ export async function POST(request: NextRequest) {
 
         if (updateError) {
             console.error('Verification token update error:', updateError)
-            return NextResponse.json({ error: 'Ошибка создания токена верификации' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to create verification token' }, { status: 500 })
         }
 
-        // Отправляем email (здесь можно интегрировать с email сервисом)
+        // Send email (hook up your provider here)
         const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify?token=${verificationToken}`
 
-        // TODO: Интегрировать с email сервисом (SendGrid, Mailgun, etc.)
-        console.log('📧 Email для верификации:', {
+        // TODO: integrate with email provider (SendGrid, Mailgun, etc.)
+        console.log('📧 Verification email:', {
             to: email,
-            subject: 'Подтверждение email адреса',
+            subject: 'Confirm your email address',
             verificationUrl: verificationUrl
         })
 
         return NextResponse.json({
-            message: 'Письмо с подтверждением отправлено на ваш email',
-            verificationUrl: verificationUrl // Для тестирования
+            message: 'Verification email sent',
+            verificationUrl: verificationUrl // For testing
         })
 
     } catch (error) {
         console.error('Email verification error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
 
@@ -72,12 +72,12 @@ export async function GET(request: NextRequest) {
         const token = searchParams.get('token')
 
         if (!token) {
-            return NextResponse.json({ error: 'Токен верификации не найден' }, { status: 400 })
+            return NextResponse.json({ error: 'Verification token not found' }, { status: 400 })
         }
 
         const supabase = getSupabaseAdmin()
 
-        // Находим пользователя по токену
+        // Find user by token
         const { data: user } = await supabase
             .from('users')
             .select('*')
@@ -85,15 +85,15 @@ export async function GET(request: NextRequest) {
             .single()
 
         if (!user) {
-            return NextResponse.json({ error: 'Неверный токен верификации' }, { status: 400 })
+            return NextResponse.json({ error: 'Invalid verification token' }, { status: 400 })
         }
 
-        // Проверяем срок действия токена
+        // Check token expiration
         if (new Date() > new Date(user.verification_expires)) {
-            return NextResponse.json({ error: 'Токен верификации истек' }, { status: 400 })
+            return NextResponse.json({ error: 'Verification token expired' }, { status: 400 })
         }
 
-        // Подтверждаем email
+        // Confirm email
         const { error: updateError } = await supabase
             .from('users')
             .update({
@@ -105,11 +105,11 @@ export async function GET(request: NextRequest) {
 
         if (updateError) {
             console.error('Email verification update error:', updateError)
-            return NextResponse.json({ error: 'Ошибка подтверждения email' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to confirm email' }, { status: 500 })
         }
 
         return NextResponse.json({
-            message: 'Email успешно подтвержден',
+            message: 'Email verified',
             user: {
                 id: user.id,
                 email: user.email,
@@ -119,6 +119,6 @@ export async function GET(request: NextRequest) {
 
     } catch (error) {
         console.error('Email verification error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

@@ -33,7 +33,7 @@ export async function getCountryByIP(): Promise<string | null> {
 export function shouldUseCryptomus(country: string | null): boolean {
   if (!country) return false
   
-  // Страны СНГ, где рекомендуется Cryptomus
+  // CIS countries where Cryptomus is recommended
   const cngCountries = ['RU', 'BY', 'KZ', 'AM', 'AZ', 'KG', 'MD', 'TJ', 'TM', 'UZ']
   return cngCountries.includes(country)
 }
@@ -43,34 +43,34 @@ export function getRecommendedPaymentMethod(country: string | null): 'stripe' | 
 }
 
 export function getCountryName(countryCode: string | null): string {
-  if (!countryCode) return 'Неизвестная страна'
+  if (!countryCode) return 'Unknown country'
   
   const countryNames: Record<string, string> = {
-    'RU': 'Россия',
-    'BY': 'Беларусь', 
-    'KZ': 'Казахстан',
-    'AM': 'Армения',
-    'AZ': 'Азербайджан',
-    'KG': 'Киргизия',
-    'MD': 'Молдова',
-    'TJ': 'Таджикистан',
-    'TM': 'Туркменистан',
-    'UZ': 'Узбекистан',
-    'UA': 'Украина',
-    'US': 'США',
-    'GB': 'Великобритания',
-    'DE': 'Германия',
-    'FR': 'Франция',
-    'IT': 'Италия',
-    'ES': 'Испания',
-    'PL': 'Польша',
-    'TR': 'Турция',
-    'CN': 'Китай',
-    'JP': 'Япония',
-    'IN': 'Индия',
-    'BR': 'Бразилия',
-    'CA': 'Канада',
-    'AU': 'Австралия'
+    'RU': 'Russia',
+    'BY': 'Belarus', 
+    'KZ': 'Kazakhstan',
+    'AM': 'Armenia',
+    'AZ': 'Azerbaijan',
+    'KG': 'Kyrgyzstan',
+    'MD': 'Moldova',
+    'TJ': 'Tajikistan',
+    'TM': 'Turkmenistan',
+    'UZ': 'Uzbekistan',
+    'UA': 'Ukraine',
+    'US': 'United States',
+    'GB': 'United Kingdom',
+    'DE': 'Germany',
+    'FR': 'France',
+    'IT': 'Italy',
+    'ES': 'Spain',
+    'PL': 'Poland',
+    'TR': 'Turkey',
+    'CN': 'China',
+    'JP': 'Japan',
+    'IN': 'India',
+    'BR': 'Brazil',
+    'CA': 'Canada',
+    'AU': 'Australia'
   }
   
   return countryNames[countryCode] || countryCode

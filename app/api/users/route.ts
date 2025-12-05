@@ -19,15 +19,15 @@ export async function GET(request: NextRequest) {
             .from('crm_users')
             .select('*', { count: 'exact' })
 
-        // Поиск по имени, телефону или email
+        // Search by name, phone or email
         if (search) {
             query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
         }
 
-        // Сортировка
+        // Sorting
         query = query.order(sortBy, { ascending: sortOrder === 'asc' })
 
-        // Пагинация
+        // Pagination
         const from = (page - 1) * limit
         const to = from + limit - 1
         query = query.range(from, to)
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Database error:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения данных пользователей' },
+                { error: 'Failed to fetch user data' },
                 { status: 500 }
             )
         }
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
@@ -65,15 +65,15 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const { name, phone, email, notes, source = 'manual' } = body
 
-        // Валидация обязательных полей
+        // Validate required fields
         if (!name || !phone) {
             return NextResponse.json(
-                { error: 'Имя и телефон обязательны' },
+                { error: 'Name and phone are required' },
                 { status: 400 }
             )
         }
 
-        // Проверяем, существует ли CRM пользователь с таким телефоном
+        // Check if CRM user with this phone exists
         const { data: existingUser } = await supabase
             .from('crm_users')
             .select('id')
@@ -82,12 +82,12 @@ export async function POST(request: NextRequest) {
 
         if (existingUser) {
             return NextResponse.json(
-                { error: 'Пользователь с таким телефоном уже существует' },
+                { error: 'User with this phone already exists' },
                 { status: 400 }
             )
         }
 
-        // Создаем нового CRM пользователя
+        // Create new CRM user
         const { data, error } = await supabase
             .from('crm_users')
             .insert([{
@@ -103,21 +103,21 @@ export async function POST(request: NextRequest) {
         if (error) {
             console.error('Database error:', error)
             return NextResponse.json(
-                { error: 'Ошибка создания пользователя' },
+                { error: 'Failed to create user' },
                 { status: 500 }
             )
         }
 
         return NextResponse.json({
             success: true,
-            message: 'Пользователь успешно создан',
+            message: 'User created successfully',
             data: data
         })
 
     } catch (error) {
         console.error('Server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

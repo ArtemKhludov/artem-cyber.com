@@ -29,7 +29,7 @@ export async function requireAdmin(request: NextRequest): Promise<RequireAdminRe
   const validation = await validateSessionToken(sessionToken, { touch: false })
 
   if (!validation.session || !validation.user || validation.user.role !== 'admin') {
-    const response = NextResponse.json({ error: 'Недостаточно прав для доступа' }, { status: 403 })
+    const response = NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     return { validation: null, response }
   }
 
@@ -64,7 +64,7 @@ export async function requireUser(request: NextRequest): Promise<RequireUserResu
   const validation = await validateSessionToken(sessionToken, { touch: false })
 
   if (!validation.session || !validation.user) {
-    const response = NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 })
+    const response = NextResponse.json({ error: 'Authorization required' }, { status: 401 })
     return { validation: null, response }
   }
 

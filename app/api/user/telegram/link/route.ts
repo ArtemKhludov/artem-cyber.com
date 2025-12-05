@@ -25,11 +25,11 @@ export async function POST(request: NextRequest) {
             return response
         }
 
-        // Генерируем уникальный токен для связывания
+        // Generate unique token for linking
         const token = randomBytes(32).toString('hex')
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 минут
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
 
-        // Сохраняем токен в базе данных
+        // Save token to database
         const { data: linkToken, error: tokenError } = await supabase
             .from('telegram_link_tokens')
             .insert({
@@ -42,16 +42,16 @@ export async function POST(request: NextRequest) {
 
         if (tokenError) {
             console.error('Telegram link token creation error:', tokenError)
-            return NextResponse.json({ error: 'Не удалось создать токен связывания' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to create link token' }, { status: 500 })
         }
 
-        // Получаем токен бота из переменных окружения
+        // Get bot token from environment variables
         const botToken = process.env.USER_TELEGRAM_BOT_TOKEN
         if (!botToken) {
-            return NextResponse.json({ error: 'Telegram бот не настроен' }, { status: 500 })
+            return NextResponse.json({ error: 'Telegram bot not configured' }, { status: 500 })
         }
 
-        // Создаем deep-link для Telegram
+        // Create deep-link for Telegram
         const botUsername = process.env.USER_TELEGRAM_BOT_USERNAME || 'your_bot_username'
         const deepLink = `https://t.me/${botUsername}?start=${token}`
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('Telegram link creation error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
 
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
             return response
         }
 
-        // Получаем информацию о связывании Telegram
+        // Get Telegram linking information
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('telegram_username, telegram_chat_id, notify_telegram_enabled')
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 
         if (userError) {
             console.error('User fetch error:', userError)
-            return NextResponse.json({ error: 'Не удалось получить информацию о пользователе' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to fetch user information' }, { status: 500 })
         }
 
         const response = NextResponse.json({
@@ -114,6 +114,6 @@ export async function GET(request: NextRequest) {
 
     } catch (error) {
         console.error('Telegram link status error:', error)
-        return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

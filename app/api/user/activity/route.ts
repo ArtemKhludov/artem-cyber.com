@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('User activity fetch error:', error)
-      return NextResponse.json({ error: 'Не удалось загрузить историю активности' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to load activity history' }, { status: 500 })
     }
 
     const response = NextResponse.json({
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     return response
   } catch (error) {
     console.error('User activity GET error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const action = typeof body?.action === 'string' ? body.action : ''
     if (!action || !isActionAllowed(action)) {
-      return NextResponse.json({ error: 'Недопустимое действие' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
     const metadata = typeof body?.metadata === 'object' && body.metadata ? body.metadata : {}
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('User activity log error:', error)
-      return NextResponse.json({ error: 'Не удалось сохранить активность' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to save activity' }, { status: 500 })
     }
 
     const response = NextResponse.json({ success: true })
@@ -116,6 +116,6 @@ export async function POST(request: NextRequest) {
     return response
   } catch (error) {
     console.error('User activity POST error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

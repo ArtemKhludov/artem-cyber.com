@@ -29,9 +29,9 @@ const formatRemaining = (expiresAt?: number) => {
   const seconds = Math.floor(diff / 1000)
   const minutes = Math.floor(seconds / 60)
   if (minutes >= 1) {
-    return `${minutes} мин`
+    return `${minutes} min`
   }
-  return `${Math.max(1, seconds)} сек`
+  return `${Math.max(1, seconds)} sec`
 }
 
 export function SmartMaterialPreview({ item, onClose }: SmartMaterialPreviewProps) {
@@ -41,8 +41,8 @@ export function SmartMaterialPreview({ item, onClose }: SmartMaterialPreviewProp
     return (
       <Card className="border-dashed">
         <CardHeader>
-          <CardTitle className="text-base">Предпросмотр материалов</CardTitle>
-          <CardDescription>Выберите видео, аудио или PDF, чтобы увидеть предпросмотр здесь.</CardDescription>
+          <CardTitle className="text-base">Material preview</CardTitle>
+          <CardDescription>Select video, audio or PDF to preview here.</CardDescription>
         </CardHeader>
       </Card>
     )
@@ -53,7 +53,7 @@ export function SmartMaterialPreview({ item, onClose }: SmartMaterialPreviewProp
       return (
         <div className="flex h-48 flex-col items-center justify-center gap-3 rounded-md border border-amber-200 bg-amber-50 text-amber-700">
           <Info className="h-5 w-5" />
-          <p className="text-sm">Подписанная ссылка не готова. Попробуйте снова через несколько секунд.</p>
+          <p className="text-sm">Signed link is not ready. Try again in a few seconds.</p>
         </div>
       )
     }
@@ -62,14 +62,14 @@ export function SmartMaterialPreview({ item, onClose }: SmartMaterialPreviewProp
       case 'video':
         return (
           <video className="h-64 w-full rounded-md bg-black" controls src={item.url}>
-            Ваш браузер не поддерживает воспроизведение видео.
+            Your browser does not support video playback.
           </video>
         )
       case 'audio':
         return (
           <div className="flex h-36 flex-col items-center justify-center rounded-md border border-gray-200 bg-gray-50 p-4">
             <audio controls src={item.url} className="w-full">
-              Ваш браузер не поддерживает воспроизведение аудио.
+              Your browser does not support audio playback.
             </audio>
           </div>
         )
@@ -85,7 +85,7 @@ export function SmartMaterialPreview({ item, onClose }: SmartMaterialPreviewProp
         return (
           <div className="flex h-48 flex-col items-center justify-center gap-3 rounded-md border border-gray-200 bg-white text-gray-600">
             <Info className="h-5 w-5" />
-            <p className="text-sm">Предпросмотр для этого типа материала пока не поддерживается.</p>
+            <p className="text-sm">Preview for this material type is not supported yet.</p>
           </div>
         )
     }
@@ -102,10 +102,10 @@ export function SmartMaterialPreview({ item, onClose }: SmartMaterialPreviewProp
         <div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="uppercase">
-              {item.kind === 'video' ? 'Видео' : item.kind === 'audio' ? 'Аудио' : item.kind === 'pdf' ? 'PDF' : 'Материал'}
+              {item.kind === 'video' ? 'Video' : item.kind === 'audio' ? 'Audio' : item.kind === 'pdf' ? 'PDF' : 'Material'}
             </Badge>
             {remaining && (
-              <Badge className="bg-amber-100 text-amber-700">Ссылка активна: {remaining}</Badge>
+              <Badge className="bg-amber-100 text-amber-700">Link active: {remaining}</Badge>
             )}
           </div>
           <CardTitle className="mt-2 text-lg">{item.title}</CardTitle>
@@ -115,7 +115,7 @@ export function SmartMaterialPreview({ item, onClose }: SmartMaterialPreviewProp
           {item.url && (
             <Button size="sm" variant="outline" onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}>
               {icon}
-              <span className="ml-2">Открыть в новой вкладке</span>
+              <span className="ml-2">Open in new tab</span>
             </Button>
           )}
           {onClose && (

@@ -6,7 +6,7 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Простой API пользователей без сложной логики
+// Simple users API without complex logic
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
@@ -14,9 +14,9 @@ export async function GET(request: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '50')
         const search = searchParams.get('search') || ''
 
-        console.log('🔍 API запрос:', { page, limit, search })
+        console.log('🔍 API request:', { page, limit, search })
 
-        // Используем работающую функцию search_users
+        // Use working search_users function
         const { data: users, error } = await supabase
             .rpc('search_users', {
                 search_term: search || null,
@@ -27,17 +27,17 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Database error:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения данных пользователей' },
+                { error: 'Failed to fetch user data' },
                 { status: 500 }
             )
         }
 
-        console.log('📊 Получено пользователей:', users?.length || 0)
+        console.log('📊 Users fetched:', users?.length || 0)
 
-        // Функция search_users уже возвращает данные с activity_status
+        // search_users function already returns data with activity_status
         const usersWithStatus = users || []
 
-        console.log('📄 Возвращаем пользователей:', usersWithStatus.length)
+        console.log('📄 Returning users:', usersWithStatus.length)
 
         return NextResponse.json({
             success: true,
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Server error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

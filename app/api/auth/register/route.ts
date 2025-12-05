@@ -7,22 +7,22 @@ export async function POST(request: NextRequest) {
     const { email, password, name, phone } = await request.json()
 
     if (!email || !password || !name) {
-      return NextResponse.json({ error: 'Email, пароль и имя обязательны' }, { status: 400 })
+      return NextResponse.json({ error: 'Email, password, and name are required' }, { status: 400 })
     }
 
     if (password.length < 6) {
-      return NextResponse.json({ error: 'Пароль должен содержать минимум 6 символов' }, { status: 400 })
+      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
     }
 
-    // Валидация email
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Неверный формат email' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
     }
 
     const supabase = getSupabaseAdmin()
 
-    // Проверяем, существует ли пользователь в таблице users
+    // Check if user exists in users table
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
@@ -30,20 +30,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingUser) {
-      return NextResponse.json({ error: 'Пользователь с таким email уже существует' }, { status: 400 })
+      return NextResponse.json({ error: 'A user with this email already exists' }, { status: 400 })
     }
 
-    // Проверяем, существует ли CRM пользователь с таким email
+    // Check if CRM user exists with this email
     const { data: existingCrmUser } = await supabase
       .from('crm_users')
       .select('id, name, phone')
       .eq('email', email)
       .single()
 
-    // Хешируем пароль
+    // Hash password
     const passwordHash = await bcrypt.hash(password, 12)
 
-    // Создаем пользователя
+    // Create user
     const { data: user, error: userError } = await supabase
       .from('users')
       .insert({
@@ -60,23 +60,23 @@ export async function POST(request: NextRequest) {
     if (userError) {
       console.error('User creation error:', userError)
       return NextResponse.json({
-        error: 'Ошибка создания пользователя',
+        error: 'Failed to create user',
         details: userError.message
       }, { status: 500 })
     }
 
-    // Триггер автоматически создаст или обновит CRM пользователя
-    console.log('✅ Пользователь создан, триггер автоматически обработает CRM пользователя')
+    // Trigger will automatically create or update CRM user
+    console.log('✅ User created; trigger will auto-sync CRM user')
 
-    // Отправка уведомления в Telegram
+    // Telegram notification
     try {
-      const telegramMessage = `🆕 Новый пользователь зарегистрирован:
-👤 Имя: ${name}
+      const telegramMessage = `🆕 New user registered:
+👤 Name: ${name}
 📧 Email: ${email}
-📞 Телефон: ${phone || 'Не указан'}
-🔐 Тип регистрации: Стандартная
-✅ Email верифицирован: Нет
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`
+📞 Phone: ${phone || 'Not provided'}
+🔐 Registration type: Standard
+✅ Email verified: No
+📅 Date: ${new Date().toLocaleString('en-US')}`
 
       const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
@@ -93,14 +93,14 @@ export async function POST(request: NextRequest) {
       if (!response.ok) {
         console.error('Telegram notification failed:', await response.text())
       } else {
-        console.log('✅ Telegram уведомление отправлено')
+        console.log('✅ Telegram notification sent')
       }
     } catch (telegramError) {
       console.error('Telegram error:', telegramError)
     }
 
     return NextResponse.json({
-      message: 'Пользователь успешно создан',
+      message: 'User created successfully',
       user: {
         id: user.id,
         email: user.email,
@@ -110,6 +110,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Registration error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

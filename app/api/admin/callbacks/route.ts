@@ -22,38 +22,38 @@ export async function GET(request: NextRequest) {
 
         if (!validation.session || !validation.user) {
             return NextResponse.json(
-                { error: 'Необходима авторизация' },
+                { error: 'Authentication required' },
                 { status: 401 }
             )
         }
 
         const user = validation.user
 
-        // Проверяем, что пользователь - админ
+        // Check that user is admin
         if (user.role !== 'admin') {
             return NextResponse.json(
-                { error: 'Доступ запрещен' },
+                { error: 'Access denied' },
                 { status: 403 }
             )
         }
 
-        // Строим запрос
+        // Build query
         let query = supabase
             .from('callback_requests_with_conversations')
             .select('*', { count: 'exact' })
             .order('created_at', { ascending: false })
 
-        // Фильтрация по статусу
+        // Filter by status
         if (status && status !== 'all') {
             query = query.eq('status', status)
         }
 
-        // Поиск
+        // Search
         if (search) {
             query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,message.ilike.%${search}%`)
         }
 
-        // Пагинация
+        // Pagination
         query = query.range(offset, offset + limit - 1)
 
         const { data: callbacks, error, count } = await query
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Error fetching admin callbacks:', error)
             return NextResponse.json(
-                { error: 'Ошибка получения обращений' },
+                { error: 'Failed to fetch callbacks' },
                 { status: 500 }
             )
         }
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }
@@ -93,7 +93,7 @@ export async function PATCH(request: NextRequest) {
 
         if (!id) {
             return NextResponse.json(
-                { error: 'ID обращения обязателен' },
+                { error: 'Callback ID is required' },
                 { status: 400 }
             )
         }
@@ -105,23 +105,23 @@ export async function PATCH(request: NextRequest) {
 
         if (!validation.session || !validation.user) {
             return NextResponse.json(
-                { error: 'Необходима авторизация' },
+                { error: 'Authentication required' },
                 { status: 401 }
             )
         }
 
         const user = validation.user
 
-        // Проверяем, что пользователь - админ
+        // Check that user is admin
         if (user.role !== 'admin') {
             return NextResponse.json(
-                { error: 'Доступ запрещен' },
+                { error: 'Access denied' },
                 { status: 403 }
             )
         }
 
         const updateData: any = {}
-        
+
         if (status) {
             updateData.status = status
             if (status === 'contacted') {
@@ -153,7 +153,7 @@ export async function PATCH(request: NextRequest) {
         if (error) {
             console.error('Error updating callback:', error)
             return NextResponse.json(
-                { error: 'Ошибка обновления обращения' },
+                { error: 'Failed to update callback' },
                 { status: 500 }
             )
         }
@@ -166,7 +166,7 @@ export async function PATCH(request: NextRequest) {
     } catch (error) {
         console.error('API error:', error)
         return NextResponse.json(
-            { error: 'Внутренняя ошибка сервера' },
+            { error: 'Internal server error' },
             { status: 500 }
         )
     }

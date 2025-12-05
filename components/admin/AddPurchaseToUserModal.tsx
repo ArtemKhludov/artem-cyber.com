@@ -56,7 +56,7 @@ export default function AddPurchaseToUserModal({
         e.preventDefault()
 
         if (!selectedProduct || !amount) {
-            alert('Пожалуйста, заполните все поля')
+            alert('Please fill in all fields')
             return
         }
 
@@ -73,7 +73,7 @@ export default function AddPurchaseToUserModal({
                     type: 'purchase',
                     data: {
                         name: userName,
-                        phone: '', // Будет заполнено из пользователя
+                        phone: '', // Will be filled from user
                         email: '',
                         product_name: product?.name || '',
                         product_type: product?.type || 'pdf',
@@ -92,11 +92,11 @@ export default function AddPurchaseToUserModal({
                 onSuccess()
                 onClose()
             } else {
-                alert('Ошибка добавления покупки: ' + result.error)
+                alert('Error adding purchase: ' + result.error)
             }
         } catch (error) {
             console.error('Error adding purchase:', error)
-            alert('Ошибка добавления покупки')
+            alert('Error adding purchase')
         } finally {
             setLoading(false)
         }
@@ -111,7 +111,7 @@ export default function AddPurchaseToUserModal({
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
                             <ShoppingCart className="w-6 h-6" />
-                            <h2 className="text-xl font-bold">Добавить покупку</h2>
+                            <h2 className="text-xl font-bold">Add Purchase</h2>
                         </div>
                         <Button
                             onClick={onClose}
@@ -122,13 +122,13 @@ export default function AddPurchaseToUserModal({
                             <X className="w-5 h-5" />
                         </Button>
                     </div>
-                    <p className="text-green-100 mt-1">Пользователь: {userName}</p>
+                    <p className="text-green-100 mt-1">User: {userName}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Выберите продукт
+                            Select Product
                         </label>
                         <select
                             value={selectedProduct}
@@ -142,7 +142,7 @@ export default function AddPurchaseToUserModal({
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                             required
                         >
-                            <option value="">Выберите продукт</option>
+                            <option value="">Select product</option>
                             {products.map((product) => (
                                 <option key={product.id} value={product.id}>
                                     {product.name} - {product.price} ₽
@@ -153,7 +153,7 @@ export default function AddPurchaseToUserModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Сумма (₽)
+                            Amount (₽)
                         </label>
                         <input
                             type="number"
@@ -168,7 +168,7 @@ export default function AddPurchaseToUserModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Способ оплаты
+                            Payment Method
                         </label>
                         <select
                             value={paymentMethod}
@@ -177,23 +177,23 @@ export default function AddPurchaseToUserModal({
                         >
                             <option value="Stripe">Stripe</option>
                             <option value="Cryptomus">Cryptomus</option>
-                            <option value="Наличные">Наличные</option>
-                            <option value="Банковский перевод">Банковский перевод</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
                         </select>
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Статус
+                            Status
                         </label>
                         <select
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                         >
-                            <option value="completed">Завершено</option>
-                            <option value="pending">В ожидании</option>
-                            <option value="cancelled">Отменено</option>
+                            <option value="completed">Completed</option>
+                            <option value="pending">Pending</option>
+                            <option value="cancelled">Cancelled</option>
                         </select>
                     </div>
 
@@ -204,7 +204,7 @@ export default function AddPurchaseToUserModal({
                             variant="outline"
                             className="flex-1"
                         >
-                            Отмена
+                            Cancel
                         </Button>
                         <Button
                             type="submit"
@@ -214,12 +214,12 @@ export default function AddPurchaseToUserModal({
                             {loading ? (
                                 <div className="flex items-center space-x-2">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    <span>Добавление...</span>
+                                    <span>Adding...</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center space-x-2">
                                     <Plus className="w-4 h-4" />
-                                    <span>Добавить покупку</span>
+                                    <span>Add Purchase</span>
                                 </div>
                             )}
                         </Button>

@@ -70,31 +70,31 @@ export function PurchaseStats({
     <div className={`${getContainerStyles()} ${className}`}>
       <h3 className={getTitleStyles()}>
         <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
-        Статистика покупок
+        Purchase stats
       </h3>
       
       <div className={getGridStyles()}>
-        {/* Всего покупок */}
+        {/* Total purchases */}
         <div className="text-center">
           <div className={`${getValueStyles()} text-blue-600`}>
-            {stats.total.toLocaleString('ru-RU')}
+            {stats.total.toLocaleString('en-US')}
           </div>
           <div className={getLabelStyles()}>
-            Всего покупок
+            Total purchases
           </div>
         </div>
 
-        {/* За сегодня */}
+        {/* Today */}
         <div className="text-center">
           <div className={`${getValueStyles()} text-green-600`}>
             +{stats.today}
           </div>
           <div className={getLabelStyles()}>
-            За сегодня
+            Today
           </div>
         </div>
 
-        {/* Активные пользователи (только для detailed и default) */}
+        {/* Active users (only for detailed/default) */}
         {variant !== 'compact' && (
           <div className="text-center">
             <div className={`${getValueStyles()} text-purple-600 flex items-center justify-center`}>
@@ -102,17 +102,17 @@ export function PurchaseStats({
               {stats.active}
             </div>
             <div className={getLabelStyles()}>
-              Смотрят сейчас
+              Watching now
             </div>
           </div>
         )}
       </div>
 
-      {/* Информация об обновлении */}
+      {/* Update info */}
       <div className="mt-4 pt-4 border-t border-blue-200">
         <div className="flex items-center justify-center text-sm text-gray-600">
           <Clock className="w-4 h-4 mr-1" />
-          <span>Обновлено сейчас</span>
+          <span>Updated just now</span>
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     if (!id || !status || !type) {
       return NextResponse.json(
-        { error: 'Неверные параметры' },
+        { error: 'Invalid parameters' },
         { status: 400 }
       )
     }
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       tableName = 'purchase_requests'
     } else {
       return NextResponse.json(
-        { error: 'Неверный тип' },
+        { error: 'Invalid type' },
         { status: 400 }
       )
     }
@@ -37,20 +37,20 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Update error:', error)
       return NextResponse.json(
-        { error: 'Ошибка обновления статуса' },
+        { error: 'Failed to update status' },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Статус обновлен успешно'
+      message: 'Status updated successfully'
     })
 
   } catch (error) {
     console.error('Update status error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

@@ -8,45 +8,45 @@ const supabase = createClient(
 )
 
 /**
- * API для получения подписанных URL медиафайлов курса
- * URL имеют ограниченный срок жизни для безопасности
+ * API for getting signed URLs for course media files
+ * URLs have limited lifetime for security
  */
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
         const courseId = searchParams.get('course_id')
         const filePath = searchParams.get('file_path')
-        const expiresIn = parseInt(searchParams.get('expires_in') || '3600') // По умолчанию 1 час
+        const expiresIn = parseInt(searchParams.get('expires_in') || '3600') // Default 1 hour
 
         if (!courseId || !filePath) {
             return NextResponse.json({
-                error: 'Необходимы параметры course_id и file_path'
+                error: 'Parameters course_id and file_path are required'
             }, { status: 400 })
         }
 
-        // Проверяем доступ к курсу
+        // Check course access
         const accessCheck = await checkCourseAccess(courseId)
 
         if (!accessCheck.hasAccess) {
             return NextResponse.json({
-                error: accessCheck.error || 'Доступ запрещен'
+                error: accessCheck.error || 'Access denied'
             }, { status: 403 })
         }
 
-        // Извлекаем относительный путь из полного URL Supabase Storage
+        // Extract relative path from full Supabase Storage URL
         let relativePath = filePath
         if (filePath.includes('/storage/v1/object/private/course-materials-private/')) {
             relativePath = filePath.split('/storage/v1/object/private/course-materials-private/')[1]
         }
 
-        // Проверяем, что файл принадлежит данному курсу
+        // Check that file belongs to this course
         if (!relativePath.startsWith(`courses/`)) {
             return NextResponse.json({
-                error: 'Неверный путь к файлу'
+                error: 'Invalid file path'
             }, { status: 403 })
         }
 
-        // Проверяем, существует ли файл
+        // Check if file exists
         const { data: fileList, error: listError } = await supabase.storage
             .from('course-materials-private')
             .list(relativePath.split('/').slice(0, -1).join('/'), {
@@ -56,11 +56,11 @@ export async function GET(request: NextRequest) {
         if (listError || !fileList || fileList.length === 0) {
             console.error('File not found:', relativePath)
             return NextResponse.json({
-                error: 'Файл не найден'
+                error: 'File not found'
             }, { status: 404 })
         }
 
-        // Создаем подписанный URL с ограниченным сроком жизни
+        // Create signed URL with limited lifetime
         const { data, error } = await supabase.storage
             .from('course-materials-private')
             .createSignedUrl(relativePath, expiresIn)
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
         if (error) {
             console.error('Error creating signed URL:', error)
             return NextResponse.json({
-                error: 'Ошибка создания ссылки на файл'
+                error: 'Failed to create file link'
             }, { status: 500 })
         }
 
@@ -82,13 +82,13 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Error in secure materials API:', error)
         return NextResponse.json({
-            error: 'Внутренняя ошибка сервера'
+            error: 'Internal server error'
         }, { status: 500 })
     }
 }
 
 /**
- * API для получения информации о медиафайле без скачивания
+ * API for getting media file information without downloading
  */
 export async function HEAD(request: NextRequest) {
     try {
@@ -98,20 +98,20 @@ export async function HEAD(request: NextRequest) {
 
         if (!courseId || !filePath) {
             return NextResponse.json({
-                error: 'Необходимы параметры course_id и file_path'
+                error: 'Parameters course_id and file_path are required'
             }, { status: 400 })
         }
 
-        // Проверяем доступ к курсу
+        // Check course access
         const accessCheck = await checkCourseAccess(courseId)
 
         if (!accessCheck.hasAccess) {
             return NextResponse.json({
-                error: accessCheck.error || 'Доступ запрещен'
+                error: accessCheck.error || 'Access denied'
             }, { status: 403 })
         }
 
-        // Получаем информацию о файле
+        // Get file information
         const { data, error } = await supabase.storage
             .from('course-materials-private')
             .list(filePath.split('/').slice(0, -1).join('/'), {
@@ -120,7 +120,7 @@ export async function HEAD(request: NextRequest) {
 
         if (error || !data || data.length === 0) {
             return NextResponse.json({
-                error: 'Файл не найден'
+                error: 'File not found'
             }, { status: 404 })
         }
 
@@ -139,7 +139,7 @@ export async function HEAD(request: NextRequest) {
     } catch (error) {
         console.error('Error getting file info:', error)
         return NextResponse.json({
-            error: 'Внутренняя ошибка сервера'
+            error: 'Internal server error'
         }, { status: 500 })
     }
 }

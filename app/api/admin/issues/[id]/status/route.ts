@@ -24,7 +24,7 @@ async function requireAdmin(request: NextRequest) {
   if (!validation.session || !validation.user || validation.user.role !== 'admin') {
     return {
       validation: null,
-      response: NextResponse.json({ error: 'Доступ запрещён' }, { status: 403 })
+      response: NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
   }
   return { validation, response: null }
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const assignee = body?.assignee ? String(body.assignee).trim() : undefined
 
     if (!nextStatus || !ALLOWED_STATUS.has(nextStatus)) {
-      return NextResponse.json({ error: 'Некорректный статус' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
     const closedAt = nextStatus === 'resolved' || nextStatus === 'closed'
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (error || !issue) {
       console.error('Issue status update error:', error)
-      return NextResponse.json({ error: 'Не удалось обновить статус' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to update status' }, { status: 500 })
     }
 
     await supabase.from('audit_logs').insert({
@@ -102,6 +102,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ success: true, issue: fullIssue ?? issue })
   } catch (error) {
     console.error('Admin issue status error:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

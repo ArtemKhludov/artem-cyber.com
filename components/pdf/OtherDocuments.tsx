@@ -14,7 +14,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
 
-  // Intersection Observer для анимаций
+  // Intersection Observer for animations
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -50,17 +50,17 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
       <div className="container mx-auto px-4 relative z-10">
         <div className={`text-center mb-16 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
-          <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Курсы</span>
+          <span className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Courses</span>
           <h2 className="text-4xl md:text-5xl font-bold mt-2 mb-6">
-            Другие полезные
-            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> материалы</span>
+            Other Useful
+            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> Materials</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Откройте для себя больше практических руководств для личностного роста
+            Discover more practical guides for personal growth
           </p>
         </div>
 
-        {/* Бесконечная карусель */}
+        {/* Infinite Carousel */}
         <div className="relative overflow-hidden">
           <div
             className="carousel-container"
@@ -74,7 +74,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                 width: `${documents.length * 3 * 350}px`
               }}
             >
-              {/* Первый набор документов */}
+              {/* First set of documents */}
               {documents.map((doc, index) => (
                 <div
                   key={`${doc.id}-first-${index}`}
@@ -103,7 +103,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <div className="text-center text-white">
                           <Eye className="w-8 h-8 mx-auto mb-2" />
-                          <p className="text-sm">Предпросмотр</p>
+                          <p className="text-sm">Preview</p>
                         </div>
                       </div>
                     </div>
@@ -130,7 +130,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         >
                           <Link href={`/courses/${doc.id}`}>
                             <Eye className="mr-2 w-4 h-4" />
-                            Посмотреть
+                            View
                           </Link>
                         </Button>
                         <Button
@@ -140,7 +140,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         >
                           <Link href={`/checkout/${doc.id}`}>
                             <ShoppingCart className="mr-2 w-4 h-4" />
-                            Купить
+                            Buy
                           </Link>
                         </Button>
                       </div>
@@ -149,7 +149,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                 </div>
               ))}
 
-              {/* Второй набор документов для бесконечности */}
+              {/* Second set of documents for infinity */}
               {documents.map((doc, index) => (
                 <div
                   key={`${doc.id}-second-${index}`}
@@ -178,7 +178,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <div className="text-center text-white">
                           <Eye className="w-8 h-8 mx-auto mb-2" />
-                          <p className="text-sm">Предпросмотр</p>
+                          <p className="text-sm">Preview</p>
                         </div>
                       </div>
                     </div>
@@ -205,7 +205,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         >
                           <Link href={`/courses/${doc.id}`}>
                             <Eye className="mr-2 w-4 h-4" />
-                            Посмотреть
+                            View
                           </Link>
                         </Button>
                         <Button
@@ -215,7 +215,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         >
                           <Link href={`/checkout/${doc.id}`}>
                             <ShoppingCart className="mr-2 w-4 h-4" />
-                            Купить
+                            Buy
                           </Link>
                         </Button>
                       </div>
@@ -224,7 +224,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                 </div>
               ))}
 
-              {/* Третий набор для более плавной бесконечности */}
+              {/* Third set for smoother infinity */}
               {documents.map((doc, index) => (
                 <div
                   key={`${doc.id}-third-${index}`}
@@ -253,7 +253,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <div className="text-center text-white">
                           <Eye className="w-8 h-8 mx-auto mb-2" />
-                          <p className="text-sm">Предпросмотр</p>
+                          <p className="text-sm">Preview</p>
                         </div>
                       </div>
                     </div>
@@ -280,7 +280,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         >
                           <Link href={`/courses/${doc.id}`}>
                             <Eye className="mr-2 w-4 h-4" />
-                            Посмотреть
+                            View
                           </Link>
                         </Button>
                         <Button
@@ -290,7 +290,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
                         >
                           <Link href={`/checkout/${doc.id}`}>
                             <ShoppingCart className="mr-2 w-4 h-4" />
-                            Купить
+                            Buy
                           </Link>
                         </Button>
                       </div>
@@ -306,7 +306,7 @@ export function OtherDocuments({ documents }: OtherDocumentsProps) {
         <div className="text-center mt-12">
           <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
             <Link href="/catalog">
-              Посмотреть все материалы
+              View All Materials
             </Link>
           </Button>
         </div>

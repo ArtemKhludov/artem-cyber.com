@@ -137,7 +137,7 @@ export function DocumentCard({
 
         <div className="flex items-center justify-between mb-4">
           <span className={getPriceStyles()}>
-            {document.price_rub.toLocaleString('ru-RU')} ₽
+            {document.price_rub.toLocaleString('en-US')} ₽
           </span>
         </div>
 
@@ -147,7 +147,7 @@ export function DocumentCard({
             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 shadow hover:bg-primary/90 h-9 px-4 py-2 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
           >
             <Eye className="mr-2 w-4 h-4" />
-            Посмотреть
+            View details
           </Link>
           
           {showBuyButton && (
@@ -156,7 +156,7 @@ export function DocumentCard({
               className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border bg-background shadow-sm hover:text-accent-foreground h-9 px-4 py-2 w-full border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
             >
               <ShoppingCart className="mr-2 w-4 h-4" />
-              Купить
+              Buy now
             </Link>
           )}
         </div>

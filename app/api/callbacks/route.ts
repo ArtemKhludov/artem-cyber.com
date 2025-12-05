@@ -19,12 +19,12 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
 
-    // Фильтрация по статусу
+    // Filter by status
     if (status && status !== 'all') {
       query = query.eq('status', status)
     }
 
-    // Пагинация
+    // Pagination
     query = query.range(offset, offset + limit - 1)
 
     const { data, error, count } = await query
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Database error:', error)
       return NextResponse.json(
-        { error: 'Ошибка получения заявок' },
+        { error: 'Failed to fetch requests' },
         { status: 500 }
       )
     }
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -63,7 +63,7 @@ export async function PATCH(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { error: 'ID заявки обязателен' },
+        { error: 'Request ID is required' },
         { status: 400 }
       )
     }
@@ -93,7 +93,7 @@ export async function PATCH(request: NextRequest) {
     if (error) {
       console.error('Database error:', error)
       return NextResponse.json(
-        { error: 'Ошибка обновления заявки' },
+        { error: 'Failed to update request' },
         { status: 500 }
       )
     }
@@ -103,7 +103,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

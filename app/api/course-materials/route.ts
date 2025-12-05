@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Проверяем авторизацию пользователя
+        // Check user authorization
         const authHeader = request.headers.get('authorization')
         if (!authHeader) {
             return NextResponse.json(
@@ -28,10 +28,10 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Извлекаем токен из заголовка
+        // Extract token from header
         const token = authHeader.replace('Bearer ', '')
 
-        // Проверяем токен через Supabase
+        // Verify token via Supabase
         const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
         if (authError || !user) {
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Проверяем, есть ли у пользователя доступ к документу
+        // Check if user has access to the document
         const { data: purchase, error: purchaseError } = await supabase
             .from('purchases')
             .select('id')
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Получаем файл из приватного bucket
+        // Get file from private bucket
         const { data, error } = await supabase.storage
             .from('course-materials-private')
             .download(filePath)
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Определяем тип файла
+        // Determine file type
         const fileExtension = filePath.split('.').pop()?.toLowerCase()
         let contentType = 'application/octet-stream'
 
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
                 break
         }
 
-        // Возвращаем файл
+        // Return file
         return new NextResponse(data, {
             status: 200,
             headers: {

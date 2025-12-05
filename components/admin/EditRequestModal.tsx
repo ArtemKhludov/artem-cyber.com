@@ -42,27 +42,27 @@ export default function EditRequestModal({
     }, [isOpen, request])
 
     const productTypes = [
-        { value: 'callback', label: 'Заказ обратного звонка', name: 'Заказ обратного звонка' },
-        { value: 'consultation', label: 'Консультация', name: 'Консультация по энергетике' },
-        { value: 'pdf', label: 'PDF файл', name: 'PDF файл по энергетике' },
-        { value: 'program', label: 'Программа', name: 'Программа 21 день' },
-        { value: 'course', label: 'Онлайн-курс', name: 'Онлайн-курс по энергетике' }
+        { value: 'callback', label: 'Callback Request', name: 'Callback Request' },
+        { value: 'consultation', label: 'Consultation', name: 'Energy Consultation' },
+        { value: 'pdf', label: 'PDF File', name: 'Energy PDF File' },
+        { value: 'program', label: 'Program', name: '21 Days Program' },
+        { value: 'course', label: 'Online Course', name: 'Energy Online Course' }
     ]
 
     const statuses = [
-        { value: 'new', label: 'Новая' },
-        { value: 'completed', label: 'Завершена' },
-        { value: 'pending', label: 'В ожидании' },
-        { value: 'cancelled', label: 'Отменена' }
+        { value: 'new', label: 'New' },
+        { value: 'completed', label: 'Completed' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'cancelled', label: 'Cancelled' }
     ]
 
     const sourcePages = [
-        { value: 'manual', label: 'Ручное добавление' },
-        { value: '/', label: 'Главная страница' },
-        { value: '/about', label: 'О проекте' },
-        { value: '/contacts', label: 'Контакты' },
-        { value: '/catalog', label: 'Каталог' },
-        { value: '/book', label: 'Программы' }
+        { value: 'manual', label: 'Manual Entry' },
+        { value: '/', label: 'Home Page' },
+        { value: '/about', label: 'About' },
+        { value: '/contacts', label: 'Contacts' },
+        { value: '/catalog', label: 'Catalog' },
+        { value: '/book', label: 'Programs' }
     ]
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -94,11 +94,11 @@ export default function EditRequestModal({
                 onSuccess()
                 onClose()
             } else {
-                alert('Ошибка обновления заявки: ' + result.error)
+                alert('Error updating request: ' + result.error)
             }
         } catch (error) {
             console.error('Error updating request:', error)
-            alert('Ошибка обновления заявки')
+            alert('Error updating request')
         } finally {
             setLoading(false)
         }
@@ -119,7 +119,7 @@ export default function EditRequestModal({
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-lg">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-bold">Редактировать заявку</h2>
+                        <h2 className="text-xl font-bold">Edit Request</h2>
                         <Button
                             onClick={onClose}
                             variant="ghost"
@@ -134,7 +134,7 @@ export default function EditRequestModal({
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Тип заявки
+                            Request Type
                         </label>
                         <select
                             value={productType}
@@ -151,7 +151,7 @@ export default function EditRequestModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Название продукта/услуги
+                            Product/Service Name
                         </label>
                         <input
                             type="text"
@@ -163,7 +163,7 @@ export default function EditRequestModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Сообщение
+                            Message
                         </label>
                         <textarea
                             value={message}
@@ -175,7 +175,7 @@ export default function EditRequestModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Статус
+                            Status
                         </label>
                         <select
                             value={status}
@@ -192,7 +192,7 @@ export default function EditRequestModal({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Источник
+                            Source
                         </label>
                         <select
                             value={sourcePage}
@@ -214,7 +214,7 @@ export default function EditRequestModal({
                             variant="outline"
                             className="flex-1"
                         >
-                            Отмена
+                            Cancel
                         </Button>
                         <Button
                             type="submit"
@@ -224,12 +224,12 @@ export default function EditRequestModal({
                             {loading ? (
                                 <div className="flex items-center space-x-2">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    <span>Сохранение...</span>
+                                    <span>Saving...</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center space-x-2">
                                     <Save className="w-4 h-4" />
-                                    <span>Сохранить</span>
+                                    <span>Save</span>
                                 </div>
                             )}
                         </Button>

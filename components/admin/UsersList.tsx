@@ -69,14 +69,14 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Ошибка загрузки пользователей')
+                throw new Error(data.error || 'Failed to load users')
             }
 
             setUsers(data.users)
             setTotalPages(data.pagination.pages)
         } catch (err) {
             console.error('Error fetching users:', err)
-            setError(err instanceof Error ? err.message : 'Ошибка загрузки пользователей')
+            setError(err instanceof Error ? err.message : 'Failed to load users')
         } finally {
             setLoading(false)
         }
@@ -116,15 +116,15 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
 
     const getStatusText = (status: string) => {
         switch (status) {
-            case 'active': return 'Активный'
-            case 'inactive': return 'Неактивный'
-            case 'blocked': return 'Заблокирован'
+            case 'active': return 'Active'
+            case 'inactive': return 'Inactive'
+            case 'blocked': return 'Blocked'
             default: return status
         }
     }
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('ru-RU', {
+        return new Date(dateString).toLocaleDateString('en-US', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -134,9 +134,9 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
     }
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('ru-RU', {
+        return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'RUB'
+            currency: 'USD'
         }).format(amount)
     }
 
@@ -153,7 +153,7 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-red-600">{error}</p>
                 <Button onClick={fetchUsers} className="mt-2" variant="outline">
-                    Попробовать снова
+                    Try again
                 </Button>
             </div>
         )
@@ -161,13 +161,13 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
 
     return (
         <div className="space-y-4">
-            {/* Поиск и фильтры */}
+            {/* Search and filters */}
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                         type="text"
-                        placeholder="Поиск по имени, телефону или email..."
+                        placeholder="Search by name, phone, or email..."
                         value={searchTerm}
                         onChange={(e) => handleSearch(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -179,14 +179,13 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                     onChange={(e) => handleStatusFilter(e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                    <option value="">Все статусы</option>
-                    <option value="active">Активные</option>
-                    <option value="inactive">Неактивные</option>
-                    <option value="blocked">Заблокированные</option>
+                    <option value="">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="blocked">Blocked</option>
                 </select>
             </div>
 
-            {/* Таблица пользователей */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -197,7 +196,7 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                                     onClick={() => handleSort('name')}
                                 >
                                     <div className="flex items-center space-x-1">
-                                        <span>Пользователь</span>
+                                        <span>User</span>
                                         {sortBy === 'name' && (
                                             <span className="text-blue-600">
                                                 {sortOrder === 'asc' ? '↑' : '↓'}
@@ -210,7 +209,7 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                                     onClick={() => handleSort('status')}
                                 >
                                     <div className="flex items-center space-x-1">
-                                        <span>Статус</span>
+                                        <span>Status</span>
                                         {sortBy === 'status' && (
                                             <span className="text-blue-600">
                                                 {sortOrder === 'asc' ? '↑' : '↓'}
@@ -219,17 +218,17 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                                     </div>
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Заявки
+                                    Requests
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Покупки
+                                    Purchases
                                 </th>
                                 <th
                                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                     onClick={() => handleSort('total_spent')}
                                 >
                                     <div className="flex items-center space-x-1">
-                                        <span>Потрачено</span>
+                                        <span>Spent</span>
                                         {sortBy === 'total_spent' && (
                                             <span className="text-blue-600">
                                                 {sortOrder === 'asc' ? '↑' : '↓'}
@@ -242,7 +241,7 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                                     onClick={() => handleSort('last_activity')}
                                 >
                                     <div className="flex items-center space-x-1">
-                                        <span>Последняя активность</span>
+                                        <span>Last activity</span>
                                         {sortBy === 'last_activity' && (
                                             <span className="text-blue-600">
                                                 {sortOrder === 'asc' ? '↑' : '↓'}
@@ -251,7 +250,7 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                                     </div>
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Действия
+                                    Actions
                                 </th>
                             </tr>
                         </thead>
@@ -351,7 +350,6 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                     </table>
                 </div>
 
-                {/* Пагинация */}
                 {totalPages > 1 && (
                     <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                         <div className="flex-1 flex justify-between sm:hidden">
@@ -360,20 +358,20 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(currentPage - 1)}
                             >
-                                Предыдущая
+                                Previous
                             </Button>
                             <Button
                                 variant="outline"
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage(currentPage + 1)}
                             >
-                                Следующая
+                                Next
                             </Button>
                         </div>
                         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div>
                                 <p className="text-sm text-gray-700">
-                                    Страница <span className="font-medium">{currentPage}</span> из{' '}
+                                    Page <span className="font-medium">{currentPage}</span> of{' '}
                                     <span className="font-medium">{totalPages}</span>
                                 </p>
                             </div>
@@ -385,7 +383,7 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                                         disabled={currentPage === 1}
                                         onClick={() => setCurrentPage(currentPage - 1)}
                                     >
-                                        Предыдущая
+                                        Previous
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -393,7 +391,7 @@ export function UsersList({ onUserSelect, onUserEdit, onUserDelete }: UsersListP
                                         disabled={currentPage === totalPages}
                                         onClick={() => setCurrentPage(currentPage + 1)}
                                     >
-                                        Следующая
+                                        Next
                                     </Button>
                                 </nav>
                             </div>
