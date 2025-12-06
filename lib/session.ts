@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { NextResponse } from 'next/server'
+import { logger } from './logger'
 import { getSupabaseAdmin } from './supabase'
 
 const MINUTE_MS = 60 * 1000
@@ -166,11 +167,12 @@ export async function validateSessionToken(
   } = options
 
   if (!sessionToken) {
-    console.log('🔍 validateSessionToken: No session token provided')
+    logger.debug('validateSessionToken: no session token provided')
     return { reason: 'missing' }
   }
 
-  console.log(`🔍 validateSessionToken: Looking for session token: ${sessionToken}`)
+  // Security: Never log actual token, only presence
+  logger.debug('validateSessionToken: token received', { hasToken: true })
 
   const supabase = getSupabaseClient(providedSupabase)
 
@@ -184,16 +186,18 @@ export async function validateSessionToken(
     .maybeSingle()
 
   if (error) {
-    console.log(`❌ validateSessionToken: Database error:`, error)
+    logger.error('validateSessionToken: database error', error as Error | undefined, { error })
     return { reason: 'not_found' }
   }
 
   if (!sessionRaw) {
-    console.log(`❌ validateSessionToken: Session not found in database`)
+    logger.debug('validateSessionToken: session not found in database')
     return { reason: 'not_found' }
   }
 
-  console.log(`✅ validateSessionToken: Session found for user: ${(sessionRaw.users as any)?.email || 'unknown'}`)
+  logger.debug('validateSessionToken: session found', {
+    userEmail: (sessionRaw.users as any)?.email || 'unknown'
+  })
 
   const session = {
     ...sessionRaw,

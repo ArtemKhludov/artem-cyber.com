@@ -9,24 +9,25 @@ import {
 } from '@/lib/session'
 import { verifyRequestOriginSmart } from '@/lib/security'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { logDebug, logError, logInfo, logWarn } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
     try {
         const cookieStore = await cookies()
         const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
         
-        console.log(`🔍 /api/auth/me - Session token: ${sessionToken ? 'Present' : 'Missing'}`)
+        logDebug('/api/auth/me - session token status', { hasToken: !!sessionToken })
         
         const validation = await validateSessionToken(sessionToken, { supabase: getSupabaseAdmin() })
         
-        console.log(`🔍 /api/auth/me - Validation result:`, {
+        logDebug('/api/auth/me - validation result', {
             hasSession: !!validation.session,
             hasUser: !!validation.user,
             reason: validation.reason
         })
 
         if (!validation.session || !validation.user) {
-            console.log(`❌ /api/auth/me - Session validation failed: ${validation.reason}`)
+            logWarn('/api/auth/me - session validation failed', { reason: validation.reason })
             
             const response = NextResponse.json({
                 error: getSessionErrorMessage(validation.reason)
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
             return response
         }
         
-        console.log(`✅ /api/auth/me - Session valid for user: ${validation.user.email}`)
+        logInfo('/api/auth/me - session valid', { userEmail: validation.user.email })
 
         const response = NextResponse.json({
             ...validation.user,
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
 
         return response
     } catch (error) {
-        console.error('Session check error:', error)
+        logError('Session check error', error as Error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
                 allowSameDomain: true
             })
         } catch (error) {
-            console.error('Origin verification failed for session ping:', error)
+            logError('Origin verification failed for session ping', error as Error)
             return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 })
         }
 
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
 
         return response
     } catch (error) {
-        console.error('Session ping error:', error)
+        logError('Session ping error', error as Error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

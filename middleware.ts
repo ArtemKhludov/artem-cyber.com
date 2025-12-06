@@ -9,25 +9,43 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
     const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value
 
-    // Skip all API routes
+    // Handle API routes with security headers
     if (pathname.startsWith('/api/')) {
-        return NextResponse.next()
+        const response = NextResponse.next()
+        
+        // Security headers for API routes
+        response.headers.set('X-Content-Type-Options', 'nosniff')
+        response.headers.set('X-Frame-Options', 'DENY')
+        response.headers.set('Content-Language', 'en')
+        
+        // CORS headers for mobile apps (when ready)
+        const origin = request.headers.get('origin')
+        const allowedOrigins = [
+            process.env.NEXT_PUBLIC_SITE_URL,
+            'https://energylogic-ai.com',
+            // Add mobile app origins when ready
+            // process.env.NEXT_PUBLIC_MOBILE_IOS_URL,
+            // process.env.NEXT_PUBLIC_MOBILE_ANDROID_URL,
+        ].filter(Boolean) as string[]
+        
+        if (origin && allowedOrigins.includes(origin)) {
+            response.headers.set('Access-Control-Allow-Origin', origin)
+            response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+            response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            response.headers.set('Access-Control-Allow-Credentials', 'true')
+        }
+        
+        // Handle preflight requests
+        if (request.method === 'OPTIONS') {
+            return new NextResponse(null, { status: 204, headers: response.headers })
+        }
+        
+        return response
     }
 
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
     const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route))
     const isAuthRoute = pathname.startsWith('/auth/')
-
-    // Debug logging (remove after fixing)
-    if (process.env.NODE_ENV === 'production') {
-        console.log('[Middleware]', {
-            pathname,
-            hasToken: !!sessionToken,
-            isPublicRoute,
-            isProtectedRoute,
-            isAuthRoute
-        })
-    }
 
     // If this is a public page - always allow
     if (isPublicRoute) {
