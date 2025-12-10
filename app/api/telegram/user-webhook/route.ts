@@ -306,9 +306,10 @@ export async function POST(request: NextRequest) {
                 .limit(5)
 
             if (purchasesError || !purchases || purchases.length === 0) {
-                await sendTelegramMessage(botToken, chatId,
-                    `🛒 <b>My Purchases</b>\n\nYou don't have any purchases yet.\n\nGo to the catalog to choose a suitable course.`
-                )
+                const message = '🛒 <b>My Purchases</b>\n\n' +
+                    'You do not have any purchases yet.\n\n' +
+                    'Go to the catalog to choose a suitable course.'
+                await sendTelegramMessage(botToken, chatId, message)
                 return NextResponse.json({ ok: true })
             }
 
