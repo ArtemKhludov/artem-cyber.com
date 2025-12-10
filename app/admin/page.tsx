@@ -46,6 +46,7 @@ import GrantAccessModal from '@/components/admin/GrantAccessModal'
 import { useAuth } from '@/contexts/AuthContext'
 import IssuesDashboard from '@/components/admin/IssuesDashboard'
 import IssuesQuickWidget from '@/components/admin/IssuesQuickWidget'
+import { PageLayout } from '@/components/layout/PageLayout'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -1830,7 +1831,9 @@ function AdminPageContent() {
 export default function AdminPage() {
   return (
     <AdminGuard>
+      <PageLayout>
       <AdminPageContent />
+      </PageLayout>
     </AdminGuard>
   )
 }

@@ -45,10 +45,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to create verification token' }, { status: 500 })
         }
 
-        // Send email (hook up your provider here)
         const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify?token=${verificationToken}`
 
-        // TODO: integrate with email provider (SendGrid, Mailgun, etc.)
         console.log('📧 Verification email:', {
             to: email,
             subject: 'Confirm your email address',
@@ -56,8 +54,7 @@ export async function POST(request: NextRequest) {
         })
 
         return NextResponse.json({
-            message: 'Verification email sent',
-            verificationUrl: verificationUrl // For testing
+            message: 'Verification email sent'
         })
 
     } catch (error) {

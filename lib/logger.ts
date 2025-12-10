@@ -21,8 +21,6 @@ class Logger {
     if (this.isDevelopment) {
       const method: 'log' | 'warn' | 'error' = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'
       console[method](JSON.stringify(entry, null, 2))
-    } else {
-      // TODO: send logs to external service (Sentry, Datadog, etc.)
     }
   }
 

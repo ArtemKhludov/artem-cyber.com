@@ -14,26 +14,34 @@ const inter = Inter({
 });
 
 // SEO-optimized metadata for EnergyLogic AI Life Navigation System
-export const metadata: Metadata = generateSEOMetadata({
-  title: "EnergyLogic – AI Life Navigation System for Adults 25–45",
-  description: "EnergyLogic is an AI-powered life navigation system that helps adults 25–45 escape debt, burnout, and career chaos with a daily adaptive path.",
-  keywords: [
-    "AI life navigation system",
-    "personal life GPS",
-    "financial stability app",
-    "burnout recovery",
-    "life navigation software",
-    "personal growth platform",
-    "financial stress management",
-    "career guidance AI",
-    "life path planning",
-    "debt recovery app",
-    "AI personal development",
-    "life coaching technology",
-    "financial wellness platform",
-  ],
-  ogImage: "/og-image-1200x630.png",
-});
+export const metadata: Metadata = {
+  ...generateSEOMetadata({
+    title: "EnergyLogic – AI Life Navigation System for Adults 25–45",
+    description: "EnergyLogic is an AI-powered life navigation system that helps adults 25–45 escape debt, burnout, and career chaos with a daily adaptive path.",
+    keywords: [
+      "AI life navigation system",
+      "personal life GPS",
+      "financial stability app",
+      "burnout recovery",
+      "life navigation software",
+      "personal growth platform",
+      "financial stress management",
+      "career guidance AI",
+      "life path planning",
+      "debt recovery app",
+      "AI personal development",
+      "life coaching technology",
+      "financial wellness platform",
+    ],
+    ogImage: "/og-image-1200x630.png",
+  }),
+  // Favicon configuration
+  // Next.js automatically picks up app/favicon.ico, but we can also specify additional icons
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
+};
 
 export default function RootLayout({
   children,

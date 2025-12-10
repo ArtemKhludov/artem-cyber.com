@@ -17,6 +17,7 @@ export function MainHeader({ onCallRequest }: MainHeaderProps) {
     { name: 'Product', href: '/product' },
     { name: 'Use Cases', href: '/use-cases' },
     { name: 'Pricing', href: '/pricing' },
+    { name: 'Mission', href: '/mission' },
     { name: 'About', href: '/about' },
     { name: 'Blog', href: '/blog' },
     { name: 'Investors', href: '/investors' },

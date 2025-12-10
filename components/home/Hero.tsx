@@ -84,19 +84,16 @@ export function Hero() {
           {/* Title - SEO Optimized H1 */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              EnergyLogic: AI Life Navigation System
+              Energy Logic
             </span>
-            <span className="block text-white mt-2 text-3xl md:text-5xl">
-              Your Personal Life GPS for Financial Stability & Career Growth
+            <span className="block text-white mt-4 text-2xl md:text-3xl font-light max-w-3xl mx-auto">
+              Path from chaos to control, when the strong also need support
             </span>
           </h1>
 
           {/* Subtitle - SEO Optimized with LSI Keywords */}
-          <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-4xl mx-auto leading-relaxed">
-            Navigate your way out of <strong className="text-white">financial stress</strong>, <strong className="text-white">burnout</strong>, and <strong className="text-white">career chaos</strong> with our AI-powered <strong className="text-blue-300">life navigation software</strong>. <br />
-            <span className="text-blue-300 font-semibold">20 minutes → Personalized Recovery Path</span>
-            <span className="text-gray-300 mx-4">•</span>
-            <span className="text-purple-300 font-semibold">21 days → New &quot;You&quot;</span>
+          <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+            AI-powered navigation for <strong className="text-white">financial recovery</strong>, <strong className="text-white">burnout prevention</strong>, and <strong className="text-white">career growth</strong>
           </p>
 
           {/* Buttons */}

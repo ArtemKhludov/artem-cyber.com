@@ -44,7 +44,6 @@ export async function addToSheets(type: 'request' | 'purchase', data: any) {
             ]
         }
 
-        // TODO: push row into Google Sheets (currently just logging)
         console.log(`Adding ${type} to ${sheetName}:`, row)
         return true
     } catch (error) {

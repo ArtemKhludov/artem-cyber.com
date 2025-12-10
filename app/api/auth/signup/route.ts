@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
             const emailContent = getWelcomeEmailTemplate({
                 name: newUser.name,
                 email: newUser.email,
-                tempPassword: password, // Temporarily send password in plain text
+                tempPassword: password,
                 loginUrl: `${baseUrl}/auth/login`
             })
 

@@ -353,7 +353,6 @@ export function CourseContent({ document, isPurchased = false }: CourseContentPr
                                                             alert('You need to purchase the mini course to listen to audio')
                                                             return
                                                         }
-                                                        // Here you can add an embedded audio player
                                                         window.open(audioItem.file_url, '_blank')
                                                     }}
                                                     size="sm"

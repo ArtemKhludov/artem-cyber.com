@@ -55,6 +55,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.8,
         },
         {
+            url: `${baseUrl}/mission`,
+            lastModified: currentDate,
+            changeFrequency: 'monthly',
+            priority: 0.9,
+        },
+        {
             url: `${baseUrl}/about`,
             lastModified: currentDate,
             changeFrequency: 'monthly',
@@ -91,17 +97,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.3,
         },
     ]
-
-    // TODO: Add dynamic pages (courses, blog posts) from database
-    // This would require fetching from Supabase
-    // Example:
-    // const { data: courses } = await supabase.from('documents').select('id')
-    // const coursePages = courses?.map(course => ({
-    //   url: `${baseUrl}/courses/${course.id}`,
-    //   lastModified: course.updated_at || currentDate,
-    //   changeFrequency: 'monthly' as const,
-    //   priority: 0.7,
-    // })) || []
 
     return staticPages
 }

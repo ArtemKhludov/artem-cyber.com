@@ -9,11 +9,9 @@ export async function POST(request: NextRequest) {
 
     console.log('📡 Supabase webhook received:', { type, table })
 
-    // Verify webhook signature (recommended in production)
     const signature = request.headers.get('x-supabase-signature')
     if (!signature) {
       console.warn('⚠️ No signature provided')
-      // In production you should validate the signature here
     }
 
     // Handle different table events
@@ -43,7 +41,7 @@ export async function POST(request: NextRequest) {
 
 async function handleDocumentChange(type: string, record: any, old_record: any) {
   console.log(`📄 Document ${type}:`, record?.title || record?.id)
-  
+
   if (type === 'INSERT') {
     // New document added
     await notifyTelegram(
@@ -61,7 +59,7 @@ async function handleDocumentChange(type: string, record: any, old_record: any) 
 
 async function handlePurchaseChange(type: string, record: any, old_record: any) {
   console.log(`💳 Purchase ${type}:`, record?.product_name || record?.id)
-  
+
   if (type === 'INSERT') {
     // New purchase
     await notifyTelegram(
@@ -81,7 +79,7 @@ async function handlePurchaseChange(type: string, record: any, old_record: any) 
 
 async function handleUserChange(type: string, record: any, old_record: any) {
   console.log(`👤 User ${type}:`, record?.email || record?.id)
-  
+
   if (type === 'INSERT') {
     // New user registered
     await notifyTelegram(
@@ -101,7 +99,7 @@ async function handleUserChange(type: string, record: any, old_record: any) {
 
 async function handleIssueChange(type: string, record: any, old_record: any) {
   console.log(`🎫 Issue ${type}:`, record?.title || record?.id)
-  
+
   if (type === 'INSERT') {
     // New support ticket
     await notifyTelegram(

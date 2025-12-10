@@ -192,10 +192,6 @@ export class DocumentService {
 
   // Get page count with caching
   static async getPageCount(document: Document): Promise<number> {
-    // If page count is saved (temporarily disabled)
-    // if (document.page_count && document.page_count > 0) {
-    //   return document.page_count
-    // }
 
     // Request via API
     try {

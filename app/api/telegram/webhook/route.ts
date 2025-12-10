@@ -170,7 +170,6 @@ async function handleCallbackQuery(callbackQuery: TelegramUpdate['callback_query
     // Answer callback query
     await answerCallbackQuery(callbackQuery.id, 'Processed!')
 
-    // Here you can add handling for various buttons
     if (data === 'dashboard') {
         await sendMessage(from.id, 'Go to your dashboard: https://www.energylogic-ai.com/dashboard')
     }

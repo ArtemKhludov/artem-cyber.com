@@ -9,6 +9,7 @@ export function MainFooter() {
     { name: 'Product', href: '/product' },
     { name: 'Use Cases', href: '/use-cases' },
     { name: 'Pricing', href: '/pricing' },
+    { name: 'Mission', href: '/mission' },
     { name: 'Blog', href: '/blog' },
     { name: 'Investors', href: '/investors' },
     { name: 'About', href: '/about' },

@@ -21,8 +21,7 @@ export async function GET(request: NextRequest) {
         tests: {} as any,
         errors: [] as string[],
         warnings: [] as string[],
-        summary: {} as any,
-        recommendations: [] as string[]
+        summary: {} as any
     }
 
     try {
@@ -33,7 +32,7 @@ export async function GET(request: NextRequest) {
         try {
             const supabase = getSupabaseAdmin()
             const { data, error } = await supabase.from('users').select('count').limit(1)
-            
+
             if (error) {
                 results.tests.supabase_connection = '❌ Failed'
                 results.errors.push(`Supabase connection failed: ${error.message}`)
@@ -50,7 +49,7 @@ export async function GET(request: NextRequest) {
         try {
             const supabase = getSupabaseAdmin()
             const { data, error } = await supabase.from('user_sessions').select('count').limit(1)
-            
+
             if (error) {
                 results.tests.user_sessions_access = '❌ Failed'
                 results.errors.push(`User sessions access failed: ${error.message}`)
@@ -68,7 +67,7 @@ export async function GET(request: NextRequest) {
             const supabase = getSupabaseAdmin()
             const testUserId = crypto.randomUUID()
             const testEmail = `diagnosis-test-${Date.now()}@example.com`
-            
+
             const { data, error } = await supabase
                 .from('users')
                 .insert({
@@ -81,17 +80,17 @@ export async function GET(request: NextRequest) {
                 })
                 .select()
                 .single()
-            
+
             if (error) {
                 results.tests.user_creation = '❌ Failed'
                 results.errors.push(`User creation failed: ${error.message}`)
             } else {
                 results.tests.user_creation = '✅ Success'
-                
+
                 // Test 4: Session creation
                 console.log('📡 Test 4: Session creation...')
                 const testSessionToken = crypto.randomUUID()
-                
+
                 const { data: sessionData, error: sessionError } = await supabase
                     .from('user_sessions')
                     .insert({
@@ -106,13 +105,13 @@ export async function GET(request: NextRequest) {
                     })
                     .select()
                     .single()
-                
+
                 if (sessionError) {
                     results.tests.session_creation = '❌ Failed'
                     results.errors.push(`Session creation failed: ${sessionError.message}`)
                 } else {
                     results.tests.session_creation = '✅ Success'
-                    
+
                     // Test 5: Session reading
                     console.log('📡 Test 5: Session reading...')
                     const { data: readData, error: readError } = await supabase
@@ -120,18 +119,18 @@ export async function GET(request: NextRequest) {
                         .select('*')
                         .eq('session_token', testSessionToken)
                         .single()
-                    
+
                     if (readError) {
                         results.tests.session_reading = '❌ Failed'
                         results.errors.push(`Session reading failed: ${readError.message}`)
                     } else {
                         results.tests.session_reading = '✅ Success'
-                        
+
                         // Test 6: Session validation
                         console.log('📡 Test 6: Session validation...')
                         try {
                             const validation = await validateSessionToken(testSessionToken, { supabase })
-                            
+
                             if (!validation.session || !validation.user) {
                                 results.tests.session_validation = '❌ Failed'
                                 results.errors.push(`Session validation failed: ${validation.reason}`)
@@ -143,11 +142,11 @@ export async function GET(request: NextRequest) {
                             results.errors.push(`Session validation error: ${error}`)
                         }
                     }
-                    
+
                     // Cleanup session
                     await supabase.from('user_sessions').delete().eq('session_token', testSessionToken)
                 }
-                
+
                 // Cleanup user
                 await supabase.from('users').delete().eq('id', testUserId)
             }
@@ -161,7 +160,7 @@ export async function GET(request: NextRequest) {
         const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
         const googleClientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
         const googleRedirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI
-        
+
         if (!googleClientId) {
             results.tests.google_oauth = '❌ Failed'
             results.errors.push('NEXT_PUBLIC_GOOGLE_CLIENT_ID not set')
@@ -182,7 +181,7 @@ export async function GET(request: NextRequest) {
         console.log('📡 Test 8: Telegram configuration...')
         const telegramToken = process.env.TELEGRAM_BOT_TOKEN
         const telegramChatId = process.env.TELEGRAM_CHAT_ID
-        
+
         if (!telegramToken) {
             results.tests.telegram = '❌ Failed'
             results.errors.push('TELEGRAM_BOT_TOKEN not set')
@@ -197,7 +196,7 @@ export async function GET(request: NextRequest) {
         console.log('📡 Test 9: URL configuration...')
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
         const appUrl = process.env.NEXT_PUBLIC_APP_URL
-        
+
         if (!siteUrl) {
             results.tests.url_config = '⚠️ Warning'
             results.warnings.push('NEXT_PUBLIC_SITE_URL not set')
@@ -212,11 +211,11 @@ export async function GET(request: NextRequest) {
         console.log('📡 Test 10: RLS policies check...')
         try {
             const supabase = getSupabaseAdmin()
-            
+
             // Try to create session with service role
             const testUserId = crypto.randomUUID()
             const testSessionToken = crypto.randomUUID()
-            
+
             const { data, error } = await supabase
                 .from('user_sessions')
                 .insert({
@@ -231,7 +230,7 @@ export async function GET(request: NextRequest) {
                 })
                 .select()
                 .single()
-            
+
             if (error) {
                 if (error.message.includes('RLS') || error.message.includes('policy')) {
                     results.tests.rls_policies = '❌ Failed'
@@ -264,38 +263,15 @@ export async function GET(request: NextRequest) {
             success_rate: Math.round((passedTests / totalTests) * 100)
         }
 
-        // Recommendations
-        results.recommendations = []
-        
-        if (failedTests > 0) {
-            results.recommendations.push('❌ Critical errors require immediate fixing')
-        }
-        
-        if (warningTests > 0) {
-            results.recommendations.push('⚠️ Warnings should be fixed for stable operation')
-        }
-        
-        if (results.errors.some(error => error.includes('RLS'))) {
-            results.recommendations.push('🔧 Execute SQL script to fix RLS policies in Supabase')
-        }
-        
-        if (results.errors.some(error => error.includes('Google'))) {
-            results.recommendations.push('🔧 Check Google Cloud Console settings')
-        }
-        
-        if (results.errors.some(error => error.includes('Telegram'))) {
-            results.recommendations.push('🔧 Check Telegram bot settings')
-        }
-
         console.log('✅ Full diagnosis completed')
-        
-        return NextResponse.json(results, { 
-            status: failedTests > 0 ? 500 : 200 
+
+        return NextResponse.json(results, {
+            status: failedTests > 0 ? 500 : 200
         })
 
     } catch (error) {
         console.error('❌ Critical diagnosis error:', error)
-        
+
         results.errors.push(`Critical error: ${error instanceof Error ? error.message : 'Unknown error'}`)
         results.summary = {
             total_tests: 0,
@@ -304,7 +280,7 @@ export async function GET(request: NextRequest) {
             warnings: 0,
             success_rate: 0
         }
-        
+
         return NextResponse.json(results, { status: 500 })
     }
 }

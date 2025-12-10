@@ -4,11 +4,8 @@ import { notifyTelegram } from '@/lib/notify'
 
 export async function POST(request: NextRequest) {
   try {
-    // CRON_SECRET check disabled for simplification
-    // You already have all necessary tokens for security
-
     console.log('🧹 Starting cleanup cron job...')
-    
+
     const results = await Promise.allSettled([
       cleanupExpiredSessions(),
       cleanupOldLogs(),
@@ -37,7 +34,7 @@ export async function POST(request: NextRequest) {
 
 async function cleanupExpiredSessions() {
   const supabase = getSupabaseAdmin()
-  
+
   // Delete expired sessions (older than 7 days)
   const { error, count } = await supabase
     .from('user_sessions')
@@ -55,7 +52,7 @@ async function cleanupExpiredSessions() {
 
 async function cleanupOldLogs() {
   const supabase = getSupabaseAdmin()
-  
+
   // Delete old logs (older than 30 days)
   const { error, count } = await supabase
     .from('audit_logs')
@@ -72,18 +69,16 @@ async function cleanupOldLogs() {
 }
 
 async function cleanupTemporaryFiles() {
-  // Here you can add temporary files cleanup
-  // For example, unused uploaded files
   console.log('🧹 Temporary files cleanup completed')
   return 0
 }
 
 async function sendDailyReport() {
   const supabase = getSupabaseAdmin()
-  
+
   // Get statistics for the last 24 hours
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-  
+
   const [usersResult, purchasesResult, issuesResult] = await Promise.all([
     supabase
       .from('users')

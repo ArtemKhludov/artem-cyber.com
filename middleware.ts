@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const protectedRoutes = ['/dashboard', '/admin', '/purchases', '/courses']
-const publicRoutes = ['/', '/catalog', '/about', '/contacts', '/reviews', '/terms', '/privacy', '/disclaimer', '/refund', '/checkout/success', '/book', '/pdf']
+const publicRoutes = ['/', '/catalog', '/about', '/mission', '/contacts', '/reviews', '/terms', '/privacy', '/disclaimer', '/refund', '/checkout/success', '/book', '/pdf', '/investors', '/how-it-works']
 const SESSION_COOKIE_NAME = 'session_token'
 
 export function middleware(request: NextRequest) {
