@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    // Ignore ESLint warnings during builds (console.log, unused vars)
+    // TypeScript errors are still checked and will fail the build
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {

@@ -20,7 +20,7 @@ import {
   Sparkles
 } from 'lucide-react'
 import Link from 'next/link'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, Variants } from 'framer-motion'
 
 const architectureLayers = [
   {
@@ -149,12 +149,12 @@ export default function InvestorsPage() {
     }
   }
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: "easeOut" }
+      transition: { duration: 0.8, ease: [0.17, 0.67, 0.83, 0.67] as const }
     }
   }
 

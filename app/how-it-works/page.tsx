@@ -6,7 +6,7 @@ import { StructuredData } from '@/components/seo/StructuredData'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Compass, TrendingUp, DollarSign, BookOpen, Zap, Navigation, Target, CheckCircle2, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, Variants } from 'framer-motion'
 
 const steps = [
   {
@@ -128,12 +128,12 @@ export default function HowItWorksPage() {
   const heroRef = useRef(null)
   const heroInView = useInView(heroRef, { once: true, amount: 0.3 })
 
-  const fadeInUp = {
+  const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 60 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: "easeOut" }
+      transition: { duration: 0.8, ease: [0.17, 0.67, 0.83, 0.67] as const }
     }
   }
 

@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { MainHeader } from '@/components/layout/MainHeader'
 import { Footer } from '@/components/layout/footer'
 import { CallRequestModal } from '@/components/modals/CallRequestModal'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, Variants } from 'framer-motion'
 
 export default function MissionPage() {
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
@@ -24,9 +24,9 @@ export default function MissionPage() {
   }
 
   // Animation variants
-  const fadeInUp = {
+  const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 60 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.17, 0.67, 0.83, 0.67] as const } }
   }
 
   const staggerContainer = {
