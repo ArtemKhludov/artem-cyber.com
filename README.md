@@ -92,6 +92,7 @@ Check the repos:
 
 - **Custom SOAR Architecture** – Python + n8n + Splunk + REST APIs
 - **Automated Threat Response Pipeline** – Python + Bash + MySQL + Sysmon
+- **Cybersecurity Case Files** – incident writeups & playbooks (`cases_cybersecurity/`)
 
 No vaporware. Real code. Real impact.
 
