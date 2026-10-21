@@ -1,0 +1,24 @@
+site_id: toptal
+# Talent browse — triggers job/talent GraphQL; verify URL in DevTools if sniff is empty.
+url: https://www.toptal.com/developers/talent/available
+display_name: Toptal
+proxy_pool: default
+
+graphql:
+  # Substring must appear in real request URL; confirm in Network tab (XHR/fetch).
+  jobs_endpoint: https://www.toptal.com/api/graphql
+
+apply_url_template: ""
+
+selectors:
+  # Fallback after get_by_role heuristics; tighten after DOM recon.
+  login_button: 'a[href*="sign_in"], a[href*="login"]'
+  message_input: ""
+  proposal_cover_letter: ""
+
+chat_rules:
+  max_messages_per_hour: 20
+  escalate_on_keywords: []
+
+mouse_config:
+  entropy: "double"

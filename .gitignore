@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!*.key.example
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+
+# IDE / editors
+.idea/
+*.swp
+*.swo
+*~
+.vscode/*
+!.vscode/extensions.json
+
+# Logs and junk
+*.log
+logs/
+tmp/
+temp/
+.cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Coverage / test artifacts
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Archives (keep repo lean)
+*.zip
+*.tar.gz
+*.rar

@@ -1,0 +1,38 @@
+# LLM routing — generation uses Google Gemini only (keys from .env: GEMINI_API_KEY).
+# Ollama is reserved for safety judges (job text + cover output), not for long-form generation.
+
+defaults:
+  temperature: 0.2
+  max_tokens: 4096
+
+# Legacy names kept for paraphrase tooling; cover letters use cascade.* only.
+models:
+  paraphrase: gemini-2.0-flash
+
+paraphrasing:
+  enabled: true
+  max_rounds: 2
+
+prompts:
+  system_root: src/ghost_engine/negotiation/prompts
+
+# Cover letter cascade: Gemini Flash (tier 1) vs Pro (tier 2). Ollama is not used here — only in safety.* judges.
+cascade:
+  tier_1_model: gemini-2.0-flash
+  tier_2_model: gemini-1.5-pro
+  # Optional aliases (if set, override tier_*_model for readability in ops docs).
+  gemini:
+    flash_model: gemini-2.0-flash
+    pro_model: gemini-1.5-pro
+  min_l1_score_for_pro: 70
+  # When job description length (chars) >= this, use Pro (long JD). 0 = disabled.
+  min_description_chars_for_pro: 0
+  temperature_flash: 0.25
+  temperature_pro: 0.2
+  max_output_tokens_flash: 1024
+  max_output_tokens_pro: 2048
+  request_timeout_sec: 90
+
+# Local Ollama judge: prompt-injection on job text (scoring_node) + AI-footprint on generated cover.
+safety:
+  ollama_model: llama3.2-vision

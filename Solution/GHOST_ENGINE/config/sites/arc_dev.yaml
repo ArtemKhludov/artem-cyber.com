@@ -1,0 +1,22 @@
+site_id: arc_dev
+# Talent / jobs surface; confirm GraphQL host/path in DevTools (may be arc.dev vs www).
+url: https://arc.dev/talent/
+display_name: arc.dev
+proxy_pool: default
+
+graphql:
+  jobs_endpoint: https://www.arc.dev/api/graphql
+
+apply_url_template: ""
+
+selectors:
+  login_button: 'a[href*="login"], a[href*="sign-in"]'
+  message_input: ""
+  proposal_cover_letter: ""
+
+chat_rules:
+  max_messages_per_hour: 20
+  escalate_on_keywords: []
+
+mouse_config:
+  entropy: "double"

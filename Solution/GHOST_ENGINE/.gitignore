@@ -1,0 +1,55 @@
+# Local Telegram routing (copy from telegram_routing.example.yaml)
+config/telegram_routing.yaml
+
+# Secrets
+.env
+.env.*
+!.env.example
+# Optional file-based secrets (Docker / k8s mounts): one file per variable name
+secrets/*
+!secrets/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Browser profiles & sensitive runtime (created at run time)
+profiles/**
+!profiles/.gitkeep
+src/ghost_engine/browser/storage/**
+!src/ghost_engine/browser/storage/.gitkeep
+
+# Logs & data (keep .gitkeep only)
+logs/**
+!logs/.gitkeep
+data/**
+!data/.gitkeep
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local Makefile / dev-full background PID
+.ghost-telegram.pid
+
+# Docker
+.docker/
+
+# Alembic (keep versions/ in repo when you add migrations)
+# Uncomment if you prefer not to commit migrations until ready:
+# src/ghost_engine/db/migrations/versions/*.py

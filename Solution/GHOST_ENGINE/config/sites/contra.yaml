@@ -1,0 +1,23 @@
+site_id: contra
+url: https://contra.com/
+display_name: Contra
+proxy_pool: default
+
+# Substring must match XHR/fetch URL in DevTools; Contra may version paths — adjust if sniff is empty.
+graphql:
+  jobs_endpoint: https://contra.com/api/graphql
+
+# Optional Telegram→browser apply: real apply URL + textarea selector from DevTools (leave empty to skip).
+apply_url_template: ""
+
+selectors:
+  login_button: 'a[href*="login"], a[href*="sign-in"], a[href*="signin"]'
+  message_input: ""
+  proposal_cover_letter: ""
+
+chat_rules:
+  max_messages_per_hour: 20
+  escalate_on_keywords: []
+
+mouse_config:
+  entropy: "double"

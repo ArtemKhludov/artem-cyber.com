@@ -1,0 +1,15 @@
+# Cockpit: enable/disable cover-letter post-steps without code changes.
+# Loaded by negotiation.pipeline.load_negotiation_pipeline (see Settings.config_dir).
+
+cover_letter:
+  typography:
+    enabled: true
+    # Run ghost_engine.utils.typography.clean_typography first (preambles, em dash, quotes).
+    utils_clean: true
+    # Replace Unicode dashes with ASCII hyphen (Upwork-safe, no "AI typography" tells).
+    replace_unicode_dashes: true
+    collapse_whitespace_runs: false
+  footprint:
+    enabled: true
+  ollama_output_judge:
+    enabled: true

@@ -1,0 +1,22 @@
+site_id: gun_io
+# Hire flow — adjust if your account lands on a different entry URL.
+url: https://www.gun.io/hire/
+display_name: gun.io
+proxy_pool: default
+
+graphql:
+  jobs_endpoint: https://www.gun.io/api/graphql
+
+apply_url_template: ""
+
+selectors:
+  login_button: 'a[href*="login"], a[href*="sign-in"]'
+  message_input: ""
+  proposal_cover_letter: ""
+
+chat_rules:
+  max_messages_per_hour: 20
+  escalate_on_keywords: []
+
+mouse_config:
+  entropy: "double"

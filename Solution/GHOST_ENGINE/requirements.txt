@@ -1,0 +1,3 @@
+# Deprecated for this repo: dependencies live in pyproject.toml + uv.lock.
+# Regenerate a flat file if something still needs pip:
+#   uv export --no-dev -o requirements.txt

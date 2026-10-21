@@ -1,0 +1,33 @@
+# Camoufox / Playwright defaults (УЗЕЛ 1 — GHOST BROWSER).
+# Secrets stay in .env / secrets/; proxy URL via BRIGHTDATA_PROXY_URL or explicit block below.
+
+camoufox:
+  # Reuse one Browserforge fingerprint per profiles/<name>/ (file: ghost_engine_camoufox_fingerprint.json).
+  # Reduces "new device" re-logins when cookies persist. Set false or GHOST_PIN_PROFILE_FINGERPRINT=0 to disable.
+  pin_profile_fingerprint: true
+  # Match host OS for fewer fingerprint surprises during dev (main_plan: first week headful).
+  fingerprint_os: null
+  locale: "en-US"
+  block_webrtc: true
+  disable_coop: true
+  enable_cache: true
+  screen:
+    min_width: 1280
+    max_width: 1920
+    min_height: 720
+    max_height: 1080
+  window: [1440, 900]
+  # Google / OAuth popups use tiny window.open(); enlarge so account picker is visible without manual drag.
+  oauth_popup_auto_resize: true
+  oauth_popup_min_width: 1024
+  oauth_popup_min_height: 768
+  # humanize: True + max cursor travel time (seconds); see camoufox launch_options.
+  humanize_max_seconds: 1.5
+
+# Optional: full Playwright proxy dict — wins over env-derived BrightData URL.
+# Example:
+# playwright_proxy:
+#   server: "http://host:port"
+#   username: "user"
+#   password: "pass"
+playwright_proxy: null

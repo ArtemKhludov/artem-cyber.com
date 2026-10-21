@@ -1,0 +1,112 @@
+# GHOST_ENGINE stack: app + Ollama + Postgres + Redis
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ghost-postgres
+    environment:
+      POSTGRES_USER: ghost
+      POSTGRES_DB: ghost_engine
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - ghost_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ghost -d ghost_engine"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ghost-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: ghost-redis
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    command: >
+      sh -c 'exec redis-server --requirepass "$$REDIS_PASSWORD"'
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping | grep -q PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - ghost-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ghost-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ghost_ollama:/root/.ollama
+    # Uncomment on Linux with NVIDIA:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    networks:
+      - ghost-net
+
+  ghost-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ghost-engine
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ghost:${POSTGRES_PASSWORD}@postgres:5432/ghost_engine
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ./config:/app/config:ro
+      - ./profiles:/app/profiles
+      - ./logs:/app/logs
+      - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - ghost-net
+    # Override in prod (e.g. worker / bot process)
+    command: ["python", "-m", "ghost_engine.main"]
+
+  ghost-telegram:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ghost-telegram
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      GHOST_ENGINE_MODE: telegram-bot
+      # TELEGRAM_BOT_TOKEN, TELEGRAM_OPERATOR_CHAT_IDS in .env.
+      # telegram_routing.yaml is gitignored — bind-mount ./config so it exists at runtime.
+    volumes:
+      - ./config:/app/config:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - ghost-net
+    command: ["python", "-m", "ghost_engine.main", "telegram-bot"]
+
+networks:
+  ghost-net:
+    driver: bridge
+
+volumes:
+  ghost_pg_data:
+  ghost_ollama:
