@@ -1,14 +1,21 @@
 # npm_check: Supply Chain Security Automation
 
-A centralized management hub for software dependency risks. This service operates as a continuous security conveyor, moving beyond basic `npm audit` to proactive threat detection and automated update triage.
+Dependency-risk service that goes beyond `npm audit`: proactive detection of risky packages and policy-driven update triage.
 
-**Live Dashboard:** Integrated into the telemetry stack at [artem-cyber.com](https://artem-cyber.com/).
+**Status:** running in production as the `dependency-security` service behind [artem-cyber.com](https://artem-cyber.com/). Source code is not published in this repository.
+
+What runs today:
+- dependency scanning enriched from OSV, GitHub Advisory and deps.dev;
+- a `risk_score` and a decision per finding: `URGENT`, `BLOCK`, `REVIEW`, `HOLD`, `SAFE-UPDATE`;
+- a public dashboard that shows only sanitized aggregates (decision and severity distributions, average risk); package names and versions are redacted unless policy allows them, raw evidence never leaves the service.
+
+The sections below describe the full target design; not every part of it is implemented yet. The 2024 OSV prototype is in [Archive/2024/npm_check_logic.py](../../Archive/2024/npm_check_logic.py).
 
 ### Core Philosophy: "The Triage Pipeline"
 The system follows a strict lifecycle for every dependency:
 **Discovery → Normalization → Enrichment → Risk Scoring → Decision → Validated Update → Post-Release Monitoring.**
 
-### Technical Implementation
+### Target Design
 
 #### 1. Inventory & Baseline
 *   **Deep Analysis:** Processes `package-lock.json` to build complete direct and transitive dependency trees.
