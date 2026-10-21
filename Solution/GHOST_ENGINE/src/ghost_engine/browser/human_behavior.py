@@ -1,4 +1,4 @@
-"""Human-like delays, scroll, and typing (УЗЕЛ 1 — scrap_navigation §3).
+"""Human-like delays, scroll, and typing (NODE 1 — scrap_navigation §3).
 
 Camoufox `humanize` handles Bezier-like pointer paths inside the browser.
 This module adds a second entropy layer at the Playwright API: variable timing,
@@ -16,6 +16,9 @@ from typing import Any, Mapping
 from playwright.async_api import Locator, Page
 
 from ghost_engine.config.settings import get_settings
+from ghost_engine.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 
 def _delay_bounds() -> tuple[int, int, int, int]:

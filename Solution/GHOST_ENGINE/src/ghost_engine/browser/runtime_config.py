@@ -5,8 +5,6 @@ Enables self-healing by allowing AI-driven fixes to be applied without restarts.
 
 from __future__ import annotations
 
-import json
-from typing import Any
 
 import redis.asyncio as aioredis
 

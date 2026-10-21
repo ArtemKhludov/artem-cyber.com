@@ -5,7 +5,15 @@ from __future__ import annotations
 import pytest
 
 from ghost_engine.agents.graph import ainvoke_scoring_graph, build_scoring_graph
+
 from ghost_engine.scoring.l2_scoring_llm import L2ScoringVerdict
+
+
+def _recent_iso(hours: float = 1.0) -> str:
+    from datetime import UTC, datetime, timedelta
+
+    ts = datetime.now(UTC) - timedelta(hours=hours)
+    return ts.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
 @pytest.fixture(autouse=True)
@@ -38,7 +46,7 @@ async def test_scoring_graph_upwork_raw_sets_gri() -> None:
                 "opening": {
                     "info": {"id": "gri-graph-1", "title": "python automation", "type": "FIXED"},
                     "description": "Need Python API work",
-                    "postedOn": "2026-04-08T12:00:00.000Z",
+                    "postedOn": _recent_iso(),  # relative to now: L0 drops jobs older than max_age
                     "budget": {"amount": 500.0},
                     "clientActivity": {"totalHired": 5, "totalApplicants": 10, "invitationsSent": 0},
                 },
@@ -59,4 +67,4 @@ async def test_scoring_graph_upwork_raw_sets_gri() -> None:
     tr = out.get("scoring_traversal")
     assert isinstance(tr, dict)
     assert tr.get("flow_continues") is True
-    assert "normalize" in str(tr.get("summary_ru", ""))
+    assert "normalize" in str(tr.get("summary", ""))

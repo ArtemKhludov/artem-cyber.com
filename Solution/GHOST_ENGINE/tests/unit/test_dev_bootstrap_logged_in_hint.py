@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from ghost_engine.browser.dev_session import _bootstrap_logged_in_css_hint
+import pytest
+
+_dev_session = pytest.importorskip("ghost_engine.browser.dev_session", reason="dev_session (login automation module) is not published in this repository")
+_bootstrap_logged_in_css_hint = _dev_session._bootstrap_logged_in_css_hint
 
 
 class _FakeAdapter:

@@ -267,7 +267,7 @@ async def _shape_diag_task(
 
 def _schedule_coro(coro: Any) -> None:
     try:
-        loop = asyncio.get_running_loop()
+        asyncio.get_running_loop()
     except RuntimeError:
         log.debug("graphql_shape_diag.no_running_loop", skip=True)
         return

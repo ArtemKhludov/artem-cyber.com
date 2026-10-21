@@ -7,7 +7,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from ghost_engine.browser import dev_session, human_behavior
+dev_session = pytest.importorskip("ghost_engine.browser.dev_session", reason="dev_session (login automation module) is not published in this repository")
+from ghost_engine.browser import human_behavior  # noqa: E402
 
 
 def test_load_job_search_urls_file_skips_comments_and_blank(tmp_path: Path) -> None:

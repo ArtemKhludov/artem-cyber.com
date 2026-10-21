@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 
 from ghost_engine.adapters.base_adapter import BaseSiteAdapter
 from ghost_engine.adapters.contra_adapter import ContraAdapter
