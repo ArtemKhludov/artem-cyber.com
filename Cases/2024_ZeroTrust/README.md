@@ -1,5 +1,7 @@
-# 2024 Milestone: Zero Trust Architecture (LA)
-Moving to Los Angeles meant scaling my own infra. VPNs are for people who like latency and security holes.
-- **Stack:** Cloudflare Zero Trust + OCI. 
-- **Implementation:** Identity-centric tunnels, NSG isolation in OCI compartments.
-- **Outcome:** A silent, resilient perimeter that doesn't need manual babysitting.
+# 2024 — Zero Trust Architecture (Los Angeles)
+
+**Context.** Relocating to Los Angeles meant rebuilding my own infrastructure without a traditional VPN.
+
+- **Stack:** Cloudflare Zero Trust + Oracle Cloud Infrastructure (OCI).
+- **Design:** identity-based access through Cloudflare tunnels; workloads isolated with NSGs in separate OCI compartments; no services exposed directly to the internet.
+- **Result:** a perimeter that needs little manual maintenance. Notes: [Archive/2024/architecture](../../Archive/2024/architecture/).

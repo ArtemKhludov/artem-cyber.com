@@ -1,6 +1,9 @@
-# 2022 Milestone: Infrastructure Hardening (AntHouse)
-Transitioning from construction to IT meant dealing with a different kind of mess. AntHouse was a "black box" of manual Nginx configs and open SSH ports.
-- **Action:** Enforced version control. No more "cowboy" changes on production.
-- **Security:** ModSecurity + OWASP CRS tuned for actual traffic, not just default templates.
-- **Automation:** Bash library to handle log rotation and automated bans for aggressive scrapers.
-It wasn't fancy, but it made the system resilient.
+# 2022 — Infrastructure Hardening (AntHouse)
+
+**Context.** After moving from construction into IT, I took over AntHouse infrastructure: hand-edited Nginx configs, SSH exposed on default ports, no change history.
+
+- **Change control:** all server configs moved into version control; no more ad-hoc edits on production.
+- **WAF:** ModSecurity + OWASP CRS, tuned against real traffic instead of default templates to keep false positives manageable.
+- **Automation:** a Bash library for log rotation and automatic bans of aggressive scrapers.
+
+**Result:** a predictable, reviewable setup where every production change is traceable.
