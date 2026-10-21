@@ -126,9 +126,9 @@ def format_single_job_detailed(item: ApprovedJobNotifyPayload) -> str:
         body = cl.strip()
         if len(body) > _MAX_COVER_IN_TELEGRAM:
             body = body[: _MAX_COVER_IN_TELEGRAM - 1] + "…"
-        cover_block = f"\n\n<b>Отклик</b>\n<pre>{html.escape(body)}</pre>"
+        cover_block = f"\n\n<b>Proposal</b>\n<pre>{html.escape(body)}</pre>"
     else:
-        cover_block = "\n\n<i>Отклик ещё не сгенерирован.</i>"
+        cover_block = "\n\n<i>Proposal not generated yet.</i>"
 
     return f"{meta}{cover_block}"
 

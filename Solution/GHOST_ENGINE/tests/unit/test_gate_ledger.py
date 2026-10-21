@@ -65,7 +65,7 @@ def test_ops_diag_traversal_success_ollama() -> None:
         stages_failed=[],
     )
     assert r["all_failed"] is False
-    assert "Успех" in r["summary_ru"]
+    assert "Success" in r["summary"]
 
 
 def test_ops_diag_traversal_all_fail() -> None:
@@ -74,8 +74,8 @@ def test_ops_diag_traversal_all_fail() -> None:
         source="none",
         all_failed=True,
         stages_failed=[
-            ("ollama_text", "нет ответа"),
-            ("gemini_text", "нет ответа"),
+            ("ollama_text", "no response"),
+            ("gemini_text", "no response"),
         ],
     )
     assert r["all_failed"] is True

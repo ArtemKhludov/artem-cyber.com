@@ -63,13 +63,13 @@ async def run_telegram_routing_ping() -> int:
 
     targets: list[tuple[str, DeliveryTarget]] = []
     for dt in routing.jobs_targets_for_site("upwork", []):
-        targets.append(("Upwork «Вакансии» (sites.upwork.topic_jobs)", dt))
+        targets.append(("Upwork \"Jobs\" (sites.upwork.topic_jobs)", dt))
     for dt in routing.chat_client_targets_for_site("upwork"):
         targets.append(("Upwork «Client / Negotiation» (chat_client.topics.upwork)", dt))
     for key, label in (
-        ("captcha", "Операции / captcha (ops.topics.captcha)"),
-        ("errors", "Операции / errors (ops.topics.errors)"),
-        ("system", "Операции / system (ops.topics.system)"),
+        ("captcha", "Ops / captcha (ops.topics.captcha)"),
+        ("errors", "Ops / errors (ops.topics.errors)"),
+        ("system", "Ops / system (ops.topics.system)"),
     ):
         for dt in routing.ops_targets(key, []):
             targets.append((label, dt))

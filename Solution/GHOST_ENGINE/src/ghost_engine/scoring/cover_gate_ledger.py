@@ -30,7 +30,7 @@ def _finalize(steps: list[dict[str, Any]], flow_continues: bool) -> dict[str, An
     return {
         "pipeline": "cover_letter",
         "steps": steps,
-        "summary_ru": " | ".join(parts),
+        "summary": " | ".join(parts),
         "flow_continues": flow_continues,
     }
 
@@ -47,9 +47,9 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "render",
                 "fail",
                 "NO_PROMPT",
-                "Шаблон/данные не собрали cover_letter_prompt_rendered",
+                "Template/data did not produce cover_letter_prompt_rendered",
                 False,
-                "Граф завершён на START→render; письмо не генерировалось",
+                "Graph ended at START→render; no letter generated",
             )
         )
         return _finalize(steps, False)
@@ -59,9 +59,9 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
             "render",
             "pass",
             "OK",
-            "Промпт для LLM собран",
+            "LLM prompt assembled",
             True,
-            "Узел Gemini (если не skip_llm)",
+            "Gemini node (unless skip_llm)",
         )
     )
 
@@ -71,9 +71,9 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "gemini",
                 "skip",
                 "SKIP_LLM",
-                "Политика пайплайна или отсутствие ключа / nested loop",
+                "Pipeline policy, missing key, or nested loop",
                 False,
-                "END: уведомление может уйти без текста письма",
+                "END: notification may go out without letter text",
             )
         )
         return _finalize(steps, False)
@@ -85,9 +85,9 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "gemini",
                 "fail",
                 "GEMINI_ERROR",
-                err or "Ошибка generateContent",
+                err or "generateContent error",
                 False,
-                "END: needs_manual_review, черновик без API",
+                "END: needs_manual_review, draft without API",
             )
         )
         return _finalize(steps, False)
@@ -97,7 +97,7 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
             "gemini",
             "pass",
             "OK",
-            "Черновик получен (cover_letter_draft_raw)",
+            "Draft received (cover_letter_draft_raw)",
             True,
             "typography → footprint → judge",
         )
@@ -112,7 +112,7 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                     "typography",
                     "fail",
                     "NO_DRAFT",
-                    "Нет текста после typography; footprint пометил блокировку",
+                    "No text after typography; footprint marked a block",
                     False,
                     "END: needs_manual_review",
                 )
@@ -123,9 +123,9 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                     "typography",
                     "fail",
                     "NO_DRAFT",
-                    "После typography нет текста",
+                    "No text after typography",
                     False,
-                    "Остановка перед footprint",
+                    "Stopped before footprint",
                 )
             )
         return _finalize(steps, False)
@@ -135,9 +135,9 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
             "typography",
             "pass",
             "OK",
-            "Типографика применена",
+            "Typography applied",
             True,
-            "Проверка footprint regex",
+            "Footprint regex check",
         )
     )
 
@@ -147,7 +147,7 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "footprint",
                 "fail",
                 "FOOTPRINT_HIT",
-                "Сработали запрещённые паттерны в тексте",
+                "Forbidden patterns matched in text",
                 False,
                 "END: needs_manual_review",
             )
@@ -159,7 +159,7 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
             "footprint",
             "pass",
             "OK",
-            "Отпечатков нет",
+            "No footprints",
             True,
             "Ollama output judge",
         )
@@ -174,9 +174,9 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "judge",
                 "fail",
                 "OUTPUT_SAFETY" if blocked_by_judge else "NO_FINAL_TEXT",
-                "Судья Ollama заблокировал или финальный текст пуст" if blocked_by_judge else "Нет cover_letter_text",
+                "Ollama judge blocked it or final text is empty" if blocked_by_judge else "No cover_letter_text",
                 False,
-                "END: письмо не в продакшен-поле",
+                "END: letter not written to production field",
             )
         )
         return _finalize(steps, False)
@@ -186,9 +186,9 @@ def build_cover_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
             "judge",
             "pass",
             "OK",
-            "Текст одобрен судьёй",
+            "Text approved by judge",
             True,
-            "Redis notify с cover_letter",
+            "Redis notify with cover_letter",
         )
     )
     return _finalize(steps, True)

@@ -13,11 +13,11 @@ def job_action_keyboard(action_token: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="✅ ОТПРАВИТЬ", callback_data=f"ap:{t}"),
-                InlineKeyboardButton(text="❌ ПРОПУСТИТЬ", callback_data=f"sk:{t}"),
+                InlineKeyboardButton(text="✅ SEND", callback_data=f"ap:{t}"),
+                InlineKeyboardButton(text="❌ SKIP", callback_data=f"sk:{t}"),
             ],
             [
-                InlineKeyboardButton(text="📝 ПРАВИТЬ", callback_data=f"ed:{t}"),
+                InlineKeyboardButton(text="📝 EDIT", callback_data=f"ed:{t}"),
             ],
         ]
     )

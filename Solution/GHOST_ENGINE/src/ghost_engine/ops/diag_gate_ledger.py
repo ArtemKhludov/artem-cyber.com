@@ -12,9 +12,9 @@ from typing import Any
 STAGE_IDS = ("ollama_text", "ollama_vision", "gemini_text")
 
 _STAGE_TITLES: dict[str, str] = {
-    "ollama_text": "Ollama текст (локально)",
-    "ollama_vision": "Ollama vision + скрин (локально)",
-    "gemini_text": "Gemini текст без изображения (API)",
+    "ollama_text": "Ollama text (local)",
+    "ollama_vision": "Ollama vision + screenshot (local)",
+    "gemini_text": "Gemini text only, no image (API)",
 }
 
 
@@ -47,20 +47,20 @@ def build_ops_diag_traversal_report(
             "had_image": had_image,
             "terminal_source": source,
             "all_failed": False,
-            "steps": [{"gate": won, "outcome": "pass", "why": "Достаточный ответ для Telegram"}],
-            "summary_ru": f"Успех на этапе: {won}",
+            "steps": [{"gate": won, "outcome": "pass", "why": "Answer good enough for Telegram"}],
+            "summary": f"Success at stage: {won}",
         }
 
     steps = [
         {"gate": _STAGE_TITLES.get(sid, sid), "outcome": "fail", "why": why}
         for sid, why in stages_failed
     ]
-    tail = "Все этапы исчерпаны; см. ops.system для менеджера и ops.errors."
+    tail = "All stages exhausted; see ops.system (manager) and ops.errors."
     return {
         "pipeline": "ops_ai_diag",
         "had_image": had_image,
         "terminal_source": "none",
         "all_failed": True,
         "steps": steps,
-        "summary_ru": " → ".join(f"{s['gate']}: {s['why']}" for s in steps) + f". {tail}",
+        "summary": " → ".join(f"{s['gate']}: {s['why']}" for s in steps) + f". {tail}",
     }

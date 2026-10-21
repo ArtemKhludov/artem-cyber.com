@@ -456,7 +456,7 @@ def scoring_merge_notify_state(state: dict[str, Any]) -> dict[str, Any]:
     logs: list[str] = list(state.get("decision_logs", []))
     logs.append("[scoring_graph] merge_notify pipeline_complete")
     traversal = build_scoring_traversal_report(state)
-    logs.append(f"[scoring_graph] traversal {traversal.get('summary_ru', '')[:500]}")
+    logs.append(f"[scoring_graph] traversal {traversal.get('summary', '')[:500]}")
     sig = state.get("job_signal")
     gri = state.get("gri")
     bd = state.get("gri_breakdown")

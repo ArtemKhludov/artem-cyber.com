@@ -1,4 +1,4 @@
-# Camoufox / Playwright defaults (УЗЕЛ 1 — GHOST BROWSER).
+# Camoufox / Playwright defaults (NODE 1 — GHOST BROWSER).
 # Secrets stay in .env / secrets/; proxy URL via BRIGHTDATA_PROXY_URL or explicit block below.
 
 camoufox:

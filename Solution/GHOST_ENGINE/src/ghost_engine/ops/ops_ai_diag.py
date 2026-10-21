@@ -35,10 +35,10 @@ def _brief_acceptable(text: str | None) -> bool:
 
 def _stage_outcome(fragment: str | None) -> str:
     if fragment is None:
-        return "нет ответа (ошибка сети, таймаут или HTTP≠200)"
+        return "no response (network error, timeout or HTTP≠200)"
     s = fragment.strip()
     if len(s) < MIN_BRIEF_CHARS:
-        return f"ответ слишком короткий ({len(s)} симв., нужно ≥{MIN_BRIEF_CHARS})"
+        return f"response too short ({len(s)} chars, need ≥{MIN_BRIEF_CHARS})"
     return "ok"
 
 
@@ -85,10 +85,10 @@ INCIDENT_CODE: {incident}
 STRUCTURED_CONTEXT (JSON):
 {ctx}
 
-Reply in Russian, concise (max 1200 chars). Use this structure:
-1) Что, вероятно, сломалось (1–3 предложения).
-2) Что проверить в DevTools / на странице (bullets).
-3) Какие файлы/настройки трогать (например config/sites/upwork.yaml, селекторы, env).
+Reply in English, concise (max 1200 chars). Use this structure:
+1) What most likely broke (1–3 sentences).
+2) What to check in DevTools / on the page (bullets).
+3) Which files/settings to change (e.g. config/sites/upwork.yaml, selectors, env).
 {tail}
 
 No JSON wrapper — plain text only."""
@@ -187,12 +187,12 @@ async def _gemini_diagnose_text(incident: str, context: dict[str, Any]) -> str |
 
     model = ops_fallback_gemini_model()
     ctx = json.dumps(context, ensure_ascii=False, indent=2)[:8000]
-    user = f"""Инцидент: {incident}
+    user = f"""Incident: {incident}
 
-Контекст (JSON), без изображения — ориентируйся только на поля и значения:
+Context (JSON), no image — rely only on the fields and values:
 {ctx}
 
-Краткий разбор для оператора на русском: что сломалось, что проверить, какие селекторы/config править. До 1000 символов."""
+Short analysis for the operator in English: what broke, what to check, which selectors/config to change. Up to 1000 characters."""
 
     text, err = await _gemini_generate_async(
         model,
@@ -226,23 +226,23 @@ async def _send_manager_escalation(
     from ghost_engine.ops.diag_gate_ledger import format_ops_diag_stages_for_manager
 
     lines = [
-        "GHOST / менеджер: диагностика LLM — все шаги не дали пригодного ответа.",
-        f"Инцидент: {incident}",
-        f"Сайт: {site_id}",
-        f"Скрин в пайплайне (только локальный Ollama vision): {'да' if had_screenshot else 'нет'}",
-        "API Gemini: только текст, изображения не отправлялись (экономия).",
+        "GHOST / manager: LLM diagnosis — no stage produced a usable answer.",
+        f"Incident: {incident}",
+        f"Site: {site_id}",
+        f"Screenshot in pipeline (local Ollama vision only): {'yes' if had_screenshot else 'no'}",
+        "Gemini API: text only, no images sent (cost saving).",
         "",
-        "Что сделали по порядку:",
+        "Steps taken, in order:",
     ]
     lines.extend(format_ops_diag_stages_for_manager(stages_failed))
     lines.extend(
         [
             "",
-            "Вероятные причины: Ollama не запущена; неверный GHOST_OLLAMA_MODEL; нехватка VRAM;",
-            "таймаут; нет GEMINI_API_KEY или квота/блок API; пустой/битый JSON контекста.",
+            "Likely causes: Ollama not running; wrong GHOST_OLLAMA_MODEL; not enough VRAM;",
+            "timeout; missing GEMINI_API_KEY or API quota/block; empty/broken context JSON.",
             "",
-            "Что делать: structlog ops_ai_diag.*; вручную открыть URL из context; проверить Ollama curl;",
-            "временно GHOST_OPS_AI_DIAG_ENABLED=0 или GHOST_OPS_AI_DIAG_IMAGE=0.",
+            "Next steps: check structlog ops_ai_diag.*; open the context URL manually; test Ollama with curl;",
+            "temporarily set GHOST_OPS_AI_DIAG_ENABLED=0 or GHOST_OPS_AI_DIAG_IMAGE=0.",
         ]
     )
     tail = json.dumps(context, ensure_ascii=False)
@@ -323,9 +323,9 @@ async def _run_ops_llm_diagnosis_core(
             had_screenshot=had_shot,
         )
         brief = (
-            "Ни один этап (Ollama текст →"
+            "No stage (Ollama text →"
             + (" Ollama vision →" if had_shot else "")
-            + " Gemini текст) не дал пригодного текста; см. ops.system для менеджера и JSON ниже."
+            + " Gemini text) produced usable text; see ops.system (manager) and the JSON below."
         )
         source = "none"
 
@@ -344,7 +344,7 @@ async def _run_ops_llm_diagnosis_core(
         pipeline=diag_ledger.get("pipeline"),
         all_failed=diag_ledger.get("all_failed"),
         terminal_source=diag_ledger.get("terminal_source"),
-        summary_ru=diag_ledger.get("summary_ru", "")[:900],
+        summary=diag_ledger.get("summary", "")[:900],
         steps=diag_ledger.get("steps"),
     )
 
@@ -353,10 +353,10 @@ async def _run_ops_llm_diagnosis_core(
         tail = tail[:3200] + "…"
 
     text = (
-        f"GHOST диагностика (источник: {source}, Ollama: {ollama_model}"
-        f"{', скрин только локально (vision)' if had_shot else ''})\n\n"
-        f"Инцидент: {incident}\n"
-        f"Сайт: {site_id}\n\n"
+        f"GHOST diagnosis (source: {source}, Ollama: {ollama_model}"
+        f"{', screenshot local only (vision)' if had_shot else ''})\n\n"
+        f"Incident: {incident}\n"
+        f"Site: {site_id}\n\n"
         f"{brief}\n\n"
         f"--- context (JSON) ---\n{tail}"
     )

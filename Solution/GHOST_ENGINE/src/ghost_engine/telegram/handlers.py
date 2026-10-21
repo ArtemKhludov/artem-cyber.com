@@ -58,7 +58,7 @@ def build_router(
             redis_client, token=token, operator_chat_id=chat_id
         )
         if ctx is None:
-            await cb.answer("Контекст устарел или недоступен.", show_alert=True)
+            await cb.answer("Context is stale or unavailable.", show_alert=True)
             return
 
         site_id = ctx.get("site_id")
@@ -116,7 +116,7 @@ def build_router(
             if dur_s:
                 cmd["proposal_duration"] = dur_s
             await enqueue_operator_command(redis_client, cmd)
-            await cb.answer("Команда ОТПРАВИТЬ записана в Redis.")
+            await cb.answer("SEND command written to Redis.")
             log.info(
                 "telegram.apply_command",
                 chat_id=chat_id,
@@ -151,14 +151,14 @@ def build_router(
                     "source": "telegram",
                 },
             )
-            await cb.answer("Пропущено.")
+            await cb.answer("Skipped.")
             log.info("telegram.skip_command", chat_id=chat_id, site_id=site_id, job_id=job_id)
             return
 
         # ed — MVP: no FSM; operator copies text from the message
         await cb.answer(
-            "Правка вручную: скопируйте текст отклика из сообщения выше и вставьте на сайте. "
-            "Полноценный сценарий правки в боте — позже.",
+            "Manual edit: copy the proposal text from the message above and paste it on the site. "
+            "Full in-bot editing is not implemented yet.",
             show_alert=True,
         )
         log.info("telegram.edit_hint", chat_id=chat_id, site_id=site_id, job_id=job_id)

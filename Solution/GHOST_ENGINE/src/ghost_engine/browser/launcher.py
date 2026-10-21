@@ -2,7 +2,7 @@
 Camoufox launcher: persistent BrowserContext per profile_name (tenant isolation).
 
 Launch options are driven by `config/browser.yaml` + `ghost_engine.browser.launch_config`
-(main_plan УЗЕЛ 1: geoip, humanize, WebRTC policy, cache, locale).
+(main_plan NODE 1: geoip, humanize, WebRTC policy, cache, locale).
 """
 
 from __future__ import annotations

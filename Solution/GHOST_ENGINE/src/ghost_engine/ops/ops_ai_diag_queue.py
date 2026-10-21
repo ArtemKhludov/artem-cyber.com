@@ -111,12 +111,12 @@ async def _maybe_alert_queue_depth(depth: int) -> None:
     if depth < thr:
         return
     await _send_system_alert(
-        "GHOST / system: очередь ops AI диагностики перегружена.\n"
-        f"Сейчас в Redis-очереди ~{depth} задач (порог {thr}). Это «энергозатратная» цепочка "
-        "(Ollama текст + локальный vision + Gemini только текст).\n"
-        "Действия: снизить частоту инцидентов (GHOST_OPS_AI_DIAG_ENABLED=0 на время), "
-        "отключить картинки (GHOST_OPS_AI_DIAG_IMAGE=0), уменьшить GHOST_OPS_AI_DIAG_MIN_SEC, "
-        "ускорить Ollama/GPU или поднять отдельный воркер только под ghost:ops_ai_diag:queue.",
+        "GHOST / system: ops AI diagnosis queue is overloaded.\n"
+        f"Redis queue currently holds ~{depth} jobs (threshold {thr}). This is an expensive chain "
+        "(Ollama text + local vision + Gemini text only).\n"
+        "Actions: reduce incident rate (GHOST_OPS_AI_DIAG_ENABLED=0 for a while), "
+        "disable images (GHOST_OPS_AI_DIAG_IMAGE=0), lower GHOST_OPS_AI_DIAG_MIN_SEC, "
+        "speed up Ollama/GPU or run a dedicated worker for ghost:ops_ai_diag:queue.",
         reason="queue_depth",
     )
 
@@ -126,10 +126,10 @@ async def _maybe_alert_wait(wait_sec: float, incident: str) -> None:
     if wait_sec < thr:
         return
     await _send_system_alert(
-        "GHOST / system: задачи ops AI долго висят в очереди.\n"
-        f"Ожидание до старта обработки ~{wait_sec:.0f}s (порог {thr:.0f}s), инцидент `{incident}`.\n"
-        "Воркер не успевает или Ollama занята другими запросами. Проверь один активный consumer, "
-        "нагрузку на GPU и длину очереди `LLEN ghost:ops_ai_diag:queue`.",
+        "GHOST / system: ops AI jobs are waiting too long in the queue.\n"
+        f"Wait before processing ~{wait_sec:.0f}s (threshold {thr:.0f}s), incident `{incident}`.\n"
+        "The worker is falling behind or Ollama is busy with other requests. Check there is one active consumer, "
+        "GPU load and queue length `LLEN ghost:ops_ai_diag:queue`.",
         reason="queue_wait",
     )
 
@@ -139,10 +139,10 @@ async def _maybe_alert_slow(processing_sec: float, incident: str) -> None:
     if processing_sec < thr:
         return
     await _send_system_alert(
-        "GHOST / system: одна ops AI диагностика выполнялась слишком долго.\n"
-        f"Обработка ~{processing_sec:.0f}s (порог {thr:.0f}s), инцидент `{incident}`.\n"
-        "Смягчение: лёгкая модель, меньше num_ctx, отключить скрин (GHOST_OPS_AI_DIAG_IMAGE=0), "
-        "сократить очередь или отключить GHOST_OPS_AI_DIAG_USE_QUEUE.",
+        "GHOST / system: a single ops AI diagnosis took too long.\n"
+        f"Processing ~{processing_sec:.0f}s (threshold {thr:.0f}s), incident `{incident}`.\n"
+        "Mitigation: lighter model, smaller num_ctx, disable screenshots (GHOST_OPS_AI_DIAG_IMAGE=0), "
+        "shorten the queue or disable GHOST_OPS_AI_DIAG_USE_QUEUE.",
         reason="job_slow",
     )
 
@@ -209,7 +209,7 @@ async def _process_one_raw(raw: str) -> None:
         log.error("ops_ai_diag_queue.job_failed", incident=incident, error=str(exc))
         await _send_system_alert(
             f"GHOST / system: ops AI job crashed after dequeue.\n"
-            f"Инцидент `{incident}`, ошибка: {type(exc).__name__}: {str(exc)[:500]}",
+            f"Incident `{incident}`, error: {type(exc).__name__}: {str(exc)[:500]}",
             reason="job_crash",
         )
         return

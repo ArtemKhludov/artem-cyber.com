@@ -9,15 +9,15 @@ telegram_groups:
     topics:
       - name: "General"
         topic_id: FILL_ME
-      - name: "UpWork - Вакансии"
+      - name: "UpWork - Jobs"
         topic_id: FILL_ME
-      - name: "arc_dev - Вакансии"
+      - name: "arc_dev - Jobs"
         topic_id: FILL_ME
-      - name: "gun_io - вакансии"
+      - name: "gun_io - Jobs"
         topic_id: FILL_ME
-      - name: "toptal - Вакансии"
+      - name: "toptal - Jobs"
         topic_id: FILL_ME
-      - name: "contra - вакансии"
+      - name: "contra - Jobs"
         topic_id: FILL_ME
       - name: "Active Chats (Negotiation)"
         topic_id: FILL_ME  # Example for the 'chat_client' block below

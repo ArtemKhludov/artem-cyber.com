@@ -75,7 +75,7 @@ l0_filters:
         - ai agent
         - llm
         - transcript
-    # fix_1 §2.1: «точно нет» — роли SMM / community без технич. сигналов.
+    # fix_1 §2.1: "definitely not" — SMM / community roles without technical signals.
     - code: SMM_ROLE_NOT_DEV
       when_any:
         - social media manager
@@ -91,7 +91,7 @@ l0_filters:
         - data pipeline
         - integration
         - bot development
-    # Cold calling / SDR — отсекаем «чистый» обзвон; оставляем AI/автоматизацию/квалификацию лидов.
+    # Cold calling / SDR — drop pure cold-calling; keep AI / automation / lead qualification.
     - code: COLD_CALLING_PURE_SDR
       when_any:
         - cold caller
@@ -112,7 +112,7 @@ l0_filters:
         - ai agent
         - dialer software
         - predictive
-    # Видео/YouTube creator без технич. задач (парсер/transcript/API — см. unless).
+    # Video/YouTube creator without technical tasks (parser/transcript/API — see unless).
     - code: VIDEO_CREATOR_NOT_DEV
       when_any:
         - video creator
@@ -432,7 +432,7 @@ gri:
     # Below fit_score with recommend=reject → force tier (MANUAL_REVIEW or TRASH).
     reject_max_fit_score: 0.28
     reject_force_tier: MANUAL_REVIEW
-  # Persona selection (after GRI) — plan §5 «Тризубец»
+  # Persona selection (after GRI) — plan §5 "Trident"
   persona_sniper_gri: 0.85
   persona_sniper_max_applicants: 8
   persona_sniper_max_desc_chars: 1200

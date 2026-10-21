@@ -472,7 +472,7 @@ class BaseSiteAdapter(ABC):
                 await asyncio.to_thread(append_trash_entry, sid, rec)
                 streak_hit, streak_n = self._l0_drop_streak.record(reason_code)
                 trav = final.get("scoring_traversal")
-                trav_sum = str(trav.get("summary_ru", ""))[:600] if isinstance(trav, dict) else ""
+                trav_sum = str(trav.get("summary", ""))[:600] if isinstance(trav, dict) else ""
                 log.info(
                     "job.scoring_gate",
                     site_id=sid,
@@ -539,7 +539,7 @@ class BaseSiteAdapter(ABC):
                 else f"L0={final.get('l0_code')} | GRI=n/a | tier={tier} | persona={persona}"
             )
             trav = final.get("scoring_traversal")
-            trav_sum = str(trav.get("summary_ru", ""))[:600] if isinstance(trav, dict) else ""
+            trav_sum = str(trav.get("summary", ""))[:600] if isinstance(trav, dict) else ""
             log.info(
                 "job.scoring_gate",
                 site_id=sid,
@@ -753,7 +753,7 @@ class BaseSiteAdapter(ABC):
                             "job.cover_pipeline_traversal",
                             site_id=sid,
                             job_id=jid,
-                            summary_ru=str(cov_tr.get("summary_ru", ""))[:800],
+                            summary=str(cov_tr.get("summary", ""))[:800],
                             flow_continues=cov_tr.get("flow_continues"),
                         )
     

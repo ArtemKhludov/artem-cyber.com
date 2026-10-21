@@ -1,4 +1,4 @@
-"""Shared GraphQL HTTP + WebSocket listeners for all site adapters (УЗЕЛ 0)."""
+"""Shared GraphQL HTTP + WebSocket listeners for all site adapters (NODE 0)."""
 
 from __future__ import annotations
 

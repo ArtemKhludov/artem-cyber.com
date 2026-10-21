@@ -35,7 +35,7 @@ def run_notify_queue_ping() -> int:
         job_tier="ZERO_TOUCH",
         job_signal={
             "title": "GHOST notify queue test",
-            "description": "Synthetic job from `notify-ping`. If routing is OK, this appears in Upwork «Вакансии» topic.",
+            "description": "Synthetic job from `notify-ping`. If routing is OK, this appears in Upwork 'Jobs' topic.",
             "source_site": "upwork",
             "budget_type": "fixed",
             "budget_value": 1500.0,

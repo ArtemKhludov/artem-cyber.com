@@ -33,11 +33,11 @@ def _finalize(job_id: Any, steps: list[dict[str, Any]], flow_continues: bool) ->
     parts: list[str] = []
     for s in steps:
         parts.append(f"{s['gate']}:{s['outcome']}({s['code']})→{s['next']}")
-    summary_ru = " | ".join(parts)
+    summary = " | ".join(parts)
     return {
         "job_id": job_id,
         "steps": steps,
-        "summary_ru": summary_ru,
+        "summary": summary,
         "flow_continues": flow_continues,
     }
 
@@ -55,9 +55,9 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(sig, dict) or not scoring_signal_nonempty(sig):
         code = str(state.get("l0_code") or "NO_SIGNAL")
         why = (
-            "Нет нормализованного job_signal"
+            "No normalized job_signal"
             if not isinstance(sig, dict)
-            else "После normalize сигнал пустой (нет job_id/title и т.д.)"
+            else "Signal empty after normalize (no job_id/title, etc.)"
         )
         steps.append(
             _row(
@@ -66,7 +66,7 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 code,
                 why,
                 False,
-                "Остановка графа: не формируем GRI, в trash только при отдельном пути адаптера",
+                "Graph stopped: no GRI computed; trash only via a separate adapter path",
             )
         )
         return _finalize(jid, steps, False)
@@ -76,9 +76,9 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
             "normalize",
             "pass",
             "OK",
-            "GraphQL/сырой ответ сведён к job_signal",
+            "GraphQL/raw response reduced to job_signal",
             True,
-            "Шлюз L0 (scoring.yaml)",
+            "L0 gate (scoring.yaml)",
         )
     )
 
@@ -91,15 +91,15 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "l0",
                 "fail",
                 l0c,
-                l0d or "Сработало правило жёсткого фильтра",
+                l0d or "Hard filter rule matched",
                 False,
-                "Стоп: запись в trash JSONL, уведомление о вакансии не ставится",
+                "Stop: written to trash JSONL, no job notification queued",
             )
         )
         return _finalize(jid, steps, False)
 
     hold = bool(state.get("l0_soft_hold_missing_budget"))
-    l0_why = l0d or "Все проверки L0 пройдены"
+    l0_why = l0d or "All L0 checks passed"
     if hold:
         l0_why += "; SOFT_HOLD_MISSING_BUDGET → needs_manual_review"
     steps.append(
@@ -109,7 +109,7 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
             l0c,
             l0_why,
             True,
-            "Цепочка GRI: market → client → effort → roi → budget_infer → estimates",
+            "GRI chain: market → client → effort → roi → budget_infer → estimates",
         )
     )
 
@@ -128,32 +128,32 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "budget_infer",
                 "pass",
                 "APPLIED",
-                f"Ollama JSON → budget_value + пересчёт GRI (B_source=llm_budget_infer{conf_l})",
+                f"Ollama JSON → budget_value + GRI recalculation (B_source=llm_budget_infer{conf_l})",
                 True,
-                "estimates → l2_eligibility (серый коридор L2)",
+                "estimates → l2_eligibility (L2 gray zone)",
             )
         )
     elif skipped_bi:
         _bi_skip_expl: dict[str, str] = {
-            "disabled": "budget_llm_infer.enabled=false в scoring.yaml",
-            "l0_failed": "внутреннее: L0 не прошёл до узла (не ожидается)",
-            "budget_value_present": "триаж: уже есть budget_value",
-            "hourly_max_present": "триаж: уже есть hourly_budget_max",
-            "b_source_mismatch": "триаж: B_source ≠ require_b_source_equals",
-            "no_breakdown": "триаж: нет gri_breakdown",
-            "not_gray_zone": "триаж: GRI вне l2_gray_zone",
-            "no_gri": "триаж: нет числового gri",
-            "no_gray_config": "триаж: нет gri.l2_gray_zone в конфиге",
-            "no_signal": "триаж: нет job_signal в state",
-            "rate_limit": "лимит max_calls_per_minute",
-            "sortie_limit": "лимит max_calls_per_sortie (сброс в begin_feed_sortie)",
-            "bad_state": "нет job_signal / gri_components перед вызовом Ollama",
-            "ollama_unreachable": "Ollama HTTP/сеть/таймаут",
-            "bad_ollama_shape": "некорректный ответ API generate",
-            "unparseable_json": "тело ответа не JSON",
-            "pydantic_reject": "JSON не прошёл Pydantic-схему",
-            "empty_signal": "пустой title+description для промпта",
-            "low_confidence_or_null": "confidence < min или equiv_usd_fixed null",
+            "disabled": "budget_llm_infer.enabled=false in scoring.yaml",
+            "l0_failed": "internal: L0 failed before this node (unexpected)",
+            "budget_value_present": "triage: budget_value already present",
+            "hourly_max_present": "triage: hourly_budget_max already present",
+            "b_source_mismatch": "triage: B_source ≠ require_b_source_equals",
+            "no_breakdown": "triage: no gri_breakdown",
+            "not_gray_zone": "triage: GRI outside l2_gray_zone",
+            "no_gri": "triage: no numeric gri",
+            "no_gray_config": "triage: no gri.l2_gray_zone in config",
+            "no_signal": "triage: no job_signal in state",
+            "rate_limit": "max_calls_per_minute limit",
+            "sortie_limit": "max_calls_per_sortie limit (reset in begin_feed_sortie)",
+            "bad_state": "no job_signal / gri_components before Ollama call",
+            "ollama_unreachable": "Ollama HTTP/network/timeout",
+            "bad_ollama_shape": "invalid generate API response",
+            "unparseable_json": "response body is not JSON",
+            "pydantic_reject": "JSON failed Pydantic schema",
+            "empty_signal": "empty title+description for prompt",
+            "low_confidence_or_null": "confidence < min or equiv_usd_fixed is null",
         }
         why_bi = _bi_skip_expl.get(bi_reason, bi_reason or "unknown")
         steps.append(
@@ -163,7 +163,7 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 bi_reason or "unknown",
                 why_bi,
                 True,
-                "estimates → l2_eligibility (fail-open по политике YAML)",
+                "estimates → l2_eligibility (fail-open per YAML policy)",
             )
         )
     else:
@@ -172,7 +172,7 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "budget_infer",
                 "skip",
                 "no_flags",
-                "Нет budget_llm_infer_* в state (legacy/мок графа) — узел не отражён",
+                "No budget_llm_infer_* in state (legacy/mocked graph) — node not recorded",
                 True,
                 "estimates → l2_eligibility",
             )
@@ -187,18 +187,18 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
             "gri_pipeline",
             "pass",
             "GRI_ASSEMBLED",
-            f"Итог GRI={gri_s}, tier={tier}, persona={persona} (после roi и, при необходимости, budget_infer)",
+            f"Final GRI={gri_s}, tier={tier}, persona={persona} (after roi and, if needed, budget_infer)",
             True,
-            "Снимок price/hours → допуск L2 gray zone",
+            "price/hours snapshot → L2 gray zone eligibility",
         )
     )
 
     if state.get("l2_llm_skipped"):
         reason = str(state.get("l2_llm_skip_reason") or "unknown")
         expl = {
-            "not_gray_zone": "GRI вне интервала l2_gray_zone в scoring.yaml",
-            "llm_disabled": "l2_gray_zone.llm_enabled выключен",
-            "bad_state": "Нет данных для Ollama-судьи",
+            "not_gray_zone": "GRI outside l2_gray_zone range in scoring.yaml",
+            "llm_disabled": "l2_gray_zone.llm_enabled is off",
+            "bad_state": "No data for the Ollama judge",
         }.get(reason, reason)
         steps.append(
             _row(
@@ -207,7 +207,7 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 reason,
                 expl,
                 True,
-                "merge_notify: лог structlog gri_metrics, дальше адаптер (cover / notify policy)",
+                "merge_notify: structlog gri_metrics log, then adapter (cover / notify policy)",
             )
         )
     else:
@@ -219,9 +219,9 @@ def build_scoring_traversal_report(state: Mapping[str, Any]) -> dict[str, Any]:
                 "l2_llm",
                 "pass",
                 rec or "OK",
-                f"Ollama-судья: fit_score={fit_s}, recommend={rec}",
+                f"Ollama judge: fit_score={fit_s}, recommend={rec}",
                 True,
-                "При reject в серой зоне tier мог смениться на MANUAL/TRASH",
+                "On reject in gray zone, tier may change to MANUAL/TRASH",
             )
         )
 
